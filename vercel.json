@@ -1,10 +1,5 @@
 {
   "functions": {
     "api/*.js": { "maxDuration": 20 }
-  },
-  "rewrites": [
-    { "source": "/api/market", "destination": "/api/data-auto?mode=market" },
-    { "source": "/api/structure", "destination": "/api/data-auto?mode=structure" },
-    { "source": "/api/detail", "destination": "/api/data-auto?mode=detail" }
-  ]
+  }
 }
