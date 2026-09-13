@@ -1,5 +1,8 @@
 {
   "functions": {
     "api/*.js": { "maxDuration": 20 }
-  }
+  },
+  "rewrites": [
+    { "source": "/analysis", "destination": "/analysis-workspace.html" }
+  ]
 }
