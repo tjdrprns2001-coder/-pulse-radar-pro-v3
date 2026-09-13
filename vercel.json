@@ -3,6 +3,6 @@
     "api/*.js": { "maxDuration": 20 }
   },
   "rewrites": [
-    { "source": "/analysis", "destination": "/analysis-native.html" }
+    { "source": "/analysis", "destination": "/analysis-v2.html" }
   ]
 }
