@@ -2,8 +2,8 @@ const spot=require('../lib/spot-structure.js');
 const futures=require('../lib/futures-data.js');
 function capture(){let code=200,body=null;return{res:{setHeader(){},status(c){code=c;return this},json(v){body=v;return this}},get:()=>({code,body})}}
 async function runSpot(req){const c=capture();try{await spot(req,c.res)}catch(e){return{code:500,body:{ok:false,error:e?.message||String(e)}}}return c.get()}
-const BASE='https://fapi.binance.com';
-async function getJson(path){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),5000);try{const r=await fetch(BASE+path,{signal:ctl.signal,headers:{accept:'application/json'}});if(!r.ok)throw Error('HTTP '+r.status);return r.json()}finally{clearTimeout(to)}}
+const BASES=['https://fapi.binance.com','https://fapi1.binance.com','https://fapi2.binance.com'];
+async function getJson(path){let last;for(const base of BASES){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),4500);try{const r=await fetch(base+path,{signal:ctl.signal,headers:{accept:'application/json'}});const text=await r.text();clearTimeout(to);if(!r.ok){last=new Error('HTTP '+r.status);continue}return JSON.parse(text)}catch(e){clearTimeout(to);last=e}}throw last||new Error('Binance USD-M fetch failed')}
 const num=v=>{v=Number(v);return Number.isFinite(v)?v:null};
 function pct(a,b){a=num(a);b=num(b);return a!=null&&b!=null&&a!==0?(b-a)/Math.abs(a)*100:null}
 async function derivatives(symbol){const [pR,oR,hR,tR]=await Promise.allSettled([
@@ -13,7 +13,7 @@ async function derivatives(symbol){const [pR,oR,hR,tR]=await Promise.allSettled(
   getJson('/futures/data/takerlongshortRatio?symbol='+encodeURIComponent(symbol)+'&period=1h&limit=24')
 ]);
 const p=pR.status==='fulfilled'?pR.value:null,o=oR.status==='fulfilled'?oR.value:null,h=hR.status==='fulfilled'&&Array.isArray(hR.value)?hR.value:[],t=tR.status==='fulfilled'&&Array.isArray(tR.value)?tR.value:[];
-if(!p&&!o&&!h.length&&!t.length)return{ok:true,derivatives:true,available:false,symbol,note:'USD-M public data unavailable'};
+if(!p&&!o&&!h.length&&!t.length)return{ok:true,derivatives:true,available:false,symbol,note:'USD-M public data unavailable',errors:[pR,oR,hR,tR].filter(x=>x.status==='rejected').map(x=>x.reason?.message||String(x.reason)).slice(0,4)};
 const mark=num(p?.markPrice),contracts=num(o?.openInterest),oiUsd=contracts!=null&&mark!=null?contracts*mark:null,oi24=h.length>1?pct(h[0]?.sumOpenInterestValue,h.at(-1)?.sumOpenInterestValue):null,funding=num(p?.lastFundingRate),ratios=t.map(x=>num(x.buySellRatio)).filter(Number.isFinite),taker=ratios.length?ratios.reduce((a,b)=>a+b,0)/ratios.length:null,flags=[];
 if(oi24!=null&&oi24>=15)flags.push('OI 증가');if(oi24!=null&&oi24<=-15)flags.push('OI 감소');if(funding!=null&&Math.abs(funding*100)>=.03)flags.push(funding>0?'양(+) 펀딩':'음(-) 펀딩');if(taker!=null&&taker>=1.15)flags.push('공격적 매수 우위');if(taker!=null&&taker<=.87)flags.push('공격적 매도 우위');
 return{ok:true,derivatives:true,available:true,symbol,updatedAt:new Date().toISOString(),markPrice:mark,openInterestContracts:contracts,openInterestUsdApprox:oiUsd,openInterestChange24hPct:oi24,fundingRatePct:funding!=null?funding*100:null,takerBuySellRatio:taker,pressure:flags.length>=3?'레버리지 과열':flags.length?'레버리지 확대':'중립',flags,source:'Binance USD-M public market data'}
