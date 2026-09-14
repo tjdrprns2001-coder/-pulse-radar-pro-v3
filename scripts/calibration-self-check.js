@@ -2,6 +2,7 @@ const assert=require('node:assert/strict');
 const profile=require('../lib/calibration-profile.js');
 const chart=require('../lib/chart-patterns.js');
 const validation=require('../lib/pattern-validation.js');
+const {buildFreezeManifest}=require('../lib/calibration-freeze.js');
 function main(){
   assert.equal(chart.ENGINE_VERSION,profile.ENGINE_VERSION,'engine version mismatch');
   assert.equal(chart.CALIBRATION_VERSION,profile.CALIBRATION_VERSION,'calibration version mismatch');
@@ -16,6 +17,12 @@ function main(){
     const c=profile.tfConfig(tf);
     for(const k of ['minSpan','minSpace','touchTol','fit','confidence','maxBreach'])assert.ok(Number.isFinite(c[k]),`${tf}: invalid ${k}`);
   }
-  console.log(JSON.stringify({ok:true,engineVersion:profile.ENGINE_VERSION,calibrationVersion:profile.CALIBRATION_VERSION,split:profile.SPLIT_RATIOS,families:Object.keys(profile.TUNABLES).length,timeframes:['15m','1h','4h','1d']},null,2));
+  const a=buildFreezeManifest(),b=buildFreezeManifest();
+  assert.equal(a.sha256,b.sha256,'freeze fingerprint must be deterministic');
+  assert.equal(a.manifest.engineVersion,profile.ENGINE_VERSION,'freeze engine version mismatch');
+  assert.equal(a.manifest.calibrationVersion,profile.CALIBRATION_VERSION,'freeze calibration version mismatch');
+  assert.equal(a.manifest.samplePolicy.maxFreeParametersPerFamily,3,'freeze parameter budget mismatch');
+  assert.ok(!('generatedAt' in a.manifest),'generated timestamps must stay outside canonical freeze manifest');
+  console.log(JSON.stringify({ok:true,engineVersion:profile.ENGINE_VERSION,calibrationVersion:profile.CALIBRATION_VERSION,freezeSha256:a.sha256,freezeBytes:a.canonicalBytes,split:profile.SPLIT_RATIOS,families:Object.keys(profile.TUNABLES).length,timeframes:['15m','1h','4h','1d']},null,2));
 }
 main();
