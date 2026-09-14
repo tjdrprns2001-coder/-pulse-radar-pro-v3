@@ -3,7 +3,7 @@
     "api/*.js": { "maxDuration": 20 }
   },
   "rewrites": [
-    { "source": "/analysis", "destination": "/analysis-shell-v11.html" },
+    { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
     { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" }
   ]
 }
