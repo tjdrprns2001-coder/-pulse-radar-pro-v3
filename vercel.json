@@ -13,6 +13,7 @@
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
     { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
     { "source": "/api/backtest", "destination": "/api/index?route=backtest" },
+    { "source": "/api/calibration-freeze", "destination": "/api/index?route=calibration-freeze" },
     { "source": "/api/calibration-health", "destination": "/api/index?route=calibration-health" },
     { "source": "/api/detail", "destination": "/api/index?route=detail" },
     { "source": "/api/historical-structure-study", "destination": "/api/index?route=historical-structure-study" },
