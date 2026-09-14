@@ -1,8 +1,9 @@
 {
   "name": "pulse-radar-pro-v3",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "private": true,
   "scripts": {
-    "check:calibration": "node scripts/calibration-self-check.js"
+    "check:calibration": "node scripts/calibration-self-check.js",
+    "freeze:calibration": "node scripts/print-calibration-freeze.js"
   }
 }
