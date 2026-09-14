@@ -1,0 +1,2 @@
+const {buildFreezeManifest}=require('../lib/calibration-freeze.js');
+module.exports=async(req,res)=>{res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=900');const {manifest,sha256,canonicalBytes}=buildFreezeManifest();res.status(200).json({ok:true,service:'calibration-freeze',freeze:{sha256,canonicalBytes,generatedAt:new Date().toISOString(),manifest},note:'Pre-HOLDOUT configuration fingerprint only. This endpoint exposes no holdout results and is not a trading signal.'})};
