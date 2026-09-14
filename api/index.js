@@ -7,6 +7,7 @@ const handlers = {
   market: require('../handlers/market'),
   'micro-features': require('../handlers/micro-features'),
   pattern: require('../handlers/pattern'),
+  'pattern-validation': require('../handlers/pattern-validation'),
   'structure-study': require('../handlers/structure-study'),
   structure: require('../handlers/structure'),
   'temporal-features': require('../handlers/temporal-features'),
