@@ -1,10 +1,22 @@
 {
   "functions": {
-    "api/*.js": { "maxDuration": 20 }
+    "api/index.js": { "maxDuration": 20 }
   },
   "rewrites": [
     { "source": "/", "destination": "/scanner-shell-v13.html" },
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
-    { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" }
+    { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
+    { "source": "/api/backtest", "destination": "/api/index?route=backtest" },
+    { "source": "/api/detail", "destination": "/api/index?route=detail" },
+    { "source": "/api/historical-structure-study", "destination": "/api/index?route=historical-structure-study" },
+    { "source": "/api/htf", "destination": "/api/index?route=htf" },
+    { "source": "/api/independent-temporal", "destination": "/api/index?route=independent-temporal" },
+    { "source": "/api/market", "destination": "/api/index?route=market" },
+    { "source": "/api/micro-features", "destination": "/api/index?route=micro-features" },
+    { "source": "/api/pattern", "destination": "/api/index?route=pattern" },
+    { "source": "/api/structure-study", "destination": "/api/index?route=structure-study" },
+    { "source": "/api/structure", "destination": "/api/index?route=structure" },
+    { "source": "/api/temporal-features", "destination": "/api/index?route=temporal-features" },
+    { "source": "/api/trendline-study", "destination": "/api/index?route=trendline-study" }
   ]
 }
