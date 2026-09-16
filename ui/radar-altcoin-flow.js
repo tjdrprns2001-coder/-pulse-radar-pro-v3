@@ -1,7 +1,7 @@
 (()=>{
   const core=window.PulseRadarCoinAnomaly,$=id=>document.getElementById(id),STORAGE_KEY='pulseRadarAltHistoryV2';
   const state={altOnly:true,window:'5m',sort:'anomaly',minConfidence:0,history:new Map(),data:null,timer:null,renderTimer:null,abort:null,lastPersist:0};
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const finite=v=>v==null||v===''?null:(Number.isFinite(Number(v))?Number(v):null);
   const money=n=>{n=finite(n);if(n==null)return'-';const s=n<0?'-':'';n=Math.abs(n);if(n>=1e9)return`${s}$${(n/1e9).toFixed(2)}B`;if(n>=1e6)return`${s}$${(n/1e6).toFixed(2)}M`;if(n>=1e3)return`${s}$${(n/1e3).toFixed(1)}K`;return`${s}$${n.toFixed(0)}`};
   const ratio=n=>{n=finite(n);return n==null?'-':`${n.toFixed(2)}x`},pct=n=>{n=finite(n);return n==null?'-':`${Math.round(n*100)}%`},signedPct=n=>{n=finite(n);return n==null?'-':`${n>=0?'+':''}${(n*100).toFixed(1)}%`},funding=n=>{n=finite(n);return n==null?'-':`${n>=0?'+':''}${(n*100).toFixed(4)}%`},spread=n=>{n=finite(n);return n==null?'-':`${n.toFixed(1)} bps`},age=n=>{n=finite(n);if(n==null)return'-';return n<60000?`${Math.round(n/1000)}초`:`${(n/60000).toFixed(1)}분`};
