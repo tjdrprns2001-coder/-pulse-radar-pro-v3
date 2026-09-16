@@ -8,12 +8,14 @@ on:
       - feat/unified-v2-m3-smc
       - feat/unified-v2-m3-1-declutter
       - feat/unified-v2-m3-2-collision
+      - feat/multi-chart-workspace-v1
   pull_request:
     paths:
       - 'ui/**'
       - 'tests/**'
       - 'pulse-unified.html'
       - 'unified-chart.html'
+      - 'multi-chart.html'
       - 'scanner-shell-v13.html'
       - 'package.json'
       - 'scripts/**'
