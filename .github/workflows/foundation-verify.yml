@@ -3,21 +3,40 @@ name: Foundation Verify
 on:
   push:
     branches:
+      - main
       - feat/unified-v2-m1-foundation
       - feat/unified-v2-m2-chart
       - feat/unified-v2-m3-smc
       - feat/unified-v2-m3-1-declutter
       - feat/unified-v2-m3-2-collision
-  pull_request:
+      - feat/realtime-crypto-radar
     paths:
+      - 'api/**'
       - 'ui/**'
       - 'tests/**'
+      - 'radar.html'
       - 'pulse-unified.html'
       - 'unified-chart.html'
       - 'scanner-shell-v13.html'
       - 'package.json'
+      - 'vercel.json'
       - 'scripts/**'
       - 'RELEASE_CHECKLIST.md'
+      - 'docs/superpowers/**'
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'ui/**'
+      - 'tests/**'
+      - 'radar.html'
+      - 'pulse-unified.html'
+      - 'unified-chart.html'
+      - 'scanner-shell-v13.html'
+      - 'package.json'
+      - 'vercel.json'
+      - 'scripts/**'
+      - 'RELEASE_CHECKLIST.md'
+      - 'docs/superpowers/**'
   workflow_dispatch:
 
 jobs:
