@@ -1,0 +1,11 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseIctPlugin=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  function createIctPlugin(){let ctx=null,visible=true,series=[],markers=null;const sec=v=>{v=Number(v);return Math.trunc(v>1e12?v/1000:v)};
+    function clear(){if(markers){try{markers.detach?.()}catch{}markers=null}for(const s of series){try{ctx?.chart?.removeSeries(s)}catch{}}series=[]}
+    function line(value,start,end,width=1,style=2,color){const s=ctx.addLineSeries({lineWidth:width,lineStyle:style,color});s.setData([{time:start,value:Number(value)},{time:end,value:Number(value)}]);series.push(s)}
+    function sequence(smc,candles){const c=[];const push=(arr,label,color,pos='belowBar')=>{const x=(arr||[]).filter(v=>Number.isFinite(Number(v.index))).at(-1);if(x&&candles[x.index])c.push({index:Number(x.index),label,color,pos})};push(smc?.sweeps,'①','#f7c55f');push(smc?.mss,'②','#4fd1c5');push(smc?.displacements,'③','#9b7cf5');push((smc?.fvgs||[]).filter(x=>!['violated','expired'].includes(x.state)),'④','#6aa7ff');return c.sort((a,b)=>a.index-b.index)}
+    return{id:'ict',version:'1.0.0',requiredData:['candles','smc'],mount(c){ctx=c},update(state){clear();if(!ctx||!visible)return;const smc=state?.smc||{},candles=state?.rawCandles||state?.candles||[],pd=smc.pdOte,end=sec(candles.at(-1)?.time),start=sec(candles[Math.max(0,candles.length-80)]?.time||candles[0]?.time);if(!end||!start)return;
+      if(pd?.available){line(pd.high,start,end,1,2,'#ff6577');line(pd.equilibrium,start,end,1,3,'#8ba5c4');line(pd.low,start,end,1,2,'#4fd1c5');line(pd.oteLow,start,end,1,3,'#9b7cf5');line(pd.oteHigh,start,end,1,3,'#9b7cf5')}
+      if(ctx?.library?.createSeriesMarkers&&ctx.candlesSeries){const seq=sequence(smc,candles).map(x=>({time:sec(candles[x.index].time),position:x.pos,shape:'circle',text:x.label,color:x.color}));if(seq.length)markers=ctx.library.createSeriesMarkers(ctx.candlesSeries,seq,{autoScale:false})}
+    },setVisible(v){visible=!!v;if(!visible)clear()},dispose(){clear();ctx=null}}}
+  return{createIctPlugin};
+});
