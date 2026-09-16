@@ -3,7 +3,7 @@
     clean:{presetId:'clean',plugins:[],panes:[],visualProfile:'clean'},
     structure:{presetId:'structure',plugins:['structure'],panes:[],visualProfile:'structure'},
     smc:{presetId:'smc',plugins:['smc'],panes:[],visualProfile:'smc'},
-    ict:{presetId:'smc',plugins:['ict'],panes:[],visualProfile:'ict'},
+    ict:{presetId:'ict',plugins:['ict'],panes:[],visualProfile:'ict'},
     dante:{presetId:'dante',plugins:['dante'],panes:[],visualProfile:'dante'},
     full:{presetId:'full',plugins:['structure','smc','dante'],panes:[],visualProfile:'full'}
   };
