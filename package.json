@@ -15,13 +15,14 @@
     "test:radar-history": "node scripts/verify-radar-history.js",
     "test:radar-themes": "node scripts/verify-radar-themes.js",
     "test:radar-themes-v2": "node scripts/verify-radar-themes-v2.js",
+    "test:onchain-core": "node scripts/verify-onchain-core.js",
     "test:radar-alerts": "node scripts/verify-radar-alerts.js",
     "test:radar-api": "node scripts/verify-radar-api.js",
     "test:radar-stream": "node scripts/verify-radar-stream.js",
     "test:radar-ui": "node scripts/verify-radar-ui.js",
     "test:radar-shell": "node scripts/verify-radar-shell.js",
     "test:netlify-temp": "node scripts/verify-netlify-temp.js",
-    "test:radar": "npm run test:radar-core && npm run test:radar-history && npm run test:radar-themes && npm run test:radar-themes-v2 && npm run test:radar-alerts && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell && npm run test:netlify-temp",
+    "test:radar": "npm run test:radar-core && npm run test:radar-history && npm run test:radar-themes && npm run test:radar-themes-v2 && npm run test:onchain-core && npm run test:radar-alerts && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell && npm run test:netlify-temp",
     "verify": "npm run test:radar && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
