@@ -1,0 +1,28 @@
+name: Foundation Verify
+
+on:
+  push:
+    branches:
+      - feat/unified-v2-m1-foundation
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'tests/**'
+      - 'pulse-unified.html'
+      - 'scanner-shell-v13.html'
+      - 'package.json'
+      - 'scripts/**'
+      - 'RELEASE_CHECKLIST.md'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify repository
+        run: npm run verify
