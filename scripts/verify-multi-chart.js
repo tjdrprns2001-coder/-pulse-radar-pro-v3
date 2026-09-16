@@ -1,0 +1,1 @@
+const {spawnSync}=require('node:child_process');const files=['tests/multi-chart-workspace-state.test.js','tests/multi-chart-request-coordinator.test.js','tests/multi-chart-mode-registry.test.js'];for(const f of files){const r=spawnSync(process.execPath,['--test',f],{stdio:'inherit'});if(r.status!==0)process.exit(r.status||1)}
