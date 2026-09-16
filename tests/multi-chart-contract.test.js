@@ -1,0 +1,7 @@
+const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');
+const html=fs.readFileSync('multi-chart.html','utf8'),css=fs.readFileSync('ui/multi-chart/multi-chart.css','utf8'),js=fs.readFileSync('ui/multi-chart/multi-chart.js','utf8');
+test('workspace has one shared symbol control and 1 2 4 layouts',()=>{assert.match(html,/id="mcSymbol"/);assert.match(html,/data-layout="1"/);assert.match(html,/data-layout="2"/);assert.match(html,/data-layout="4"/);assert.match(html,/id="mcGrid"/)});
+test('workspace uses direct chart instances not iframe clones',()=>{assert.doesNotMatch(html,/<iframe/i);assert.match(html,/chart-card\.js/);assert.match(html,/lightweight-charts@5\.2\.1/)});
+test('SMC and ICT assets are both loaded',()=>{assert.match(html,/smc-plugin\.js/);assert.match(html,/ict-plugin\.js/);assert.match(html,/mode-registry\.js/)});
+test('mobile layout stacks chart cards vertically',()=>{assert.match(css,/@media\(max-width:760px\)/);assert.match(css,/grid-template-columns:1fr/)});
+test('workspace persists lightweight state and supports duplicate/maximize actions',()=>{assert.match(js,/pulse\.multiChart\.v1/);assert.match(js,/duplicateChart/);assert.match(js,/maximizeChart/);assert.match(js,/restoreCharts/)});
