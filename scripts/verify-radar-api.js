@@ -1,0 +1,1 @@
+const fs=require('fs');const p='api/radar.js';if(!fs.existsSync(p))throw new Error('radar api missing');const s=fs.readFileSync(p,'utf8');['mode','snapshot','health','dex','cex','newPairs','source'].forEach(k=>{if(!s.includes(k))throw new Error('missing '+k)});console.log('radar api contract PASS');
