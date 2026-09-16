@@ -5,6 +5,7 @@ on:
     branches:
       - feat/unified-v2-m1-foundation
       - feat/unified-v2-m2-chart
+      - feat/unified-v2-m3-smc
   pull_request:
     paths:
       - 'ui/**'
