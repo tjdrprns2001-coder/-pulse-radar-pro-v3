@@ -9,7 +9,7 @@
     "api/index.js": { "maxDuration": 20 }
   },
   "redirects": [
-    { "source": "/", "destination": "/scanner-shell-v13.html", "permanent": false }
+    { "source": "/", "destination": "/pulse-unified.html", "permanent": false }
   ],
   "rewrites": [
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
