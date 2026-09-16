@@ -1,0 +1,1 @@
+const {spawnSync}=require('node:child_process');const files=['tests/smc-engine.test.js','tests/smc-plugin.test.js','tests/unified-chart-contract.test.js'];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);
