@@ -4,6 +4,7 @@
 Run `npm run verify` before updating `main`.
 
 Required PASS conditions:
+- Foundation shell/preset/data-state tests pass with zero failures.
 - Calibration engine and calibration-set versions match across detector and profile.
 - Freeze Manifest produces a deterministic 64-character SHA-256 fingerprint.
 - Dataset split totals 100% and free-parameter budget stays at three or fewer per family.
@@ -13,6 +14,12 @@ Required PASS conditions:
 - `calibration-lab` Vercel deployment remains disabled during development.
 
 ## Manual pre-main review
+- [ ] Mobile shows exactly one product topbar and one bottom navigation.
+- [ ] No floating shell control covers chart candles.
+- [ ] Clean/Structure/SMC/Dante/Full presets persist across reload.
+- [ ] Rendering budgets are enforced by preset policy.
+- [ ] Live/Confirmed/Partial/Stale/Insufficient-history/API-degraded states are distinguishable.
+- [ ] Legacy analysis route remains reachable for rollback.
 - HOLDOUT remains locked and is not used to tune parameters.
 - No calibration proposal is auto-applied.
 - Review `CALIBRATION_CHANGELOG.md` and freeze fingerprint.
@@ -23,7 +30,7 @@ Required PASS conditions:
 ## Production sequence
 1. Freeze the calibration configuration and record the SHA-256 fingerprint.
 2. Run `npm run verify` and require PASS.
-3. Fast-forward `main` once from the verified `calibration-lab` head.
+3. Fast-forward `main` once from the verified work branch.
 4. Wait for the single Vercel Production deployment.
 5. Verify `/api/calibration-health`, `/api/calibration-freeze`, `/api/pattern-validation` and the analysis page.
 6. If production verification fails, do not inspect HOLDOUT; fix on the work branch and repeat with a new verified head.
