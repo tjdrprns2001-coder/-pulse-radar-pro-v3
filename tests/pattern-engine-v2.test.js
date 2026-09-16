@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {analyzePatternSet}=require('../lib/pattern-engine.js');
+const {analyzePatternSet}=require('../lib/pattern-set-engine.js');
 const {buildSnapshotModel}=require('../lib/analysis/snapshot-builder.js');
 const {renderNarrative}=require('../lib/analysis/narrative-renderer.js');
 
