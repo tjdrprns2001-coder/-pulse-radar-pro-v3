@@ -6,7 +6,8 @@
     }
   },
   "functions": {
-    "api/index.js": { "maxDuration": 20 }
+    "api/index.js": { "maxDuration": 20 },
+    "api/radar.js": { "maxDuration": 20 }
   },
   "redirects": [
     { "source": "/", "destination": "/pulse-unified.html", "permanent": false }
@@ -14,6 +15,7 @@
   "rewrites": [
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
     { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
+    { "source": "/radar", "destination": "/radar.html" },
     { "source": "/api/backtest", "destination": "/api/index?route=backtest" },
     { "source": "/api/calibration-freeze", "destination": "/api/index?route=calibration-freeze" },
     { "source": "/api/calibration-health", "destination": "/api/index?route=calibration-health" },
