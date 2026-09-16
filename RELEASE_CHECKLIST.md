@@ -4,6 +4,7 @@
 Run `npm run verify` before updating `main`.
 
 Required PASS conditions:
+- Multi-chart workspace state/request/mode/ICT/card/page/shell tests pass with zero failures.
 - Milestone 3.1 declutter/mobile contract tests pass with zero failures.
 - SMC v2 Milestone 3 tests pass with zero failures.
 - Unified Chart Milestone 2 tests pass with zero failures.
@@ -17,6 +18,14 @@ Required PASS conditions:
 - `calibration-lab` Vercel deployment remains disabled during development.
 
 ## Manual pre-main review
+- [ ] Multi-chart defaults to two charts and supports 1/2/4 layouts.
+- [ ] Shared symbol updates every chart while timeframe and analysis mode remain chart-local.
+- [ ] Default 2-chart example renders one SMC chart and one visually distinct ICT chart.
+- [ ] SMC mode uses zone/liquidity emphasis; ICT uses Premium/Discount/OTE plus ①→④ sequence context only from confirmed engine data.
+- [ ] Mobile 2/4 layouts stack vertically and can focus/restore a chart without horizontal compression.
+- [ ] Identical symbol+TF loads are deduplicated; one card API failure does not blank siblings.
+- [ ] Multi-chart workspace persists layout/TF/mode state and does not persist API results.
+- [ ] Embedded multi-chart uses the single product shell; no duplicate top/bottom navigation.
 - [ ] Mobile shows exactly one product topbar and one bottom navigation.
 - [ ] No floating shell control covers chart candles.
 - [ ] Mobile symbol input shows complete `USDT` suffix without clipping.
@@ -54,7 +63,7 @@ Required PASS conditions:
 2. Run `npm run verify` and require PASS.
 3. Merge the verified work branch into `main`.
 4. Wait for the Vercel Production deployment.
-5. Verify `/api/calibration-health`, `/api/calibration-freeze`, `/api/pattern-validation`, `/unified-chart.html`, and the canonical analysis route.
+5. Verify `/api/calibration-health`, `/api/calibration-freeze`, `/api/pattern-validation`, `/unified-chart.html`, `/multi-chart.html`, and the canonical analysis route.
 6. If production verification fails, do not inspect HOLDOUT; fix on the work branch and repeat with a new verified head.
 
 This checklist governs detector research quality and deployment integrity. It is not a trading-performance certification.
