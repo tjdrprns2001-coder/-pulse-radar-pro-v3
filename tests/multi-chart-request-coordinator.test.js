@@ -1,0 +1,4 @@
+const test=require('node:test');const assert=require('node:assert/strict');const {createRequestCoordinator}=require('../ui/multi-chart/request-coordinator');
+test('deduplicates identical in-flight requests',async()=>{let n=0;const c=createRequestCoordinator({fetcher:async()=>{n++;return{ok:true,n}},ttlMs:1000});const [a,b]=await Promise.all([c.load('UNIUSDT','1h'),c.load('UNIUSDT','1h')]);assert.equal(n,1);assert.deepEqual(a,b)});
+test('different timeframes fetch independently',async()=>{let n=0;const c=createRequestCoordinator({fetcher:async()=>({n:++n})});await Promise.all([c.load('UNIUSDT','1h'),c.load('UNIUSDT','4h')]);assert.equal(n,2)});
+test('failed requests are evicted for retry',async()=>{let n=0;const c=createRequestCoordinator({fetcher:async()=>{n++;if(n===1)throw Error('x');return{ok:true}}});await assert.rejects(c.load('BTCUSDT','1h'));await c.load('BTCUSDT','1h');assert.equal(n,2)});
