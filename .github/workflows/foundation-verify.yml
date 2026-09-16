@@ -9,6 +9,7 @@ on:
       - feat/unified-v2-m3-1-declutter
       - feat/unified-v2-m3-2-collision
       - feat/multi-chart-workspace-v1
+      - feat/milestone-3-3-liquidity-ict
   pull_request:
     paths:
       - 'ui/**'
@@ -31,5 +32,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Milestone 3.3 annotation RED/GREEN cycle
+        run: |
+          if [ -f tests/annotation-layout.test.js ]; then node tests/annotation-layout.test.js; fi
       - name: Verify repository
         run: npm run verify
