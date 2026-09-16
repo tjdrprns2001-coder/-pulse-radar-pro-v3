@@ -13,22 +13,32 @@
     const volumeRatio=volume/baseVol,txRatio=tx/baseTx,liqDelta=(liq-liqPrev)/liqPrev;
     const imbalance=totalSide>0?(buys-sells)/totalSide:0;
     const priceAcceleration=Math.max(0,abs(change1m)-abs(num(baseline.change1m))*1.15)+Math.max(0,abs(change5m)-abs(num(baseline.change5m))*1.05);
+    const v1=num(r.volumeDelta1m,NaN),v5=num(r.volumeDelta5m,NaN),t1=num(r.txDelta1m,NaN),t5=num(r.txDelta5m,NaN);
+    const hasV1=Number.isFinite(v1),hasV5=Number.isFinite(v5),hasT1=Number.isFinite(t1),hasT5=Number.isFinite(t5);
+    const volumeImpulse1m=hasV1?Math.max(0,v1)/Math.max(1,volume-Math.max(0,v1)):0;
+    const volumeImpulse5m=hasV5?Math.max(0,v5)/Math.max(1,volume-Math.max(0,v5)):0;
+    const txImpulse1m=hasT1?Math.max(0,t1)/Math.max(1,tx-Math.max(0,t1)):0;
+    const txImpulse5m=hasT5?Math.max(0,t5)/Math.max(1,tx-Math.max(0,t5)):0;
 
     const activityFloor=r.marketType==='dex'?(liq>=12000&&volume>=4000&&tx>=18):volume>=25000;
     const strongActivity=r.marketType==='dex'?(liq>=50000&&volume>=20000&&tx>=45):volume>=100000;
     const momentumScore=clamp(abs(change1m)*6.5+abs(change5m)*2.2+Math.min(22,priceAcceleration*2));
-    const volumeScore=clamp((volumeRatio-1)*24+Math.log10(Math.max(10,volume))*5-12);
+    const historyVolumeBoost=clamp(volumeImpulse1m*45+volumeImpulse5m*12,0,42);
+    const historyParticipationBoost=clamp(txImpulse1m*45+txImpulse5m*12,0,40);
+    const volumeScore=clamp((volumeRatio-1)*24+Math.log10(Math.max(10,volume))*5-12+historyVolumeBoost);
     const liquidityScore=clamp(Math.max(0,liqDelta)*160+(liq>25000?12:0)+(liq>100000?12:0));
-    const participationScore=clamp((txRatio-1)*24+(totalSide>0?Math.min(32,totalSide/9):0)+(Math.abs(imbalance)>.3?8:0));
+    const participationScore=clamp((txRatio-1)*24+(totalSide>0?Math.min(32,totalSide/9):0)+(Math.abs(imbalance)>.3?8:0)+historyParticipationBoost);
     const freshnessScore=clamp(ageMin<5?100:ageMin<30?78:ageMin<180?48:ageMin<1440?24:8);
     const thinPenalty=(liq>0&&liq<5000?60:liq>0&&liq<12000?35:0)+(thin>250?45:thin>100?32:thin>40?18:0);
     const outflowPenalty=liqDelta<-.4?60:liqDelta<-.25?42:liqDelta<-.12?20:0;
     const flashPumpPenalty=r.marketType==='dex'&&abs(change5m)>40&&!strongActivity?38:0;
     const riskScore=clamp(thinPenalty+outflowPenalty+flashPumpPenalty);
     const confidenceScore=clamp(num(r.sourceConfidence,70)+(liq>50000?8:0)+(volume>50000?8:0)+(tx>100?6:0)-(riskScore*.42));
-    const radarScore=clamp(momentumScore*.23+volumeScore*.24+liquidityScore*.11+participationScore*.17+freshnessScore*.07+confidenceScore*.18-riskScore*.24);
+    const radarScore=clamp(momentumScore*.22+volumeScore*.25+liquidityScore*.10+participationScore*.18+freshnessScore*.07+confidenceScore*.18-riskScore*.24);
 
     const reasons=[];
+    if(hasV1&&v1>0)reasons.push(`1분 거래량 +${Math.round(v1).toLocaleString()}`);
+    if(hasT1&&t1>0)reasons.push(`1분 거래활동 +${Math.round(t1)}`);
     if(volumeRatio>=2)reasons.push(`거래량 ${volumeRatio.toFixed(1)}x`);
     if(txRatio>=1.8)reasons.push(`거래활동 ${txRatio.toFixed(1)}x`);
     if(change1m>=3||change5m>=7)reasons.push(`가격가속 ${change1m.toFixed(1)}%/1m ${change5m.toFixed(1)}%/5m`);
@@ -40,8 +50,9 @@
     if(riskScore>=45)reasons.push(`리스크 ${Math.round(riskScore)}`);
 
     let label='WATCH',signal='WATCH';
-    const surgeReady=activityFloor&&riskScore<60&&radarScore>=68&&volumeScore>=48&&momentumScore>=38&&participationScore>=28;
-    const preReady=activityFloor&&riskScore<55&&radarScore>=44&&volumeScore>=30&&participationScore>=22&&abs(change5m)<35;
+    const surgeReady=activityFloor&&riskScore<60&&radarScore>=66&&volumeScore>=46&&momentumScore>=36&&participationScore>=30;
+    const preHistoryReady=(historyVolumeBoost>=10||historyParticipationBoost>=10||volumeRatio>=1.7||txRatio>=1.5);
+    const preReady=activityFloor&&riskScore<55&&radarScore>=42&&volumeScore>=28&&participationScore>=24&&preHistoryReady&&abs(change5m)<35;
     if(riskScore>=62){label='RISK';signal='LIQUIDITY_RISK'}
     else if(surgeReady){label='SURGE';signal='SURGE'}
     else if(preReady){label='PRE-SURGE';signal='PRE_SURGE'}
@@ -52,7 +63,7 @@
     else if(imbalance>=.35&&activityFloor)signal='BUY_PRESSURE';
     else if(imbalance<=-.35&&activityFloor)signal='SELL_PRESSURE';
     else if(ageMin<30)signal='NEW_PAIR';
-    return {...r,momentumScore,volumeScore,liquidityScore,participationScore,freshnessScore,riskScore,confidenceScore,radarScore,label,signal,volumeRatio,txRatio,liquidityDelta:liqDelta,buySellImbalance:imbalance,activityFloor,reasons};
+    return {...r,momentumScore,volumeScore,liquidityScore,participationScore,freshnessScore,riskScore,confidenceScore,radarScore,label,signal,volumeRatio,txRatio,liquidityDelta:liqDelta,buySellImbalance:imbalance,volumeImpulse1m,volumeImpulse5m,txImpulse1m,txImpulse5m,activityFloor,reasons};
   }
   function rankMarkets(records=[],baselines={}){
     return records.map(r=>scoreMarket(r,baselines[r.id||r.symbol]||{}))
