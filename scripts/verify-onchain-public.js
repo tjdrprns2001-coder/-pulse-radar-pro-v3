@@ -7,6 +7,9 @@ assert.equal(parsed[0].chain,'ethereum');
 assert.equal(parsed[0].pairAddress.toLowerCase(),'0x2222222222222222222222222222222222222222');
 assert.equal(parsed[0].symbol,'UNI');
 assert.equal(parsed[1].chain,'solana');
+const legacy=providers.parseAssets(['base:0x4444444444444444444444444444444444444444']);
+assert.equal(legacy[0].chain,'base');
+assert.equal(legacy[0].pairAddress,null,'legacy chain:token format must remain supported');
 
 for(const chain of ['solana','ethereum','base','bsc'])assert(providers.publicRpcFor(chain),`missing keyless RPC for ${chain}`);
 
