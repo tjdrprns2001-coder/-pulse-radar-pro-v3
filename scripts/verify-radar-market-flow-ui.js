@@ -1,0 +1,14 @@
+const assert=require('assert');
+const fs=require('fs');
+const html=fs.readFileSync('radar.html','utf8'),app=fs.readFileSync('ui/radar-app.js','utf8'),css=fs.readFileSync('ui/radar.css','utf8');
+assert(fs.existsSync('ui/radar-market-flow.js'));
+assert(html.includes('시장 자금 이동'));
+assert(html.includes('data-market-flow-window="5m"'));
+assert(html.includes('data-market-flow-window="1h"'));
+assert(html.includes('data-market-flow-window="4h"'));
+assert(html.includes('data-market-flow-window="24h"'));
+assert(app.includes('/api/market-flow'));
+assert(app.includes('순매수 추정'));
+assert(app.includes('MARKET FLOW DEGRADED'));
+assert(css.includes('marketFlow'));
+console.log('radar market flow ui PASS');
