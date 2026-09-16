@@ -1,7 +1,7 @@
 (function(){
   const V={
     scanner:{title:'시장 스캐너',desc:'현물·선물 전체 종목 탐색',path:'/index.html'},
-    analysis:{title:'통합 상세 분석',desc:'구조 · SMC · 단테 · MTF · 모멘텀',path:'/unified-chart.html'},
+    analysis:{title:'분석',desc:'구조 · SMC · 단테 · MTF · 모멘텀',path:'/unified-chart.html'},
     intel:{title:'코인 정보',desc:'종목 정보 · 일정 · 데이터',path:'/coin-intel.html'},
     ict:{title:'ICT · IPDA 서사',desc:'유동성 · MSS/CISD · PD Array · 프렉탈',path:'/ict-narrative-lab.html'},
     liquidity:{title:'유동성 랩',desc:'Liquidity · FVG · Sweep 연구',path:'/liquidity-lab.html'},
@@ -34,6 +34,7 @@
   function setView(key,push=true){if(!V[key])key='scanner';current=key;const o=V[key];$('pageTitle').textContent=o.title;$('pageDesc').textContent=o.desc;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===key));loading.classList.remove('hide');frame.src=srcFor(key);if(push){const u=new URL(location.href);u.searchParams.set('view',key);u.searchParams.set('symbol',symbol());u.searchParams.set('preset',activePreset().id);history.replaceState(null,'',u)}closeMenu();emit('pulse:viewchange',{view:key})}
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
   function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(current==='analysis')setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
-  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));$('menuBtn').onclick=openMenu;$('moreBtn').onclick=openMenu;shade.onclick=closeMenu;$('go').onclick=applySymbol;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')applySymbol()});$('preset').addEventListener('change',applyPreset);$('openTab').onclick=()=>window.open(srcFor(current),'_blank');frame.addEventListener('load',()=>{loading.classList.add('hide');injectShellMode()});window.addEventListener('message',e=>{if(e.data?.type==='pulse-nav'&&V[e.data.view])setView(e.data.view,true)});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+  function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'})}
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));$('menuBtn').onclick=openMenu;$('moreBtn').onclick=openMenu;shade.onclick=closeMenu;$('go').onclick=applySymbol;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')applySymbol()});$('preset').addEventListener('change',applyPreset);$('openTab').onclick=()=>window.open(srcFor(current),'_blank');frame.addEventListener('load',()=>{loading.classList.add('hide');injectShellMode()});window.addEventListener('message',e=>{if(e.data?.type==='pulse-symbol-sync')return syncChildSymbol(e.data.symbol);if(e.data?.type==='pulse-nav'&&V[e.data.view])setView(e.data.view,true)});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
   const q=new URLSearchParams(location.search);$('symbol').value=cleanSymbol(q.get('symbol')||readRecent());const loaded=presets.loadPreset(),requested=presets.getPreset(q.get('preset')||loaded.id);$('preset').value=requested.id;setTopState('live');setView(q.get('view')||'scanner',false);
 })();
