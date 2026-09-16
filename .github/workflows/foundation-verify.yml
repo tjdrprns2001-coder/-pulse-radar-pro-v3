@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - feat/unified-v2-m1-foundation
+      - feat/unified-v2-m2-chart
   pull_request:
     paths:
       - 'ui/**'
       - 'tests/**'
       - 'pulse-unified.html'
+      - 'unified-chart.html'
       - 'scanner-shell-v13.html'
       - 'package.json'
       - 'scripts/**'
