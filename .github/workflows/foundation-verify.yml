@@ -32,15 +32,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify Milestone 3.3 RED/GREEN cycle
-        run: |
-          if [ -f tests/annotation-layout.test.js ]; then node tests/annotation-layout.test.js; fi
-          if [ -f tests/annotation-regression-fixtures.test.js ]; then node tests/annotation-regression-fixtures.test.js; fi
-          if [ -f tests/session-profile.test.js ]; then node tests/session-profile.test.js; fi
-          if [ -f tests/liquidity-engine.test.js ]; then node tests/liquidity-engine.test.js; fi
-          if [ -f tests/liquidity-plugin-contract.test.js ]; then node tests/liquidity-plugin-contract.test.js; fi
-          if [ -f tests/ict-context-engine.test.js ]; then node tests/ict-context-engine.test.js; fi
-          if [ -f tests/ict-presentation.test.js ]; then node tests/ict-presentation.test.js; fi
-          if [ -f tests/ict-plugin.test.js ]; then node tests/ict-plugin.test.js; fi
       - name: Verify repository
         run: npm run verify
