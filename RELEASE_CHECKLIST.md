@@ -4,6 +4,7 @@
 Run `npm run verify` before updating `main`.
 
 Required PASS conditions:
+- SMC v2 Milestone 3 tests pass with zero failures.
 - Unified Chart Milestone 2 tests pass with zero failures.
 - Foundation shell/preset/data-state tests pass with zero failures.
 - Calibration engine and calibration-set versions match across detector and profile.
@@ -25,6 +26,15 @@ Required PASS conditions:
 - [ ] RSI/MACD/Stoch RSI render in separate panes when enabled.
 - [ ] Structure plugin displays only existing API structure/trendline outputs.
 - [ ] Dante preset exposes EMA 5/20/60/112/224/256/448 without fabricating long-period values on short history.
+- [ ] SMC definition ids are emitted and versioned.
+- [ ] Internal pivots are confirmed only after right-side bars exist; no future pivots are consumed.
+- [ ] MSS requires a close break plus same-direction displacement context.
+- [ ] EQH/EQL and sweep rules use deterministic ATR/price tolerances.
+- [ ] FVG/iFVG and OB/Breaker lifecycle states are explicit.
+- [ ] Ordinary OB retests are never labeled Breaker without violation plus opposite MSS.
+- [ ] Premium/Discount and OTE are context only, not entry instructions.
+- [ ] HTF Bias Lock reports aligned/counter-trend/neutral and does not hard-disable setups.
+- [ ] SMC/Full respect the preset zone budget; Clean/Structure keep SMC layers hidden.
 - [ ] Legacy `/technique-lab.html` remains reachable for rollback.
 - [ ] Library/API failure produces a visible fallback state, never a white screen.
 - HOLDOUT remains locked and is not used to tune parameters.
