@@ -2,6 +2,7 @@ const {spawnSync}=require('node:child_process');
 const files=[
   'tests/annotation-layout.test.js',
   'tests/annotation-regression-fixtures.test.js',
+  'tests/structure-plugin-renderer-collision.test.js',
   'tests/session-profile.test.js',
   'tests/liquidity-engine.test.js',
   'tests/liquidity-plugin-contract.test.js',
