@@ -32,7 +32,7 @@
   const symbolThemes=new Map();
   for(const [theme,symbols] of Object.entries(REGISTRY))for(const s of symbols){const k=String(s).toUpperCase();if(!symbolThemes.has(k))symbolThemes.set(k,[]);symbolThemes.get(k).push(theme)}
   const ADDRESS_REGISTRY=new Map();
-  const num=v=>Number.isFinite(Number(v))?Number(v):null;
+  const num=v=>v==null||v===''?null:(Number.isFinite(Number(v))?Number(v):null);
   const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
   function baseSymbol(m={}){const direct=String(m.baseAsset||'').trim().toUpperCase();if(direct)return direct;const s=String(m.symbol||'').toUpperCase().replace(/\s+/g,'');if(s.includes('/'))return s.split('/')[0];return s.replace(/(USDT|USDC|FDUSD|BUSD|BTC|ETH|BNB)$/,'')}
   function ecosystemTheme(chain){const c=String(chain||'').toLowerCase();if(c==='solana')return'Solana Ecosystem';if(c==='base')return'Base Ecosystem';if(c==='ethereum'||c==='eth')return'Ethereum Ecosystem';return null}
