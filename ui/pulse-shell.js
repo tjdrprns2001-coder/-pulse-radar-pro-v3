@@ -2,6 +2,7 @@
   const V={
     scanner:{title:'시장 스캐너',desc:'현물·선물 전체 종목 탐색',path:'/index.html'},
     analysis:{title:'분석',desc:'구조 · SMC · 단테 · MTF · 모멘텀',path:'/unified-chart.html'},
+    multi:{title:'다중 차트',desc:'같은 종목 · 독립 TF · SMC/ICT 비교',path:'/multi-chart.html'},
     intel:{title:'코인 정보',desc:'종목 정보 · 일정 · 데이터',path:'/coin-intel.html'},
     ict:{title:'ICT · IPDA 서사',desc:'유동성 · MSS/CISD · PD Array · 프렉탈',path:'/ict-narrative-lab.html'},
     liquidity:{title:'유동성 랩',desc:'Liquidity · FVG · Sweep 연구',path:'/liquidity-lab.html'},
