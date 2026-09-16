@@ -8,6 +8,7 @@
     "gate:release": "node scripts/release-gate.js",
     "test:foundation": "node scripts/verify-milestone1.js",
     "test:chart": "node scripts/verify-milestone2.js",
-    "verify": "npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "test:smc": "node scripts/verify-milestone3.js",
+    "verify": "npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
