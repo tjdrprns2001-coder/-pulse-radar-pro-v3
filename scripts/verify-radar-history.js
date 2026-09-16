@@ -30,4 +30,16 @@ assert.equal(history._debugCount(id),1,'same timestamp should replace instead of
 history.record({...base,price:103},100000+7*60000);
 assert(history._debugOldestTs(id)>=100000+60000,'history older than retention should be pruned');
 
+history.reset();
+for(let i=0;i<100;i++)history.record({...base,price:100+i/100},200000+i*100);
+assert(history._debugCount(id)<=6,'high-frequency ticks should be sampled instead of storing every update');
+
+history.reset();
+history.record({id,price:100,quoteVolumeUsd:null,txCount:null},0);
+history.record({id,price:101,quoteVolumeUsd:null,txCount:null},60000);
+const missing=history.metricsFor(id,{id,price:101,quoteVolumeUsd:null,txCount:null},60000);
+assert.strictEqual(missing.volumeDelta1m,null,'missing volume must remain null');
+assert.strictEqual(missing.txDelta1m,null,'missing tx count must remain null');
+assert(history.sampleMs>=1000,'history must expose a bounded sampling interval');
+
 console.log('radar history behavior PASS');
