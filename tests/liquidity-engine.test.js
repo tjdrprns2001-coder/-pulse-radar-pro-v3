@@ -73,3 +73,51 @@ test('prefix outputs do not change when future candles are appended',()=>{
   const shape=x=>x.levels.map(v=>({type:v.type,side:v.side,price:v.price,state:v.state,sourceId:v.sourceId}));
   assert.deepEqual(shape(a),shape(b));
 });
+
+test('enriches every source sweep and upgrades only qualifying sweeps to GRAB',()=>{
+  const src={...input(),
+    sweeps:[
+      {index:3,dir:'down',side:'high',level:109,excessAtr:.28,source:'EQH'},
+      {index:4,dir:'up',side:'low',level:100,excessAtr:.08,source:'swing'}
+    ],
+    displacement:[{index:4,dir:'down',quality:82}],
+    mss:[{index:4,dir:'down',quality:80}]
+  };
+  const out=Liquidity.analyzeLiquidity(src);
+  assert.equal(out.sweeps.length,2);
+  for(const sw of out.sweeps){
+    assert.equal(sw.baseType,'SWEEP');
+    assert.ok(['NORMAL','GRAB'].includes(sw.variant));
+    assert.equal(sw.definitionVersion,'SWEEP_v2');
+    assert.equal(typeof sw.penetrationAtr,'number');
+    assert.equal(typeof sw.reclaimBars,'number');
+    assert.equal(typeof sw.displacementConfirmed,'boolean');
+    assert.ok(sw.sourceSweepId);
+  }
+  const grabs=out.sweeps.filter(x=>x.variant==='GRAB');
+  assert.equal(grabs.length,1);
+  assert.equal(grabs[0].sourceSweepId,out.sweeps[0].sourceSweepId);
+  assert.equal(grabs[0].grabDefinitionVersion,'GRAB_v1');
+});
+
+test('never creates a Grab when there is no source Sweep',()=>{
+  const out=Liquidity.analyzeLiquidity({...input(),sweeps:[],displacement:[{index:4,dir:'down',quality:99}],mss:[{index:4,dir:'down'}]});
+  assert.equal(out.sweeps.length,0);
+  assert.equal(out.sweeps.filter(x=>x.variant==='GRAB').length,0);
+});
+
+test('Sweep/Grab classification is deterministic and ignores evidence beyond the fixed window',()=>{
+  const sourceSweep={index:2,dir:'down',side:'high',level:108,excessAtr:.25,source:'EQH'};
+  const base={...input(),sweeps:[sourceSweep],displacement:[],mss:[]};
+  const a=Liquidity.analyzeLiquidity(base);
+  const b=Liquidity.analyzeLiquidity(base);
+  assert.deepEqual(a.sweeps,b.sweeps);
+  const late=Liquidity.analyzeLiquidity({...base,displacement:[{index:9,dir:'down',quality:99}],mss:[{index:9,dir:'down'}]});
+  assert.equal(a.sweeps[0].variant,late.sweeps[0].variant);
+});
+
+test('exports fixed deterministic Sweep/Grab v1 parameters',()=>{
+  assert.equal(Liquidity.SWEEP_PARAMS_V1.sweepVersion,'SWEEP_v2');
+  assert.equal(Liquidity.SWEEP_PARAMS_V1.grabVersion,'GRAB_v1');
+  assert.ok(Liquidity.SWEEP_PARAMS_V1.confirmationWindowBars>=1);
+});
