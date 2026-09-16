@@ -37,5 +37,6 @@ jobs:
           if [ -f tests/annotation-layout.test.js ]; then node tests/annotation-layout.test.js; fi
           if [ -f tests/annotation-regression-fixtures.test.js ]; then node tests/annotation-regression-fixtures.test.js; fi
           if [ -f tests/session-profile.test.js ]; then node tests/session-profile.test.js; fi
+          if [ -f tests/liquidity-engine.test.js ]; then node tests/liquidity-engine.test.js; fi
       - name: Verify repository
         run: npm run verify
