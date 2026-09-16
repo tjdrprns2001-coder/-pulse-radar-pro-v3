@@ -1,0 +1,2 @@
+const handler=require('../../api/market-flow');
+exports.handler=async event=>{let statusCode=200,body='{}',headers={};const req={query:Object.fromEntries(new URLSearchParams(event.rawQuery||''))};const res={setHeader:(k,v)=>headers[k]=v,status:c=>({json:o=>{statusCode=c;body=JSON.stringify(o);return o}})};await handler(req,res);return{statusCode,headers:{'content-type':'application/json',...headers},body}};
