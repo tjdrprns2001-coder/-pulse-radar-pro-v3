@@ -1,0 +1,1 @@
+const fs=require('fs');const p='ui/radar-core.js';if(!fs.existsSync(p))throw new Error('radar core missing');const s=fs.readFileSync(p,'utf8');['scoreMarket','rankMarkets','PRE_SURGE','SURGE','LIQUIDITY_RISK'].forEach(k=>{if(!s.includes(k))throw new Error('missing '+k)});console.log('radar core contract PASS');
