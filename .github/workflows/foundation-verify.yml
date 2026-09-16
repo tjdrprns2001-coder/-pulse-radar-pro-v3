@@ -11,6 +11,7 @@ on:
       - feat/unified-v2-m3-2-collision
       - feat/realtime-crypto-radar
     paths:
+      - '.github/workflows/**'
       - 'api/**'
       - 'ui/**'
       - 'tests/**'
@@ -25,6 +26,7 @@ on:
       - 'docs/superpowers/**'
   pull_request:
     paths:
+      - '.github/workflows/**'
       - 'api/**'
       - 'ui/**'
       - 'tests/**'
