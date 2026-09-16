@@ -1,6 +1,6 @@
 {
   "name": "pulse-radar-pro-v3",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "private": true,
   "scripts": {
     "check:calibration": "node scripts/calibration-self-check.js",
@@ -20,6 +20,9 @@
     "test:onchain-public": "node scripts/verify-onchain-public.js",
     "test:onchain-depth": "node scripts/verify-onchain-depth.js",
     "test:onchain-api": "node scripts/verify-onchain-api.js",
+    "test:market-flow-dex": "node scripts/verify-market-flow-dex.js",
+    "test:market-flow-cex": "node scripts/verify-market-flow-cex.js",
+    "test:market-flow-aggregate": "node scripts/verify-market-flow-aggregate.js",
     "test:radar-onchain-ui": "node scripts/verify-radar-onchain-ui.js",
     "test:radar-alerts": "node scripts/verify-radar-alerts.js",
     "test:radar-api": "node scripts/verify-radar-api.js",
@@ -27,7 +30,7 @@
     "test:radar-ui": "node scripts/verify-radar-ui.js",
     "test:radar-shell": "node scripts/verify-radar-shell.js",
     "test:netlify-temp": "node scripts/verify-netlify-temp.js",
-    "test:radar": "npm run test:radar-core && npm run test:radar-onchain-score && npm run test:radar-history && npm run test:radar-themes && npm run test:radar-themes-v2 && npm run test:onchain-core && npm run test:onchain-public && npm run test:onchain-depth && npm run test:onchain-api && npm run test:radar-onchain-ui && npm run test:radar-alerts && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell && npm run test:netlify-temp",
+    "test:radar": "npm run test:radar-core && npm run test:radar-onchain-score && npm run test:radar-history && npm run test:radar-themes && npm run test:radar-themes-v2 && npm run test:onchain-core && npm run test:onchain-public && npm run test:onchain-depth && npm run test:onchain-api && npm run test:market-flow-dex && npm run test:market-flow-cex && npm run test:market-flow-aggregate && npm run test:radar-onchain-ui && npm run test:radar-alerts && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell && npm run test:netlify-temp",
     "verify": "npm run test:radar && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
