@@ -4,6 +4,7 @@
 Run `npm run verify` before updating `main`.
 
 Required PASS conditions:
+- Milestone 3.1 declutter/mobile contract tests pass with zero failures.
 - SMC v2 Milestone 3 tests pass with zero failures.
 - Unified Chart Milestone 2 tests pass with zero failures.
 - Foundation shell/preset/data-state tests pass with zero failures.
@@ -18,7 +19,12 @@ Required PASS conditions:
 ## Manual pre-main review
 - [ ] Mobile shows exactly one product topbar and one bottom navigation.
 - [ ] No floating shell control covers chart candles.
+- [ ] Mobile symbol input shows complete `USDT` suffix without clipping.
+- [ ] Mobile SMC summary remains a compact horizontal strip instead of wrapping over the chart.
+- [ ] Repeated Sweep markers are capped and rendered compactly; no vertical `SWP` wall.
+- [ ] Structure labels share one total rendering budget and omit old low-priority markers.
 - [ ] Clean/Structure/SMC/Dante/Full presets persist across reload.
+- [ ] Global preset budgets remain compatible with Foundation; viewport-specific caps are applied by render policy.
 - [ ] Rendering budgets are enforced by preset policy.
 - [ ] Live/Confirmed/Partial/Stale/Insufficient-history/API-degraded states are distinguishable.
 - [ ] Unified Chart loads the pinned Lightweight Charts 5.2.1 build.
@@ -34,7 +40,7 @@ Required PASS conditions:
 - [ ] Ordinary OB retests are never labeled Breaker without violation plus opposite MSS.
 - [ ] Premium/Discount and OTE are context only, not entry instructions.
 - [ ] HTF Bias Lock reports aligned/counter-trend/neutral and does not hard-disable setups.
-- [ ] SMC/Full respect the preset zone budget; Clean/Structure keep SMC layers hidden.
+- [ ] SMC/Full respect viewport render budgets; Clean/Structure keep SMC layers hidden.
 - [ ] Legacy `/technique-lab.html` remains reachable for rollback.
 - [ ] Library/API failure produces a visible fallback state, never a white screen.
 - HOLDOUT remains locked and is not used to tune parameters.
