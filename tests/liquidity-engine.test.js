@@ -121,3 +121,52 @@ test('exports fixed deterministic Sweep/Grab v1 parameters',()=>{
   assert.equal(Liquidity.SWEEP_PARAMS_V1.grabVersion,'GRAB_v1');
   assert.ok(Liquidity.SWEEP_PARAMS_V1.confirmationWindowBars>=1);
 });
+
+test('detects multi-candle low-overlap displacement as Liquidity Void',()=>{
+  const voidCandles=[
+    c('2026-07-20T13:00:00Z',100,103,99.5,102.8),
+    c('2026-07-20T14:00:00Z',103.2,107,103.1,106.8),
+    c('2026-07-20T15:00:00Z',107.3,112,107.2,111.8),
+    c('2026-07-20T16:00:00Z',111.8,113,111,112)
+  ];
+  const out=Liquidity.analyzeLiquidity({...input(voidCandles),pivots:[],equalLevels:[],fvg:[{id:'FVG-up-2',kind:'FVG',low:103,high:107}]});
+  assert.ok(out.voids.length>=1);
+  const v=out.voids[0];
+  assert.equal(v.kind,'VOID');
+  assert.equal(v.definitionVersion,'VOID_v1');
+  assert.notEqual(v.id,'FVG-up-2');
+});
+
+test('an isolated three-candle FVG does not automatically become a Liquidity Void',()=>{
+  const fvgOnly=[
+    c('2026-07-21T13:00:00Z',100,102,99,101),
+    c('2026-07-21T14:00:00Z',101,102.2,100.5,101.5),
+    c('2026-07-21T15:00:00Z',103,105,103,104)
+  ];
+  const out=Liquidity.analyzeLiquidity({...input(fvgOnly),pivots:[],equalLevels:[],fvg:[{id:'FVG-up-2',kind:'FVG',low:102,high:103}]});
+  assert.equal(out.voids.length,0);
+});
+
+test('Inducement remains conservative candidate-only IND? with source links',()=>{
+  const indCandles=[
+    c('2026-07-22T13:00:00Z',104,106,102,103),
+    c('2026-07-22T14:00:00Z',103,104,98.5,100),
+    c('2026-07-22T15:00:00Z',100,106,99,105),
+    c('2026-07-22T16:00:00Z',105,112,104,111)
+  ];
+  const src={...input(indCandles),
+    pivots:[{id:'majorH',type:'H',price:120,index:0}],
+    equalLevels:[{id:'smallEql',type:'EQL',price:99,lastIndex:1}],
+    sweeps:[{id:'smallSweep',index:1,dir:'up',side:'low',level:99,excessAtr:.2,source:'EQL'}],
+    displacement:[{index:2,dir:'up',quality:80}],mss:[]
+  };
+  const out=Liquidity.analyzeLiquidity(src);
+  assert.ok(out.inducements.length>=1);
+  for(const ind of out.inducements){
+    assert.equal(ind.label,'IND?');
+    assert.equal(ind.confidence,'candidate');
+    assert.equal(ind.definitionVersion,'INDUCEMENT_CANDIDATE_v1');
+    assert.notEqual(ind.confirmed,true);
+    assert.ok(ind.sourceIds.length>=3);
+  }
+});
