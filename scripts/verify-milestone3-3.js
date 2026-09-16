@@ -6,6 +6,7 @@ const files=[
   'tests/session-profile.test.js',
   'tests/liquidity-engine.test.js',
   'tests/liquidity-plugin-contract.test.js',
+  'tests/liquidity-lab-dom-contract.test.js',
   'tests/ict-context-engine.test.js',
   'tests/ict-presentation.test.js',
   'tests/multi-chart-mode-registry.test.js',
