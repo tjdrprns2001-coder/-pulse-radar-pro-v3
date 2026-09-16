@@ -8,8 +8,10 @@
   "functions": {
     "api/index.js": { "maxDuration": 20 }
   },
+  "redirects": [
+    { "source": "/", "destination": "/scanner-shell-v13.html", "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/scanner-shell-v13.html" },
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
     { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
     { "source": "/api/backtest", "destination": "/api/index?route=backtest" },
