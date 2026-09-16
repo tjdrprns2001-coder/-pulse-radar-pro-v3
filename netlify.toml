@@ -15,6 +15,96 @@
   force = true
 
 [[redirects]]
+  from = "/api/backtest"
+  to = "/.netlify/functions/api-index?route=backtest"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/calibration-freeze"
+  to = "/.netlify/functions/api-index?route=calibration-freeze"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/calibration-health"
+  to = "/.netlify/functions/api-index?route=calibration-health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/detail"
+  to = "/.netlify/functions/api-index?route=detail"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/historical-structure-study"
+  to = "/.netlify/functions/api-index?route=historical-structure-study"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/htf"
+  to = "/.netlify/functions/api-index?route=htf"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/independent-temporal"
+  to = "/.netlify/functions/api-index?route=independent-temporal"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/market"
+  to = "/.netlify/functions/api-index?route=market"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/micro-features"
+  to = "/.netlify/functions/api-index?route=micro-features"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/pattern"
+  to = "/.netlify/functions/api-index?route=pattern"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/pattern-validation"
+  to = "/.netlify/functions/api-index?route=pattern-validation"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/structure-study"
+  to = "/.netlify/functions/api-index?route=structure-study"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/structure"
+  to = "/.netlify/functions/api-index?route=structure"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/temporal-features"
+  to = "/.netlify/functions/api-index?route=temporal-features"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/trendline-study"
+  to = "/.netlify/functions/api-index?route=trendline-study"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/analysis"
   to = "/analysis-shell-v12.html"
   status = 200
