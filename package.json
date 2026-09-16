@@ -7,6 +7,7 @@
     "freeze:calibration": "node scripts/print-calibration-freeze.js",
     "gate:release": "node scripts/release-gate.js",
     "test:foundation": "node scripts/verify-milestone1.js",
-    "verify": "npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "test:chart": "node scripts/verify-milestone2.js",
+    "verify": "npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
