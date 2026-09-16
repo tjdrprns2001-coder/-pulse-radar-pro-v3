@@ -15,6 +15,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/market-flow*"
+  to = "/.netlify/functions/market-flow:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/index"
   to = "/.netlify/functions/api-index"
   status = 200
