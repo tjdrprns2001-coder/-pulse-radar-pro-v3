@@ -7,6 +7,7 @@ on:
       - feat/unified-v2-m2-chart
       - feat/unified-v2-m3-smc
       - feat/unified-v2-m3-1-declutter
+      - feat/unified-v2-m3-2-collision
   pull_request:
     paths:
       - 'ui/**'
