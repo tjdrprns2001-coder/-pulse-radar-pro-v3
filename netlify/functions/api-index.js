@@ -1,11 +1,29 @@
 const apiHandler = require('../../api/index.js');
 
+const knownRoutes = new Set([
+  'backtest','calibration-freeze','calibration-health','detail','historical-structure-study','htf',
+  'independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
+  'structure','temporal-features','trendline-study'
+]);
+
+function inferRoute(event, query) {
+  if (query && query.route) return String(query.route);
+  const path = String(event.path || event.rawPath || event.rawUrl || '');
+  const clean = path.split('?')[0].replace(/\/+$/,'');
+  const match = clean.match(/\/api\/([^/]+)$/);
+  const candidate = match && match[1];
+  return candidate && knownRoutes.has(candidate) ? candidate : '';
+}
+
 exports.handler = async function(event) {
   let statusCode = 200;
   const headers = {};
   let payload = '';
+  const query = { ...(event.queryStringParameters || {}) };
+  const route = inferRoute(event, query);
+  if (route) query.route = route;
   const req = {
-    query: event.queryStringParameters || {},
+    query,
     method: event.httpMethod || 'GET',
     headers: event.headers || {},
     body: event.body || null,
