@@ -1,0 +1,1 @@
+const fs=require('fs');const p='ui/radar-stream.js';if(!fs.existsSync(p))throw new Error('radar stream missing');const s=fs.readFileSync(p,'utf8');['!ticker@arr','connect','disconnect','reconnect','onTick'].forEach(k=>{if(!s.includes(k))throw new Error('missing '+k)});console.log('radar stream contract PASS');
