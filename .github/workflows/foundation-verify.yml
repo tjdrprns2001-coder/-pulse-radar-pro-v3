@@ -32,9 +32,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify Milestone 3.3 annotation RED/GREEN cycle
+      - name: Verify Milestone 3.3 RED/GREEN cycle
         run: |
           if [ -f tests/annotation-layout.test.js ]; then node tests/annotation-layout.test.js; fi
           if [ -f tests/annotation-regression-fixtures.test.js ]; then node tests/annotation-regression-fixtures.test.js; fi
+          if [ -f tests/session-profile.test.js ]; then node tests/session-profile.test.js; fi
       - name: Verify repository
         run: npm run verify
