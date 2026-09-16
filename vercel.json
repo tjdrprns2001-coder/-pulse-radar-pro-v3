@@ -1,18 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {
-    "deploymentEnabled": {
-      "calibration-lab": false
-    }
-  },
+  "git": {"deploymentEnabled": {"calibration-lab": false}},
   "functions": {
     "api/index.js": { "maxDuration": 20 },
     "api/radar.js": { "maxDuration": 20 },
-    "api/onchain-flow.js": { "maxDuration": 20 }
+    "api/onchain-flow.js": { "maxDuration": 20 },
+    "api/market-flow.js": { "maxDuration": 20 }
   },
-  "redirects": [
-    { "source": "/", "destination": "/pulse-unified.html", "permanent": false }
-  ],
+  "redirects": [{ "source": "/", "destination": "/pulse-unified.html", "permanent": false }],
   "rewrites": [
     { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
     { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
