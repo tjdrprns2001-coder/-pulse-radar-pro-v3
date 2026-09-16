@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+for(const p of ['api/onchain-flow.js','lib/onchain/providers.js','netlify/functions/onchain-flow.js'])assert(fs.existsSync(p),'missing '+p);
+const api=fs.readFileSync('api/onchain-flow.js','utf8');
+for(const k of ['updatedAt','stale','providerHealth','tokenFlows','themeFlows','coverage','confidence','solana','ethereum','base','bsc'])assert(api.includes(k),'missing api field '+k);
+assert(!/(sk-|api[_-]?key\s*[:=]\s*['"][^'"]+)/i.test(api),'api must not embed provider secrets');
+const providers=fs.readFileSync('lib/onchain/providers.js','utf8');
+for(const k of ['HELIUS_API_KEY','ALCHEMY_API_KEY','ONCHAIN_FLOW_FEED_URL','degraded'])assert(providers.includes(k),'missing provider strategy '+k);
+const netlify=fs.readFileSync('netlify.toml','utf8');assert(netlify.includes('/api/onchain-flow'),'netlify onchain route missing');
+const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));assert(vercel.functions['api/onchain-flow.js'],'vercel onchain function config missing');
+console.log('onchain api contract PASS');
