@@ -1,0 +1,1 @@
+const fs=require('fs');const h=fs.readFileSync('pulse-unified.html','utf8');const s=fs.readFileSync('ui/pulse-shell.js','utf8');if(!h.includes('data-view="radar"'))throw new Error('radar nav missing');if(!s.includes("radar:{"))throw new Error('radar route missing');console.log('radar shell contract PASS');
