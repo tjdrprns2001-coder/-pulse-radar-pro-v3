@@ -1,0 +1,29 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/radar*"
+  to = "/.netlify/functions/radar:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/analysis"
+  to = "/analysis-shell-v12.html"
+  status = 200
+
+[[redirects]]
+  from = "/liquidity"
+  to = "/liquidity-lab-v2.html"
+  status = 200
+
+[[redirects]]
+  from = "/radar"
+  to = "/radar.html"
+  status = 200
+
+[[redirects]]
+  from = "/"
+  to = "/pulse-unified.html"
+  status = 200
