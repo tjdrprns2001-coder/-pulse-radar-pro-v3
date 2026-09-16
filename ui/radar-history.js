@@ -1,7 +1,8 @@
 (function(g){
   const RETENTION_MS=6*60*1000;
+  const SAMPLE_MS=2000;
   const history=new Map();
-  const n=v=>Number.isFinite(Number(v))?Number(v):null;
+  const n=v=>v==null||v===''?null:(Number.isFinite(Number(v))?Number(v):null);
   const marketId=m=>m?.id||`${m?.source||'unknown'}:${m?.marketType||'unknown'}:${m?.chain||''}:${m?.pairAddress||m?.symbol||'unknown'}`;
   function prune(list,now){
     const cutoff=now-RETENTION_MS;
@@ -15,6 +16,7 @@
     const list=history.get(id)||[];
     const last=list[list.length-1];
     if(last&&last.ts===obs.ts)list[list.length-1]=obs;
+    else if(last&&obs.ts>last.ts&&obs.ts-last.ts<SAMPLE_MS)list[list.length-1]=obs;
     else if(!last||last.ts<obs.ts)list.push(obs);
     else{
       const i=list.findIndex(x=>x.ts>=obs.ts);
@@ -47,6 +49,6 @@
     };
   }
   function reset(){history.clear()}
-  const api={record,metricsFor,reset,_debugCount:id=>(history.get(id)||[]).length,_debugOldestTs:id=>(history.get(id)||[])[0]?.ts??null,retentionMs:RETENTION_MS};
+  const api={record,metricsFor,reset,_debugCount:id=>(history.get(id)||[]).length,_debugOldestTs:id=>(history.get(id)||[])[0]?.ts??null,retentionMs:RETENTION_MS,sampleMs:SAMPLE_MS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;g.PulseRadarHistory=api;
 })(typeof window!=='undefined'?window:globalThis);
