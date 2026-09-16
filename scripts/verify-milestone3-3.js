@@ -16,7 +16,8 @@ const files=[
   'tests/snapshot-builder.test.js',
   'tests/narrative-renderer.test.js',
   'tests/flow-summary-engine.test.js',
-  'tests/snapshot-analysis-ui-contract.test.js'
+  'tests/snapshot-analysis-ui-contract.test.js',
+  'tests/trendline-patterns-v2.test.js'
 ];
 for(const file of files){
   const result=spawnSync(process.execPath,['--test',file],{stdio:'inherit'});
