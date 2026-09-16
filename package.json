@@ -1,6 +1,6 @@
 {
   "name": "pulse-radar-pro-v3",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "private": true,
   "scripts": {
     "check:calibration": "node scripts/calibration-self-check.js",
@@ -11,6 +11,12 @@
     "test:smc": "node scripts/verify-milestone3.js",
     "test:declutter": "node scripts/verify-milestone3-1.js",
     "test:collision": "node scripts/verify-milestone3-2.js",
-    "verify": "npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "test:radar-core": "node scripts/verify-radar-core.js",
+    "test:radar-api": "node scripts/verify-radar-api.js",
+    "test:radar-stream": "node scripts/verify-radar-stream.js",
+    "test:radar-ui": "node scripts/verify-radar-ui.js",
+    "test:radar-shell": "node scripts/verify-radar-shell.js",
+    "test:radar": "npm run test:radar-core && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell",
+    "verify": "npm run test:radar && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
