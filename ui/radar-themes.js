@@ -28,7 +28,7 @@
     'Base Ecosystem':['AERO','DEGEN','BRETT','VIRTUAL'],
     'Ethereum Ecosystem':['ETH','UNI','AAVE','LDO','EIGEN','LINK','MKR']
   };
-  const PRIMARY_PRIORITY=['Stablecoin','L1','L2','AI','MEME','DeFi','RWA','Gaming','DePIN','Privacy','NFT','SocialFi','Lending','Liquid Staking','Restaking','Oracle','Storage','Payments','Exchange Token','Perp DEX','Launchpad','DEX','BTC Ecosystem','Solana Ecosystem','Base Ecosystem','Ethereum Ecosystem'];
+  const PRIMARY_PRIORITY=['Stablecoin','L1','L2','AI','MEME','DeFi','RWA','Gaming','DePIN','Privacy','NFT','SocialFi','Lending','Liquid Staking','Restaking','Oracle','Storage','Payments','Exchange Token','Perp DEX','DEX','Launchpad','BTC Ecosystem','Solana Ecosystem','Base Ecosystem','Ethereum Ecosystem'];
   const symbolThemes=new Map();
   for(const [theme,symbols] of Object.entries(REGISTRY))for(const s of symbols){const k=String(s).toUpperCase();if(!symbolThemes.has(k))symbolThemes.set(k,[]);symbolThemes.get(k).push(theme)}
   const ADDRESS_REGISTRY=new Map();
