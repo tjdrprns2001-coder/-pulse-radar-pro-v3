@@ -1,0 +1,1 @@
+const {spawnSync}=require('node:child_process');const files=['tests/unified-chart-contract.test.js','tests/chart-core.test.js','tests/chart-data.test.js'];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);
