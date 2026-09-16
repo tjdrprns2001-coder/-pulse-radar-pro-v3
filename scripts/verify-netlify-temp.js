@@ -8,6 +8,10 @@ if(!/from\s*=\s*"\/api\/radar\*"/.test(cfg))throw new Error('radar redirect miss
 if(!/to\s*=\s*"\/.netlify\/functions\/radar:splat"/.test(cfg))throw new Error('radar function target missing');
 if(!/from\s*=\s*"\/api\/index"/.test(cfg))throw new Error('legacy api redirect missing');
 if(!/to\s*=\s*"\/.netlify\/functions\/api-index"/.test(cfg))throw new Error('legacy api function target missing');
+for(const route of ['market','detail','backtest','calibration-freeze','calibration-health','historical-structure-study','htf','independent-temporal','micro-features','pattern','pattern-validation','structure-study','structure','temporal-features','trendline-study']){
+  if(!cfg.includes(`from = "/api/${route}"`))throw new Error('missing Netlify route '+route);
+  if(!cfg.includes(`to = "/.netlify/functions/api-index?route=${route}"`))throw new Error('missing Netlify target '+route);
+}
 if(!/require\(['"]\.\.\/\.\.\/api\/radar\.js['"]\)/.test(radar))throw new Error('shared radar handler not reused');
 if(!/require\(['"]\.\.\/\.\.\/api\/index\.js['"]\)/.test(legacy))throw new Error('shared legacy handler not reused');
 for(const s of [radar,legacy])if(!/queryStringParameters/.test(s)||!/statusCode/.test(s)||!/headers/.test(s))throw new Error('netlify adapter contract missing');
