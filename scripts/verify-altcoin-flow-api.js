@@ -1,0 +1,12 @@
+const assert=require('assert');
+const api=require('../api/market-flow');
+const p=api._buildFrom({providerHealth:{dexscreener:'live',binance:'live'},dexFlows:[{baseAsset:'SOL',chain:'solana',venue:'raydium',volume5mUsd:120000,volume1hUsd:300000,buys5m:80,sells5m:20,liquidityUsd:900000,sourceConfidence:80}],cexFlows:[{baseAsset:'SOL',venue:'Binance',marketType:'spot',quoteVolumeUsd:1000000},{baseAsset:'SOL',venue:'OKX',marketType:'spot',quoteVolumeUsd:500000}],onchainThemeFlows:[]});
+assert(Array.isArray(p.coinFlows));
+assert(p.coinFlows.some(x=>x.baseAsset==='SOL'));
+const sol=p.coinFlows.find(x=>x.baseAsset==='SOL');
+assert(sol.anomalyScore>=0&&sol.anomalyScore<=100);
+assert.strictEqual(sol.volumeAnomaly1m,null);
+assert(sol.volumeAnomaly5m!=null);
+assert(['WATCH','PRE-SURGE','SURGE','RISK'].includes(sol.signal));
+assert(p.coinFlowCoverage&&p.coinFlowCoverage.coins>=1);
+console.log('altcoin flow api PASS');
