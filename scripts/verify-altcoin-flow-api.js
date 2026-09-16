@@ -1,26 +1,9 @@
 const assert=require('assert');
 const api=require('../api/market-flow');
-const p=api._buildFrom({
-  providerHealth:{dexscreener:'live',binance:'live'},
-  dexFlows:[{baseAsset:'SOL',chain:'solana',venue:'raydium',volume5mUsd:120000,volume1hUsd:300000,buys5m:80,sells5m:20,liquidityUsd:900000,liquidityImpulse:.12,sourceConfidence:80}],
-  cexFlows:[{baseAsset:'SOL',venue:'Binance',marketType:'spot',quoteVolumeUsd:1000000},{baseAsset:'SOL',venue:'OKX',marketType:'spot',quoteVolumeUsd:500000}],
-  liveRows:[{baseAsset:'SOL',venue:'Binance',marketType:'spot',change1m:.4,volumeDelta1m:300000,volumeDelta5m:700000}],
-  historyByAsset:{SOL:{volume1m:[100000,110000,90000],volume5m:[250000,260000,240000]}},
-  onchainByAsset:{SOL:{netFlow1hUsd:250000,confidence:75}},
-  onchainThemeFlows:[]
-});
-assert(Array.isArray(p.coinFlows));
-assert(p.coinFlows.some(x=>x.baseAsset==='SOL'));
-const sol=p.coinFlows.find(x=>x.baseAsset==='SOL');
-assert(sol.anomalyScore>=0&&sol.anomalyScore<=100);
-assert(sol.volumeAnomaly1m>1);
-assert(sol.volumeAnomaly5m>1);
-assert(sol.onchainNetFlowUsd>0);
-assert(sol.evidenceSourceCount>=2);
-assert(['WATCH','PRE-SURGE','SURGE','RISK'].includes(sol.signal));
-assert(p.coinFlowCoverage&&p.coinFlowCoverage.coins>=1);
-assert(p.coinFlowCoverage.altcoins>=1);
-assert(p.coinFlowCoverage.highConfidence>=0);
-assert(Array.isArray(api._searchTerms)&&api._searchTerms.length>=12);
-assert.strictEqual(typeof api._chunk,'function');
-console.log('altcoin flow api PASS');
+const p=api._buildFrom({providerHealth:{dexscreener:'live',binance:'live'},dexFlows:[{baseAsset:'SOL',chain:'solana',venue:'raydium',volume5mUsd:120000,volume1hUsd:300000,buys5m:80,sells5m:20,liquidityUsd:900000,liquidityImpulse:.12,sourceConfidence:80}],cexFlows:[{baseAsset:'SOL',venue:'Binance',marketType:'spot',quoteVolumeUsd:1000000},{baseAsset:'SOL',venue:'OKX',marketType:'spot',quoteVolumeUsd:500000}],liveRows:[{baseAsset:'SOL',venue:'Binance',marketType:'spot',change1m:.4,volumeDelta1m:300000,volumeDelta5m:700000}],historyByAsset:{SOL:{volume1m:[100000,110000,90000],volume5m:[250000,260000,240000]}},onchainByAsset:{SOL:{netFlow1hUsd:250000,confidence:75}},derivativesFlows:[{baseAsset:'SOL',venue:'Binance',openInterestChange5m:.2,takerBuySellRatio:1.3,confidence:90,freshnessMs:1000}],microstructureFlows:[{baseAsset:'SOL',venue:'Binance',bookImbalance:.25,tradeImbalance:.3,topSpreadBps:3,confidence:90,freshnessMs:1000}],onchainThemeFlows:[]});
+for(const k of ['updatedAt','stale','providerHealth','dexFlows','cexFlows','tokenFlows','themeFlows','coinFlows','coinFlowCoverage','coverage','confidence'])assert(Object.prototype.hasOwnProperty.call(p,k),`missing legacy field ${k}`);
+assert(Array.isArray(p.derivativesFlows));assert(Array.isArray(p.microstructureFlows));assert('derivativesMarkets' in p.coverage);assert('microstructureMarkets' in p.coverage);assert('derivativesVenues' in p.coverage);assert('microstructureVenues' in p.coverage);
+const sol=p.coinFlows.find(x=>x.baseAsset==='SOL');assert(sol);assert(sol.anomalyScore>=0&&sol.anomalyScore<=100);assert(sol.volumeAnomaly1m>1);assert(sol.volumeAnomaly5m>1);assert(sol.onchainNetFlowUsd>0);assert(sol.evidenceSourceCount>=2);assert(sol.derivativesVenueBreadth>=1);assert(['WATCH','PRE-SURGE','SURGE','RISK'].includes(sol.signal));
+const picked=api._selectDeepCandidates({coinFlows:[{baseAsset:'AAA',signal:'PRE-SURGE',anomalyScore:80,confidence:80},{baseAsset:'BBB',signal:'WATCH',anomalyScore:10,confidence:20},{baseAsset:'USDT',signal:'SURGE',anomalyScore:99,confidence:99}],dexFlows:[],cexFlows:[],limit:40});assert(picked.includes('AAA'));assert.strictEqual(picked.includes('BBB'),false);assert.strictEqual(picked.includes('USDT'),false);assert(picked.length<=40);
+assert(Array.isArray(api._searchTerms)&&api._searchTerms.length>=12);assert.strictEqual(typeof api._chunk,'function');assert.strictEqual(typeof api._settleDeepProviders,'function');
+(async()=>{const deep=await api._settleDeepProviders({good:async()=>({health:'live',derivativesFlows:[{baseAsset:'AAA'}],microstructureFlows:[]}),bad:async()=>{throw new Error('provider down')}});assert(deep.derivativesFlows.some(x=>x.baseAsset==='AAA'));assert.strictEqual(deep.health['deep-good'],'live');assert(Object.values(deep.health).includes('down'));console.log('altcoin flow api PASS')})().catch(e=>{console.error(e);process.exit(1)});
