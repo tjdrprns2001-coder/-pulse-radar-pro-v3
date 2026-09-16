@@ -14,8 +14,8 @@ const rows=buildCoinFlows({
     {baseAsset:'SOL',venue:'OKX',marketType:'spot',quoteVolumeUsd:800000}
   ],
   liveRows:[
-    {baseAsset:'SOL',marketType:'spot',change1m:.4,change5m:1.2,quoteVolumeUsd:1500000,volumeDelta1m:400000,volumeDelta5m:900000,liquidityUsd:5000000},
-    {baseAsset:'SOL',marketType:'futures',change1m:.5,change5m:1.4,quoteVolumeUsd:2200000,volumeDelta1m:600000,volumeDelta5m:1200000}
+    {baseAsset:'SOL',venue:'Binance',marketType:'spot',change1m:.4,change5m:1.2,quoteVolumeUsd:1500000,volumeDelta1m:400000,volumeDelta5m:900000,liquidityUsd:5000000},
+    {baseAsset:'SOL',source:'binance',marketType:'futures',change1m:.5,change5m:1.4,quoteVolumeUsd:2200000,volumeDelta1m:600000,volumeDelta5m:1200000}
   ],
   historyByAsset:{SOL:{volume1m:[100000,110000,90000,120000,100000],volume5m:[300000,320000,280000,310000,300000],volume15m:[700000,680000,710000,690000]}},
   onchainByAsset:{SOL:{netFlow1hUsd:250000,confidence:70}},
@@ -31,6 +31,7 @@ assert(sol.cexVenueBreadth>=2);
 assert.strictEqual(sol.spotFuturesAligned,true);
 assert(['WATCH','PRE-SURGE','SURGE','RISK'].includes(sol.signal));
 assert(sol.confidence>0);
+assert.strictEqual(sol.evidenceSourceCount,4,'Binance/binance must count as one source; expected Binance + OKX + DEX + on-chain');
 
 const single=buildCoinFlows({dexFlows:[{baseAsset:'ABC',volume5mUsd:100000,buyShare:.9,netBuyUsdEstimate:90000}],cexFlows:[],liveRows:[],historyByAsset:{},onchainByAsset:{},themeForAsset:()=> 'MEME'}).find(x=>x.baseAsset==='ABC');
 assert(single);
