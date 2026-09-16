@@ -1,1 +1,15 @@
-const fs=require('fs');const p='ui/radar-stream.js';if(!fs.existsSync(p))throw new Error('radar stream missing');const s=fs.readFileSync(p,'utf8');['!ticker@arr','connect','disconnect','reconnect','onTick'].forEach(k=>{if(!s.includes(k))throw new Error('missing '+k)});console.log('radar stream contract PASS');
+const fs=require('fs');
+const assert=require('assert');
+const p='ui/radar-stream.js';
+if(!fs.existsSync(p))throw new Error('radar stream missing');
+const s=fs.readFileSync(p,'utf8');
+['stream.binance.com','fstream.binance.com','!ticker@arr','connect','disconnect','onTick','spot','futures'].forEach(k=>{if(!s.includes(k))throw new Error('missing '+k)});
+const stream=require('../ui/radar-stream.js');
+const spot=stream.normalizeSpot({s:'BTCUSDT',c:'100',q:'1000',P:'2.5',E:123});
+const fut=stream.normalizeFutures({s:'BTCUSDT',c:'101',q:'2000',P:'3.5',E:124});
+assert.equal(spot.marketType,'spot');
+assert.equal(spot.id,'binance:spot:BTCUSDT');
+assert.equal(fut.marketType,'futures');
+assert.equal(fut.id,'binance:futures:BTCUSDT');
+assert.equal(fut.price,101);
+console.log('radar stream contract PASS');
