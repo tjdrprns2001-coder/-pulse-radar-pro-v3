@@ -1,0 +1,5 @@
+const test=require('node:test');const assert=require('node:assert/strict');const {getModeDefinition,listModes}=require('../ui/multi-chart/mode-registry');
+test('supports six explicit modes',()=>{assert.deepEqual(listModes(),['clean','structure','smc','ict','dante','full'])});
+test('SMC and ICT are visually and behaviorally distinct',()=>{const s=getModeDefinition('smc','desktop'),i=getModeDefinition('ict','desktop');assert.notDeepEqual(s.plugins,i.plugins);assert.equal(s.visualProfile,'smc');assert.equal(i.visualProfile,'ict');assert.ok(s.plugins.includes('smc'));assert.ok(i.plugins.includes('ict'))});
+test('Clean has no analytical overlays and Dante focuses Dante plugin',()=>{assert.deepEqual(getModeDefinition('clean','desktop').plugins,[]);assert.deepEqual(getModeDefinition('dante','desktop').plugins,['dante'])});
+test('Full is curated instead of unioning every mode plugin',()=>{const f=getModeDefinition('full','desktop');assert.ok(f.plugins.length>0);assert.ok(f.plugins.length<5);assert.ok(!f.plugins.includes('ict')||!f.plugins.includes('smc')||f.plugins.length<=3)});
