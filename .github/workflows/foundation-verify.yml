@@ -13,6 +13,8 @@ on:
     paths:
       - '.github/workflows/**'
       - 'api/**'
+      - 'lib/**'
+      - 'netlify/**'
       - 'ui/**'
       - 'tests/**'
       - 'radar.html'
@@ -21,6 +23,7 @@ on:
       - 'scanner-shell-v13.html'
       - 'package.json'
       - 'vercel.json'
+      - 'netlify.toml'
       - 'scripts/**'
       - 'RELEASE_CHECKLIST.md'
       - 'docs/superpowers/**'
@@ -28,6 +31,8 @@ on:
     paths:
       - '.github/workflows/**'
       - 'api/**'
+      - 'lib/**'
+      - 'netlify/**'
       - 'ui/**'
       - 'tests/**'
       - 'radar.html'
@@ -36,6 +41,7 @@ on:
       - 'scanner-shell-v13.html'
       - 'package.json'
       - 'vercel.json'
+      - 'netlify.toml'
       - 'scripts/**'
       - 'RELEASE_CHECKLIST.md'
       - 'docs/superpowers/**'
