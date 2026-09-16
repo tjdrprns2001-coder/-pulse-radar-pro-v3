@@ -9,6 +9,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/index"
+  to = "/.netlify/functions/api-index"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/analysis"
   to = "/analysis-shell-v12.html"
   status = 200
