@@ -11,7 +11,12 @@ const files=[
   'tests/ict-presentation.test.js',
   'tests/multi-chart-mode-registry.test.js',
   'tests/multi-chart-card.test.js',
-  'tests/multi-chart-ui-contract.test.js'
+  'tests/multi-chart-ui-contract.test.js',
+  'tests/tf-analysis-engine.test.js',
+  'tests/snapshot-builder.test.js',
+  'tests/narrative-renderer.test.js',
+  'tests/flow-summary-engine.test.js',
+  'tests/snapshot-analysis-ui-contract.test.js'
 ];
 for(const file of files){
   const result=spawnSync(process.execPath,['--test',file],{stdio:'inherit'});
