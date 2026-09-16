@@ -9,6 +9,7 @@
     "test:foundation": "node scripts/verify-milestone1.js",
     "test:chart": "node scripts/verify-milestone2.js",
     "test:smc": "node scripts/verify-milestone3.js",
-    "verify": "npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "test:declutter": "node scripts/verify-milestone3-1.js",
+    "verify": "npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
