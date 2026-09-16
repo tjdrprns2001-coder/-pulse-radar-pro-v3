@@ -35,7 +35,16 @@
     if(state.tab==='liquidity')a=a.filter(r=>/LIQUIDITY/.test(r.signal)||r.riskScore>=50);
     return a;
   }
-  function pageData(a){const size=Math.max(1,Number($('pageSize').value||25)),pages=Math.max(1,Math.ceil(a.length/size));state.page=Math.min(Math.max(1,state.page),pages);const start=(state.page-1)*size;return{rows:a.slice(start,start+size),pages,size}}
+  function pageData(a){const size=Math.max(1,Number($('pageSize').value||10)),pages=Math.max(1,Math.ceil(a.length/size));state.page=Math.min(Math.max(1,state.page),pages);const start=(state.page-1)*size;return{rows:a.slice(start,start+size),pages,size}}
+  function renderPageNumbers(pages){
+    const box=$('pageNumbers');if(!box)return;
+    const start=Math.max(1,Math.min(state.page-2,Math.max(1,pages-4))),end=Math.min(pages,start+4),parts=[];
+    if(start>1){parts.push('<button class="pageNumber" data-page="1">1</button>');if(start>2)parts.push('<span class="pageEllipsis">…</span>')}
+    for(let n=start;n<=end;n++)parts.push(`<button class="pageNumber${n===state.page?' active':''}" data-page="${n}" aria-current="${n===state.page?'page':'false'}">${n}</button>`);
+    if(end<pages){if(end<pages-1)parts.push('<span class="pageEllipsis">…</span>');parts.push(`<button class="pageNumber" data-page="${pages}">${pages}</button>`)}
+    box.innerHTML=parts.join('');
+    box.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{state.page=Number(b.dataset.page)||1;render(true);document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'})});
+  }
   function beginnerState(r){if(r.label==='RISK'||Number(r.riskScore||0)>=50)return{key:'danger',icon:'⚠️',title:'위험'};if(r.label==='SURGE')return{key:'surge',icon:'🔴',title:'강한 움직임'};if(r.label==='PRE-SURGE')return{key:'ready',icon:'🟡',title:'준비 중'};return{key:'watch',icon:'👀',title:'관찰'}}
   function whyReasons(r){
     const out=[],s=String(r.signal||'');const add=x=>{if(x&&!out.includes(x)&&out.length<3)out.push(x)};
@@ -48,9 +57,10 @@
     if(!out.length&&r.reasons?.length)add(String(r.reasons[0]).replace(/[<>]/g,''));
     if(!out.length)add('이상징후 관찰');return out;
   }
+  function compactSignal(r){const st=beginnerState(r),reason=whyReasons(r)[0];return `<div class="compactSignal"><span class="beginnerState ${st.key}">${st.icon} ${st.title}</span><span class="compactReason">${esc(reason)}</span></div>`}
   function beginnerBlock(r){
-    const st=beginnerState(r),reasons=whyReasons(r);
-    return `<div class="beginnerState ${st.key}"><b>${st.icon} ${st.title}</b></div><div class="whyList">${reasons.map(x=>`<span>• ${esc(x)}</span>`).join('')}</div><details class="detailPanel"><summary class="detailToggle">자세히</summary><div class="detailBody"><span>테마 ${esc(r.theme||'Other / Unclassified')}</span><span>원신호 ${esc(r.label||'WATCH')} / ${esc(r.signal||'WATCH')}</span><span>레이더 점수 ${Math.round(Number(r.radarScore)||0)}</span><span>1분 변화 ${esc(rawPct(r.change1m))}</span><span>5분 변화 ${esc(rawPct(r.change5m))}</span><span>거래량 ${esc(fmt(r.quoteVolumeUsd))}</span>${r.marketType==='dex'?`<span>유동성 ${esc(fmt(r.liquidityUsd))}</span>`:''}</div></details>`;
+    const reasons=whyReasons(r);
+    return `${compactSignal(r)}<div class="whyList">${reasons.slice(1).map(x=>`<span>• ${esc(x)}</span>`).join('')}</div><details class="detailPanel"><summary class="detailToggle">자세히</summary><div class="detailBody"><span>테마 ${esc(r.theme||'Other / Unclassified')}</span><span>원신호 ${esc(r.label||'WATCH')} / ${esc(r.signal||'WATCH')}</span><span>레이더 점수 ${Math.round(Number(r.radarScore)||0)}</span><span>1분 변화 ${esc(rawPct(r.change1m))}</span><span>5분 변화 ${esc(rawPct(r.change5m))}</span><span>거래량 ${esc(fmt(r.quoteVolumeUsd))}</span>${r.marketType==='dex'?`<span>유동성 ${esc(fmt(r.liquidityUsd))}</span>`:''}</div></details>`;
   }
   function shortChangeBlock(r){return `<div class="shortChange"><span>1m ${pct(r.change1m)}</span><span>5m ${pct(r.change5m)}</span></div>`}
   function renderThemes(all){
@@ -70,7 +80,7 @@
   function render(force=false){
     if(!force&&Date.now()-state.lastRender<500)return;state.lastRender=Date.now();
     const all=score(),a=filtered(all),p=pageData(a);
-    observeAlerts(all);renderThemes(all);
+    observeAlerts(all);renderThemes(all);renderPageNumbers(p.pages);
     $('mMarkets').textContent=state.map.size.toLocaleString();$('mSignals').textContent=all.filter(x=>x.label!=='WATCH').length.toLocaleString();$('mNew').textContent=all.filter(x=>x.signal==='NEW_PAIR').length.toLocaleString();$('mChains').textContent=state.chains.size;
     $('pageInfo').textContent=`${state.page} / ${p.pages}`;$('resultInfo').textContent=`${a.length.toLocaleString()} markets${state.selectedTheme?` · ${state.selectedTheme}`:''}`;$('prevPage').disabled=state.page<=1;$('nextPage').disabled=state.page>=p.pages;
     $('rows').innerHTML=p.rows.length?p.rows.map(r=>{const canOpen=r.marketType!=='dex'&&/USDT$/.test(r.symbol||'');const target=canOpen?`/unified-chart.html?symbol=${encodeURIComponent(r.symbol)}&preset=full`:(r.url||'#');return `<div class="row"><div class="sym" data-chain="${esc(r.chain||r.marketType)}">${esc(r.symbol||'?')}<div class="muted">${esc(r.venue||r.source)} · ${esc(r.chain||r.marketType)} · ${esc(r.theme||'Other')}</div></div><div>${esc(fmt(r.priceUsd??r.price))}</div><div>${shortChangeBlock(r)}</div><div>${esc(fmt(r.quoteVolumeUsd))}</div><div>${r.marketType==='dex'?esc(fmt(r.liquidityUsd)):'-'}</div><div class="score">${Math.round(r.radarScore)}</div><div class="signalCell">${beginnerBlock(r)}</div><div><button class="open" data-open="${encodeURIComponent(target)}">열기 ↗</button></div></div>`}).join(''):'<div class="empty">현재 필터에 맞는 시장이 없습니다.</div>';
@@ -86,6 +96,6 @@
   document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));state.tab=b.dataset.tab;resetAndRender()});
   ['q','chain','market','signal','liq'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',resetAndRender));
   $('themeReset').onclick=()=>{state.selectedTheme=null;resetAndRender()};
-  $('pageSize').addEventListener('change',resetAndRender);$('prevPage').onclick=()=>{if(state.page>1){state.page--;render(true);document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'})}};$('nextPage').onclick=()=>{state.page++;render(true);document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'})};
+  $('pageSize').addEventListener('change',resetAndRender);$('prevPage').onclick=()=>{if(state.page>1){state.page--;render(true);document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'})}};$('nextPage').onclick=()=>{const size=Math.max(1,Number($('pageSize').value||10)),pages=Math.max(1,Math.ceil(filtered(score()).length/size));if(state.page<pages){state.page++;render(true);document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'})}};
   load();setInterval(load,15000);startStream();
 })();
