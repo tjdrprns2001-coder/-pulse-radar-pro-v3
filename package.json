@@ -12,6 +12,7 @@
     "test:declutter": "node scripts/verify-milestone3-1.js",
     "test:collision": "node scripts/verify-milestone3-2.js",
     "test:multi-chart": "node scripts/verify-multi-chart.js",
-    "verify": "npm run test:multi-chart && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "test:milestone3-3": "node scripts/verify-milestone3-3.js",
+    "verify": "npm run test:milestone3-3 && npm run test:multi-chart && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
