@@ -34,7 +34,12 @@
     const flashPumpPenalty=r.marketType==='dex'&&abs(change5m)>40&&!strongActivity?38:0;
     const riskScore=clamp(thinPenalty+outflowPenalty+flashPumpPenalty);
     const confidenceScore=clamp(num(r.sourceConfidence,70)+(liq>50000?8:0)+(volume>50000?8:0)+(tx>100?6:0)-(riskScore*.42));
-    const radarScore=clamp(momentumScore*.22+volumeScore*.25+liquidityScore*.10+participationScore*.18+freshnessScore*.07+confidenceScore*.18-riskScore*.24);
+    const oc=r.onchain||{},ocConfidence=clamp(num(oc.confidence??oc.dataConfidence,0));
+    const ocEligible=ocConfidence>=60;
+    const ocLarge=Math.max(0,num(oc.largeWalletNetFlowUsd,0)),ocWalletDelta=Math.max(0,num(oc.activeWalletDelta,0)),ocVol=clamp(num(oc.walletVolatility,0)),ocDex=Math.max(0,num(oc.dexNetFlowUsd,0));
+    const onchainRaw=clamp(Math.log10(1+ocLarge)*9+Math.min(24,ocWalletDelta*1.4)+(liq>=25000?ocVol*.22:0)+Math.log10(1+ocDex)*6);
+    const onchainScore=ocEligible?clamp(onchainRaw*(ocConfidence/100)):0;
+    const radarScore=clamp(momentumScore*.22+volumeScore*.25+liquidityScore*.10+participationScore*.18+freshnessScore*.07+confidenceScore*.18+onchainScore*.06-riskScore*.24);
 
     const reasons=[];
     if(hasV1&&v1>0)reasons.push(`1분 거래량 +${Math.round(v1).toLocaleString()}`);
@@ -47,6 +52,11 @@
     if(liqDelta>=.12)reasons.push(`유동성 +${Math.round(liqDelta*100)}%`);
     if(liqDelta<=-.12)reasons.push(`유동성 ${Math.round(liqDelta*100)}%`);
     if(ageMin<180)reasons.push(`신규풀 ${Math.round(ageMin)}분`);
+    if(ocEligible&&ocLarge>=100000)reasons.push('대형 지갑 순유입 증가');
+    if(ocEligible&&ocWalletDelta>=5)reasons.push('활성 지갑 증가');
+    if(ocEligible&&ocVol>=70&&liq>=25000)reasons.push('온체인 활동 급증');
+    if(ocEligible&&num(oc.exchangeNetFlowUsd,0)<-100000)reasons.push('거래소 유입 증가');
+    if(ocEligible&&num(oc.exchangeNetFlowUsd,0)>100000)reasons.push('거래소 유출 증가');
     if(riskScore>=45)reasons.push(`리스크 ${Math.round(riskScore)}`);
 
     let label='WATCH',signal='WATCH';
@@ -63,13 +73,8 @@
     else if(imbalance>=.35&&activityFloor)signal='BUY_PRESSURE';
     else if(imbalance<=-.35&&activityFloor)signal='SELL_PRESSURE';
     else if(ageMin<30)signal='NEW_PAIR';
-    return {...r,momentumScore,volumeScore,liquidityScore,participationScore,freshnessScore,riskScore,confidenceScore,radarScore,label,signal,volumeRatio,txRatio,liquidityDelta:liqDelta,buySellImbalance:imbalance,volumeImpulse1m,volumeImpulse5m,txImpulse1m,txImpulse5m,activityFloor,reasons};
+    return {...r,momentumScore,volumeScore,liquidityScore,participationScore,freshnessScore,riskScore,confidenceScore,onchainScore,radarScore,label,signal,volumeRatio,txRatio,liquidityDelta:liqDelta,buySellImbalance:imbalance,volumeImpulse1m,volumeImpulse5m,txImpulse1m,txImpulse5m,activityFloor,reasons};
   }
-  function rankMarkets(records=[],baselines={}){
-    return records.map(r=>scoreMarket(r,baselines[r.id||r.symbol]||{}))
-      .filter(r=>!(r.marketType==='dex'&&r.liquidityUsd!=null&&r.liquidityUsd<3000&&r.signal!=='NEW_PAIR'&&r.label!=='RISK'))
-      .sort((a,b)=>b.radarScore-a.radarScore);
-  }
-  const api={scoreMarket,rankMarkets,labels:['WATCH','PRE_SURGE','SURGE','LIQUIDITY_RISK']};
-  if(typeof module!=='undefined'&&module.exports)module.exports=api;g.PulseRadarCore=api;
+  function rankMarkets(records=[],baselines={}){return records.map(r=>scoreMarket(r,baselines[r.id||r.symbol]||{})).filter(r=>!(r.marketType==='dex'&&r.liquidityUsd!=null&&r.liquidityUsd<3000&&r.signal!=='NEW_PAIR'&&r.label!=='RISK')).sort((a,b)=>b.radarScore-a.radarScore)}
+  const api={scoreMarket,rankMarkets,labels:['WATCH','PRE_SURGE','SURGE','LIQUIDITY_RISK']};if(typeof module!=='undefined'&&module.exports)module.exports=api;g.PulseRadarCore=api;
 })(typeof window!=='undefined'?window:globalThis);
