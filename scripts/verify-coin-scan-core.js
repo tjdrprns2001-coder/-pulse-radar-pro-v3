@@ -30,4 +30,34 @@ assert(Number.isFinite(fast.candidateScore));
 assert(fast.candidateScore>=0&&fast.candidateScore<=100);
 assert(Array.isArray(fast.fastReasons));
 assert.equal(core.CATEGORY_ORDER.length,8);
+
+const strong=core.buildTradeSignal({
+  dataState:'live',category:'급등 전조 강함',structure:'bullish',
+  preSurge:{label:'가능성 높음',confirmations:4},takerRatio:1.42,
+  volumeAcceleration:2.1,priceChange1h:2.4,alreadySurged:false
+});
+assert.equal(strong.level,'매수 후보');
+assert(strong.confidence>=80,'strong candidate should have high confidence');
+assert(strong.confirmations>=4,'strong candidate should require multiple confirmations');
+assert.equal(strong.invalidations.length,0);
+
+const watch=core.buildTradeSignal({
+  dataState:'live',category:'급등 전조 관찰',structure:'bullish',
+  preSurge:{label:'관찰',confirmations:2},takerRatio:1.18,
+  volumeAcceleration:1.5,priceChange1h:1.1,alreadySurged:false
+});
+assert.equal(watch.level,'관찰');
+assert(watch.confidence>0&&watch.confidence<80);
+
+const delayed=core.buildTradeSignal({dataState:'delayed',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.5,volumeAcceleration:2.5});
+assert.equal(delayed.level,'제외');
+assert(delayed.invalidations.some(x=>x.includes('데이터')));
+
+const surged=core.buildTradeSignal({dataState:'live',category:'이미 급등함',structure:'bullish',alreadySurged:true,takerRatio:1.5,volumeAcceleration:2.5});
+assert.equal(surged.level,'제외');
+assert(surged.invalidations.some(x=>x.includes('급등')));
+
+const bearish=core.buildTradeSignal({dataState:'live',category:'약세·이탈',structure:'bearish',takerRatio:.8,volumeAcceleration:2});
+assert.equal(bearish.level,'제외');
+assert(bearish.invalidations.some(x=>x.includes('약세')));
 console.log('coin scan core PASS');
