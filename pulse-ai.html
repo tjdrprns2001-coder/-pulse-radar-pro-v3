@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse AI Autopilot</title>
+<link rel="stylesheet" href="/ui/pulse-ai.css">
+<script src="/ui/pulse-ai.js" defer></script>
+</head>
+<body>
+<main class="aiPage">
+  <header class="aiHead">
+    <div><span class="eyebrow">PULSE AI AUTOPILOT</span><h1>자동 시장 브리핑</h1><p id="generatedAt">스캐너 변화를 자동으로 요약합니다.</p></div>
+    <div class="headActions"><span id="modeBadge" class="badge fallback">기본 분석</span><button id="refreshBtn" class="ghost">새로고침</button></div>
+  </header>
+  <section class="hero"><h2>지금 시장 요약</h2><p id="summary">브리핑 불러오는 중…</p><div id="status" class="status">자동 분석 준비 중</div></section>
+  <section><div class="sectionHead"><h2>새로 포착</h2><span id="highlightCount">0</span></div><div id="highlights" class="cards"></div></section>
+  <section><h2>섹터 움직임 · 관찰</h2><div id="watch" class="list"></div></section>
+  <section><h2>관련 뉴스 · 출처</h2><div id="sources" class="sources"></div></section>
+  <section><h2>주의 · 데이터 상태</h2><div id="warnings" class="list warn"></div></section>
+  <button id="chatFab" class="chatFab">Pulse AI에게 질문</button>
+</main>
+<div id="chatShade" class="chatShade"></div>
+<aside id="chatDrawer" class="chatDrawer" aria-label="Pulse AI 채팅">
+  <div class="chatTop"><div><b>Pulse AI</b><small>현재 종목·스캐너·최신 웹 맥락</small></div><button id="chatClose" aria-label="닫기">×</button></div>
+  <div id="chatLog" class="chatLog"><div class="bubble ai">궁금한 종목이나 지금 시장의 변화를 물어보세요.</div></div>
+  <form id="chatForm" class="chatForm"><input id="chatInput" maxlength="1000" placeholder="예: 지금 급등 전조가 강한 종목 이유는?" autocomplete="off"><button>전송</button></form>
+</aside>
+</body>
+</html>
