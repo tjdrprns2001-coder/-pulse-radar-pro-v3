@@ -1,0 +1,4 @@
+'use strict';
+const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');const {createOpenAIGateway}=require('../lib/pulse-ai/openai-gateway.js');const {createCoinReportService}=require('../lib/coin-report/service.js');
+let singleton=null;function defaultService(){if(!singleton)singleton=createCoinReportService({provider:createBinanceProvider({}),gateway:createOpenAIGateway({})});return singleton}
+module.exports=async function handler(req,res,ctx={}){const service=ctx.service||defaultService(),q=req?.query||{},mode=String(q.mode||'report');try{if(req?.method&&req.method!=='GET')return res.status(405).json({status:'error',error:'method not allowed'});if(mode==='news')return res.status(200).json(await service.getNews(q.symbol));return res.status(200).json(await service.getReport(q.symbol))}catch(e){return res.status(Number(e?.statusCode)||500).json({status:'error',error:String(e?.message||e)})}}
