@@ -1,0 +1,16 @@
+name: Signal 99 TDD
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  signal-99:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - name: Run signal 99 contracts
+        run: |
+          node scripts/verify-signal-health.js
