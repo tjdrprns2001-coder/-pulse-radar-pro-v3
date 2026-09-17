@@ -7,6 +7,7 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
   const p=await pending.resolve('ONEUSDT',2000,1999);
   assert.deepEqual(p,{status:'pending',targetTs:2000});
   assert.equal(calls,0,'must not fetch before horizon is due');
+  await assert.rejects(()=>pending.resolve('ONEUSDT',null,2000),/target timestamp required/);
 
   const r=createBinanceResolver({fetchKlines:async()=>[
     [900,'9'],[1000,'10'],[1060,'11']
