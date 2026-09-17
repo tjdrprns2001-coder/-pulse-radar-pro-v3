@@ -22,4 +22,10 @@ const missing=deep.analyzeDeep({symbol:'EMPTYUSDT',frames:{},dataState:'live'});
 assert.equal(missing.oiChangePct,null);
 assert.equal(missing.fundingPct,null);
 assert.equal(missing.takerRatio,null);
+
+const surgeRows=Array.from({length:90},(_,i)=>{const vol=i>=85?6000:1000;const price=100+i*.3;return mk(price,price+.5,vol,vol*(price+.5)*.72)});
+const surgeFrames={'1w':surgeRows,'1d':surgeRows,'4h':surgeRows,'1h':surgeRows,'15m':surgeRows,'5m':surgeRows};
+const strong=deep.analyzeDeep({symbol:'TESTUSDT',frames:surgeFrames,dataState:'live',oiChangePct:3,fundingPct:.01});
+assert.equal(strong.alertState,'ARMED','strong multi-factor evidence should derive ARMED');
+assert.equal(strong.preSurge.label,'가능성 높음','PRE-SURGE v2 strong path must be reachable when optional OI is available');
 console.log('coin scan deep PASS');
