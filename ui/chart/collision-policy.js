@@ -1,4 +1,4 @@
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseCollisionPolicy=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const model=typeof module==='object'&&module.exports?require('./annotation-model'):root?.PulseAnnotationModel;const layout=typeof module==='object'&&module.exports?require('./annotation-layout'):root?.PulseAnnotationLayout;const api=factory(model,layout);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseCollisionPolicy=api;})(typeof globalThis!=='undefined'?globalThis:this,function(AnnotationModel,AnnotationLayout){
   function selectNonCollidingMarkers(items,{minGapBars=1,maxItems=8}={}){
     const ranked=(Array.isArray(items)?items:[]).filter(x=>Number.isFinite(Number(x.i))).slice().sort((a,b)=>(Number(a.priority)||0)-(Number(b.priority)||0)||Number(b.i)-Number(a.i));
     const selected=[];
@@ -9,6 +9,7 @@
     }
     return selected.sort((a,b)=>Number(a.i)-Number(b.i));
   }
+
   function clusterDirectionalMarkers(items,{distanceBars=2}={}){
     const src=(Array.isArray(items)?items:[]).filter(x=>Number.isFinite(Number(x.i))).slice().sort((a,b)=>Number(a.i)-Number(b.i));
     const out=[];
@@ -19,5 +20,12 @@
     }
     return out.map(x=>({...x,label:(x.dir==='up'?'S↑':'S↓')+(x.count>1?'×'+x.count:'')}));
   }
-  return{selectNonCollidingMarkers,clusterDirectionalMarkers};
+
+  function layoutMarkerCandidates(items,context={}){
+    if(!AnnotationModel?.normalizeAnnotationCandidate||!AnnotationLayout?.layoutAnnotations)throw new Error('Pulse annotation layout dependencies are unavailable');
+    const normalized=(Array.isArray(items)?items:[]).map(item=>AnnotationModel.normalizeAnnotationCandidate(item,context));
+    return AnnotationLayout.layoutAnnotations(normalized,context);
+  }
+
+  return{selectNonCollidingMarkers,clusterDirectionalMarkers,layoutMarkerCandidates};
 });
