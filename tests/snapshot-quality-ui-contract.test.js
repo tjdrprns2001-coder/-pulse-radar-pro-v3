@@ -6,6 +6,8 @@ const path=require('node:path');
 const quality=fs.readFileSync(path.join(__dirname,'../ui/snapshot/snapshot-quality.js'),'utf8');
 const snapshot=fs.readFileSync(path.join(__dirname,'../ui/snapshot/snapshot-analysis.js'),'utf8');
 const html=fs.readFileSync(path.join(__dirname,'../snapshot-analysis-restored.html'),'utf8');
+const researchActions=fs.readFileSync(path.join(__dirname,'../ui/signal-quality/research-actions.js'),'utf8');
+const shellCss=fs.readFileSync(path.join(__dirname,'../ui/pulse-shell.css'),'utf8');
 
 test('calibration pending state hides raw numeric score',()=>{
   assert.match(quality,/확률 표시 보류 · raw 숨김/);
@@ -54,4 +56,10 @@ test('snapshot records regime venue flow features and provenance',()=>{
   assert.match(quality,/venue:'cex'/);
   assert.match(quality,/features,dataSource/);
   assert.match(quality,/provenance:D\.provenance/);
+});
+
+test('mobile research actions stay in document flow instead of covering shell bottom nav',()=>{
+  assert.match(researchActions,/@media\(max-width:650px\)\{\.pulseResearchActions\{position:static/);
+  assert.doesNotMatch(researchActions,/@media\(max-width:650px\)[\s\S]*?\.pulseResearchActions\{position:fixed/);
+  assert.match(shellCss,/\.main\{padding-bottom:calc\(64px \+ env\(safe-area-inset-bottom\)\)\}/);
 });
