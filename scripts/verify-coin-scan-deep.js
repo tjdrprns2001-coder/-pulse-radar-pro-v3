@@ -20,6 +20,10 @@ assert(out.momentumSignals&&typeof out.momentumSignals==='object','momentumSigna
 for(const k of ['rsi1h','rsi15m','macd1h','macd15m','stochRsi1h','stochRsi15m','aligned','overheated','score'])assert(Object.prototype.hasOwnProperty.call(out.momentumSignals,k),`${k} required`);
 assert(Number.isFinite(out.momentumSignals.rsi1h),'1h RSI should be finite with enough candles');
 assert(Number.isFinite(out.momentumSignals.rsi15m),'15m RSI should be finite with enough candles');
+assert(Object.prototype.hasOwnProperty.call(out,'priceChange1h'),'deep scan must expose recent 1h price extension');
+assert(Object.prototype.hasOwnProperty.call(out,'priceChange15m'),'deep scan must expose recent 15m price extension');
+assert(Number.isFinite(out.priceChange1h),'1h recent price extension should be finite');
+assert(Number.isFinite(out.priceChange15m),'15m recent price extension should be finite');
 const blocked=deep.analyzeDeep({symbol:'XLMUSDT',frames,dataState:'stale'});
 assert.equal(blocked.preSurge.label,'판정 보류');
 const missing=deep.analyzeDeep({symbol:'EMPTYUSDT',frames:{},dataState:'live'});

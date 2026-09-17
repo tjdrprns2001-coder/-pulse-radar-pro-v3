@@ -34,7 +34,7 @@ assert.equal(core.CATEGORY_ORDER.length,8);
 const strong=core.buildTradeSignal({
   dataState:'live',category:'급등 전조 강함',structure:'bullish',
   preSurge:{label:'가능성 높음',confirmations:4},takerRatio:1.42,
-  volumeAcceleration:2.1,priceChange1h:2.4,alreadySurged:false,
+  volumeAcceleration:2.1,priceChange1h:2.4,priceChange15m:1.1,alreadySurged:false,
   momentumSignals:{aligned:true,overheated:false,score:4}
 });
 assert.equal(strong.level,'매수 후보');
@@ -46,7 +46,7 @@ assert.equal(strong.invalidations.length,0);
 const watch=core.buildTradeSignal({
   dataState:'live',category:'급등 전조 관찰',structure:'bullish',
   preSurge:{label:'관찰',confirmations:2},takerRatio:1.18,
-  volumeAcceleration:1.5,priceChange1h:1.1,alreadySurged:false,
+  volumeAcceleration:1.5,priceChange1h:1.1,priceChange15m:.4,alreadySurged:false,
   momentumSignals:{aligned:false,overheated:false,score:1}
 });
 assert.equal(watch.level,'관찰');
@@ -55,11 +55,29 @@ assert(watch.confidence>0&&watch.confidence<80);
 const overheated=core.buildTradeSignal({
   dataState:'live',category:'급등 전조 강함',structure:'bullish',
   preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.5,
-  volumeAcceleration:2.3,priceChange1h:4.5,alreadySurged:false,
+  volumeAcceleration:2.3,priceChange1h:4.5,priceChange15m:2.2,alreadySurged:false,
   momentumSignals:{aligned:true,overheated:true,score:4,rsi1h:78,rsi15m:84}
 });
 assert.notEqual(overheated.level,'매수 후보','overheated momentum must downgrade a strong candidate');
 assert(overheated.invalidations.some(x=>x.includes('과열')),'overheated downgrade must explain why');
+
+const weakFlow=core.buildTradeSignal({
+  dataState:'live',category:'급등 전조 강함',structure:'bullish',
+  preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.03,
+  volumeAcceleration:1.12,priceChange1h:1.8,priceChange15m:.6,reaccumulating:true,alreadySurged:false,
+  momentumSignals:{aligned:true,overheated:false,score:4}
+});
+assert.notEqual(weakFlow.level,'매수 후보','indicator alignment must not override weak volume/flow');
+assert(weakFlow.invalidations.some(x=>x.includes('거래량')||x.includes('체결')),'weak market confirmation downgrade must explain volume/flow weakness');
+
+const lateChase=core.buildTradeSignal({
+  dataState:'live',category:'급등 전조 강함',structure:'bullish',
+  preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,
+  volumeAcceleration:2.2,priceChange1h:7.2,priceChange15m:4.1,alreadySurged:false,
+  momentumSignals:{aligned:true,overheated:false,score:4}
+});
+assert.notEqual(lateChase.level,'매수 후보','late short-term chase must be downgraded before hard surge threshold');
+assert(lateChase.invalidations.some(x=>x.includes('추격')),'late chase downgrade must explain short-term extension');
 
 const delayed=core.buildTradeSignal({dataState:'delayed',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.5,volumeAcceleration:2.5});
 assert.equal(delayed.level,'제외');
