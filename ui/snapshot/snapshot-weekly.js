@@ -5,7 +5,7 @@
   function activate(){
     const a=api();
     if(!a?.state||typeof a.runSnapshotAnalysis!=='function')return;
-    a.state.tf=TF;
+    a.state.tf='1w';
     document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('active',x.dataset.tf===TF));
     a.runSnapshotAnalysis({symbol:symbol()});
   }
