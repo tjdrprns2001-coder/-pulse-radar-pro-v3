@@ -15,11 +15,13 @@
 <script src="/lib/analysis/narrative-renderer.js"></script>
 <script src="/lib/analysis/flow-summary-engine.js"></script>
 <script src="/lib/signal-quality/data-integrity.js"></script>
+<script src="/lib/signal-quality/clock-integrity.js"></script>
 <script src="/lib/signal-quality/outcome-recorder.js"></script>
 <script src="/lib/signal-quality/calibration.js"></script>
 <script src="/lib/signal-quality/regime.js"></script>
 <script src="/lib/signal-quality/alert-state.js"></script>
 <script src="/lib/signal-quality/microstructure.js"></script>
+<script src="/lib/signal-quality/drift-monitor.js"></script>
 <script src="/ui/snapshot/snapshot-quality.js"></script>
 <script src="/ui/snapshot/snapshot-mobile-label-guard.js"></script>
 <script src="/ui/snapshot/snapshot-analysis.js" defer></script>
@@ -30,7 +32,7 @@
 <header class="top"><div><div class="brand">PulseRadar Pro · 차트 스냅샷 분석</div><div class="sub">복원 스냅샷 · 1주봉 · 데이터 무결성 · 캘리브레이션 · 레짐 · 상태 머신</div></div><div class="topRight"><span class="restored">QUALITY v1</span><a class="btn" href="/">목록</a><a class="btn" href="/snapshot-analysis.html">기존 MTF</a><a class="btn" href="/ict-narrative-lab.html">ICT 서사</a></div></header>
 <section class="controls"><input id="symbol" value="BTCUSDT" autocomplete="off" aria-label="symbol"><div class="tfBtns"><button class="btn" data-tf="15m">15m</button><button class="btn" data-tf="1h">1h</button><button class="btn active" data-tf="4h">4h</button><button class="btn" data-tf="1d">1D</button><button class="btn" data-tf="1w">1W</button></div><button id="run" class="btn primary">스냅샷 분석</button><span id="snapshotStatus" class="status">대기</span></section>
 <div class="layout"><section class="card"><div class="chartHead"><div><b id="snapshotTitle">-</b><div class="muted">선택 TF 캔들 + 구조적 관심구간 · 무효화 · 목표</div></div><span class="green">● LIVE</span></div><div class="chartWrap"><canvas id="snapshotChart"></canvas></div><div class="legend"><span><i class="dot" style="background:#9b7cf5"></i>관심구간</span><span><i class="dot" style="background:#ffc45f"></i>Invalidation</span><span><i class="dot" style="background:#4fd1c5"></i>Target</span><span><i class="dot" style="background:#dce8f6"></i>Structure/Liquidity</span></div></section><aside class="side"><section class="card panel narrative" id="snapshotNarrative"><h2>📊 분석 서사</h2><p>분석 실행 후 선택한 시간봉 기준 서사가 표시됩니다.</p></section><section class="card panel flowCard"><h2 class="cyan">Flow</h2><div id="snapshotFlow" class="flow">Flow 데이터 없음</div></section><section class="card panel scenarioCard"><h2>시나리오 레벨</h2><div id="snapshotScenario" class="scenarioGrid"><div class="metric"><span>상태</span><b>대기</b></div></div></section><section class="card panel contextCard"><h2>상위 TF · BTC 컨텍스트</h2><div id="snapshotContext" class="context">보조 컨텍스트 없음</div></section></aside></div>
-<div class="footer">※ CALIBRATION 확률은 최소 검증 표본 충족 전 표시하지 않습니다. Regime은 초기 실험 분류이며, 상태 머신은 자동 주문 기능이 아닙니다.</div>
+<div class="footer">※ CALIBRATION 확률은 최소 검증 표본 충족 전 표시하지 않습니다. Regime/Drift는 진단용 조건부 통계이며, 상태 머신은 자동 주문 기능이 아닙니다.</div>
 </main>
 </body>
 </html>
