@@ -1,5 +1,5 @@
 const assert=require('assert');
-const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createScanService,applySectorRotation}=require('../lib/coin-scan/scan-service.js');
 const handler=require('../api/coin-scan.js');
 
 function frame(base=100){return Array.from({length:60},(_,i)=>[0,String(base+i*.1),String(base+i*.1+1),String(base+i*.1-1),String(base+i*.1+.2),String(1000+i*10),Date.now()-1000,String((1000+i*10)*(base+i*.1)),10,'550',String((1000+i*10)*(base+i*.1)*.56),0])}
@@ -13,6 +13,14 @@ const provider={
   async scanDeepCandidates(symbols,intervals){deepCalls.push(symbols.slice());const results={},errors=[];for(const s of symbols){if(s==='C1USDT'){errors.push({symbol:s,interval:'1h',error:'boom'});continue}if(s==='C2USDT'){const partial=intervals.filter(tf=>tf!=='5m');results[s]=Object.fromEntries(partial.map(tf=>[tf,frame()]));errors.push({symbol:s,interval:'5m',error:'partial'});continue}results[s]=Object.fromEntries(intervals.map(tf=>[tf,frame()]))}return{results,errors,contexts:{}}}
 };
 (async()=>{
+  const rotated=applySectorRotation([
+    {symbol:'LEADERUSDT',sector:'AI',dataState:'live',priceChange24h:8,scanClass:{key:'POST-SURGE'},reasons:[],structure:'bullish',summary:''},
+    {symbol:'LAGUSDT',sector:'AI',dataState:'live',priceChange24h:2,scanClass:{key:'ANOMALY'},reasons:[],structure:'neutral',summary:''},
+    {symbol:'OTHERUSDT',sector:'RWA',dataState:'live',priceChange24h:1,scanClass:{key:'ANOMALY'},reasons:[],structure:'neutral',summary:''}
+  ]);
+  assert.equal(rotated.find(x=>x.symbol==='LAGUSDT').scanClass.key,'SECTOR-ROTATION','same-sector laggard should become sector rotation');
+  assert.equal(rotated.find(x=>x.symbol==='OTHERUSDT').scanClass.key,'ANOMALY','unrelated sector must not be relabeled');
+
   const service=createScanService({provider,now:()=>123456});
   deepCalls=[];
   const out=await service.run({mode:'summary',limit:100});
@@ -22,9 +30,12 @@ const provider={
   assert.equal(deepCalls.length,0,'summary path must stay fast');
   assert(Array.isArray(out.candidateSymbols)&&out.candidateSymbols.length>0,'summary returns candidate symbols for progressive enrichment');
   assert(out.categories&&typeof out.categories==='object');
+  assert(out.scanClasses&&typeof out.scanClasses==='object','v2 scan class counts required');
   assert(out.dataHealth&&typeof out.dataHealth.live==='number');
   for(const x of out.items.slice(0,3)){
-    for(const k of ['symbol','category','sector','priority','dataState','reasons','tfState','summary','updatedAt','tradeSignal'])assert(Object.prototype.hasOwnProperty.call(x,k),`${k} required`);
+    for(const k of ['symbol','category','scanClass','sector','priority','dataState','reasons','tfState','summary','updatedAt','tradeSignal'])assert(Object.prototype.hasOwnProperty.call(x,k),`${k} required`);
+    assert(x.scanClass&&typeof x.scanClass.key==='string','scanClass key required');
+    assert(typeof x.scanClass.label==='string'&&x.scanClass.label.length>0,'Korean scanClass label required');
     assert(['매수 후보','관찰','제외'].includes(x.tradeSignal.level));
     assert(Number.isFinite(x.tradeSignal.confidence));
     assert(Array.isArray(x.tradeSignal.reasons));
@@ -37,7 +48,7 @@ const provider={
   assert.equal(deep.deepScanCount,3);
   assert.equal(deepCalls.length,1);
   assert.deepEqual(deepCalls[0],['C0USDT','C1USDT','C2USDT']);
-  for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
+  for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.scanClass.key,'STALE',`${sym} failed data must map to STALE`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
   assert(deep.items.find(x=>x.symbol==='C0USDT'),'deep mode returns requested symbol');
 
   const cat=out.items[0]?.category;
@@ -50,6 +61,7 @@ const provider={
   const fallback=await service.run({mode:'summary',limit:100});
   assert.equal(fallback.partial,true);
   assert(fallback.items.every(x=>x.dataState==='delayed'));
+  assert(fallback.items.every(x=>x.scanClass?.key==='STALE'),'delayed fallback must map to STALE');
   assert(!fallback.items.some(x=>x.category==='급등 전조 강함'),'delayed fallback cannot stay strong');
   assert(fallback.items.every(x=>x.tradeSignal?.level==='제외'),'delayed fallback cannot expose buy candidates');
   provider.failAll=false;
