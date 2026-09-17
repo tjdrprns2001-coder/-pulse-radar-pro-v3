@@ -9,6 +9,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/presurge*"
+  to = "/.netlify/functions/presurge:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/onchain-flow*"
   to = "/.netlify/functions/onchain-flow:splat"
   status = 200
