@@ -9,9 +9,11 @@ assert.equal(Core.isEligibleClass('ANOMALY'),true);
 for(const k of ['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'])assert.equal(Core.isEligibleClass(k),false);
 
 assert.equal(Core.bucketStart(35*60*1000),30*60*1000);
+assert.equal(Core.bucketStart(null),null,'null timestamp must not become epoch zero');
 assert.equal(Core.snapshotId({symbol:'ONEUSDT',scanClassKey:'PRE-SURGE',capturedAt:35*60*1000}),'ONEUSDT:PRE-SURGE:1800000');
 assert.deepEqual(Core.targetTimestamps(1000),{m15:901000,h1:3601000,h4:14401000,h24:86401000});
 assert(Math.abs(Core.returnPct(100,105)-5)<1e-9);
+assert.equal(Core.returnPct(null,105),null,'missing entry price must not become zero');
 
 const snap=Core.buildSnapshot({symbol:'ONEUSDT',scanClass:{key:'PRE-SURGE',label:'🔥 급등 직전'},capturedAt:1000,lastPrice:100,tradeSignal:{level:'매수 후보',confidence:82},candidateScore:77,sector:'AI',priceChange24h:2.1,volumeAcceleration:3.4,takerRatio:1.3,momentumSignals:{rsi15m:55},reasons:['x']});
 assert(Object.isFrozen(snap));
@@ -29,4 +31,7 @@ assert.equal(small.medianReturnPct,.5);
 assert.equal(small.bestReturnPct,2);
 assert.equal(small.worstReturnPct,-1);
 assert.equal(small.sampleState,'표본 부족');
+const unavailable=Core.aggregate([{status:'unavailable'},{status:'pending'}],30);
+assert.equal(unavailable.pendingCount,1,'unavailable outcomes must not be counted as waiting');
+assert.equal(unavailable.unavailableCount,1);
 console.log('signal performance core PASS');
