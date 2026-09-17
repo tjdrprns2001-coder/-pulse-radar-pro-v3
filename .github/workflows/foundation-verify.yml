@@ -10,6 +10,7 @@ on:
       - feat/unified-v2-m3-1-declutter
       - feat/unified-v2-m3-2-collision
       - feat/realtime-crypto-radar
+      - signal-quality-v2-operations
     paths:
       - '.github/workflows/**'
       - 'api/**'
@@ -21,6 +22,8 @@ on:
       - 'pulse-unified.html'
       - 'unified-chart.html'
       - 'scanner-shell-v13.html'
+      - 'performance-dashboard.html'
+      - 'risk-calculator.html'
       - 'package.json'
       - 'vercel.json'
       - 'netlify.toml'
@@ -39,6 +42,8 @@ on:
       - 'pulse-unified.html'
       - 'unified-chart.html'
       - 'scanner-shell-v13.html'
+      - 'performance-dashboard.html'
+      - 'risk-calculator.html'
       - 'package.json'
       - 'vercel.json'
       - 'netlify.toml'
