@@ -25,5 +25,32 @@
       if(typeof render==='function')render();
     }catch(e){console.warn('direct derivatives fallback',e)}
   }
-  addEventListener('load',()=>{setTimeout(loadDirectDerivatives,1200);setInterval(loadDirectDerivatives,30000)});
+
+  function installWeeklyTimeframe(){
+    try{
+      if(typeof TFS!=='undefined'&&!TFS.includes('1w'))TFS.push('1w');
+      const wrap=document.querySelector('.tfs');
+      if(wrap&&!wrap.querySelector('[data-tf="1w"]')){
+        const b=document.createElement('button');
+        b.className='btn';
+        b.dataset.tf='1w';
+        b.textContent='1W';
+        b.onclick=()=>{tf='1w';if(typeof buttons==='function')buttons();if(typeof run==='function')run()};
+        wrap.appendChild(b);
+      }
+      const style=document.createElement('style');
+      style.textContent='@media(min-width:701px){.mtf{grid-template-columns:repeat(5,1fr)!important}}';
+      document.head.appendChild(style);
+      const requested=new URLSearchParams(location.search).get('tf');
+      if(requested==='1w'&&typeof tf!=='undefined'&&tf!=='1w'){
+        tf='1w';
+        if(typeof buttons==='function')buttons();
+        if(typeof run==='function')run();
+      }
+      const fixStatus=()=>{const e=document.querySelector('#status');if(e&&/MTF\s+\d+\/4/.test(e.textContent))e.textContent=e.textContent.replace(/MTF\s+(\d+)\/4/,'MTF $1/5')};
+      setInterval(fixStatus,1000);
+    }catch(e){console.warn('weekly timeframe patch',e)}
+  }
+
+  addEventListener('load',()=>{installWeeklyTimeframe();setTimeout(loadDirectDerivatives,1200);setInterval(loadDirectDerivatives,30000)});
 })();
