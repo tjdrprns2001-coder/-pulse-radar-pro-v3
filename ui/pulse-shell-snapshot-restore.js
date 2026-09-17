@@ -7,10 +7,13 @@
   function setActive(){document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===VIEW))}
   function closeMenu(){$('side')?.classList.remove('open');$('shade')?.classList.remove('open')}
   function applyShellSymbol(raw){const s=cleanSymbol(raw);if($('symbol'))$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);window.dispatchEvent(new CustomEvent('pulse:symbolchange',{detail:{symbol:s,source:'restored-snapshot'}}));return s}
+  function loadScript(d,src){return new Promise((resolve,reject)=>{if(d.querySelector(`script[src="${src}"]`))return resolve();const s=d.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;d.head.appendChild(s)})}
+  async function injectV2(){const d=$('frame')?.contentDocument;if(!d||d.documentElement.dataset.signalQualityV2==='1')return;d.documentElement.dataset.signalQualityV2='1';try{await loadScript(d,'/lib/signal-quality/policy-gate.js');await loadScript(d,'/lib/signal-quality/alert-history.js');await loadScript(d,'/lib/signal-quality/research-links.js');await loadScript(d,'/ui/snapshot/snapshot-quality-v2.js');await loadScript(d,'/ui/signal-quality/research-actions.js')}catch(e){console.warn('Signal Quality v2 injection failed',e)}}
   function syncFromChild(){
     const frame=$('frame');
     try{
       const d=frame?.contentDocument,input=d?.getElementById('symbol');
+      injectV2();
       if(!input||input.dataset.shellSyncBound==='1')return;
       input.dataset.shellSyncBound='1';
       const sync=()=>applyShellSymbol(input.value);
@@ -24,7 +27,7 @@
     const frame=$('frame'),loading=$('loading');if(!frame)return;
     setActive();
     if($('pageTitle'))$('pageTitle').textContent='차트 스냅샷';
-    if($('pageDesc'))$('pageDesc').textContent='복원된 MTF 스냅샷 · 1W 포함';
+    if($('pageDesc'))$('pageDesc').textContent='복원된 MTF 스냅샷 · Signal Quality v2 · 1W 포함';
     loading?.classList.remove('hide');
     frame.src=src();
     const u=new URL(location.href);u.searchParams.set('view',VIEW);u.searchParams.set('symbol',symbol());history.replaceState(null,'',u);
@@ -33,7 +36,7 @@
   function install(){
     const groups=[...document.querySelectorAll('.group')],group=groups.find(g=>/Patterns\s*&\s*MTF/i.test(g.querySelector('.groupTitle')?.textContent||''));
     if(group&&!document.querySelector(`[data-view="${VIEW}"]`)){
-      const b=document.createElement('button');b.className='navBtn';b.dataset.view=VIEW;b.innerHTML='<span class="icon">▤</span>차트 스냅샷<span class="badge">RESTORED</span>';
+      const b=document.createElement('button');b.className='navBtn';b.dataset.view=VIEW;b.innerHTML='<span class="icon">▤</span>차트 스냅샷<span class="badge">QUALITY v2</span>';
       const old=group.querySelector('[data-view="snapshot"]');old?.insertAdjacentElement('afterend',b) || group.appendChild(b);
       b.addEventListener('click',openRestored);
     }
