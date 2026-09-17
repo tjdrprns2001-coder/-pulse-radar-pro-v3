@@ -39,6 +39,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/market-intel*"
+  to = "/.netlify/functions/market-intel:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/index"
   to = "/.netlify/functions/api-index"
   status = 200
