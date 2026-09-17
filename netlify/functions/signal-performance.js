@@ -1,3 +1,0 @@
-const {getStore}=require('@netlify/blobs');
-const handler=require('../../api/signal-performance.js');
-exports.handler=async function(event){let statusCode=200;const headers={};let body='';const req={method:event.httpMethod||'GET',query:event.queryStringParameters||{}};const res={setHeader(name,value){headers[name]=String(value)},status(code){statusCode=code;return this},json(value){body=JSON.stringify(value);headers['Content-Type']='application/json; charset=utf-8';return{statusCode,headers,body}}};const out=await handler(req,res,{getStore:(name)=>getStore({name})});if(out&&typeof out.statusCode==='number')return out;return{statusCode,headers,body}};

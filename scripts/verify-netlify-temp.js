@@ -3,7 +3,9 @@ function req(p){if(!fs.existsSync(p))throw new Error('missing '+p);return fs.rea
 const cfg=req('netlify.toml');
 const radar=req('netlify/functions/radar.js');
 const legacy=req('netlify/functions/api-index.js');
-const performance=req('netlify/functions/signal-performance.js');
+const performance=req('netlify/functions/signal-performance.mjs');
+const coinScan=req('netlify/functions/coin-scan.mjs');
+const coinScanApi=req('api/coin-scan.js');
 if(!/functions\s*=\s*"netlify\/functions"/.test(cfg))throw new Error('functions directory missing');
 if(!/from\s*=\s*"\/api\/radar\*"/.test(cfg))throw new Error('radar redirect missing');
 if(!/to\s*=\s*"\/.netlify\/functions\/radar:splat"/.test(cfg))throw new Error('radar function target missing');
@@ -16,11 +18,15 @@ for(const route of ['market','detail','backtest','calibration-freeze','calibrati
 }
 if(!/require\(['"]\.\.\/\.\.\/api\/radar\.js['"]\)/.test(radar))throw new Error('shared radar handler not reused');
 if(!/require\(['"]\.\.\/\.\.\/api\/index\.js['"]\)/.test(legacy))throw new Error('shared legacy handler not reused');
-if(!/require\(['"]\.\.\/\.\.\/api\/signal-performance\.js['"]\)/.test(performance))throw new Error('shared signal performance handler not reused');
-if(!/require\(['"]@netlify\/blobs['"]\)/.test(performance))throw new Error('signal performance function must statically import @netlify/blobs so Netlify injects runtime context');
-if(!/getStore/.test(performance)||!/handler\s*\(\s*req\s*,\s*res\s*,\s*\{\s*getStore\s*:/.test(performance))throw new Error('signal performance function must inject getStore into shared handler');
-for(const s of [radar,legacy,performance])if(!/queryStringParameters/.test(s)||!/statusCode/.test(s)||!/headers/.test(s))throw new Error('netlify adapter contract missing');
+for(const [name,src] of [['signal-performance',performance],['coin-scan',coinScan]]){
+  if(!/export\s+default\s+async\s+function/.test(src))throw new Error(name+' must use Netlify Functions v2 default export');
+  if(!/from\s+['"]@netlify\/blobs['"]/.test(src))throw new Error(name+' must statically import @netlify/blobs');
+  if(!/getStore/.test(src))throw new Error(name+' must inject getStore');
+}
+if(!/api\/signal-performance\.js/.test(performance))throw new Error('shared signal performance handler not reused');
+if(!/api\/coin-scan\.js/.test(coinScan))throw new Error('shared coin scan handler not reused');
+if(!/ctx\.getStore/.test(coinScanApi))throw new Error('coin scan API must pass injected getStore into performance recorder');
+if(!/queryStringParameters/.test(radar)||!/statusCode/.test(radar)||!/headers/.test(radar))throw new Error('legacy radar adapter contract missing');
 if(!/method\s*:\s*event\.httpMethod/.test(legacy)||!/body\s*:/.test(legacy)||!/send\s*\(/.test(legacy)||!/end\s*\(/.test(legacy))throw new Error('legacy req/res bridge incomplete');
-if(!/method\s*:\s*event\.httpMethod/.test(performance))throw new Error('signal performance method bridge incomplete');
 if(!/inferRoute/.test(legacy)||!/event\.path/.test(legacy)||!/query\.route/.test(legacy))throw new Error('netlify route inference missing');
 console.log('netlify temp deployment contract PASS');
