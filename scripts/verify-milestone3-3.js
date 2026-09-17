@@ -18,7 +18,8 @@ const files=[
   'tests/flow-summary-engine.test.js',
   'tests/snapshot-analysis-ui-contract.test.js',
   'tests/trendline-patterns-v2.test.js',
-  'tests/pattern-engine-v2.test.js'
+  'tests/pattern-engine-v2.test.js',
+  'tests/snapshot-pattern-render.test.js'
 ];
 for(const file of files){
   const result=spawnSync(process.execPath,['--test',file],{stdio:'inherit'});
