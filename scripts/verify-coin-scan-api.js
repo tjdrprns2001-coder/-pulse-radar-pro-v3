@@ -1,5 +1,5 @@
 const assert=require('assert');
-const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createScanService,applySectorRotation}=require('../lib/coin-scan/scan-service.js');
 const handler=require('../api/coin-scan.js');
 
 function frame(base=100){return Array.from({length:60},(_,i)=>[0,String(base+i*.1),String(base+i*.1+1),String(base+i*.1-1),String(base+i*.1+.2),String(1000+i*10),Date.now()-1000,String((1000+i*10)*(base+i*.1)),10,'550',String((1000+i*10)*(base+i*.1)*.56),0])}
@@ -13,6 +13,14 @@ const provider={
   async scanDeepCandidates(symbols,intervals){deepCalls.push(symbols.slice());const results={},errors=[];for(const s of symbols){if(s==='C1USDT'){errors.push({symbol:s,interval:'1h',error:'boom'});continue}if(s==='C2USDT'){const partial=intervals.filter(tf=>tf!=='5m');results[s]=Object.fromEntries(partial.map(tf=>[tf,frame()]));errors.push({symbol:s,interval:'5m',error:'partial'});continue}results[s]=Object.fromEntries(intervals.map(tf=>[tf,frame()]))}return{results,errors,contexts:{}}}
 };
 (async()=>{
+  const rotated=applySectorRotation([
+    {symbol:'LEADERUSDT',sector:'AI',dataState:'live',priceChange24h:8,scanClass:{key:'POST-SURGE'},reasons:[],structure:'bullish',summary:''},
+    {symbol:'LAGUSDT',sector:'AI',dataState:'live',priceChange24h:2,scanClass:{key:'ANOMALY'},reasons:[],structure:'neutral',summary:''},
+    {symbol:'OTHERUSDT',sector:'RWA',dataState:'live',priceChange24h:1,scanClass:{key:'ANOMALY'},reasons:[],structure:'neutral',summary:''}
+  ]);
+  assert.equal(rotated.find(x=>x.symbol==='LAGUSDT').scanClass.key,'SECTOR-ROTATION','same-sector laggard should become sector rotation');
+  assert.equal(rotated.find(x=>x.symbol==='OTHERUSDT').scanClass.key,'ANOMALY','unrelated sector must not be relabeled');
+
   const service=createScanService({provider,now:()=>123456});
   deepCalls=[];
   const out=await service.run({mode:'summary',limit:100});
