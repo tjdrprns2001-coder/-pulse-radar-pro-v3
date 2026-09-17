@@ -22,3 +22,8 @@ test('mobile CSS prevents horizontal overflow',()=>{
   assert.match(html,/@media\s*\(max-width:\s*650px\)/);
   assert.match(html,/overflow-wrap|word-break|min-width:\s*0/);
 });
+
+test('pattern context is composed in the primary request without duplicate fetch helper',()=>{
+  assert.match(js,/renderNarrative\(\{[^}]*patternSet/s);
+  assert.doesNotMatch(html,/pattern-context\.js/);
+});
