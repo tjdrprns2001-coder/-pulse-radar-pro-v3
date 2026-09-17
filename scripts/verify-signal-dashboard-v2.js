@@ -1,0 +1,10 @@
+const fs=require('fs');
+const html=fs.readFileSync('signal-performance.html','utf8');const js=fs.readFileSync('ui/signal-performance.js','utf8');const css=fs.readFileSync('ui/signal-performance.css','utf8');
+for(const s of ['성과 검증','보정 신뢰도','오탐 분석','상태전환','메타 근거','시스템 상태','실시간','과거 백필','15분','1시간','4시간','24시간','과거 상승 비율','과거 평균 수익률'])if(!(html+js).includes(s))throw new Error('missing dashboard text '+s);
+for(const ep of ['/api/signal-performance','/api/signal-calibration','/api/signal-alerts','/api/signal-health'])if(!js.includes(ep))throw new Error('missing endpoint '+ep);
+if(!js.includes('Promise.allSettled'))throw new Error('dashboard panels must fail independently');
+if(!js.includes('penaltyReasons')||!js.includes('calibratedConfidence')||!js.includes('rawConfidence'))throw new Error('calibration/penalty fields missing');
+if(!js.includes('metaEvidence')||!js.includes('publishedAt')||!js.includes('safeUrl'))throw new Error('source backed evidence rendering missing');
+if(/예측 확률|정확도/.test(html+js))throw new Error('historical metrics must not be labeled as forecast probability/accuracy');
+if(!/@media\(max-width:650px\)/.test(css)||!css.includes('grid-template-columns:1fr'))throw new Error('mobile single-column layout missing');
+console.log('signal dashboard v2 PASS');
