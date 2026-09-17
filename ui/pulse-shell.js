@@ -1,6 +1,7 @@
 (function(){
   const V={
     scanner:{title:'시장 스캐너',desc:'현물·선물 전체 종목 탐색',path:'/index.html'},
+    autoscan:{title:'자동 코인 분류',desc:'바이낸스 현물 USDT 전체 자동 스캔 · 상태별 분류',path:'/coin-scan.html'},
     radar:{title:'LIVE RADAR',desc:'전체 코인 · 멀티체인 DEX 실시간 이상징후',path:'/radar.html'},
     analysis:{title:'분석',desc:'구조 · SMC · 단테 · MTF · 모멘텀',path:'/unified-chart.html'},
     multi:{title:'다중 차트',desc:'같은 종목 · 독립 TF · SMC/ICT 비교',path:'/multi-chart.html'},

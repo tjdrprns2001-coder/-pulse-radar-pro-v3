@@ -1,0 +1,13 @@
+const fs=require('fs');const assert=require('assert');
+const html=fs.readFileSync('coin-scan.html','utf8');
+const js=fs.readFileSync('ui/coin-scan.js','utf8');
+const css=fs.readFileSync('ui/coin-scan.css','utf8');
+for(const s of ['ui/coin-scan.css','ui/coin-scan.js','전체','급등 전조','거래량 이상','매수세','눌림','이미 급등','약세','보류'])assert(html.includes(s),`html missing ${s}`);
+for(const s of ['AI','MEME','RWA','DeFi','L1','L2','Gaming','Infrastructure','기타'])assert(html.includes(s),`sector missing ${s}`);
+assert(js.includes('/api/coin-scan'),'API endpoint required');
+assert(js.includes('60000'),'60s refresh required');
+assert(js.includes('snapshot-analysis-restored.html'),'snapshot deep link required');
+assert(/escapeHtml|textContent/.test(js),'safe text rendering required');
+assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
+assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');
+console.log('coin scan ui PASS');
