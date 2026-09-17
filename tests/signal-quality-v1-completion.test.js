@@ -89,6 +89,16 @@ test('feature drift detects deterioration between historical and recent windows'
   assert.ok(r.recentContribution<r.historicalContribution);
 });
 
+test('feature drift reports both 30 and 90 day windows against historical baseline',()=>{
+  const day=86400000,now=240*day,rows=[];
+  for(let i=1;i<=240;i++)rows.push({atMs:i*day,featureValue:i%2,outcome:i<151?i%2:(i+1)%2});
+  const r=Drift.compareWindows(rows,{nowMs:now,windows:[30,90],historyDays:240,minRecent:20,minHistorical:50,warningDrop:.25});
+  assert.ok(r.windows['30']);
+  assert.ok(r.windows['90']);
+  assert.equal(r.windows['30'].recentDays,30);
+  assert.equal(r.windows['90'].recentDays,90);
+});
+
 test('feature drift abstains when samples are insufficient',()=>{
   const r=Drift.compareContribution([{atMs:1,featureValue:1,outcome:1}],{nowMs:10,minRecent:20,minHistorical:50});
   assert.equal(r.status,'insufficient');
