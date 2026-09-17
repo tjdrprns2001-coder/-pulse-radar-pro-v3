@@ -51,6 +51,14 @@ const provider={
   for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.scanClass.key,'STALE',`${sym} failed data must map to STALE`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
   assert(deep.items.find(x=>x.symbol==='C0USDT'),'deep mode returns requested symbol');
 
+  let recorderCalls=0;
+  const recorder={async recordItems(items){recorderCalls++;assert(items.length>0);throw new Error('blob down')}};
+  const isolated=createScanService({provider,now:()=>222222,performanceRecorder:recorder});
+  const isolatedDeep=await isolated.run({mode:'deep',symbols:['C0USDT'],limit:1});
+  assert.equal(isolatedDeep.status,'ok','recorder failure must not fail scan');
+  assert.equal(recorderCalls,1,'deep scan should invoke performance recorder once');
+  assert(Number.isFinite(isolatedDeep.items[0]?.lastPrice),'deep item must expose finite lastPrice for immutable snapshot');
+
   const cat=out.items[0]?.category;
   if(cat){const f=await service.run({mode:'summary',category:cat,limit:10});assert(f.items.every(x=>x.category===cat))}
   const sector=out.items.find(x=>x.sector)?.sector;
