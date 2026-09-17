@@ -34,5 +34,18 @@ const {createOpenAIGateway,normalizeBrief}=require('../lib/pulse-ai/openai-gatew
   const webSent=JSON.parse(webBody);
   assert(Array.isArray(webSent.plugins)&&webSent.plugins.some(x=>x.id==='web'),'web-enabled requests must use OpenRouter web plugin');
 
+  let fallbackCalls=0;
+  const fallbackFetch=async(url,opts)=>{
+    fallbackCalls++;
+    const req=JSON.parse(opts.body);
+    if(req.plugins)return{ok:false,status:402,text:async()=>'web credits required'};
+    return{ok:true,status:200,json:async()=>({model:'openrouter/free',choices:[{message:{content:JSON.stringify({summary:'시장 데이터만으로 요약했습니다.',highlights:[],watch:[],dataWarnings:['실시간 웹 검색을 사용할 수 없습니다.'],sources:[]})}}]})};
+  };
+  const fallbackGateway=createOpenAIGateway({apiKey:'secret-key',fetchImpl:fallbackFetch,sleep:async()=>{}});
+  const fallback=await fallbackGateway.brief({context:{task:'market summary'},useWeb:true,deep:false});
+  assert.equal(fallback.summary,'시장 데이터만으로 요약했습니다.','web-credit failure must fall back to non-web summary');
+  assert.equal(fallback.usedWeb,false,'fallback must not claim web was used');
+  assert.equal(fallbackCalls,2,'web failure should retry once without web plugin');
+
   console.log('pulse ai gateway PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
