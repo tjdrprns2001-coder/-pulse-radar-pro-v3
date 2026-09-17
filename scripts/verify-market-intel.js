@@ -4,6 +4,7 @@ const fs=require('fs');
 (async()=>{
   const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
   const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
+  const {createCoinGeckoMcpProvider,createCoinMarketCapMcpProvider}=require('../lib/market-intel/mcp-provider.js');
   const {createMarketIntelService}=require('../lib/market-intel/service.js');
   const handler=require('../api/market-intel.js');
 
@@ -25,17 +26,34 @@ const fs=require('fs');
   assert(cmcReq.every(x=>!x.url.includes('cmc-secret')));
   assert(cmcReq.every(x=>x.url.startsWith('https://pro-api.coinmarketcap.com')));
 
+  const cgMcp=createCoinGeckoMcpProvider({client:fakeClient({
+    search:{coins:[{id:'bitcoin',symbol:'btc',name:'Bitcoin',market_cap_rank:1}]},
+    coins_markets:[{id:'bitcoin',symbol:'btc',name:'Bitcoin',current_price:59950,market_cap:1199000000000,market_cap_rank:1,total_volume:39900000000,circulating_supply:19900000,total_supply:21000000,last_updated:'2026-09-18T00:00:00.000Z'}],
+    global:{data:{active_cryptocurrencies:10000,total_market_cap:{usd:2499000000000},total_volume:{usd:99900000000},market_cap_percentage:{btc:55.1}}}
+  })});
+  const cgm=await cgMcp.getAssetBySymbol('BTCUSDT');assert.equal(cgm.source,'coingecko-mcp');assert.equal(cgm.priceUsd,59950);
+
+  const cmcMcp=createCoinMarketCapMcpProvider({client:fakeClient({
+    get_crypto_quotes_latest:{data:{BTC:[{id:1,name:'Bitcoin',symbol:'BTC',cmc_rank:1,circulating_supply:19900000,total_supply:21000000,quote:{USD:{price:60050,volume_24h:40500000000,market_cap:1200000000000,last_updated:'2026-09-18T00:00:00.000Z'}}}]}},
+    get_global_metrics_latest:{data:{active_cryptocurrencies:10000,quote:{USD:{total_market_cap:2500500000000,total_volume_24h:100100000000}},btc_dominance:55.05}}
+  })});
+  const cmcm=await cmcMcp.getAssetBySymbol('BTCUSDT');assert.equal(cmcm.source,'coinmarketcap-mcp');assert.equal(cmcm.priceUsd,60050);
+
   let cgAssetCalls=0,cmcAssetCalls=0;
-  const svc=createMarketIntelService({coinGecko:{available:true,getOverview:async()=>cgo,getAssetBySymbol:async()=>{cgAssetCalls++;return cga},getDexDiscovery:async()=>({pools:[]})},coinMarketCap:{available:true,getLatestListings:async()=>[cmca],getAssetBySymbol:async()=>{cmcAssetCalls++;return cmca}},cacheTtlMs:60000,now:()=>1000});
-  const a1=await svc.getAsset('BTCUSDT'),a2=await svc.getAsset('BTCUSDT');assert.equal(a1.symbol,'BTCUSDT');assert(Math.abs(a1.crosscheck.priceDeltaPct)>0);assert.equal(cgAssetCalls,1);assert.equal(cmcAssetCalls,1);assert.deepEqual(a1,a2);
-  const partial=createMarketIntelService({coinGecko:{available:false},coinMarketCap:{available:true,getLatestListings:async()=>[cmca],getAssetBySymbol:async()=>cmca},now:()=>1000});const po=await partial.getOverview();assert.equal(po.health.coinGecko,'unavailable');assert.equal(po.health.coinMarketCap,'live');
+  const svc=createMarketIntelService({coinGecko:{available:true,getOverview:async()=>cgo,getAssetBySymbol:async()=>{cgAssetCalls++;return cga},getDexDiscovery:async()=>({pools:[]})},coinMarketCap:{available:true,getLatestListings:async()=>[cmca],getAssetBySymbol:async()=>{cmcAssetCalls++;return cmca}},coinGeckoMcp:cgMcp,coinMarketCapMcp:cmcMcp,cacheTtlMs:60000,now:()=>1000});
+  const a1=await svc.getAsset('BTCUSDT'),a2=await svc.getAsset('BTCUSDT');assert.equal(a1.symbol,'BTCUSDT');assert(Math.abs(a1.crosscheck.priceDeltaPct)>0);assert.equal(a1.sources.coinGeckoMcp.priceUsd,59950);assert.equal(a1.sources.coinMarketCapMcp.priceUsd,60050);assert(Math.abs(a1.mcpCrosscheck.coinGeckoRestVsMcp.priceDeltaPct)>0);assert(Math.abs(a1.mcpCrosscheck.coinMarketCapRestVsMcp.priceDeltaPct)>0);assert.equal(cgAssetCalls,1);assert.equal(cmcAssetCalls,1);assert.deepEqual(a1,a2);
+  const ov=await svc.getOverview();assert.equal(ov.health.coinGeckoMcp,'live');assert.equal(ov.health.coinMarketCapMcp,'live');assert(ov.mcpCrosscheck);
+  const partial=createMarketIntelService({coinGecko:{available:false},coinMarketCap:{available:true,getLatestListings:async()=>[cmca],getAssetBySymbol:async()=>cmca},coinGeckoMcp:{available:false},coinMarketCapMcp:{available:false},now:()=>1000});const po=await partial.getOverview();assert.equal(po.health.coinGecko,'unavailable');assert.equal(po.health.coinMarketCap,'live');assert.equal(po.health.coinGeckoMcp,'unavailable');assert.equal(po.health.coinMarketCapMcp,'unavailable');
 
   const req={method:'GET',query:{mode:'asset',symbol:'BTCUSDT'}},res=mockRes();await handler(req,res,{service:svc});assert.equal(res.code,200);assert.equal(res.body.symbol,'BTCUSDT');assert(!JSON.stringify(res.body).includes('cmc-secret'));assert(!JSON.stringify(res.body).includes('CG-demo-secret'));
   const bad=mockRes();await handler({method:'GET',query:{mode:'asset',symbol:'bad!'}},bad,{service:svc});assert.equal(bad.code,400);
   const post=mockRes();await handler({method:'POST',query:{}},post,{service:svc});assert.equal(post.code,405);
 
+  const marketApiSrc=fs.readFileSync(require.resolve('../api/market-intel.js'),'utf8');
   const briefingSrc=fs.readFileSync(require.resolve('../lib/pulse-ai/briefing-service.js'),'utf8');
   const pulseApiSrc=fs.readFileSync(require.resolve('../api/pulse-ai.js'),'utf8');
+  assert(marketApiSrc.includes('createCoinGeckoMcpProvider'),'market intel API must wire CoinGecko MCP');
+  assert(marketApiSrc.includes('createCoinMarketCapMcpProvider'),'market intel API must wire CoinMarketCap MCP');
   assert(briefingSrc.includes('marketIntelService'),'Pulse AI briefing must accept market intelligence service');
   assert(briefingSrc.includes('marketIntel'),'Pulse AI context must include market intelligence');
   assert(pulseApiSrc.includes('createMarketIntelService'),'Pulse AI API must construct market intelligence service');
@@ -43,4 +61,5 @@ const fs=require('fs');
 })().catch(e=>{console.error(e);process.exit(1)});
 
 function ok(json){return{ok:true,status:200,json:async()=>json,text:async()=>JSON.stringify(json)}}
+function fakeClient(map){return{available:true,listTools:async()=>Object.keys(map).map(name=>({name})),callTool:async(name)=>map[name]}}
 function mockRes(){return{code:0,body:null,headers:{},status(n){this.code=n;return this},json(v){this.body=v;return this},setHeader(k,v){this.headers[k]=v}}}
