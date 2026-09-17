@@ -16,6 +16,10 @@ assert.equal(out.fundingPct,null);
 assert(out.preSurge&&typeof out.preSurge.label==='string');
 assert(out.takerRatio===null||out.takerRatio>0);
 assert(Array.isArray(out.reasons));
+assert(out.momentumSignals&&typeof out.momentumSignals==='object','momentumSignals required');
+for(const k of ['rsi1h','rsi15m','macd1h','macd15m','stochRsi1h','stochRsi15m','aligned','overheated','score'])assert(Object.prototype.hasOwnProperty.call(out.momentumSignals,k),`${k} required`);
+assert(Number.isFinite(out.momentumSignals.rsi1h),'1h RSI should be finite with enough candles');
+assert(Number.isFinite(out.momentumSignals.rsi15m),'15m RSI should be finite with enough candles');
 const blocked=deep.analyzeDeep({symbol:'XLMUSDT',frames,dataState:'stale'});
 assert.equal(blocked.preSurge.label,'판정 보류');
 const missing=deep.analyzeDeep({symbol:'EMPTYUSDT',frames:{},dataState:'live'});
@@ -28,4 +32,7 @@ const surgeFrames={'1w':surgeRows,'1d':surgeRows,'4h':surgeRows,'1h':surgeRows,'
 const strong=deep.analyzeDeep({symbol:'TESTUSDT',frames:surgeFrames,dataState:'live',oiChangePct:3,fundingPct:.01});
 assert.equal(strong.alertState,'ARMED','strong multi-factor evidence should derive ARMED');
 assert.equal(strong.preSurge.label,'가능성 높음','PRE-SURGE v2 strong path must be reachable when optional OI is available');
+
+const snap=deep.indicatorSnapshot(up);
+for(const k of ['rsi','macdHist','stochRsi','k','d','j','score','aligned','overheated'])assert(Object.prototype.hasOwnProperty.call(snap,k),`indicator ${k} required`);
 console.log('coin scan deep PASS');
