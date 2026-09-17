@@ -1,1 +1,1 @@
-const {spawnSync}=require('node:child_process');const files=['tests/render-policy.test.js','tests/declutter-contract.test.js','tests/smc-plugin.test.js'];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);
+const {spawnSync}=require('node:child_process');const files=['tests/render-policy.test.js','tests/declutter-contract.test.js','tests/smc-plugin.test.js','tests/snapshot-quality-ui-contract.test.js'];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);
