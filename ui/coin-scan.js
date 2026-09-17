@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const DEEP_CHUNK=6;const state={category:'전체',sector:'전체',query:'',items:[],meta:null,loading:false,deepLoading:false,deepDone:0,deepTotal:0,error:null,deepError:null,refreshSeq:0};
-function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtTime(v){const n=Number(v);if(!Number.isFinite(n))return'-';try{return new Date(n).toLocaleString('ko-KR',{hour12:false})}catch{return'-'}}
 function matchesCategory(item){const c=state.category;if(c==='전체')return true;if(c==='급등 전조')return String(item.category).startsWith('급등 전조');return item.category===c}
 function filtered(){const q=state.query.trim().toUpperCase();return state.items.filter(x=>matchesCategory(x)&&(state.sector==='전체'||x.sector===state.sector)&&(!q||String(x.symbol).includes(q)))}
