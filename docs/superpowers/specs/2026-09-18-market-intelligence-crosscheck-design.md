@@ -15,24 +15,23 @@ Add free-tier CoinMarketCap + CoinGecko/GeckoTerminal enrichment to PulseRadar w
 - Never expose either key to browser code, logs or API responses.
 
 ## Architecture
-Create focused provider adapters under `lib/market-intel/` and one aggregation service. The service caches provider responses to respect free-tier quotas, normalizes source timestamps, resolves CoinGecko IDs through search/list data rather than guessing, and returns source health plus warnings instead of throwing away the whole response when one provider fails.
+Create focused provider adapters under `lib/market-intel/` and one aggregation service. The service caches provider responses to respect free-tier quotas, normalizes source timestamps, resolves CoinGecko IDs through search data rather than guessing, and returns source health plus warnings instead of throwing away the whole response when one provider fails.
 
 `api/market-intel.js` exposes read-only modes:
 - `mode=overview`: global state, trending, categories and source health.
-- `mode=asset&symbol=BTCUSDT`: normalized Binance symbol context plus CMC/CG market metadata and crosscheck deltas where possible.
+- `mode=asset&symbol=BTCUSDT`: CMC/CG market metadata and crosscheck deltas where possible.
 - `mode=dex`: GeckoTerminal trending/new pools for early discovery.
 
-The existing scanner can consume the service later through server-side calls, but this change will also wire a compact `marketIntel` block into `api/market-flow.js` so Pulse AI and the dashboard can use it immediately without changing current anomaly classifications.
+Pulse AI directly consumes the same server-side market-intel service and injects a compact `marketIntel` context block into briefing/chat prompts. This avoids changing the existing market-flow anomaly payload or classification logic while still making CMC/CG/GeckoTerminal context available to AI analysis immediately.
 
 ## Crosscheck rules
 - Never average conflicting prices blindly. Report per-source values and percentage deltas.
-- Mark data stale when provider timestamps exceed configured freshness windows.
-- CMC/CG disagreement is a warning, not a trading signal.
-- Missing API key, 401/429/plan-gated endpoints or provider downtime must return `available:false`/warning metadata while Binance scanning continues.
+- CMC/CG disagreement is a warning/context signal, not a trading signal.
+- Missing API key, 401/429/plan-gated endpoints or provider downtime must produce warning/health metadata while Binance scanning continues.
 - Free-tier calls use short shared caches and bounded lists; no per-symbol fan-out across the full universe.
 
 ## AI context
-Pulse AI receives compact source-health, market-regime, sector/trending and asset metadata summaries. It must describe these as corroborating context, not proof that news or metadata caused price movement.
+Pulse AI receives compact source-health, global market, sector/category and trending summaries. It must describe these as corroborating context, not proof that news or metadata caused price movement.
 
 ## Testing
-Add deterministic provider tests with mocked fetches for auth headers, base URLs, normalization, rate-limit fallback and secret non-leakage. Add service/API verification for partial-provider success, cache behavior and crosscheck deltas. Extend the repository Foundation Verify command so these regressions run in CI.
+Add deterministic provider/service/API tests with mocked fetches for auth headers, base URLs, normalization, partial-provider success, cache behavior, crosscheck deltas and secret non-leakage. Add a regression contract proving Pulse AI is wired to market-intel context. Extend the repository Foundation Verify command so these regressions run in CI.
