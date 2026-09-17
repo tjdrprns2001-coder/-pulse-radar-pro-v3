@@ -1,4 +1,5 @@
 const assert=require('assert');
+const fs=require('fs');
 
 (async()=>{
   const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
@@ -32,6 +33,12 @@ const assert=require('assert');
   const req={method:'GET',query:{mode:'asset',symbol:'BTCUSDT'}},res=mockRes();await handler(req,res,{service:svc});assert.equal(res.code,200);assert.equal(res.body.symbol,'BTCUSDT');assert(!JSON.stringify(res.body).includes('cmc-secret'));assert(!JSON.stringify(res.body).includes('CG-demo-secret'));
   const bad=mockRes();await handler({method:'GET',query:{mode:'asset',symbol:'bad!'}},bad,{service:svc});assert.equal(bad.code,400);
   const post=mockRes();await handler({method:'POST',query:{}},post,{service:svc});assert.equal(post.code,405);
+
+  const briefingSrc=fs.readFileSync(require.resolve('../lib/pulse-ai/briefing-service.js'),'utf8');
+  const pulseApiSrc=fs.readFileSync(require.resolve('../api/pulse-ai.js'),'utf8');
+  assert(briefingSrc.includes('marketIntelService'),'Pulse AI briefing must accept market intelligence service');
+  assert(briefingSrc.includes('marketIntel'),'Pulse AI context must include market intelligence');
+  assert(pulseApiSrc.includes('createMarketIntelService'),'Pulse AI API must construct market intelligence service');
   console.log('market intel PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
 
