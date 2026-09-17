@@ -21,6 +21,30 @@
   force = true
 
 [[redirects]]
+  from = "/api/signal-calibration*"
+  to = "/.netlify/functions/signal-calibration:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/signal-alerts*"
+  to = "/.netlify/functions/signal-alerts:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/signal-health*"
+  to = "/.netlify/functions/signal-health:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/signal-backfill*"
+  to = "/.netlify/functions/signal-backfill:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/radar*"
   to = "/.netlify/functions/radar:splat"
   status = 200

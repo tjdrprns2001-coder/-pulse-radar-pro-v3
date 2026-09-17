@@ -4,14 +4,19 @@ const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createBlobStore}=require('../lib/signal-performance/store.js');
 const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
 const {createSignalPerformanceService}=require('../lib/signal-performance/service.js');
+const {createAlertService}=require('../lib/signal-performance/alerts.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null;
+    let performanceRecorder=null,alertRecorder=null;
     if(typeof getStore==='function'){
-      try{performanceRecorder=createSignalPerformanceService({store:createBlobStore({getStore}),resolver:createBinanceResolver({})})}catch(_e){performanceRecorder=null}
+      try{
+        const store=createBlobStore({getStore});
+        performanceRecorder=createSignalPerformanceService({store,resolver:createBinanceResolver({})});
+        alertRecorder=createAlertService({store});
+      }catch(_e){performanceRecorder=null;alertRecorder=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder});
   }
   return singleton;
 }

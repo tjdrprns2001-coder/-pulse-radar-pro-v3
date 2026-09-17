@@ -1,0 +1,25 @@
+'use strict';
+const assert=require('assert');
+const Core=require('../lib/signal-performance/core.js');
+const {createMemoryStore}=require('../lib/signal-performance/store.js');
+const {createHealthTracker}=require('../lib/signal-performance/health.js');
+(async()=>{
+  const backfill=Core.buildSnapshot({symbol:'BTCUSDT',scanClassKey:'PRE-SURGE',capturedAt:1000,entryPrice:10,source:'backfill'});
+  assert.equal(backfill.source,'backfill');
+  assert.throws(()=>Core.buildSnapshot({symbol:'BTCUSDT',scanClassKey:'PRE-SURGE',capturedAt:null,entryPrice:10}),/capturedAt/i);
+  assert.throws(()=>Core.buildSnapshot({symbol:'BTCUSDT',scanClassKey:'PRE-SURGE',capturedAt:1000,entryPrice:null}),/entryPrice/i);
+  const store=createMemoryStore();
+  await store.putCheckpoint('job-1',{nextTs:123});
+  assert.deepEqual(await store.getCheckpoint('job-1'),{nextTs:123});
+  await store.putAlert('a1',{id:'a1',symbol:'BTCUSDT'});
+  assert.equal((await store.listAlerts()).length,1);
+  await store.putEvidence('e1',{id:'e1',title:'official'});
+  assert.equal((await store.listEvidence()).length,1);
+  const tracker=createHealthTracker({now:()=>5000});
+  tracker.mark('blobs','degraded','timeout');
+  const snap=tracker.snapshot();
+  assert.equal(snap.modules.blobs.status,'degraded');
+  assert.equal(snap.modules.blobs.updatedAt,5000);
+  assert.throws(()=>tracker.mark('x','mystery'),/status/i);
+  console.log('signal health contract PASS');
+})().catch(e=>{console.error(e);process.exit(1)});

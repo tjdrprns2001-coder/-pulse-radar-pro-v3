@@ -1,0 +1,23 @@
+'use strict';
+const assert=require('assert');
+const {buildCalibration,calibrateConfidence}=require('../lib/signal-performance/calibration.js');
+const {penaltyFor}=require('../lib/signal-performance/penalty.js');
+function rows(n,{cls='PRE-SURGE',source='live',ret=i=>i%3===0?-2:3,confidence=70}={}){return Array.from({length:n},(_,i)=>({scanClassKey:cls,source,rawConfidence:confidence,horizons:{h1:{status:'evaluated',returnPct:ret(i)}}}))}
+const c29=buildCalibration(rows(29));
+assert.equal(c29.classes['PRE-SURGE'].horizons.h1.status,'표본 부족');
+const s29=c29.classes['PRE-SURGE'].horizons.h1;
+assert.deepEqual(calibrateConfidence({rawConfidence:78,scanClassKey:'PRE-SURGE',stats:s29}),{rawConfidence:78,calibratedConfidence:78,status:'표본 부족',sampleCount:29,historicalHitRate:s29.positiveRatio});
+const data=[...rows(20,{source:'live'}),...rows(10,{source:'backfill'})];
+const c30=buildCalibration(data);
+const s30=c30.classes['PRE-SURGE'].horizons.h1;
+assert.equal(s30.status,'통계 사용 가능');
+assert.equal(s30.sampleCount,30);assert.equal(s30.liveCount,20);assert.equal(s30.backfillCount,10);
+assert(Number.isFinite(s30.p25ReturnPct)&&Number.isFinite(s30.p75ReturnPct));
+assert(Number.isFinite(s30.brierScore));
+const adj=calibrateConfidence({rawConfidence:78,scanClassKey:'PRE-SURGE',stats:s30});
+assert(adj.calibratedConfidence>=68&&adj.calibratedConfidence<=88,'calibration adjustment must be bounded');
+const blocked=calibrateConfidence({rawConfidence:90,scanClassKey:'PUMP-RISK',stats:{sampleCount:100,positiveRatio:.9}});
+assert.equal(blocked.calibratedConfidence,90);assert.equal(blocked.status,'차단 분류');
+const p=penaltyFor({takerRatio:.9,volumeAcceleration15m:.8,quoteVolume24h:1000000,priceChange24h:9,breakout:false},{h4:{status:'evaluated',returnPct:-3},h24:{status:'evaluated',returnPct:-5}});
+assert(p.points>0&&p.points<=20);assert(p.reasons.length>0);
+console.log('signal calibration contract PASS');
