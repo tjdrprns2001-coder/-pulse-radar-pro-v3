@@ -1,0 +1,1 @@
+RED phase: v2 contract tests are intentionally committed before implementation. Expected failures are missing historical-backfill, policy-gate, alert-history, performance, research-links, and risk-calculator modules plus missing UI contracts.
