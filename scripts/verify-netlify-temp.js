@@ -18,7 +18,7 @@ if(!/require\(['"]\.\.\/\.\.\/api\/radar\.js['"]\)/.test(radar))throw new Error(
 if(!/require\(['"]\.\.\/\.\.\/api\/index\.js['"]\)/.test(legacy))throw new Error('shared legacy handler not reused');
 if(!/require\(['"]\.\.\/\.\.\/api\/signal-performance\.js['"]\)/.test(performance))throw new Error('shared signal performance handler not reused');
 if(!/require\(['"]@netlify\/blobs['"]\)/.test(performance))throw new Error('signal performance function must statically import @netlify/blobs so Netlify injects runtime context');
-if(!/getStore/.test(performance)||!/ctx\s*:\s*\{\s*getStore/.test(performance))throw new Error('signal performance function must inject getStore into shared handler');
+if(!/getStore/.test(performance)||!/handler\s*\(\s*req\s*,\s*res\s*,\s*\{\s*getStore\s*:/.test(performance))throw new Error('signal performance function must inject getStore into shared handler');
 for(const s of [radar,legacy,performance])if(!/queryStringParameters/.test(s)||!/statusCode/.test(s)||!/headers/.test(s))throw new Error('netlify adapter contract missing');
 if(!/method\s*:\s*event\.httpMethod/.test(legacy)||!/body\s*:/.test(legacy)||!/send\s*\(/.test(legacy)||!/end\s*\(/.test(legacy))throw new Error('legacy req/res bridge incomplete');
 if(!/method\s*:\s*event\.httpMethod/.test(performance))throw new Error('signal performance method bridge incomplete');
