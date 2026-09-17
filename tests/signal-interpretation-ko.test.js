@@ -25,3 +25,11 @@ test('beginner summary separates structure momentum flow presurge and data',()=>
   assert.match(src,/매수\/매도 비율/);
   assert.match(src,/매도 우위|매수 우위|균형/);
 });
+
+test('chart header mirrors freshness instead of hard-coded LIVE',()=>{
+  const src=fs.readFileSync(modulePath,'utf8');
+  assert.match(html,/id="chartDataStatus"/);
+  assert.doesNotMatch(html,/>● LIVE</);
+  assert.match(src,/chartDataStatus/);
+  assert.match(src,/데이터 오류|오래된 데이터|재연결 중/);
+});
