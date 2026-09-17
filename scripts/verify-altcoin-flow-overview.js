@@ -1,0 +1,17 @@
+const assert=require('assert');
+const fs=require('fs');
+const html=fs.readFileSync('radar.html','utf8');
+const ui=fs.readFileSync('ui/radar-altcoin-flow.js','utf8');
+const css=fs.readFileSync('ui/radar-altcoin-flow.css','utf8');
+assert(html.includes('id="altInflowOverview"'));
+assert(html.includes('id="altPreSurgeOverview"'));
+assert(html.includes('자금 유입 집중'));
+assert(html.includes('급등 직전 감시'));
+assert(ui.includes('renderOverview'));
+assert(ui.includes('inflowScore'));
+assert(ui.includes('preSurgeRank'));
+assert(ui.includes('altInflowOverview'));
+assert(ui.includes('altPreSurgeOverview'));
+assert(css.includes('altOverviewGrid'));
+assert(css.includes('altOverviewCard'));
+console.log('altcoin flow overview PASS');
