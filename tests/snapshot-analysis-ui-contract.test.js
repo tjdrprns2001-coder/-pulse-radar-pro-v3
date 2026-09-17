@@ -27,3 +27,25 @@ test('pattern context is composed in the primary request without duplicate fetch
   assert.match(js,/renderNarrative\(\{[^}]*patternSet/s);
   assert.doesNotMatch(html,/pattern-context\.js/);
 });
+
+test('restored chart snapshot is cloned separately and adds weekly timeframe',()=>{
+  assert.equal(fs.existsSync('snapshot-analysis-restored.html'),true);
+  assert.equal(fs.existsSync('ui/snapshot/snapshot-weekly.js'),true);
+  const restored=fs.readFileSync('snapshot-analysis-restored.html','utf8');
+  const weekly=fs.readFileSync('ui/snapshot/snapshot-weekly.js','utf8');
+  assert.match(restored,/PulseRadar Pro · 차트 스냅샷 분석/);
+  for(const tf of ['15m','1h','4h','1d','1w']) assert.match(restored,new RegExp(`data-tf=["']${tf}["']`));
+  assert.match(restored,/snapshot-weekly\.js/);
+  assert.match(weekly,/state\.tf\s*=\s*['"]1w['"]/);
+  assert.match(weekly,/runSnapshotAnalysis/);
+});
+
+test('unified shell exposes restored snapshot beside existing MTF snapshot',()=>{
+  const shell=fs.readFileSync('pulse-unified.html','utf8');
+  const bridge=fs.readFileSync('ui/pulse-shell-snapshot-restore.js','utf8');
+  assert.match(shell,/pulse-shell-snapshot-restore\.js/);
+  assert.match(bridge,/data-view/);
+  assert.match(bridge,/chartsnapshot/);
+  assert.match(bridge,/snapshot-analysis-restored\.html/);
+  assert.match(bridge,/MTF 스냅샷|차트 스냅샷/);
+});
