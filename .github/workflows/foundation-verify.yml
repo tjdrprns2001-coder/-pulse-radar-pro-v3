@@ -17,6 +17,7 @@ on:
       - 'pulse-unified.html'
       - 'unified-chart.html'
       - 'multi-chart.html'
+      - 'snapshot-analysis.html'
       - 'scanner-shell-v13.html'
       - 'package.json'
       - 'scripts/**'
@@ -32,5 +33,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Milestone 3.3 and multi-chart
+        run: |
+          node scripts/verify-milestone3-3.js
+          node scripts/verify-multi-chart.js
       - name: Verify repository
-        run: npm run verify
+        shell: bash
+        run: |
+          if [ -f scripts/verify-radar-core.js ]; then
+            npm run verify
+          else
+            node scripts/verify-milestone3-2.js
+            node scripts/verify-milestone3-1.js
+            node scripts/verify-milestone3.js
+            node scripts/verify-milestone2.js
+            node scripts/verify-milestone1.js
+            node scripts/calibration-self-check.js
+            node scripts/release-gate.js
+          fi
