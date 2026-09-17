@@ -17,6 +17,7 @@ const files=[
   'tests/narrative-renderer.test.js',
   'tests/flow-summary-engine.test.js',
   'tests/snapshot-analysis-ui-contract.test.js',
+  'tests/signal-quality-foundation.test.js',
   'tests/trendline-patterns-v2.test.js',
   'tests/pattern-engine-v2.test.js',
   'tests/snapshot-pattern-render.test.js'
