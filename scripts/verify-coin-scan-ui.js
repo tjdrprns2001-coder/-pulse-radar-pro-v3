@@ -12,6 +12,12 @@ assert(js.includes('candidateSymbols'),'progressive candidate enrichment require
 assert(js.includes('60000'),'60s refresh required');
 assert(js.includes('snapshot-analysis-restored.html'),'snapshot deep link required');
 assert(/escapeHtml|textContent/.test(js),'safe text rendering required');
+assert(js.includes('tradeSignal'),'trade signal data must be rendered');
+assert(js.includes('signalBadge'),'trade signal badge required');
+assert(js.includes('신뢰도'),'trade signal confidence text required');
+assert(js.includes('확인'),'trade signal confirmation count required');
+assert(css.includes('.tradeSignal'),'trade signal layout style required');
+assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
 assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');
 console.log('coin scan ui PASS');
