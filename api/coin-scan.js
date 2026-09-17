@@ -5,15 +5,18 @@ const {createBlobStore}=require('../lib/signal-performance/store.js');
 const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
 const {createSignalPerformanceService}=require('../lib/signal-performance/service.js');
 let singleton=null;
-function defaultService(){
+function defaultService(getStore){
   if(!singleton){
-    const performanceRecorder=createSignalPerformanceService({store:createBlobStore({}),resolver:createBinanceResolver({})});
+    let performanceRecorder=null;
+    if(typeof getStore==='function'){
+      try{performanceRecorder=createSignalPerformanceService({store:createBlobStore({getStore}),resolver:createBinanceResolver({})})}catch(_e){performanceRecorder=null}
+    }
     singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder});
   }
   return singleton;
 }
 module.exports=async function handler(req,res,ctx={}){
-  const service=ctx.service||defaultService();
+  const service=ctx.service||defaultService(ctx.getStore);
   const q=req&&req.query||{};
   const mode=String(q.mode||'summary');
   const category=q.category?String(q.category):null;
