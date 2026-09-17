@@ -34,20 +34,32 @@ assert.equal(core.CATEGORY_ORDER.length,8);
 const strong=core.buildTradeSignal({
   dataState:'live',category:'급등 전조 강함',structure:'bullish',
   preSurge:{label:'가능성 높음',confirmations:4},takerRatio:1.42,
-  volumeAcceleration:2.1,priceChange1h:2.4,alreadySurged:false
+  volumeAcceleration:2.1,priceChange1h:2.4,alreadySurged:false,
+  momentumSignals:{aligned:true,overheated:false,score:4}
 });
 assert.equal(strong.level,'매수 후보');
 assert(strong.confidence>=80,'strong candidate should have high confidence');
 assert(strong.confirmations>=4,'strong candidate should require multiple confirmations');
+assert(strong.reasons.some(x=>x.includes('모멘텀')),'aligned momentum should appear as one confirmation axis');
 assert.equal(strong.invalidations.length,0);
 
 const watch=core.buildTradeSignal({
   dataState:'live',category:'급등 전조 관찰',structure:'bullish',
   preSurge:{label:'관찰',confirmations:2},takerRatio:1.18,
-  volumeAcceleration:1.5,priceChange1h:1.1,alreadySurged:false
+  volumeAcceleration:1.5,priceChange1h:1.1,alreadySurged:false,
+  momentumSignals:{aligned:false,overheated:false,score:1}
 });
 assert.equal(watch.level,'관찰');
 assert(watch.confidence>0&&watch.confidence<80);
+
+const overheated=core.buildTradeSignal({
+  dataState:'live',category:'급등 전조 강함',structure:'bullish',
+  preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.5,
+  volumeAcceleration:2.3,priceChange1h:4.5,alreadySurged:false,
+  momentumSignals:{aligned:true,overheated:true,score:4,rsi1h:78,rsi15m:84}
+});
+assert.notEqual(overheated.level,'매수 후보','overheated momentum must downgrade a strong candidate');
+assert(overheated.invalidations.some(x=>x.includes('과열')),'overheated downgrade must explain why');
 
 const delayed=core.buildTradeSignal({dataState:'delayed',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.5,volumeAcceleration:2.5});
 assert.equal(delayed.level,'제외');
