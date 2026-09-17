@@ -1,0 +1,4 @@
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url);const handler=require('../../api/coin-report.js');
+export default async (request)=>{const url=new URL(request.url);let code=200,payload=null;const req={method:request.method,query:Object.fromEntries(url.searchParams.entries())};const res={status(n){code=n;return this},json(v){payload=v;return v},setHeader(){}};await handler(req,res);return new Response(JSON.stringify(payload??{status:'error',error:'empty response'}),{status:code,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}})};
+export const config={path:'/api/coin-report'};

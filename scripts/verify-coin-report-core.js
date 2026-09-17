@@ -1,0 +1,5 @@
+const assert=require('assert');const A=require('../lib/coin-report/analyzer.js');
+function frame(start=100,dir=1){const out=[];for(let i=0;i<120;i++){const c=start+i*.12*dir+Math.sin(i/3)*.4,o=c-.1*dir,h=Math.max(o,c)+.5,l=Math.min(o,c)-.5,v=100+(i>112?180:0);out.push([i,o,h,l,c,v,0,v*c,0,0,v*c*.58])}return out}
+const frames={'1w':frame(30,1),'1d':frame(40,1),'4h':frame(50,1),'1h':frame(60,1),'15m':frame(70,1)};
+const r=A.analyzeCoinReport({symbol:'AAAUSDT',frames,derivatives:{oiChangePct:2.1,fundingPct:.01}});assert.equal(r.status,'ok');assert.equal(Object.keys(r.multiTimeframe).length,5);assert(r.snapshot.candles.length<=80);assert(r.snapshot.overlays.length<=8);assert(r.levels.support!=null);assert(r.levels.resistance!=null);assert(['OBSERVE','NO_SIGNAL'].includes(r.decisionState));
+const partial=A.analyzeCoinReport({symbol:'AAAUSDT',frames:{'4h':frame()},errors:[{interval:'1w'}]});assert(partial.dataWarnings.length>=1);assert.equal(partial.decisionState,'DATA_WARNING');console.log('coin report core PASS');
