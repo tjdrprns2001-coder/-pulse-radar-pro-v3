@@ -30,6 +30,12 @@ const {createSignalPerformanceService}=require('../lib/signal-performance/servic
   const cls=perf.classes.find(x=>x.key==='PRE-SURGE');assert(cls);assert.equal(cls.horizons.m15.evaluatedCount,1);assert.equal(cls.horizons.m15.sampleState,'표본 부족');
   assert.equal(perf.recent.length,1);
 
+  const nullTimeStore=createMemoryStore();
+  const nullTimeService=createSignalPerformanceService({store:nullTimeStore,resolver,now:()=>31*60*1000});
+  const nullTime=await nullTimeService.recordItems([{...base,symbol:'TIMEUSDT',updatedAt:null,capturedAt:null}]);
+  assert.equal(nullTime.recorded,1);
+  assert.equal((await nullTimeStore.listSnapshots())[0].capturedAt,31*60*1000,'null capture timestamps must fall back to now');
+
   const badStore={...createMemoryStore(),async putSnapshot(){throw new Error('blob down')}};
   const isolated=createSignalPerformanceService({store:badStore,resolver,now:()=>0});
   const r=await isolated.recordItems([base]);assert.equal(r.errors.length,1,'store failures should be returned, not thrown');
