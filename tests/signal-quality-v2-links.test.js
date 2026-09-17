@@ -14,11 +14,13 @@ test('research link helper preserves symbol tf source and context',()=>{
   assert.match(u,/context=PRE/);
 });
 
-test('scanner and surge surfaces expose one-click research actions',()=>{
+test('scanner and surge one-click workflow exposes analysis snapshot ict and performance destinations',()=>{
+  const links=read('lib/signal-quality/research-links.js');
   const helper=read('ui/signal-quality/research-actions.js');
-  assert.match(helper,/snapshot-analysis-restored\.html/);
-  assert.match(helper,/performance-dashboard\.html/);
-  assert.match(helper,/ict-narrative-lab\.html/);
-  assert.match(helper,/technique-lab\.html/);
+  assert.match(links,/snapshot-analysis-restored\.html/);
+  assert.match(links,/performance-dashboard\.html/);
+  assert.match(links,/ict-narrative-lab\.html/);
+  assert.match(links,/technique-lab\.html/);
+  assert.match(helper,/Links\.bundle/);
   assert.match(helper,/symbol/);
 });
