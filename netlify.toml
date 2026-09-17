@@ -3,6 +3,12 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/api/coin-scan*"
+  to = "/.netlify/functions/coin-scan:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/radar*"
   to = "/.netlify/functions/radar:splat"
   status = 200
