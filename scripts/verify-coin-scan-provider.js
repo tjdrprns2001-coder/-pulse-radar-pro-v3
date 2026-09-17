@@ -1,6 +1,8 @@
 const assert=require('assert');
 const {createTtlCache}=require('../lib/coin-scan/cache.js');
-const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+const {DEFAULT_BASES,createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+
+assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-data-only host should be preferred for serverless deployments');
 
 (async()=>{
   let now=1000;
