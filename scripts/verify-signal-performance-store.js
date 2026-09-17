@@ -1,4 +1,7 @@
 const assert=require('assert');
+const fs=require('fs');
+const storeSource=fs.readFileSync('lib/signal-performance/store.js','utf8');
+assert(/^const \{getStore:netlifyGetStore\}=require\('@netlify\/blobs'\);/m.test(storeSource),'Netlify Blobs must be statically imported at module scope so Netlify can inject runtime context');
 const {createMemoryStore,createBlobStore}=require('../lib/signal-performance/store.js');
 
 (async()=>{
