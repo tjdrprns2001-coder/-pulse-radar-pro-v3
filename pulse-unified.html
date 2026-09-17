@@ -18,6 +18,7 @@
   <div class="brand"><div class="logo">P</div><div><b>PulseRadar Pro v3</b><small>Unified Trading Research Workspace</small></div></div>
   <div class="group"><div class="groupTitle">Core</div>
     <button class="navBtn active" data-view="scanner"><span class="icon">⌁</span>시장 스캐너<span class="badge">LIVE</span></button>
+    <button class="navBtn" data-view="pulseai"><span class="icon">✦</span>Pulse AI<span class="badge">AI</span></button>
     <button class="navBtn" data-view="autoscan"><span class="icon">⌕</span>자동 코인 분류<span class="badge">NEW</span></button>
     <button class="navBtn" data-view="radar"><span class="icon">◉</span>LIVE RADAR<span class="badge">NEW</span></button>
     <button class="navBtn" data-view="analysis"><span class="icon">◫</span>통합 상세 분석</button>
@@ -53,9 +54,7 @@
     <button class="menuBtn" id="menuBtn" aria-label="전체 메뉴 열기">☰</button>
     <div class="topTitle"><b id="pageTitle">시장 스캐너</b><span id="pageDesc">현물·선물 전체 종목 탐색</span></div>
     <span class="stateBadge" id="dataState" data-pulse-data-state="live" data-severity="ok">실시간</span>
-    <select class="presetSelect" id="preset" aria-label="차트 프리셋">
-      <option value="clean">Clean</option><option value="structure">Structure</option><option value="smc">SMC</option><option value="dante">Dante</option><option value="full">Full</option>
-    </select>
+    <select class="presetSelect" id="preset" aria-label="차트 프리셋"><option value="clean">Clean</option><option value="structure">Structure</option><option value="smc">SMC</option><option value="dante">Dante</option><option value="full">Full</option></select>
     <div class="symbolBox"><input id="symbol" value="BTCUSDT" aria-label="symbol"><button class="go" id="go">적용</button></div>
     <button class="openTab" id="openTab">새 탭 ↗</button>
   </header>
@@ -63,11 +62,11 @@
 </main>
 </div>
 <nav class="mobileNav" aria-label="모바일 핵심 메뉴">
+  <button class="mBtn" data-view="pulseai"><span>✦</span>Pulse AI</button>
   <button class="mBtn" data-view="radar"><span>◉</span>Radar</button>
   <button class="mBtn" data-view="analysis"><span>◫</span>차트</button>
   <button class="mBtn" data-view="multi"><span>▦</span>MTF</button>
   <button class="mBtn" data-view="structure"><span>⌁</span>구조</button>
-  <button class="mBtn" data-view="ict"><span>◇</span>SMC</button>
   <button class="mBtn" id="moreBtn"><span>☰</span>전체</button>
 </nav>
 </body>
