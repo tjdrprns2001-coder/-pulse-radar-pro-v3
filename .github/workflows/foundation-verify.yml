@@ -10,6 +10,7 @@ on:
       - feat/unified-v2-m3-1-declutter
       - feat/unified-v2-m3-2-collision
       - feat/realtime-crypto-radar
+      - feat/pre-surge-evidence-v2
     paths:
       - '.github/workflows/**'
       - 'api/**'
