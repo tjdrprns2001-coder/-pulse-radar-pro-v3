@@ -1,0 +1,20 @@
+const assert=require('assert');
+const {createTtlCache}=require('../lib/coin-scan/cache.js');
+const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+(async()=>{
+  let now=1000;const cache=createTtlCache({now:()=>now});cache.set('x',1,100);assert.equal(cache.get('x'),1);now=1201;assert.equal(cache.get('x'),undefined);
+  const calls=[];let active=0,maxActive=0;
+  const fetchImpl=async url=>{calls.push(url);active++;maxActive=Math.max(maxActive,active);await new Promise(r=>setTimeout(r,5));active--;
+    if(url.includes('BADUSDT'))return{ok:false,status:502,json:async()=>({})};
+    if(url.includes('exchangeInfo'))return{ok:true,status:200,json:async()=>({symbols:[{symbol:'XLMUSDT'}]})};
+    if(url.includes('ticker/24hr'))return{ok:true,status:200,json:async()=>([{symbol:'XLMUSDT'}])};
+    return{ok:true,status:200,json:async()=>([[1,2,3]])};
+  };
+  const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2});
+  await p.getUniverse();await p.getUniverse();assert.equal(calls.filter(x=>x.includes('exchangeInfo')).length,1);
+  await p.getTickers();await p.getTickers();assert.equal(calls.filter(x=>x.includes('ticker/24hr')).length,1);
+  const k=await p.getKlines('XLMUSDT','1h',120);assert.deepEqual(k,[[1,2,3]]);
+  const batch=await p.scanDeepCandidates(['XLMUSDT','ETHUSDT','BADUSDT'],['1h','15m']);
+  assert(batch.results.XLMUSDT);assert(batch.errors.some(e=>e.symbol==='BADUSDT'));assert(maxActive<=2);
+  console.log('coin scan provider PASS');
+})().catch(e=>{console.error(e);process.exit(1)});
