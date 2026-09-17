@@ -11,3 +11,4 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/verify-signal-performance-core.js
+      - run: node scripts/verify-signal-performance-store.js
