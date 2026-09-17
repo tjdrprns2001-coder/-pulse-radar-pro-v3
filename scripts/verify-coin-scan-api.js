@@ -22,9 +22,12 @@ const provider={
   assert.equal(deepCalls.length,0,'summary path must stay fast');
   assert(Array.isArray(out.candidateSymbols)&&out.candidateSymbols.length>0,'summary returns candidate symbols for progressive enrichment');
   assert(out.categories&&typeof out.categories==='object');
+  assert(out.scanClasses&&typeof out.scanClasses==='object','v2 scan class counts required');
   assert(out.dataHealth&&typeof out.dataHealth.live==='number');
   for(const x of out.items.slice(0,3)){
-    for(const k of ['symbol','category','sector','priority','dataState','reasons','tfState','summary','updatedAt','tradeSignal'])assert(Object.prototype.hasOwnProperty.call(x,k),`${k} required`);
+    for(const k of ['symbol','category','scanClass','sector','priority','dataState','reasons','tfState','summary','updatedAt','tradeSignal'])assert(Object.prototype.hasOwnProperty.call(x,k),`${k} required`);
+    assert(x.scanClass&&typeof x.scanClass.key==='string','scanClass key required');
+    assert(typeof x.scanClass.label==='string'&&x.scanClass.label.length>0,'Korean scanClass label required');
     assert(['매수 후보','관찰','제외'].includes(x.tradeSignal.level));
     assert(Number.isFinite(x.tradeSignal.confidence));
     assert(Array.isArray(x.tradeSignal.reasons));
@@ -37,7 +40,7 @@ const provider={
   assert.equal(deep.deepScanCount,3);
   assert.equal(deepCalls.length,1);
   assert.deepEqual(deepCalls[0],['C0USDT','C1USDT','C2USDT']);
-  for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
+  for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.scanClass.key,'STALE',`${sym} failed data must map to STALE`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
   assert(deep.items.find(x=>x.symbol==='C0USDT'),'deep mode returns requested symbol');
 
   const cat=out.items[0]?.category;
@@ -50,6 +53,7 @@ const provider={
   const fallback=await service.run({mode:'summary',limit:100});
   assert.equal(fallback.partial,true);
   assert(fallback.items.every(x=>x.dataState==='delayed'));
+  assert(fallback.items.every(x=>x.scanClass?.key==='STALE'),'delayed fallback must map to STALE');
   assert(!fallback.items.some(x=>x.category==='급등 전조 강함'),'delayed fallback cannot stay strong');
   assert(fallback.items.every(x=>x.tradeSignal?.level==='제외'),'delayed fallback cannot expose buy candidates');
   provider.failAll=false;
