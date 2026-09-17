@@ -3,12 +3,16 @@ const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createOpenAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
+const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
+const {createMarketIntelService}=require('../lib/market-intel/service.js');
 let singleton=null;
 function defaultService(){
   if(!singleton){
     const scanService=createScanService({provider:createBinanceProvider({})});
     const gateway=createOpenAIGateway({});
-    singleton=createBriefingService({scanService,gateway});
+    const marketIntelService=createMarketIntelService({coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})});
+    singleton=createBriefingService({scanService,gateway,marketIntelService});
   }
   return singleton;
 }
