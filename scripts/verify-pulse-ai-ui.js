@@ -1,0 +1,3 @@
+const assert=require('assert');const fs=require('fs');
+const page=fs.readFileSync('pulse-ai.html','utf8'),js=fs.readFileSync('ui/pulse-ai.js','utf8'),shell=fs.readFileSync('pulse-unified.html','utf8');
+assert(page.includes('PULSE AI AUTOPILOT'));assert(page.includes('id="sources"'));assert(page.includes('id="question"'));assert(js.includes('/api/pulse-ai?mode=brief'));assert(js.includes("setInterval(load,30000)"));assert(js.includes("textContent"),'render via textContent');assert(!page.match(/order|leverage|withdraw/i));assert(shell.includes('data-view="pulseai"'));console.log('pulse ai ui PASS');
