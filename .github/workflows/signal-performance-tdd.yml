@@ -15,3 +15,4 @@ jobs:
       - run: node scripts/verify-signal-performance-resolver.js
       - run: node scripts/verify-signal-performance-service.js
       - run: node scripts/verify-signal-performance-api.js
+      - run: node scripts/verify-signal-performance-ui.js
