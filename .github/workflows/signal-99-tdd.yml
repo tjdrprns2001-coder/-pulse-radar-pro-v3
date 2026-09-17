@@ -19,3 +19,4 @@ jobs:
           node scripts/verify-signal-evidence.js
           node scripts/verify-signal-alerts-v2.js
           node scripts/verify-signal-resilience.js
+          node scripts/verify-signal-ops-api.js
