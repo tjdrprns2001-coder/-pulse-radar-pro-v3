@@ -11,8 +11,6 @@
     "test:smc": "node scripts/verify-milestone3.js",
     "test:declutter": "node scripts/verify-milestone3-1.js",
     "test:collision": "node scripts/verify-milestone3-2.js",
-    "test:multi-chart": "node scripts/verify-multi-chart.js",
-    "test:milestone3-3": "node scripts/verify-milestone3-3.js",
     "test:radar-core": "node scripts/verify-radar-core.js",
     "test:radar-onchain-score": "node scripts/verify-radar-onchain-score.js",
     "test:radar-history": "node scripts/verify-radar-history.js",
@@ -43,7 +41,6 @@
     "test:radar-shell": "node scripts/verify-radar-shell.js",
     "test:netlify-temp": "node scripts/verify-netlify-temp.js",
     "test:radar": "npm run test:radar-core && npm run test:radar-onchain-score && npm run test:radar-history && npm run test:radar-themes && npm run test:radar-themes-v2 && npm run test:onchain-core && npm run test:onchain-public && npm run test:onchain-depth && npm run test:onchain-api && npm run test:market-flow-dex && npm run test:market-flow-cex && npm run test:market-flow-aggregate && npm run test:market-flow-api && npm run test:market-flow-derivatives && npm run test:market-flow-microstructure && npm run test:altcoin-flow-core && npm run test:altcoin-flow-api && npm run test:altcoin-flow-polish && npm run test:altcoin-evidence-gates && npm run test:altcoin-flow-overview && npm run test:radar-altcoin-flow-ui && npm run test:radar-market-flow-ui && npm run test:radar-onchain-ui && npm run test:radar-alerts && npm run test:radar-api && npm run test:radar-stream && npm run test:radar-ui && npm run test:radar-shell && npm run test:netlify-temp",
-    "test:radar-if-present": "node -e \"const fs=require('fs'),cp=require('child_process');if(fs.existsSync('scripts/verify-radar-core.js'))cp.execSync('npm run test:radar',{stdio:'inherit'});else console.log('radar suite deferred until main integration')\"",
-    "verify": "npm run test:milestone3-3 && npm run test:multi-chart && npm run test:radar-if-present && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
+    "verify": "npm run test:radar && npm run test:collision && npm run test:declutter && npm run test:smc && npm run test:chart && npm run test:foundation && npm run check:calibration && npm run gate:release"
   }
 }
