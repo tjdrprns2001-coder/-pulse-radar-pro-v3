@@ -1,0 +1,18 @@
+name: Diagnose Production V2
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch production APIs
+        run: |
+          set +e
+          echo '=== SIGNAL PERFORMANCE ==='
+          curl -sS -i 'https://pulseradar-pro-v3-temp.netlify.app/api/signal-performance'
+          echo
+          echo '=== COIN SCAN ==='
+          curl -sS -i 'https://pulseradar-pro-v3-temp.netlify.app/api/coin-scan?mode=summary&limit=3'
+          echo
+          echo '=== DONE ==='
