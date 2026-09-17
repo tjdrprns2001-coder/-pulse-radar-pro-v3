@@ -58,6 +58,14 @@ assert(strong.confirmations>=4);
 assert(strong.reasons.some(x=>x.includes('모멘텀')));
 assert.equal(strong.invalidations.length,0);
 
+const pumpBlocked=core.buildTradeSignal({dataState:'live',scanClassKey:'PUMP-RISK',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,volumeAcceleration:2.4,priceChange1h:2.2,priceChange15m:1.1,momentumSignals:{aligned:true,overheated:false,score:4}});
+assert.notEqual(pumpBlocked.level,'매수 후보','PUMP-RISK must never show a buy candidate');
+assert(pumpBlocked.invalidations.some(x=>x.includes('위험')),'risk-class block must be explained');
+const postBlocked=core.buildTradeSignal({dataState:'live',scanClassKey:'POST-SURGE',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,volumeAcceleration:2.4,priceChange1h:2.2,priceChange15m:1.1,momentumSignals:{aligned:true,overheated:false,score:4}});
+assert.notEqual(postBlocked.level,'매수 후보','POST-SURGE must never show a buy candidate');
+const distributionBlocked=core.buildTradeSignal({dataState:'live',scanClassKey:'DISTRIBUTION-RISK',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,volumeAcceleration:2.4,priceChange1h:2.2,priceChange15m:1.1,momentumSignals:{aligned:true,overheated:false,score:4}});
+assert.notEqual(distributionBlocked.level,'매수 후보','DISTRIBUTION-RISK must never show a buy candidate');
+
 const weakFlow=core.buildTradeSignal({dataState:'live',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.03,volumeAcceleration:1.12,priceChange1h:1.8,priceChange15m:.6,reaccumulating:true,alreadySurged:false,momentumSignals:{aligned:true,overheated:false,score:4}});
 assert.notEqual(weakFlow.level,'매수 후보');
 const lateChase=core.buildTradeSignal({dataState:'live',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,volumeAcceleration:2.2,priceChange1h:7.2,priceChange15m:4.1,alreadySurged:false,momentumSignals:{aligned:true,overheated:false,score:4}});
