@@ -52,6 +52,6 @@ test('calibration card exposes interval status and drift diagnostics',()=>{
 test('snapshot records regime venue flow features and provenance',()=>{
   assert.match(quality,/regime:/);
   assert.match(quality,/venue:'cex'/);
-  assert.match(quality,/features:/);
+  assert.match(quality,/features,dataSource/);
   assert.match(quality,/provenance:D\.provenance/);
 });
