@@ -1,8 +1,17 @@
 'use strict';
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createBlobStore}=require('../lib/signal-performance/store.js');
+const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
+const {createSignalPerformanceService}=require('../lib/signal-performance/service.js');
 let singleton=null;
-function defaultService(){if(!singleton)singleton=createScanService({provider:createBinanceProvider({})});return singleton}
+function defaultService(){
+  if(!singleton){
+    const performanceRecorder=createSignalPerformanceService({store:createBlobStore({}),resolver:createBinanceResolver({})});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder});
+  }
+  return singleton;
+}
 module.exports=async function handler(req,res,ctx={}){
   const service=ctx.service||defaultService();
   const q=req&&req.query||{};

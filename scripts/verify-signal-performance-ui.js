@@ -1,0 +1,12 @@
+const assert=require('assert'),fs=require('fs');
+const html=fs.readFileSync('signal-performance.html','utf8');
+const js=fs.readFileSync('ui/signal-performance.js','utf8');
+const css=fs.readFileSync('ui/signal-performance.css','utf8');
+for(const s of ['성과 검증','ui/signal-performance.css','ui/signal-performance.js','자동 코인 분류'])assert(html.includes(s),`html missing ${s}`);
+for(const s of ['15분','1시간','4시간','24시간','표본 부족','평가 대기','평균 수익률','중앙값','최고','최악','상승 비율'])assert((html+js).includes(s),`Korean performance UI missing ${s}`);
+assert(js.includes('/api/signal-performance'),'performance endpoint required');
+assert(!html.includes('정확도')&&!js.includes('정확도'),'historical positive ratio must not be labelled accuracy');
+assert(/escapeHtml|textContent/.test(js),'API strings must be escaped or assigned via textContent');
+assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
+const scanner=fs.readFileSync('coin-scan.html','utf8');assert(scanner.includes('signal-performance.html')&&scanner.includes('성과 검증'),'scanner must link to performance dashboard');
+console.log('signal performance ui PASS');

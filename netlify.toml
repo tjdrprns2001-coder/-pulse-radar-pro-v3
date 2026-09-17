@@ -15,6 +15,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/signal-performance*"
+  to = "/.netlify/functions/signal-performance:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/radar*"
   to = "/.netlify/functions/radar:splat"
   status = 200
