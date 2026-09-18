@@ -15,6 +15,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/research-backtest*"
+  to = "/.netlify/functions/research-backtest:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/signal-performance*"
   to = "/.netlify/functions/signal-performance:splat"
   status = 200
