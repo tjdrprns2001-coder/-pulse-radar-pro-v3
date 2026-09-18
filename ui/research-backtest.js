@@ -2,8 +2,9 @@
 const $=id=>document.getElementById(id);
 const H=[['h3','3시간'],['h6','6시간'],['h12','12시간'],['h24','24시간'],['d3','3일']];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const pct=v=>Number.isFinite(Number(v))?(Number(v)*100).toFixed(1)+'%':'-';
-const num=(v,d=2)=>Number.isFinite(Number(v))?Number(v).toFixed(d):'-';
+const valid=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+const pct=v=>valid(v)?(Number(v)*100).toFixed(1)+'%':'-';
+const num=(v,d=2)=>valid(v)?Number(v).toFixed(d):'-';
 async function get(url){const r=await fetch(url,{cache:'no-store'}),j=await r.json();if(!r.ok||j.status!=='ok')throw new Error(j.error||('HTTP '+r.status));return j}
 function labelCard(x){return x?(String(x.hitCount)+'/'+String(x.evaluatedCount)+' · '+pct(x.hitRate)):'-'}
 function integrity(status,stats){
