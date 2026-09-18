@@ -9,6 +9,7 @@ const {createMemoryResearchStore,createBlobResearchStore}=require('../lib/resear
   const valEnd=Date.parse('2026-09-18T00:00:00.000Z');
   assert.equal(splitForTimestamp(trainEnd,valEnd),'train');
   assert.equal(splitForTimestamp(valStart,valEnd),'validation');
+  assert.equal(splitForTimestamp(valStart,null),'validation','null validation end must use default');
   assert.equal(splitForTimestamp(valEnd+1,valEnd),'excluded');
 
   const manifest=createFrozenManifest({
