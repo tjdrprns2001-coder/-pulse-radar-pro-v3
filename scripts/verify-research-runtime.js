@@ -13,5 +13,8 @@ function bar(o,c,p){return[o,p,p,p,p,1,c,100,1,1,50,0]}
  const event=await builder({symbol:'AAAUSDT',frames,signalCandleCloseTs:cutoff,manifest,universe:{universeVersion:'u1',universeMode:'current-survivors-only',survivorshipSafe:false}});
  assert.equal(sawFuture,false,'historical classifier saw a candle after signal close');
  assert.equal(event.entryPrice,100);
+ const blobs=new Map();const getStore=name=>({async get(k,{type}={}){const v=blobs.get(name+':'+k);return v==null?null:type==='json'?JSON.parse(v):v},async list(){return{blobs:[]}},async setJSON(k,v){blobs.set(name+':'+k,JSON.stringify(v))}});
+ const {createResearchRuntime}=require('../lib/research-backtest-v2/runtime.js');const runtime=createResearchRuntime({getStore,fetchImpl:async()=>{throw new Error('network must not be used')}});
+ const empty=await runtime.stats({split:'train'});assert.equal(empty.initialized,false);assert.equal(empty.sampleCount,0);
  console.log('research runtime leakage guard PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
