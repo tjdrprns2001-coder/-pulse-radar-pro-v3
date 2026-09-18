@@ -30,6 +30,8 @@ const z=evaluateEvent({event,futureBars:zeroMaeBars});
 assert.equal(z.horizons.h3.maePct,0);
 assert.equal(z.horizons.h3.rr,null);
 assert.equal(z.horizons.h3.noAdverseExcursion,true);
+assert.equal(z.labels.Hit_6H_8pct,null,'partial 6H window must not be labeled as a miss');
+assert.equal(z.labels.Hit_24H_12pct,null,'partial 24H window must not be labeled as a miss');
 
 (async()=>{
  const store=createMemoryResearchStore();await store.putEvent(event);
