@@ -44,5 +44,10 @@ assert.equal(z.labels.Hit_24H_12pct,null,'partial 24H window must not be labeled
  assert.equal(r.evaluated,1);assert.equal(fetched,1);
  assert(await store.getOutcome(event.eventId));
  assert.deepEqual(await store.getEvent(event.eventId),event,'event must remain immutable');
+ const store2=createMemoryResearchStore();await store2.putEvent(event);let full=false;
+ const p2={async getKlinesAt(){if(!full)return zeroMaeBars;return rows.slice(1)}};
+ const svc2=createOutcomeEvaluator({provider:p2,store:store2,maxEventsPerRun:5});
+ await svc2.run({runId:'partial'});assert.equal((await store2.getOutcome(event.eventId)).horizons.h24.status,'unavailable');
+ full=true;await svc2.run({runId:'complete'});assert.equal((await store2.getOutcome(event.eventId)).horizons.h24.status,'evaluated','incomplete outcomes must be refreshable');
  console.log('research outcomes PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
