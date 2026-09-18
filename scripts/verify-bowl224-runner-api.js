@@ -46,7 +46,7 @@ assert(sel.orderedCandidates.length===10);
  
  await store.putOutcome(event.eventId,{eventId:event.eventId,cohort:'3A',group:'B',labels:{Hit_72H_10pct:true,Hit_7D_10pct:true,Hit_7D_15pct:false,Hit_7D_20pct:false},horizons:{h72:{mfe_pct:12,mae_pct:-2,rr:6},d7:{mfe_pct:13,mae_pct:-2,rr:6.5}},hits:{Hit_72H_10pct:{mae_before_hit_pct:-2,time_to_hit_ms:10}}});
  // incomplete outcomes must be refreshable
- await store.putEvent({eventId:'partial',symbol:'AAAUSDT',cohort:'3A',group:'B',source:'bowl224-formal',signalCloseTs:0,entryPrice:100});
+ await store.putEvent({eventId:'partial',symbol:'AAAUSDT',cohort:'TEST',group:'B',source:'bowl224-formal',signalCloseTs:0,entryPrice:100});
  await store.putOutcome('partial',{eventId:'partial',horizons:{d7:{status:'unavailable'}}});
  let evalFetch=0;
  const evalRunner=createBowl224Runner({provider:{async getKlinesRange(){evalFetch++;const future=Array.from({length:168},(_,i)=>[(i+1)*H,100,101,99,100,1,(i+2)*H-1,100,1,1,1,0]);return{rows:future,coverage:{complete:true}}}},store});
