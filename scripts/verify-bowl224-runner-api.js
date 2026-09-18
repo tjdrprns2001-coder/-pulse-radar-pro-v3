@@ -16,9 +16,12 @@ assert(sel.orderedCandidates.length===10);
  const store=createMemoryBowl224Store();
  let rangeCalls=0;
  const DAY=86400000,H=3600000;
- const daily=Array.from({length:360},(_,i)=>[i*DAY,90,91,89,90,1,(i+1)*DAY-1,100,1,1,1,0]);
- // Force a strict 3A at index 349 and a 3B at 351.
- daily[348][4]=99;daily[349][4]=101;daily[350][4]=102;daily[351][4]=103;daily[352][4]=99;
+ const daily=Array.from({length:360},(_,i)=>{const px=i<=228?100:90;return[i*DAY,px,px+1,px-1,px,1,(i+1)*DAY-1,100,1,1,1,0]});
+ // Force a strict 3A at index 349 after exactly 120 prior daily closes below contemporaneous SMA224, then 3B.
+ daily[349][1]=101;daily[349][2]=102;daily[349][3]=100;daily[349][4]=101;
+ daily[350][1]=102;daily[350][2]=103;daily[350][3]=101;daily[350][4]=102;
+ daily[351][1]=103;daily[351][2]=104;daily[351][3]=102;daily[351][4]=103;
+ daily[352][1]=99;daily[352][2]=100;daily[352][3]=98;daily[352][4]=99;
  const hourly=Array.from({length:700},(_,i)=>[i*H,100,101,99,100,i===510?300:100,(i+1)*H-1,100,1,1,1,0]);
  const h4=Array.from({length:300},(_,i)=>[i*4*H,100,101,99,100,100,(i+1)*4*H-1,100,1,1,1,0]);
  const provider={async getKlinesRange(symbol,tf){rangeCalls++;const rows=tf==='1d'?daily:tf==='4h'?h4:hourly;return{rows,coverage:{complete:true,rowCount:rows.length,requestCount:2}}}};
