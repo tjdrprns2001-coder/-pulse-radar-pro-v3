@@ -196,22 +196,30 @@ Do not silently modify the existing candidate formula while running this experim
 
 ## Comparison Groups
 
+### Cohort Timing
+A/B/C assignment is performed separately for three actionable cohorts:
+- 3A cohort timestamp = 3A daily close;
+- 3B cohort timestamp = the close of the daily candle that first makes the frozen 2-of-next-3 rule knowable/true;
+- 3C cohort timestamp = the qualifying 3C retest/recovery daily close.
+
+Never use a later 3B/3C confirmation to relabel an earlier 3A timestamp.
+
 ### Group A — Existing 1H Candidate Only
-Conditions:
+For each cohort timestamp:
 - existing 1H candidate = true;
-- no bowl condition active under the frozen bowl definition at that evaluation timestamp.
+- the corresponding bowl cohort condition is false at that same timestamp.
 
 ### Group B — Bowl Only
-Conditions:
-- bowl condition = true;
+For each cohort timestamp:
+- the corresponding bowl cohort condition = true;
 - existing 1H candidate = false.
 
-For primary analysis, “bowl condition” is recorded separately as 3A, 3B-confirmed, and 3C-confirmed cohorts. Do not collapse them into a single winner before analysis.
+3A, actionable 3B, and actionable 3C remain separate result tables. Do not collapse them into a single winner before analysis.
 
 ### Group C — Bowl + Existing 1H
-Conditions:
-- bowl condition = true;
-- existing 1H candidate = true at the same valid evaluation timestamp.
+For each cohort timestamp:
+- the corresponding bowl cohort condition = true;
+- existing 1H candidate = true at that same timestamp.
 
 ### Group D — Matched Non-Signal Baseline
 Mechanical baseline windows from the same symbol and comparable historical regime.
@@ -221,7 +229,10 @@ Matching rules for v1:
 - same calendar quarter where enough samples exist, otherwise same calendar year;
 - no A/B/C signal at the selected timestamp;
 - timestamp follows the same evaluation grid;
-- one deterministic baseline event per signal event using a hash-derived offset, not manual selection;
+- one deterministic baseline event per signal event using a hash-derived ordering, not manual selection;
+- candidate baseline timestamps are sorted by SHA-256 of `bowl-baseline-v1|symbol|signalEventId|candidateTs`;
+- choose the first valid candidate not already assigned to another signal event for that symbol when possible;
+- if unique matching is exhausted, mark the baseline unavailable rather than silently reusing one;
 - baseline timestamp must have sufficient warm-up and complete outcome coverage.
 
 Store the matching provenance so baseline selection is reproducible.
@@ -285,12 +296,15 @@ Behavior:
 - reported separately so the bowl layer cannot hide new-coin opportunities.
 
 ## Initial Experiment
-The first validation experiment uses 8–12 coins different from the manually inspected hypothesis examples.
+The first validation experiment uses exactly 10 coins, provided at least 10 eligible non-hypothesis symbols exist; otherwise it uses every eligible symbol and records the shortfall.
 
-Selection must be mechanical from Universe-L:
-- fixed seed;
-- fixed sampling rule;
-- no selection based on known future pump performance.
+Selection is mechanical from Universe-L:
+- exclude every symbol present in the manually inspected hypothesis-sample registry;
+- build the eligible symbol list without reading future outcomes;
+- order symbols by SHA-256 of `bowl224-v1|<symbol>`;
+- select the first 10 symbols from that frozen order;
+- persist the full ordered candidate list and selected symbols in the run manifest;
+- no replacement or reselection based on backtest results.
 
 For those symbols:
 1. fetch complete chunked 1D history with warm-up;
