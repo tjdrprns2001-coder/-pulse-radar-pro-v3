@@ -124,17 +124,30 @@ Record continuous values instead of only a binary rule:
   - maximum below-SMA224 closing streak inside the preceding 120-day window.
 - `days_since_first_ma224_available`
 
-### Frozen Original-Bowl Approximation
-`original_bowl_4m = true` when:
-- the prior 120 completed daily observations are available; and
-- at least 80% of those closes are below their contemporaneous SMA224.
+### Strict 120D Bowl Precondition
+The formal strict bowl cohort uses a hard precondition:
 
-This is an explanatory flag and does not replace the continuous features above.
+`strict_bowl_120d = true` only when:
+- the prior 120 completed daily observations are available; and
+- all 120 of those closes are below their own contemporaneous SMA224.
+
+This strict flag is required for formal 3A/3B/3C bowl events in v1.
+
+Still record the continuous features:
+- `below224_days`
+- `below224_ratio_120d`
+- `max_consecutive_below224_days_120d`
+
+For descriptive comparison only, also retain:
+- `original_bowl_4m_80pct = below224_ratio_120d >= 0.80`
+
+The 80% flag is not the formal strict event gate and cannot substitute for `strict_bowl_120d`.
 
 ## Frozen 3A / 3B / 3C Definitions
 
 ### 3A — First Upward Break
-A 3A event occurs on daily candle D when:
+A formal strict 3A event occurs on daily candle D when:
+- `strict_bowl_120d=true` immediately before D;
 - previous completed daily close <= previous day's SMA224; and
 - D close > D SMA224.
 
@@ -182,17 +195,39 @@ Store:
 
 As with 3B, 3C is a post-event structural annotation and must never leak backward into the original 3A feature snapshot.
 
-## Existing 1H Candidate Formula
-The current historical 1H/scanner candidate logic remains versioned separately.
+## Frozen 1H Volume + Ribbon + PriceDistance Intersection
 
-For each bowl event, calculate whether the existing candidate formula is simultaneously true using only data closed at that evaluation timestamp.
+The next experiment freezes the existing 1H close signal numerically:
+
+- `VolumeRatio12h >= 3.0`
+  - current completed 1H candle volume divided by the mean volume of the preceding 12 completed 1H candles.
+- `RibbonWidthATR = abs(EMA14 - EMA92) / ATR14 <= 1.5`
+- `PriceDistanceATR = abs(Close - EMA28) / ATR14 <= 2.0`
+
+ATR is Wilder/standard ATR(14) on completed 1H candles.
+EMA14/EMA28/EMA92 and ATR14 must use only data closed by the 1H signal close.
+
+The intersection signal is true only when all three conditions are true on the same completed 1H candle.
 
 Store:
 - `existing_1h_candidate=true|false`
-- its numeric feature snapshot;
-- scanner/screener version.
+- `volume_ratio_12h`
+- `ribbon_width_atr`
+- `price_distance_atr`
+- EMA14 / EMA28 / EMA92 / ATR14 raw values
+- scanner/screener formula version.
 
-Do not silently modify the existing candidate formula while running this experiment.
+Do not silently modify these thresholds while running the experiment.
+
+### 4H Context
+For every strict 3B event, fetch and store 4H context after the 3B confirmation:
+- structure state encoded numerically;
+- pullback depth;
+- EMA distances and convergence measurements;
+- ATR-normalized price distance;
+- return and volume acceleration measurements.
+
+In this v1 intersection experiment, 4H measurements are observational features only. They do not gate inclusion, because adding a new 4H threshold after seeing the 32-coin evidence would create another tuning degree of freedom.
 
 ## Comparison Groups
 
@@ -295,8 +330,18 @@ Behavior:
 - retained by the existing scanner;
 - reported separately so the bowl layer cannot hide new-coin opportunities.
 
-## Initial Experiment
-The first validation experiment uses exactly 10 coins, provided at least 10 eligible non-hypothesis symbols exist; otherwise it uses every eligible symbol and records the shortfall.
+## Evidence Already Observed — Hypothesis-Only
+A manually accumulated 32-coin strict-rule study has been reported separately. It is useful as motivation but is not formal backtest data and must not enter formal statistics, threshold selection, train/validation counts, or sample selection.
+
+Reported strict-rule observations:
+- 3A: n=22; 72H +10%=22.7%; 7D +10%=27.3%; 7D +15%=22.7%; 7D +20%=22.7%; +10% with MAE no worse than -3%=13.6%.
+- 3B: n=14; 72H +10%=28.6%; 7D +10%=42.9%; 7D +15%=35.7%; 7D +20%=21.4%; +10% with MAE no worse than -3%=14.3%.
+- 3C: n=9; 72H +10%=11.1%; 7D +10%=11.1%; 7D +15%=11.1%; 7D +20%=11.1%; +10% with MAE no worse than -3%=11.1%.
+
+These observations motivate a predeclared follow-up question: can a strict 3B higher-timeframe filter combined with the frozen 1H Volume + Ribbon + PriceDistance signal reduce adverse excursion while preserving target-hit behavior?
+
+## Initial Formal Experiment
+The first formal validation experiment uses exactly 10 coins, provided at least 10 eligible non-hypothesis symbols exist; otherwise it uses every eligible symbol and records the shortfall.
 
 Selection is mechanical from Universe-L:
 - exclude every symbol present in the manually inspected hypothesis-sample registry;
@@ -308,14 +353,16 @@ Selection is mechanical from Universe-L:
 
 For those symbols:
 1. fetch complete chunked 1D history with warm-up;
-2. mechanically extract all 3A events;
+2. mechanically extract all strict 3A events requiring 120/120 prior daily closes below SMA224;
 3. annotate 3B and 3C without changing their definitions;
-4. fetch required 4H/1H/15m/5m closed history at each actionable timestamp;
-5. evaluate the existing 1H candidate logic;
-6. generate A/B/C/D groups;
-7. fetch separate future outcome data through 7D;
-8. compute all fixed labels and continuous outcomes;
-9. compare groups without retuning thresholds.
+4. for every actionable strict 3B confirmation, search forward for the frozen 1H Volume + Ribbon + PriceDistance intersection;
+5. freeze the 1H intersection search window to the first 72 completed 1H candles after the 3B confirmation close;
+6. use the first qualifying 1H close only; later qualifying 1H closes in the same 3B event are recorded as repeats but are not new primary entries;
+7. fetch and record 4H context at the 3B confirmation and at the first qualifying 1H intersection without using 4H as a gate;
+8. generate A/B/C/D groups;
+9. fetch separate future outcome data through 7D from each actionable event/entry timestamp;
+10. compute all fixed labels and continuous outcomes;
+11. compare groups without retuning thresholds.
 
 No mid-run threshold or condition changes are allowed.
 
@@ -323,11 +370,11 @@ No mid-run threshold or condition changes are allowed.
 The first experiment should answer, descriptively:
 
 - Does Group B outperform Group D historical base rate?
-- Does Group C improve over Group A?
+- Does strict 3B + frozen 1H intersection improve the measured 72H/7D outcome distribution relative to strict 3B alone and to the existing 1H signal alone?
 - How do 3A vs actionable 3B vs actionable 3C cohorts differ?
 - Does original_bowl_4m correlate with stronger outcomes?
 - How do below224_days and below224_ratio_120d distribute across successes/failures?
-- What is the MAE cost before each target is hit?
+- What is the MAE cost before each target is hit, and specifically does the 1H intersection increase the share of +10% hits whose MAE stays within -3%?
 - How long do successful events take to hit 10/15/20%?
 - Are results stable across symbols rather than driven by one coin?
 
@@ -336,9 +383,10 @@ Do not call one group “best” automatically in product copy. Report measured 
 ## Versioning
 Introduce immutable identifiers:
 - `bowlFeatureSchemaVersion = bowl-224-features-v1`
-- `bowlRuleVersion = bowl-224-rules-v1`
+- `bowlRuleVersion = bowl-224-rules-v1-strict120`
 - `bowlOutcomeSchemaVersion = bowl-224-outcomes-v1`
 - `baselineMatchingVersion = bowl-baseline-v1`
+- `intersectionFormulaVersion = bowl-1h-vrp-v1`
 - existing scanner/screener version
 - universe version
 
@@ -388,7 +436,7 @@ Required tests include:
 4. incomplete historical coverage is explicitly marked.
 5. daily SMA224 never uses an unclosed or future candle.
 6. below224_days and below224_ratio_120d use only pre-signal daily data.
-7. exact frozen original_bowl_4m threshold is 80% of prior 120 days.
+7. strict formal bowl gate requires exactly 120/120 prior completed daily closes below contemporaneous SMA224; the 80% flag is descriptive only.
 8. 3A exact crossing boundary behavior.
 9. only the first crossing in a continuous above-MA run is 3A.
 10. 3B is exactly >=2 of next 3 closes above contemporaneous SMA224.
@@ -399,16 +447,21 @@ Required tests include:
 15. 3C does not leak backward into 3A features.
 16. Universe-L requires >=224 completed daily candles.
 17. Universe-N remains available to the existing scanner.
-18. A/B/C/D assignment is deterministic.
-19. D baseline selection is mechanical and reproducible.
-20. future outcome bars never enter signal/group eligibility.
-21. 24H/72H/7D exact +10/+15/+20 boundary hits count as success.
-22. time-to-hit is first threshold touch only.
-23. MAE-before-hit stops at first hit.
-24. signal candle is excluded from outcome path.
-25. insufficient 7D future coverage remains unavailable.
-26. no outcome result mutates frozen 3A/B/C rules.
-27. full existing `npm run verify` remains green.
+18. frozen 1H intersection requires VolumeRatio12h >=3.0, RibbonWidthATR <=1.5, and PriceDistanceATR <=2.0 on the same completed 1H candle.
+19. 1H intersection search uses exactly the first 72 completed 1H candles after 3B confirmation.
+20. only the first qualifying 1H candle is the primary intersection entry.
+21. 4H context cannot gate v1 inclusion.
+22. A/B/C/D assignment is deterministic.
+23. D baseline selection is mechanical and reproducible.
+24. future outcome bars never enter signal/group eligibility.
+25. 24H/72H/7D exact +10/+15/+20 boundary hits count as success.
+26. time-to-hit is first threshold touch only.
+27. MAE-before-hit stops at first hit.
+28. signal candle is excluded from outcome path.
+29. insufficient 7D future coverage remains unavailable.
+30. no outcome result mutates frozen 3A/B/C/intersection rules.
+31. the 32-coin manually accumulated evidence is excluded from formal stats.
+32. full existing `npm run verify` remains green.
 
 ## Rollout Order
 1. chunked historical range fetcher;
@@ -417,14 +470,15 @@ Required tests include:
 4. frozen 3A detector;
 5. separate 3B/3C annotator;
 6. Universe-L/N classifier;
-7. existing 1H candidate intersection;
-8. deterministic A/B/C/D grouping;
-9. extended 24H/72H/7D outcome engine;
-10. initial 8–12 coin experiment runner;
-11. stats/API/UI;
-12. full TDD/review;
-13. merge and production smoke;
-14. only after results exist, discuss whether bowl signals should influence live scanner weighting.
+7. frozen strict-3B → 1H Volume/Ribbon/PriceDistance intersection;
+8. 4H observational context capture;
+9. deterministic A/B/C/D grouping;
+10. extended 24H/72H/7D outcome engine;
+11. initial 10-coin experiment runner;
+12. stats/API/UI;
+13. full TDD/review;
+14. merge and production smoke;
+15. only after results exist, discuss whether bowl signals should influence live scanner weighting.
 
 ## Success Criteria
 The experiment is valid when:
