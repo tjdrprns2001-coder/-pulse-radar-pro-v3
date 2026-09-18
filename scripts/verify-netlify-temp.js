@@ -5,7 +5,7 @@ const radar=req('netlify/functions/radar.js');
 const legacy=req('netlify/functions/api-index.js');
 const coinScan=req('netlify/functions/coin-scan.mjs');
 const coinScanApi=req('api/coin-scan.js');
-const v2Names=['signal-performance','signal-calibration','signal-alerts','signal-health','signal-backfill'];
+const v2Names=['signal-performance','signal-calibration','signal-alerts','signal-health','signal-backfill','research-backtest'];
 const v2=Object.fromEntries(v2Names.map(name=>[name,req(`netlify/functions/${name}.mjs`)]));
 if(!/functions\s*=\s*"netlify\/functions"/.test(cfg))throw new Error('functions directory missing');
 if(!/from\s*=\s*"\/api\/radar\*"/.test(cfg))throw new Error('radar redirect missing');
