@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert');
 const handler=require('../api/bowl224-research.js');
-const {selectFormalSymbols,createBowl224Runner}=require('../lib/research-backtest-v2/bowl224/runner.js');
+const {selectFormalSymbols,discoverFormalSymbols,collectStandalone1hSignals,createBowl224Runner}=require('../lib/research-backtest-v2/bowl224/runner.js');
 const {createMemoryBowl224Store}=require('../lib/research-backtest-v2/bowl224/store.js');
 const {buildBowlStats}=require('../lib/research-backtest-v2/bowl224/stats.js');
 
@@ -13,9 +13,21 @@ assert.equal(selectFormalSymbols({symbols,hypothesisRegistry:['BTCUSDT','ETHUSDT
 assert(sel.orderedCandidates.length===10);
 
 (async()=>{
+ const DAY=86400000,H=3600000;
+ const oldDaily=Array.from({length:230},(_,i)=>[i*DAY,1,1,1,1,1,(i+1)*DAY-1,1,1,1,1,0]),newDaily=oldDaily.slice(0,100);
+ const discovery=await discoverFormalSymbols({provider:{async getKlinesRange(symbol){return{rows:symbol==='NEWUSDT'?newDaily:oldDaily,coverage:{complete:true}}}},symbols:['NEWUSDT',...symbols],hypothesisRegistry:['BTCUSDT','ETHUSDT'],asOfTs:230*DAY});
+ assert(!discovery.selected.includes('NEWUSDT'),'Universe-N leaked into selection');
+ assert.equal(discovery.selected.length,10);
+ assert(discovery.universeNCount>=1);
+
+ const flat=Array.from({length:120},(_,i)=>[i*H,100,101,99,100,i===100?300:100,(i+1)*H-1,100,1,1,1,0]);
+ const standalone=collectStandalone1hSignals(flat,{startTs:90*H,endTs:110*H,bowlWindows:[]});
+ assert(standalone.some(x=>x.index===100),'standalone 1H signal missing');
+ const blocked=collectStandalone1hSignals(flat,{startTs:90*H,endTs:110*H,bowlWindows:[{startTs:99*H,endTs:102*H}]});
+ assert(!blocked.some(x=>x.index===100),'bowl-overlap 1H signal must not be Group A');
+
  const store=createMemoryBowl224Store();
  let rangeCalls=0;
- const DAY=86400000,H=3600000;
  const daily=Array.from({length:360},(_,i)=>{const px=i<=228?100:90;return[i*DAY,px,px+1,px-1,px,1,(i+1)*DAY-1,100,1,1,1,0]});
  // Force a strict 3A at index 349 after exactly 120 prior daily closes below contemporaneous SMA224, then 3B.
  daily[349][1]=101;daily[349][2]=102;daily[349][3]=100;daily[349][4]=101;
@@ -33,6 +45,13 @@ assert(sel.orderedCandidates.length===10);
  const run=await store.getRun('r1');assert(run.orderedCandidates.length===1&&run.selectedSymbols.length===1);
  
  await store.putOutcome(event.eventId,{eventId:event.eventId,cohort:'3A',group:'B',labels:{Hit_72H_10pct:true,Hit_7D_10pct:true,Hit_7D_15pct:false,Hit_7D_20pct:false},horizons:{h72:{mfe_pct:12,mae_pct:-2,rr:6},d7:{mfe_pct:13,mae_pct:-2,rr:6.5}},hits:{Hit_72H_10pct:{mae_before_hit_pct:-2,time_to_hit_ms:10}}});
+ // incomplete outcomes must be refreshable
+ await store.putEvent({eventId:'partial',symbol:'AAAUSDT',cohort:'3A',group:'B',source:'bowl224-formal',signalCloseTs:0,entryPrice:100});
+ await store.putOutcome('partial',{eventId:'partial',horizons:{d7:{status:'unavailable'}}});
+ let evalFetch=0;
+ const evalRunner=createBowl224Runner({provider:{async getKlinesRange(){evalFetch++;const future=Array.from({length:168},(_,i)=>[(i+1)*H,100,101,99,100,1,(i+2)*H-1,100,1,1,1,0]);return{rows:future,coverage:{complete:true}}}},store});
+ await evalRunner.evaluateBatch({runId:'eval',limit:20});assert(evalFetch>=1);assert.equal((await store.getOutcome('partial')).horizons.d7.status,'evaluated');
+
  const stats=buildBowlStats({events:await store.listEvents(),annotations:await store.listAnnotations(),outcomes:await store.listOutcomes(),hypothesisEvidence:[{cohort:'3B',fake:true}]});
  assert.equal(stats.hypothesisEvidenceExcluded,true);
  assert.equal(stats.cohorts['3A'].sampleCount,1);
