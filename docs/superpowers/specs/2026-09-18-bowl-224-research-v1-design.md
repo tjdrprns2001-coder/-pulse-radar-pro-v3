@@ -491,4 +491,4 @@ The experiment is valid when:
 - Universe-N remains unaffected by bowl filtering;
 - future outcome data is separated from all feature/group decisions;
 - fixed outcome labels, MFE, MAE, MAE-before-hit, and time-to-hit are reproducible;
-- the first 8–12 coin experiment completes without changing conditions mid-run.
+- the first formal 10-coin experiment completes without changing conditions mid-run.
