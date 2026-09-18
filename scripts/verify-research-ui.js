@@ -1,0 +1,16 @@
+'use strict';
+const fs=require('fs');
+const req=p=>{if(!fs.existsSync(p))throw new Error('missing '+p);return fs.readFileSync(p,'utf8')};
+const html=req('research-backtest.html'),js=req('ui/research-backtest.js'),css=req('ui/research-backtest.css'),perf=req('signal-performance.html');
+for(const s of ['정식 백테스트','TRAIN','VALIDATION','Hit_6H_8pct','Hit_24H_12pct','MFE','MAE','RR','임계값 동결','생존편향'])if(!html.includes(s)&&!js.includes(s))throw new Error('missing UI copy '+s);
+for(const h of ['3시간','6시간','12시간','24시간','3일'])if(!js.includes(h))throw new Error('missing horizon '+h);
+if(!js.includes('/api/research-backtest?action=status'))throw new Error('status API missing');
+if(!js.includes('action=stats'))throw new Error('stats API missing');
+if(!js.includes('action=events'))throw new Error('events API missing');
+if(/RESEARCH_BACKTEST_ADMIN_TOKEN|x-research-admin-token/.test(html+js))throw new Error('admin secret must not be in browser code');
+if(/미래\s*(확률|성공률)|future probability/i.test(html+js))throw new Error('UI must not describe history as future probability');
+if(!/survivorship|생존편향/i.test(js+html))throw new Error('survivorship warning missing');
+if(!/hypothesis|가설용/i.test(js+html))throw new Error('hypothesis exclusion missing');
+if(!/@media\s*\(max-width:\s*650px\)/.test(css))throw new Error('mobile layout missing');
+if(!perf.includes('research-backtest'))throw new Error('performance page link missing');
+console.log('research UI PASS');
