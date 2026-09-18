@@ -11,7 +11,7 @@ assert.equal(qualifiesIntersection({volume_ratio_12h:3,ribbon_width_atr:1,price_
 
 const pre=Array.from({length:100},(_,i)=>bar(i));
 const candidate=bar(100,{v:300});
-const later=bar(101,{v:300});
+const later=bar(101,{v:350});
 const rows=[...pre,candidate,later,...Array.from({length:75},(_,j)=>bar(102+j))];
 const f=compute1hIntersectionFeatures(rows,100);
 assert.equal(f.volume_ratio_12h,3);
