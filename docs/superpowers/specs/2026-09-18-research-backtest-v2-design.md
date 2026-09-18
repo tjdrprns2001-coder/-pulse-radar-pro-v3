@@ -23,8 +23,8 @@ These rules are versioned and may not be bypassed by UI or later calibration cod
 
 3. **Outcome definitions are fixed before evaluation.**
    - Primary labels for v1:
-     - `Hit_6H_8pct`: whether price reaches +8% from event entry price within 6 hours.
-     - `Hit_24H_12pct`: whether price reaches +12% from event entry price within 24 hours.
+     - `Hit_6H_8pct`: whether future high reaches or exceeds (`>=`) entry price × 1.08 within 6 hours.
+     - `Hit_24H_12pct`: whether future high reaches or exceeds (`>=`) entry price × 1.12 within 24 hours.
    - Store point return, MFE, MAE, and RR for 3H, 6H, 12H, 24H, and 3D.
    - Zero/threshold boundary behavior is deterministic and documented.
    - Outcome definitions are versioned; changing a threshold creates a new outcome schema version instead of rewriting prior labels.
@@ -169,9 +169,11 @@ Fields:
 - feature schema version
 - screener version
 - `frozen=true`
+- `signalTimeframe`
+- `evaluationGridMs`
 - optional training statistics supporting the choice
 
-Validation code must reject an unfrozen manifest.
+Validation code must reject an unfrozen manifest. Event timestamps must come only from the manifest-defined signal candle close grid; changing `signalTimeframe` or `evaluationGridMs` requires a new manifest version.
 
 ## Statistical Analysis
 Formal analysis compares mechanically collected successes and failures.
