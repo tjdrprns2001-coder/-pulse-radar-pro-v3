@@ -5,7 +5,9 @@ const {selectFormalSymbols,discoverFormalSymbols,collectStandalone1hSignals,crea
 const {createMemoryBowl224Store}=require('../lib/research-backtest-v2/bowl224/store.js');
 const {buildBowlStats}=require('../lib/research-backtest-v2/bowl224/stats.js');
 const {HYPOTHESIS_SYMBOLS}=require('../lib/research-backtest-v2/bowl224/hypothesis-evidence.js');
+const {spotUsdtSymbols}=require('../lib/research-backtest-v2/bowl224/runtime.js');
 
+assert.deepEqual(spotUsdtSymbols({symbols:[{symbol:'AAAUSDT',quoteAsset:'USDT',status:'TRADING',isSpotTradingAllowed:true},{symbol:'BBBUSD',quoteAsset:'USD',status:'TRADING',isSpotTradingAllowed:true},{symbol:'OFFUSDT',quoteAsset:'USDT',status:'BREAK'}]}),['AAAUSDT']);
 assert.equal(HYPOTHESIS_SYMBOLS.length,32);assert(HYPOTHESIS_SYMBOLS.includes('AAVEUSDT')&&HYPOTHESIS_SYMBOLS.includes('BONKUSDT')&&HYPOTHESIS_SYMBOLS.includes('JUPUSDT'));
 const symbols=['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','LINKUSDT','LTCUSDT','AVAXUSDT','DOTUSDT','ATOMUSDT','UNIUSDT'];
 const sel=selectFormalSymbols({symbols,hypothesisRegistry:['BTCUSDT','ETHUSDT']});
