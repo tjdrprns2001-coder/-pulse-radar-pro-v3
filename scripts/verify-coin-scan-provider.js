@@ -46,6 +46,7 @@ assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-d
   assert(batch.results.XLMUSDT,'successful symbol preserved');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
   assert(batch.errors.length>=1,'failed symbol recorded');
+  active=0;maxActive=0; // measure mapLimit itself, not parallel derivative/XOI fetches above
   await p.mapLimit([1,2,3,4],async x=>{active++;maxActive=Math.max(maxActive,active);await new Promise(r=>setTimeout(r,2));active--;return x});
   assert(maxActive<=2,'concurrency must be bounded');
   console.log('coin scan provider PASS');
