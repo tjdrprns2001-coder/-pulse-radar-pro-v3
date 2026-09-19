@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const html=fs.readFileSync(path.join(__dirname,'..','multi-chart.html'),'utf8');
-const css=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','multi-chart.css'),'utf8');
+const css=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','multi-chart.css'),'utf8');\nconst card=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','chart-card.js'),'utf8');
 
 function pos(src){return html.indexOf(src)}
 
@@ -39,3 +39,5 @@ test('four-chart compact mobile can hide narrative while expanded chart remains 
   assert.match(css,/\.mcGrid\[data-layout="4"\] \.mcNarrative\{display:none\}/);
   assert.match(css,/\.mcExpanded \.mcCard\.isExpanded \.mcNarrative\{display:block\}/);
 });
+
+test('multi-chart exposes independent liquidity overlay control',()=>{assert.match(card,/data-role="liquidity-toggle"/);assert.match(card,/liquidityOverlay/);assert.match(css,/mcOverlayToggle\.active/);assert.match(css,/data-liquidity-overlay="on"/)});
