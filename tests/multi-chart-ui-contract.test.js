@@ -5,6 +5,7 @@ const path=require('node:path');
 
 const html=fs.readFileSync(path.join(__dirname,'..','multi-chart.html'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','multi-chart.css'),'utf8');
+const card=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','chart-card.js'),'utf8');
 
 function pos(src){return html.indexOf(src)}
 
@@ -25,7 +26,7 @@ test('loads milestone 3.3 engines and plugins before multi-chart card code',()=>
 });
 
 test('multi-chart exposes Liquidity in the visual legend',()=>{
-  assert.match(html,/class="liquidity"[^>]*>Liquidity</);
+  assert.match(html,/class="liquidity"[^>]*>Liquidity(?: Overlay)?<\//);
 });
 
 test('390px mobile stacks cards and keeps chart height in approved range',()=>{
@@ -39,3 +40,5 @@ test('four-chart compact mobile can hide narrative while expanded chart remains 
   assert.match(css,/\.mcGrid\[data-layout="4"\] \.mcNarrative\{display:none\}/);
   assert.match(css,/\.mcExpanded \.mcCard\.isExpanded \.mcNarrative\{display:block\}/);
 });
+
+test('multi-chart exposes independent liquidity overlay control',()=>{assert.match(card,/data-role="liquidity-toggle"/);assert.match(card,/liquidityOverlay/);assert.match(css,/mcOverlayToggle\.active/);assert.match(css,/data-liquidity-overlay="on"/)});
