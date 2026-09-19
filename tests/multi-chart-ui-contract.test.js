@@ -26,7 +26,7 @@ test('loads milestone 3.3 engines and plugins before multi-chart card code',()=>
 });
 
 test('multi-chart exposes Liquidity in the visual legend',()=>{
-  assert.match(html,/class="liquidity"[^>]*>Liquidity</);
+  assert.match(html,/class="liquidity"[^>]*>Liquidity(?: Overlay)?<\//);
 });
 
 test('390px mobile stacks cards and keeps chart height in approved range',()=>{
