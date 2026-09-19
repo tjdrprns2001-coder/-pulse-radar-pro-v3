@@ -29,7 +29,8 @@ assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-d
     }
     return{ok:false,status:404,json:async()=>({})};
   };
-  const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2,cache:createTtlCache({now:()=>now}),bases:['https://api.binance.test'],futuresBase:'https://fapi.binance.test'});
+  const crossOiProvider={getProfile:async()=>({available:true,breadth:1,positiveBreadth:1,strongBreadth:1,leaderExchange:'bybit',leaderChangePct:3.5,aggregateChangePct:3.5,samples:32,exchanges:{bybit:{available:true,changePct:3.5,samples:32}}})};
+  const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2,cache:createTtlCache({now:()=>now}),bases:['https://api.binance.test'],futuresBase:'https://fapi.binance.test',crossOiProvider});
   const a=await p.getUniverse();
   const b=await p.getUniverse();
   assert.equal(a.symbols.length,1);
@@ -39,6 +40,8 @@ assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-d
   const ctx=await p.getDerivativesContext('XLMUSDT');
   assert(Math.abs(ctx.fundingPct-.01)<1e-12,'funding percent should be preserved');
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
+  assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
+  assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
   const batch=await p.scanDeepCandidates(['XLMUSDT','BADUSDT'],['1h','15m']);
   assert(batch.results.XLMUSDT,'successful symbol preserved');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
