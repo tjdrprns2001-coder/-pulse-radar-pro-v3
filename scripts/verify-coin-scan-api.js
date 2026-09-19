@@ -31,6 +31,7 @@ const provider={
   assert(Array.isArray(out.candidateSymbols)&&out.candidateSymbols.length>0,'summary returns candidate symbols for progressive enrichment');
   assert(out.categories&&typeof out.categories==='object');
   assert(out.scanClasses&&typeof out.scanClasses==='object','v2 scan class counts required');
+  assert(out.marketBreadth&&Number.isFinite(out.marketBreadth.up),'market breadth summary required');
   assert(out.dataHealth&&typeof out.dataHealth.live==='number');
   for(const x of out.items.slice(0,3)){
     for(const k of ['symbol','category','scanClass','sector','priority','dataState','reasons','tfState','summary','updatedAt','tradeSignal'])assert(Object.prototype.hasOwnProperty.call(x,k),`${k} required`);

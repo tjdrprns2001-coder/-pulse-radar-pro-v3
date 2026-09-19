@@ -17,6 +17,8 @@ for(const key of ['PRE-SURGE','ACCUMULATION-PRE','META-PRE','SECTOR-ROTATION','A
 
 const pre=core.classifyV2({dataState:'live',alreadySurged:false,structure:'bullish',structureShift4h:true,priceChange24h:2.2,priceChange1h:2.1,priceChange15m:1.1,volumeAcceleration15m:3.4,volumeIncreasing5m:3,takerRatio:1.25,momentumSignals:{aligned:true,overheated:false}});
 assert.equal(pre.key,'PRE-SURGE');
+const learned=core.classifyV2({dataState:'live',priceChange24h:2.1,structure:'neutral',samplePattern:{archetype:'A+B',archetypeLabel:'A+B형 · OI축적+taker 왕복',phase:'IGNITION-WAIT',phaseLabel:'점화대기',score:72,reasons:['OI +3.2%'],liquidity:{label:'하단 유동성 보존'}}});
+assert.equal(learned.key,'PRE-SURGE','learned sample DNA should promote a fresh candidate');
 const post=core.classifyV2({dataState:'live',priceChange24h:12,priceChange1h:7.5,priceChange15m:4.3,volumeAcceleration15m:4,takerRatio:1.4});
 assert.equal(post.key,'POST-SURGE','already extended names must not remain PRE');
 const pump=core.classifyV2({dataState:'live',quoteVolume24h:700000,priceChange24h:7,priceChange15m:3.5,volumeAcceleration15m:4.4,takerRatio:1.05,structure:'neutral',momentumSignals:{aligned:false}});
