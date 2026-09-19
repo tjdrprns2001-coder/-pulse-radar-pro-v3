@@ -9,7 +9,7 @@ const sample={
     {id:'pwh1',type:'PWH',side:'buy',price:120,sourceId:'pwh:1',startIndex:0,state:'active'},
     {id:'pwl1',type:'PWL',side:'sell',price:80,sourceId:'pwl:1',startIndex:0,state:'active'},
     {id:'eqh1',type:'EQH',side:'buy',price:108,sourceId:'eqh:1',startIndex:2,state:'active'},
-    {id:'eql1',type:'EQL',side:'sell',price:92,sourceId:'eql:1',startIndex:2,state:'active'}
+    {id:'eql1',type:'EQL',side:'sell',price:92,sourceId:'eql:1',startIndex:2,state:'active'},\n    {id:'sh1',type:'SWING_HIGH',side:'buy',price:106,sourceId:'swing:h1',startIndex:2,confirmedAt:2,state:'active',quality:80},\n    {id:'sl1',type:'SWING_LOW',side:'sell',price:94,sourceId:'swing:l1',startIndex:2,confirmedAt:2,state:'active',quality:80}
   ],
   sweeps:[
     {id:'sw1',sourceSweepId:'sw:1',variant:'NORMAL',dir:'down',index:3,level:108,sourceId:'sw:1'},
@@ -42,4 +42,20 @@ test('plugin factory satisfies chart plugin contract',()=>{
   assert.ok(plugin.version);
   assert.ok(Array.isArray(plugin.requiredData));
   for(const fn of ['mount','update','setVisible','dispose'])assert.equal(typeof plugin[fn],'function');
+});
+
+test('overlay v2 keeps nearest BSL SSL levels and recent sweep reclaim labels compact',()=>{
+  const candles=[
+    {time:1,open:99,high:101,low:98,close:100},
+    {time:2,open:100,high:103,low:99,close:102},
+    {time:3,open:102,high:107,low:101,close:105},
+    {time:4,open:105,high:109,low:93,close:104},
+    {time:5,open:104,high:106,low:95,close:103}
+  ];
+  const p=LiquidityPlugin.buildOverlayPresentation(sample,candles,{tf:'1h',limitPerSide:2});
+  assert.ok(p.levels.length<=4);
+  assert.ok(p.annotations.some(x=>String(x.label).startsWith('BSL')));
+  assert.ok(p.annotations.some(x=>String(x.label).startsWith('SSL')));
+  assert.ok(p.annotations.some(x=>x.label==='BSL SWEEP'));
+  assert.ok(p.annotations.some(x=>x.label==='SSL R'));
 });
