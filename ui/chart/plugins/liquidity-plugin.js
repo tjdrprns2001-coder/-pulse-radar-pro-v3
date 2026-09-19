@@ -18,7 +18,7 @@
   function selectOverlayLevels(liquidity={},candles=[],limitPerSide=2){
     const last=Number(candles?.at(-1)?.close);if(!Number.isFinite(last))return[];
     const source=(liquidity.levels||[]).filter(l=>Number.isFinite(Number(l.price))&&OVERLAY_LABELS[l.type]&&(!l.state||ACTIVE_STATES.has(l.state)));
-    const rank=side=>uniqueByPrice(source.filter(l=>l.side===side).sort((a,b)=>Math.abs(Number(a.price)-last)-Math.abs(Number(b.price)-last)||Number(b.quality||0)-Number(a.quality||0))).slice(0,limitPerSide);
+    const rank=side=>uniqueByPrice(source.filter(l=>l.side===side&&(side==='buy'?Number(l.price)>=last:Number(l.price)<=last)).sort((a,b)=>Math.abs(Number(a.price)-last)-Math.abs(Number(b.price)-last)||Number(b.quality||0)-Number(a.quality||0))).slice(0,limitPerSide);
     return [...rank('buy'),...rank('sell')].map(l=>({...l,overlayLabel:OVERLAY_LABELS[l.type]||l.type}));
   }
   function buildOverlayPresentation(liquidity={},candles=[],context={}){
@@ -34,7 +34,7 @@
       for(const l of overlay.levels){const start=sec(candles[Math.max(0,Number(l.startIndex)||0)]?.time||candles[0]?.time);addLevelLine(l.price,start,end,{style:l.type.startsWith('PW')?3:2,width:l.type==='EQH'||l.type==='EQL'?2:1})}
       if(!ctx?.library?.createSeriesMarkers||!ctx.candlesSeries||!overlay.annotations.length)return;let chosen=overlay.annotations;
       if(CollisionPolicy?.layoutMarkerCandidates&&ctx?.chart?.timeScale&&ctx?.candlesSeries?.priceToCoordinate){try{const width=Number(ctx?.container?.clientWidth)||1024,height=Number(ctx?.container?.clientHeight)||480;const result=CollisionPolicy.layoutMarkerCandidates(overlay.annotations,{mode:'liquidity',viewportLevel:state.viewportLevel||'normal',width,height,xForBar:i=>{const t=sec(candles?.[i]?.time);const x=ctx.chart.timeScale().timeToCoordinate(t);return Number.isFinite(Number(x))?Number(x):i*10},yForPrice:p=>{const y=ctx.candlesSeries.priceToCoordinate(Number(p));return Number.isFinite(Number(y))?Number(y):Number(p)}});chosen=result.visible}catch{}}
-      const marks=chosen.filter(a=>candles?.[a.barIndex]).map(a=>({time:sec(candles[a.barIndex].time),position:a.side==='above'?'aboveBar':'belowBar',shape:a.type==='RECLAIM'?'arrowUp':'circle',text:a.label,color:a.type==='RECLAIM'?'#67e8f9':a.label.startsWith('BSL')?'#f0abfc':'#7dd3fc'}));if(marks.length)markersApi=ctx.library.createSeriesMarkers(ctx.candlesSeries,marks,{autoScale:false});
+      const marks=chosen.filter(a=>candles?.[a.barIndex]).map(a=>({time:sec(candles[a.barIndex].time),position:a.side==='above'?'aboveBar':'belowBar',shape:a.type==='RECLAIM'?(a.label.startsWith('BSL')?'arrowDown':'arrowUp'):'circle',text:a.label,color:a.type==='RECLAIM'?'#67e8f9':a.label.startsWith('BSL')?'#f0abfc':'#7dd3fc'}));if(marks.length)markersApi=ctx.library.createSeriesMarkers(ctx.candlesSeries,marks,{autoScale:false});
     }
     return{id:'liquidity',version:'2.0.0',requiredData:['candles','liquidity'],mount(c){ctx=c},update,setVisible(v){visible=!!v;if(!visible)clear();else if(lastState)update(lastState)},dispose(){clear();lastState=null;ctx=null}};
   }
