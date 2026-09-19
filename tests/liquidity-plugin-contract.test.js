@@ -9,7 +9,9 @@ const sample={
     {id:'pwh1',type:'PWH',side:'buy',price:120,sourceId:'pwh:1',startIndex:0,state:'active'},
     {id:'pwl1',type:'PWL',side:'sell',price:80,sourceId:'pwl:1',startIndex:0,state:'active'},
     {id:'eqh1',type:'EQH',side:'buy',price:108,sourceId:'eqh:1',startIndex:2,state:'active'},
-    {id:'eql1',type:'EQL',side:'sell',price:92,sourceId:'eql:1',startIndex:2,state:'active'},\n    {id:'sh1',type:'SWING_HIGH',side:'buy',price:106,sourceId:'swing:h1',startIndex:2,confirmedAt:2,state:'active',quality:80},\n    {id:'sl1',type:'SWING_LOW',side:'sell',price:94,sourceId:'swing:l1',startIndex:2,confirmedAt:2,state:'active',quality:80}
+    {id:'eql1',type:'EQL',side:'sell',price:92,sourceId:'eql:1',startIndex:2,state:'active'},
+    {id:'sh1',type:'SWING_HIGH',side:'buy',price:106,sourceId:'swing:h1',startIndex:2,confirmedAt:2,state:'active',quality:80},
+    {id:'sl1',type:'SWING_LOW',side:'sell',price:94,sourceId:'swing:l1',startIndex:2,confirmedAt:2,state:'active',quality:80}
   ],
   sweeps:[
     {id:'sw1',sourceSweepId:'sw:1',variant:'NORMAL',dir:'down',index:3,level:108,sourceId:'sw:1'},
