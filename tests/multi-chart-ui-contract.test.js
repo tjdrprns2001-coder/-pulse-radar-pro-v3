@@ -4,7 +4,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const html=fs.readFileSync(path.join(__dirname,'..','multi-chart.html'),'utf8');
-const css=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','multi-chart.css'),'utf8');\nconst card=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','chart-card.js'),'utf8');
+const css=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','multi-chart.css'),'utf8');
+const card=fs.readFileSync(path.join(__dirname,'..','ui','multi-chart','chart-card.js'),'utf8');
 
 function pos(src){return html.indexOf(src)}
 
