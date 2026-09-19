@@ -12,6 +12,12 @@ const oiB=s.deriveOiProfile([100,100.4,100.2]);
 const takerB=s.deriveTakerProfile([.22,1.1,4.13,.7]);
 assert.equal(s.classifyArchetype({priceProfile:{priceChange8hPct:-1},oiProfile:oiB,takerProfile:takerB}).archetype,'B');
 
+const xoi=s.normalizeXoiProfile({available:true,exchanges:{bybit:{available:true,changePct:3.8,samples:32},okx:{available:true,changePct:2.1,samples:8}}});
+assert.equal(xoi.positiveBreadth,2);
+const xClass=s.classifyArchetype({priceProfile:{priceChange8hPct:.8},oiProfile:oiB,takerProfile:takerB,xoiProfile:xoi});
+assert.equal(xClass.archetype,'X+B');
+assert.equal(s.deriveSequenceTag({oiProfile:oiB,takerProfile:takerB,xoiProfile:xoi}),'XOI-B2+');
+
 const oiC=s.deriveOiProfile([100,96,97]);
 assert.equal(s.classifyArchetype({priceProfile:{priceChange8hPct:-1},oiProfile:oiC,takerProfile:s.deriveTakerProfile([.8,1.2])}).archetype,'C');
 
@@ -27,9 +33,11 @@ assert.equal(liq.highSweep,true);
 
 const sample=s.analyzeSamplePattern({
   frames:{'15m':rows},
-  derivativesProfile:{oiProfile:oiAB,takerProfile:takerAB}
+  derivativesProfile:{oiProfile:oiAB,takerProfile:takerAB,xoiProfile:xoi}
 });
-assert.equal(sample.archetype,'A+B');
+assert.equal(sample.archetype,'X+A+B');
+assert.equal(sample.sequenceTag,'XOI-A+B');
+assert(sample.xoiProfile.available);
 assert(sample.score>=50);
 assert(['IGNITION-WAIT','IGNITION-EARLY','OBSERVE','PROGRESSED','REIGNITION'].includes(sample.phase));
 assert(Array.isArray(sample.reasons));
