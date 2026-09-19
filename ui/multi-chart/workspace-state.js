@@ -1,14 +1,14 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseMultiChartState=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const MODES=['clean','structure','smc','ict','dante','full'];
+  const MODES=['clean','structure','smc','liquidity','ict','dante','full'];
   const TFS=['15m','1h','4h','1d'];
   const baseCharts=[
-    {id:'chart-1',symbol:'BTCUSDT',timeframe:'1h',mode:'smc',preset:'smc',syncGroup:'workspace',expanded:false},
-    {id:'chart-2',symbol:'BTCUSDT',timeframe:'4h',mode:'ict',preset:'ict',syncGroup:'workspace',expanded:false},
-    {id:'chart-3',symbol:'BTCUSDT',timeframe:'15m',mode:'structure',preset:'structure',syncGroup:'workspace',expanded:false},
-    {id:'chart-4',symbol:'BTCUSDT',timeframe:'1d',mode:'dante',preset:'dante',syncGroup:'workspace',expanded:false}
+    {id:'chart-1',symbol:'BTCUSDT',timeframe:'1h',mode:'smc',preset:'smc',syncGroup:'workspace',expanded:false,liquidityOverlay:false},
+    {id:'chart-2',symbol:'BTCUSDT',timeframe:'4h',mode:'ict',preset:'ict',syncGroup:'workspace',expanded:false,liquidityOverlay:false},
+    {id:'chart-3',symbol:'BTCUSDT',timeframe:'15m',mode:'structure',preset:'structure',syncGroup:'workspace',expanded:false,liquidityOverlay:false},
+    {id:'chart-4',symbol:'BTCUSDT',timeframe:'1d',mode:'dante',preset:'dante',syncGroup:'workspace',expanded:false,liquidityOverlay:false}
   ];
   function normSymbol(v){const s=String(v||'BTCUSDT').trim().toUpperCase();return s||'BTCUSDT'}
-  function normalizeChart(c,i,symbol){const mode=MODES.includes(c?.mode)?c.mode:baseCharts[i].mode;const timeframe=TFS.includes(c?.timeframe)?c.timeframe:baseCharts[i].timeframe;return{...baseCharts[i],...(c||{}),id:`chart-${i+1}`,symbol,mode,timeframe,preset:mode,expanded:!!c?.expanded}}
+  function normalizeChart(c,i,symbol){const mode=MODES.includes(c?.mode)?c.mode:baseCharts[i].mode;const timeframe=TFS.includes(c?.timeframe)?c.timeframe:baseCharts[i].timeframe;return{...baseCharts[i],...(c||{}),id:`chart-${i+1}`,symbol,mode,timeframe,preset:mode,expanded:!!c?.expanded,liquidityOverlay:!!c?.liquidityOverlay}}
   function createWorkspaceState(initial={}){
     let symbol=normSymbol(initial.symbol||initial.workspaceSymbol||'BTCUSDT');
     let layout=[1,2,4].includes(+initial.layout)?+initial.layout:2;
