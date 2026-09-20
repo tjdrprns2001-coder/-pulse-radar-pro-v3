@@ -98,4 +98,25 @@ assert.equal(shockAnalysis.volumeShockMemory.found,true);
 assert.equal(shockAnalysis.dormancy.eligible,true);
 assert.equal(shockAnalysis.dormancy.source,'RVOL_5M_SHOCK');
 
+const clusterRows=Array.from({length:260},(_,i)=>{
+  const wobble=((i%9)-4)*0.01,px=100+wobble,vol=i===250?420:100;
+  return [i*900000,String(px),String(px+.15),String(px-.15),String(px),String(vol),i*900000+899999,String(vol*px),10,String(vol*.58),String(vol*px*.58),0];
+});
+const ma=s.deriveMaClusterProfile({'1d':clusterRows,'4h':clusterRows,'1h':clusterRows,'15m':clusterRows});
+assert.equal(ma.key,'TIGHT','20/60/112/224 flat cluster should be tight');
+const volDna=s.deriveVolumeMaDna({frames:{'4h':clusterRows,'1h':clusterRows,'15m':clusterRows},maClusterProfile:ma});
+assert.equal(volDna.found,true,'clustered RVOL spike should be detected');
+assert(['PRE_SPARK','IGNITION','ABSORPTION'].includes(volDna.stage),'cluster spike should be pre-surge volume stage');
+const directOi=s.deriveOiProfile([100,100.5,102.2]),directTaker=s.deriveTakerProfile([.9,2.25,1.1]);
+const flow=s.deriveFlowType({priceProfile:{priceChange8hPct:1},oiProfile:directOi,takerProfile:directTaker,volumeMaDna:volDna});
+assert.equal(flow.key,'DIRECT_BUILD');
+const preV4=s.derivePreSurgeDna({priceProfile:{priceChange8hPct:1},maCluster:ma,volumeMaDna:volDna,resetReignition:{key:'RESET_WAIT'},flowType:flow,oiProfile:directOi,takerProfile:directTaker});
+assert.equal(preV4.eligible,true,'MA cluster + volume + taker/OI should form v4 pre-surge DNA');
+assert(preV4.score>=55);
+const v4Analysis=s.analyzeSamplePattern({frames:{'1d':clusterRows,'4h':clusterRows,'1h':clusterRows,'15m':clusterRows,'5m':clusterRows},derivativesProfile:{oiProfile:directOi,takerProfile:directTaker}});
+for(const k of ['maCluster','volumeMaDna','flowType','preSurgeDna','negativeSimilarity','controlRisk'])assert(Object.prototype.hasOwnProperty.call(v4Analysis,k),`v4 field ${k} required`);
+assert(Array.isArray(v4Analysis.negativeSimilarity));
+const tLike=library.compareSampleLibrary({archetype:'A+B',maClusterKey:'TIGHT',volumeStage:'IGNITION',flowType:'DIRECT_BUILD',htfTransition:'HTF_ALIGNED'},5);
+assert(tLike.some(x=>x.name==='T'||x.name==='CTSI'||x.name==='ZIL'),'new MA-volume samples should participate in similarity');
+
 console.log('sample DNA engine PASS');
