@@ -5,6 +5,9 @@ assert.equal(m.cleanBase('XBT'),'BTC','XBT must normalize to BTC');
 assert.equal(m.cleanBase('1000PEPE'),'PEPE','multiplier perp must normalize to underlying');
 assert.equal(m.userBase('BTC-USDT-SWAP'),'BTC');
 assert.equal(m.userBase('XBTUSDTM'),'BTC');
+assert.equal(m.classifyAssetClass('TradFi','EQUITY'),'tradfi');
+assert.equal(m.classifyAssetClass('Crypto','COIN'),'crypto');
+assert.equal(m.obviousTradfiBase('XAG'),true);
 
 const markets=[
   m.standard('binance',{symbol:'BTCUSDT',baseAsset:'BTC',lastPrice:80000,priceChangePercent:2,quoteVolume24h:100000000}),
@@ -15,11 +18,15 @@ const markets=[
   m.standard('gate',{symbol:'PEPE_USDT',baseAsset:'PEPE',lastPrice:.000007,priceChangePercent:5.2,quoteVolume24h:10000000}),
   m.standard('bybit',{symbol:'ALTUSDT',baseAsset:'ALT',lastPrice:.25,priceChangePercent:1,quoteVolume24h:8000000}),
   m.standard('okx',{symbol:'ALT-USDT-SWAP',baseAsset:'ALT',lastPrice:.251,priceChangePercent:1.2,quoteVolume24h:7000000}),
-  m.standard('hyperliquid',{symbol:'HYPE',baseAsset:'HYPE',quoteAsset:'USDC',lastPrice:40,priceChangePercent:3,quoteVolume24h:50000000})
+  m.standard('hyperliquid',{symbol:'HYPE',baseAsset:'HYPE',quoteAsset:'USDC',lastPrice:40,priceChangePercent:3,quoteVolume24h:50000000}),
+  m.standard('okx',{symbol:'SKHYNIX-USDT-SWAP',baseAsset:'SKHYNIX',lastPrice:1300,priceChangePercent:.1,quoteVolume24h:20000000,assetClass:'tradfi'}),
+  m.standard('gate',{symbol:'SKHYNIX_USDT',baseAsset:'SKHYNIX',lastPrice:1301,priceChangePercent:.2,quoteVolume24h:10000000}),
+  m.standard('gate',{symbol:'XAG_USDT',baseAsset:'XAG',lastPrice:66,priceChangePercent:.3,quoteVolume24h:9000000})
 ].filter(Boolean);
 
 const merged=m.mergeMarkets(markets);
-assert.equal(merged.length,4,'nine contracts should dedupe to four underlying assets');
+assert.equal(merged.length,4,'crypto contracts should dedupe while tradfi groups are excluded');
+assert(!merged.some(x=>x.baseAsset==='SKHYNIX'||x.baseAsset==='XAG'),'tradfi perps must not inflate crypto universe');
 const btc=merged.find(x=>x.baseAsset==='BTC');
 assert(btc,'BTC must exist');
 assert.equal(btc.exchangeCount,4,'BTC exchange coverage should merge');
