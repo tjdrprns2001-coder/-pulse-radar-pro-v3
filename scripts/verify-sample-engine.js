@@ -71,7 +71,31 @@ assert(Array.isArray(matches)&&matches.length===3,'sample similarity top3 requir
 assert(matches[0].score>=50,'representative sample similarity should be meaningful');
 
 const enhanced=s.analyzeSamplePattern({frames:{'1h':timeRows.concat(timeRows),'15m':timeRows.concat(timeRows),'5m':sweepRows.concat(sweepRows)},derivativesProfile:{oiProfile:oiAB,takerProfile:takerAB,xoiProfile:xoi}});
-for(const k of ['sweep','timeSymmetry','resetReignition','similarity','dormancy'])assert(Object.prototype.hasOwnProperty.call(enhanced,k),`enhanced sample field ${k} required`);
+for(const k of ['sweep','timeSymmetry','resetReignition','volumeShockMemory','similarity','dormancy'])assert(Object.prototype.hasOwnProperty.call(enhanced,k),`enhanced sample field ${k} required`);
 assert(Array.isArray(enhanced.similarity)&&enhanced.similarity.length>0);
+
+// closed 5m RVOL >=3x should persist as a 24H latent memory even after volume cools.
+const shock5=Array.from({length:300},(_,i)=>{
+  const px=i<150?100:100.5;
+  const vol=i===160?420:100;
+  return [i*300000,String(px),String(px+1),String(px-1),String(px),String(vol),i*300000+299999,String(vol*px),10,String(vol*.55),String(vol*px*.55),0];
+});
+const shockMemory=s.deriveVolumeShockMemory({frames:{'5m':shock5},oiProfile:s.deriveOiProfile([100,101.2,102]),takerProfile:s.deriveTakerProfile([.7,2.2,1.1])});
+assert.equal(shockMemory.found,true,'5m RVOL shock should be detected');
+assert.equal(shockMemory.eligible,true,'held shock should stay in 24H memory');
+assert.equal(shockMemory.dna,'D+A+B','volume shock should join OI/taker confirmations');
+assert(['REIGNITION_READY','REIGNITION'].includes(shockMemory.status),'joined confirmations should promote latent shock');
+assert(shockMemory.ageHours>0&&shockMemory.ageHours<=24,'shock age should be tracked inside 24H');
+
+const broken5=shock5.map(r=>r.slice());
+for(let i=170;i<broken5.length;i++){broken5[i][3]='94';broken5[i][4]='94';}
+const brokenMemory=s.deriveVolumeShockMemory({frames:{'5m':broken5},oiProfile:s.deriveOiProfile([100,101.2,102]),takerProfile:s.deriveTakerProfile([.7,2.2])});
+assert.equal(brokenMemory.eligible,false,'broken signal price/structure must leave latent memory');
+assert.equal(brokenMemory.status,'BROKEN');
+
+const shockAnalysis=s.analyzeSamplePattern({frames:{'1h':timeRows.concat(timeRows),'15m':timeRows.concat(timeRows),'5m':shock5},derivativesProfile:{oiProfile:s.deriveOiProfile([100,101.2,102]),takerProfile:s.deriveTakerProfile([.7,2.2,1.1])}});
+assert.equal(shockAnalysis.volumeShockMemory.found,true);
+assert.equal(shockAnalysis.dormancy.eligible,true);
+assert.equal(shockAnalysis.dormancy.source,'RVOL_5M_SHOCK');
 
 console.log('sample DNA engine PASS');
