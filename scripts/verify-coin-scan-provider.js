@@ -44,6 +44,8 @@ assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-d
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
   const batch=await p.scanDeepCandidates(['XLMUSDT','BADUSDT'],['1h','15m']);
   assert(batch.results.XLMUSDT,'successful symbol preserved');
+  await p.scanDeepCandidates(['XLMUSDT'],['5m']);
+  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must fetch 300 bars for 24H RVOL memory');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
   assert(batch.errors.length>=1,'failed symbol recorded');
   active=0;maxActive=0; // measure mapLimit itself, not parallel derivative/XOI fetches above
