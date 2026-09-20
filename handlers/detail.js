@@ -1,5 +1,6 @@
 const spot=require('../lib/spot-detail.js');
 const futures=require('../lib/futures-data.js');
+const multi=require('../lib/multi-futures-data.js');
 function capture(){let code=200,body=null;return{res:{setHeader(){},status(c){code=c;return this},json(v){body=v;return this}},get:()=>({code,body})}}
 async function runSpot(req){const c=capture();try{await spot(req,c.res)}catch(e){return{code:500,body:{ok:false,error:e?.message||String(e)}}}return c.get()}
 function stripHtml(s=''){return String(s).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()}
@@ -42,4 +43,24 @@ const name=coin?.name||base;try{const [en,ko]=await Promise.allSettled([getText(
 const toTranslate=news.filter(x=>!hasKo(x.title)).slice(0,12);await Promise.all(toTranslate.map(async x=>{x.titleKo=await translateKo(x.title)}));news.forEach(x=>{x.titleKo=x.titleKo||x.title;x.eventDate=extractEventDate(x.title);x.importance=importance(x);x.amount=parseAmount(x.title,base)});
 const md=coin?.market_data||{},supply=md.total_supply??md.circulating_supply??null;news.forEach(x=>{x.supplyRatio=x.amount&&supply?x.amount/supply*100:null});
 const deriv=await derivativesIntel(pair),events=news.filter(x=>x.isEvent||x.category!=='관련 뉴스').sort((a,b)=>{const ad=a.eventDate?new Date(a.eventDate).getTime():0,bd=b.eventDate?new Date(b.eventDate).getTime():0;return(bd-ad)||(b.importance-a.importance)}).slice(0,10),burns=news.filter(x=>x.category==='소각/공급'||x.category==='언락/공급').sort((a,b)=>b.importance-a.importance).slice(0,7),exchange=news.filter(x=>x.category==='거래소/파생').sort((a,b)=>b.importance-a.importance).slice(0,7),liquidationNews=news.filter(x=>/liquidat|short squeeze|long squeeze|청산|숏\s*스퀴즈|롱\s*스퀴즈/i.test(x.title+' '+x.titleKo)).slice(0,5),links=coin?.links||{},official=[];(links.homepage||[]).filter(Boolean).slice(0,1).forEach(url=>official.push({label:'공식 홈페이지',url}));(links.announcement_url||[]).filter(Boolean).slice(0,2).forEach((url,i)=>official.push({label:i?'공식 공지 2':'공식 공지',url}));if(links.twitter_screen_name)official.push({label:'공식 X',url:'https://x.com/'+links.twitter_screen_name});const change24=Number(md.price_change_percentage_24h),catalyst=catalystSummary(news,Number.isFinite(change24)?change24:deriv.change24,deriv),descKo=stripHtml(coin?.description?.ko||''),descEn=stripHtml(coin?.description?.en||'');let description=descKo||descEn.slice(0,700);if(!descKo&&descEn)description=await translateKo(descEn.slice(0,700));const timeline=events.map(x=>({title:x.title,titleKo:x.titleKo,category:x.category,source:x.source,link:x.link,pubDate:x.pubDate,eventDate:x.eventDate,importance:x.importance,amount:x.amount,supplyRatio:x.supplyRatio}));return{ok:true,intel:true,version:'coin-intel-v3-derivatives',symbol:pair,base,name,updatedAt:new Date().toISOString(),project:{name,symbol:base,description,marketCapUsd:md.market_cap?.usd??null,circulating:md.circulating_supply??null,totalSupply:md.total_supply??null,maxSupply:md.max_supply??null,priceUsd:md.current_price?.usd??deriv.markPrice??null,change24:Number.isFinite(change24)?change24:deriv.change24??null},summary:{headline:events[0]?.titleKo||news[0]?.titleKo||'최근 주요 이벤트 없음',eventCount:events.length,burnCount:burns.length,exchangeCount:exchange.length,newsCount:news.length},catalyst,derivatives:deriv,liquidationNews,timeline,events,burns,exchange,news:news.slice(0,14),official,warnings,note:'공개 뉴스·프로젝트 메타데이터·Binance USD-M 공개 선물 데이터를 자동 수집·번역·분류한 결과입니다. 선물 지표는 연구용 시장 상태 정보이며 매매 지시가 아닙니다. Binance 공개 REST만으로 정확한 시장 전체 청산액은 제공되지 않아 청산 총액은 추정하지 않습니다. 일정·소각·언락·상장 여부는 반드시 공식 원문에서 재확인하세요.'}}
-module.exports=async function handler(req,res){res.setHeader('Cache-Control','s-maxage=60, stale-while-revalidate=300');try{if(String(req.query.intel||'')==='1')return res.status(200).json(await intel(req.query.symbol));const s=await runSpot(req);if(s.code<400&&s.body?.ok)return res.status(200).json({...s.body,market:'spot'});const f=await futures.detail(String(req.query.symbol||'BTCUSDT').toUpperCase());return res.status(200).json(f)}catch(e){return res.status(502).json({ok:false,error:e?.message||'Detail fetch failed'})}}
+function externalFuturesDetail(row,requested){
+  const exchanges=Array.isArray(row?.exchanges)?row.exchanges:[],name=String(requested||row?.symbol||'').toUpperCase();
+  return{ok:true,market:'futures',symbol:row?.symbol||name,externalFuturesOnly:true,sourceExchanges:exchanges,primaryExchange:row?.primaryExchange||null,
+    timeframes:[],preSurge:{score:row?.preScore??0,stage:'외부 선물 관찰',reasons:[`${exchanges.length||1}개 선물 거래소 중복 제거 집계`,'Binance 정밀 캔들 미지원 종목은 외부 시세 기준으로만 표시']},
+    surge:{score:row?.surgeScore??0,aligned:0},
+    riskGate:{hard:[],warn:['외부 거래소 전용 종목 · 정밀 MTF 지표는 아직 Binance 지원 종목에 우선 제공'],excluded:false},
+    confidence:{grade:'OBSERVE',label:'멀티거래소 선물 시세 관찰'},
+    externalMarket:{price:row?.price??null,change24:row?.change24??null,quoteVolume24h:row?.quoteVol24??null,exchangeCount:row?.exchangeCount??exchanges.length,openInterestUsd:row?.openInterestUsd??null,fundingRate:row?.fundingRate??null,contracts:row?.contracts||[]}};
+}
+module.exports=async function handler(req,res){res.setHeader('Cache-Control','s-maxage=60, stale-while-revalidate=300');try{
+  if(String(req.query.intel||'')==='1')return res.status(200).json(await intel(req.query.symbol));
+  const requested=String(req.query.symbol||'BTCUSDT').toUpperCase();
+  const s=await runSpot(req);if(s.code<400&&s.body?.ok)return res.status(200).json({...s.body,market:'spot'});
+  try{return res.status(200).json(await futures.detail(requested))}
+  catch(_binanceError){
+    const row=await multi.find(requested);
+    if(row?.detailSymbol){try{return res.status(200).json(await futures.detail(row.detailSymbol))}catch(_e){}}
+    if(row)return res.status(200).json(externalFuturesDetail(row,requested));
+    throw _binanceError;
+  }
+}catch(e){return res.status(502).json({ok:false,error:e?.message||'Detail fetch failed'})}}
