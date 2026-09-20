@@ -17,6 +17,8 @@ assert(out.preSurge&&typeof out.preSurge.label==='string');
 assert(out.takerRatio===null||out.takerRatio>0);
 assert(Array.isArray(out.reasons));
 assert(out.momentumSignals&&typeof out.momentumSignals==='object','momentumSignals required');
+assert(out.samplePattern&&typeof out.samplePattern==='object','samplePattern required');
+for(const k of ['sweep','timeSymmetry','resetReignition','similarity','dormancy'])assert(Object.prototype.hasOwnProperty.call(out.samplePattern,k),`samplePattern ${k} required`);
 for(const k of ['rsi1h','rsi15m','macd1h','macd15m','stochRsi1h','stochRsi15m','aligned','overheated','score'])assert(Object.prototype.hasOwnProperty.call(out.momentumSignals,k),`${k} required`);
 assert(Number.isFinite(out.momentumSignals.rsi1h),'1h RSI should be finite with enough candles');
 assert(Number.isFinite(out.momentumSignals.rsi15m),'15m RSI should be finite with enough candles');
