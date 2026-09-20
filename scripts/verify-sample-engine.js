@@ -1,5 +1,6 @@
 const assert=require('assert');
 const s=require('../lib/coin-scan/sample-engine.js');
+const library=require('../lib/coin-scan/sample-library.js');
 
 const oiAB=s.deriveOiProfile([{sumOpenInterest:'100'},{sumOpenInterest:'102'},{sumOpenInterest:'104'}]);
 assert(Math.abs(oiAB.changePct-4)<1e-9);
@@ -41,5 +42,36 @@ assert(sample.xoiProfile.available);
 assert(sample.score>=50);
 assert(['IGNITION-WAIT','IGNITION-EARLY','OBSERVE','PROGRESSED','REIGNITION'].includes(sample.phase));
 assert(Array.isArray(sample.reasons));
+
+
+const sweepRows=Array.from({length:42},(_,i)=>{
+  const base=100+(i>28?(i-28)*.08:0),high=101,low=i===28?98:99,close=i===28?100.4:base;
+  return [i*300000,String(base),String(high),String(low),String(close),String(100+i),0,0,0,0,0,0];
+});
+const precise=s.deriveLocalSweepPattern(sweepRows);
+assert(['SSL_SWEEP_RECLAIM','NO_SWEEP_COMPRESSION'].includes(precise.key),'precise sweep tag required');
+assert(typeof precise.label==='string'&&precise.label.length>0);
+
+const timeRows=Array.from({length:36},(_,i)=>{
+  let p=100;
+  if(i<=10)p=100+i;
+  else if(i<=14)p=110-(i-10)*5;
+  else p=90+(i-14)*.8;
+  const hi=i===10?112:p+1,lo=i===14?88:p-1;
+  return [i*900000,String(p),String(hi),String(lo),String(p),String(100+i),0,0,0,0,0,0];
+});
+const ts=s.deriveTimeSymmetry(timeRows,15);
+assert(['FAST_RECLAIM','TIME_SYMMETRY','ABSORPTION_TIME','LONG_REBUILD','UNKNOWN'].includes(ts.tag),'time symmetry tag required');
+
+const reset=s.deriveResetReignition({'1h':timeRows.concat(timeRows),'15m':timeRows.concat(timeRows),'5m':timeRows.concat(timeRows)});
+assert(reset&&typeof reset.key==='string'&&typeof reset.label==='string','reset/reignition DNA required');
+
+const matches=library.compareSampleLibrary({archetype:'C',sweepKey:'BSL_PROBE_REATTACK',time15Key:'FAST_RECLAIM',time1hKey:'LONG_REBUILD',resetKey:'15M_RESET_5M_REIGNITION',cleanup:true,xoi:false,takerExtreme:false});
+assert(Array.isArray(matches)&&matches.length===3,'sample similarity top3 required');
+assert(matches[0].score>=50,'representative sample similarity should be meaningful');
+
+const enhanced=s.analyzeSamplePattern({frames:{'1h':timeRows.concat(timeRows),'15m':timeRows.concat(timeRows),'5m':sweepRows.concat(sweepRows)},derivativesProfile:{oiProfile:oiAB,takerProfile:takerAB,xoiProfile:xoi}});
+for(const k of ['sweep','timeSymmetry','resetReignition','similarity','dormancy'])assert(Object.prototype.hasOwnProperty.call(enhanced,k),`enhanced sample field ${k} required`);
+assert(Array.isArray(enhanced.similarity)&&enhanced.similarity.length>0);
 
 console.log('sample DNA engine PASS');
