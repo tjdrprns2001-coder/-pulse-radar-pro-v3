@@ -12,7 +12,7 @@
     dante:{title:'주식단테 실전 랩',desc:'공개 기법 · 자동/수동 체크 · 차트 오버레이 · 멀티TF',path:'/dante-lab.html'},
     multi:{title:'레거시 MTF 차트',desc:'기존 다중 차트 연구 화면',path:'/multi-chart.html'},
     intel:{title:'코인 정보·일정·뉴스',desc:'공식 일정 · 언락 · 뉴스 · 선물시장 압력',path:'/coin-intel.html'},
-    ict:{title:'ICT · IPDA',desc:'유동성 · MSS/CISD · PD Array',path:'/ict-narrative-lab.html'},
+    ict:{title:'ICT 전문 트레이너',desc:'유동성 · ERL/IRL · PD Array · CISD · IPDA · MMXM · 8TF',path:'/ict-trainer.html'},
     structure:{title:'시장 구조',desc:'스윙 · BOS · CHoCH · 구조 연구',path:'/structure-lab.html'},
     liquidity:{title:'유동성',desc:'FVG · Sweep · Liquidity 연구',path:'/liquidity-lab-v2.html'},
     surge:{title:'급등 패턴',desc:'PRE-SURGE · 급등 전후 패턴 연구',path:'/surge-pattern-lab.html'},
@@ -80,7 +80,7 @@
     closeMenu();emit('pulse:viewchange',{view:key});
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
-  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','multi','report','dante'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
+  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','multi','report','ict','dante'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
   function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
