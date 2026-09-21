@@ -35,6 +35,8 @@ assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
 assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('for(let i=0;i<TF.length;i++){const tf=TF[i]'),'8TF snapshots must use direct intervals with sequential fetch');
 assert(snapJs.includes('IntersectionObserver')&&snapJs.includes('ruleSummary'),'snapshot lazy rendering or rule-based summary missing');
+assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
+assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
 assert(snapJs.includes('saveEventBundle')&&scan.includes("searchParams.set('eventId'"),'transition-event snapshot archive wiring missing');
 
 for(const term of ['ERL/IRL','PD Array','CISD','IPDA','MMXM','1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m'])assert(ictTrainer.includes(term),'ICT trainer UI missing '+term);
