@@ -1,4 +1,5 @@
 'use strict';
+// Keep Vercel Hobby deployments within the 12-function project limit.
 const assert=require('assert');
 const fs=require('fs');
 const path=require('path');
