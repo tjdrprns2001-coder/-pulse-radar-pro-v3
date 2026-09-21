@@ -34,6 +34,12 @@ assert.equal(ptbReload.sampleSubtype,'PTB_OI_LED_RELOAD');
 const ptb=V2.evaluate({symbol:'PTBUSDT',price1hPct:.8,price24hPct:5,oi4hPct:5,oi8hPct:8,oiDrawdownPct:-1,taker1h:[.9,1.0,.95],taker15m:[1.0],fundingRate:.01,htfRangePct:30,structureImproving:true,rvol1h:2.5,rvol15m:4,priceHoldAfterShock:true});
 assert.equal(ptb.sampleSubtype,'PTB_OI_LED_REIGNITION');
 
+const zetaBuild=V2.evaluate({symbol:'ZETAUSDT',price1hPct:.6,price24hPct:7,oi1hPct:.4,oi4hPct:.5,oi8hPct:.2,taker1h:[1.46,2.55,1.47,1.32,1.29,1.38],taker15m:[1.1,1.8,.9,5.07,2.04,1.48,1.37,2.37],fundingRate:.005,htfRangePct:20,structureImproving:true,rvol1h:1.2});
+assert.equal(zetaBuild.sampleSubtype,'ZETA_FLOW_LED_BUILD');
+
+const zetaExpansion=V2.evaluate({symbol:'ZETAUSDT',price1hPct:48,price24hPct:65,oi1hPct:108,oi4hPct:111,oi8hPct:113,taker1h:[2.55,1.47,1.32,1.29,1.38,.99],taker15m:[1.8,5.07,2.04,1.48,2.37,.87],fundingRate:.005,htfRangePct:20,structureImproving:true,rvol1h:125,bosUp:true,breakout:true});
+assert.equal(zetaExpansion.sampleSubtype,'ZETA_DIRECT_OI_EXPANSION');
+
 const csv=V2.csvRow({symbol:'FETUSDT',priceClose:.17,price1hPct:.2,price24hPct:1,oi4hPct:4,oi8hPct:2,fundingRate:.01},a,null);
 assert.equal(csv.stage_transition,'unknown');
 assert.equal(csv.next_open,null);
