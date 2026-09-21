@@ -37,6 +37,12 @@ PTB subtype phases:
 
 Neutral true taker (0.8–1.2) does not invalidate the PTB path when OI lead/retention conditions are satisfied.
 
+ZETA subtype phases:
+- ZETA_FLOW_LED_BUILD: HTF discount/structure recovery + OI still roughly flat + repeated 1H true-taker >1.2 and recurring 15m strong-buy bursts while price remains compressed.
+- ZETA_DIRECT_OI_EXPANSION: after flow-led build, 1H price displacement + RVOL >10 + OI 1H instantaneous expansion >=20%.
+
+ZETA is intentionally separate from PTB: PTB is OI-led with neutral taker allowed; ZETA is flow-led before OI expansion.
+
 ## Output contract
 Deep items expose:
 - v2Flow / v2Type / v2Stage
