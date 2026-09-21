@@ -1,0 +1,12 @@
+(function(root,factory){
+  const api=factory(root?.PulseSimpleTradingEngine);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  else root.PulseSimpleTradingPlugin=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(Engine){'use strict';
+function createSimpleTradingPlugin(){let ctx=null,visible=true,series=[],markersApi=null;
+  function sec(v){v=Number(v);return Math.trunc(v>1e12?v/1000:v)}
+  function clear(){for(const s of series){try{ctx&&ctx.chart&&ctx.chart.removeSeries(s)}catch{}}series=[];try{markersApi&&markersApi.setMarkers([])}catch{}try{markersApi&&markersApi.detach&&markersApi.detach()}catch{}markersApi=null}
+  function addLevel(price,candles,style){if(!ctx||!Number.isFinite(Number(price))||!candles?.length)return;const s=ctx.addLineSeries({lineWidth:1,lineStyle:style||2,lastValueVisible:false,priceLineVisible:false});s.setData([{time:sec(candles[Math.max(0,candles.length-80)]?.time),value:Number(price)},{time:sec(candles.at(-1)?.time),value:Number(price)}]);series.push(s)}
+  return{id:'simple-trading',version:'1.0.0',requiredData:['rawCandles'],mount(c){ctx=c},update(state){clear();if(!ctx||!visible||!Engine)return;const candles=Array.isArray(state?.rawCandles)?state.rawCandles:[];if(!candles.length)return;const classic=state?.classic||Engine.analyze({candles}),best=(classic.patterns||[]).filter(x=>x.status!=='FAILED').slice(0,3);for(const p of best){addLevel(p.trigger,candles,2);addLevel(p.invalidation,candles,3)}const marks=[];for(const p of best.slice(0,2)){const last=candles.at(-1);if(!last)continue;marks.push({time:sec(last.time),position:p.side==='상승'?'belowBar':'aboveBar',shape:p.side==='상승'?'arrowUp':'arrowDown',text:(p.label||'패턴')+' · '+String(p.status||''),color:p.side==='상승'?'#5dd6a4':'#ff7b88'})}const candle=(classic.candles||[])[0];if(candle&&candles[candle.index])marks.push({time:sec(candles[candle.index].time),position:candle.side==='하락'?'aboveBar':'belowBar',shape:'circle',text:candle.label,color:candle.side==='하락'?'#ff9aa5':'#8ac7ff'});if(marks.length&&ctx.library&&typeof ctx.library.createSeriesMarkers==='function'){try{markersApi=ctx.library.createSeriesMarkers(ctx.candlesSeries,marks,{autoScale:false})}catch{}}},setVisible(v){visible=!!v;if(!visible)clear()},dispose(){clear();ctx=null}}}
+return{createSimpleTradingPlugin};
+});
