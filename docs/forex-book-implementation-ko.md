@@ -2,12 +2,12 @@
 
 ## 소스 범위
 
-현재 확보한 책 소스는 두 파일입니다.
+현재 확보한 책 소스는 **p.1~406 전체**입니다.
 
 - `All you should know about Forex-1-200(1).pdf`: 인쇄 p.1~200
-- `All you should know about Forex-201-406.pdf`: 인쇄 p.201~350까지 확보
+- `All you should know about Forex-201-406(2).pdf`: 인쇄 p.201~406
 
-따라서 현재 구현 가능 범위는 **p.1~350**입니다. p.351~406은 현재 소스가 없어 구현 완료로 표시하지 않습니다.
+따라서 현재 구현 범위는 **p.1~406 완전체**입니다.
 
 ## p.1~200 구현
 
@@ -40,3 +40,21 @@
 - 전문 차트: `Forex Book` 오버레이
 - p.1~350 탭: 기초 / 심리 / 시장참여자 / 클래식 패턴 / 펀더멘털 / 리스크 / 자금관리 / 도구 / 캔들 / 지표 / 경제 이벤트 / 교육·윤리
 - 계산기: Pip / Spread / Lot / 포지션 리스크 / 드로다운 복구 / 복리
+
+
+## p.351~406 구현
+
+- p.351: Ichimoku Cloud 마무리
+- p.352~370: Forex 상관관계 — 유형, 계수, 통화쌍, 위험관리, 심리, 전략, 타임프레임, 경제뉴스, 테이블, 한계, 추적도구
+- p.371~400: Cheat Sheets — 상승추세, 핵심레벨, Demand/Supply, Entry Confluence, Pin Bars, 3 Market Scenarios, Reversal, M/W, Top 6 Candlestick, Zones, Fake Breakout, Fibonacci, Candlestick Elements, Spotting Reversal, Bullish CHoCH
+- p.401~404: Useful Websites 목록
+- p.405~406: Conclusion / 링크
+
+### 추가 자동화
+- Pearson 상관계수 계산 + 위험 가이드
+- Pin Bar 탐지
+- M/W 기본·확장·단축형 분류
+- Book CHoCH 근사
+- Support/Resistance · Supply/Demand · Pivot · Fibonacci · Psychological zone 통합
+- Reversal 체크리스트
+- 차트 오버레이에 zone / pin / CHoCH 마커
