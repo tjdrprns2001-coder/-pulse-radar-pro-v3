@@ -13,7 +13,12 @@ const handlers = {
   'structure-study': require('../handlers/structure-study'),
   structure: require('../handlers/structure'),
   'temporal-features': require('../handlers/temporal-features'),
-  'trendline-study': require('../handlers/trendline-study')
+  'trendline-study': require('../handlers/trendline-study'),
+  'signal-alerts': require('../handlers/signal-alerts'),
+  'signal-backfill': require('../handlers/signal-backfill'),
+  'signal-calibration': require('../handlers/signal-calibration'),
+  'signal-health': require('../handlers/signal-health'),
+  'signal-performance': require('../handlers/signal-performance')
 };
 
 module.exports = async function handler(req, res) {
