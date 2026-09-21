@@ -35,6 +35,8 @@ assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
 assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('for(let i=0;i<TF.length;i++){const tf=TF[i]'),'8TF snapshots must use direct intervals with sequential fetch');
 assert(snapJs.includes('IntersectionObserver')&&snapJs.includes('ruleSummary'),'snapshot lazy rendering or rule-based summary missing');
+assert(snapJs.includes('pdText')&&snapJs.includes('snapshotDisplay')&&snapJs.includes('confirmedText'),'snapshot friendly display helpers missing');
+assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
 assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
 assert(snapJs.includes('saveEventBundle')&&scan.includes("searchParams.set('eventId'"),'transition-event snapshot archive wiring missing');
@@ -54,6 +56,13 @@ assert(danteLabJs.includes('multi(false)'),'Dante method selection must auto-fil
 for(const id of ['bowl224','ma-hit','concrete','highheel','symmetry','share','kijun-scalp'])assert(snapshotRenderer.includes("method==='"+id+"'"),'method-specific snapshot geometry missing '+id);
 assert(snapshotRenderer.includes('nearestZones')&&snapshotRenderer.includes('nearestLiquidity'),'focused snapshots must declutter SMC/liquidity overlays');
 assert(snapshotRenderer.includes('layoutLabels')&&snapshotRenderer.includes('dedupeOverlayLabels'),'snapshot label collision manager missing');
+assert(snapshotRenderer.includes('limitOverlayLabels'),'mobile snapshot label cap missing');
+const capped=snapshotRendererApi.limitOverlayLabels([
+  {text:'ERL High',priority:96,order:0},{text:'EQH/BSL',priority:88,order:1},{text:'EQL/SSL',priority:88,order:2},
+  {text:'OB',priority:78,order:3},{text:'Rejection',priority:70,order:4},{text:'FVG',priority:62,order:5},{text:'Old High',priority:42,order:6}
+],6);
+assert.equal(capped.length,6,'mobile snapshot labels must cap at six');
+assert(!capped.some(x=>x.text==='Old High'),'mobile cap must drop lowest-priority label first');
 const clustered=snapshotRendererApi.layoutLabels([
   {text:'ERL High',x:900,y:100,width:86,height:20,priority:96},
   {text:'Old High',x:900,y:102,width:82,height:20,priority:42,optional:true},
