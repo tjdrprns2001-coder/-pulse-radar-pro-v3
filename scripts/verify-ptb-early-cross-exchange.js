@@ -16,3 +16,14 @@ const a=p.appendSample([],r),b=p.appendSample(a,r);
 assert.equal(b.length,2,'duplicate samples must be preserved');
 assert.equal(b[0].symbol,b[1].symbol);
 console.log('PTB-EARLY cross-exchange PASS');
+
+const z=p.analyzeCrossExchangeLead({symbol:'ZETAUSDT',priceChangePct:9,
+ spot:[{exchange:'bitget',timestamp:t0,volumeRatio:6.2}],
+ futures:[{exchange:'binance',timestamp:t0+7200000,volumeRatio:2.1}],
+ binanceOi4hPct:109,eventCatalyst:true,
+ takerRows:[{timestamp:t0,ratio:2.55,price:.0386},{timestamp:t0+3600000,ratio:1.38,price:.0392},{timestamp:t0+7200000,ratio:.87,price:.0390}]
+});
+assert(z.tags.includes('TAKER_COOLDOWN_PRICE_HOLD'));
+assert(z.tags.includes('EVENT_PRE_SURGE'));
+assert.equal(z.preserveDuplicateSamples,true);
+console.log('ZETA event + taker-cooldown DNA PASS');
