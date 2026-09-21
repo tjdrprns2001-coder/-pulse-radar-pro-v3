@@ -4,12 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pulse AI Autopilot</title>
 <link rel="stylesheet" href="/ui/pulse-ai.css">
-<script src="/ui/pulse-ai.js?v=20260917-report1" defer></script>
+<script src="/ui/pulse-ai.js?v=20260921-events1" defer></script>
 </head>
 <body>
 <main class="pulseAI" aria-live="polite">
   <header class="hero"><div><span class="eyebrow">PULSE AI AUTOPILOT</span><h1>시장 브리핑</h1><p id="updated">스캐너 데이터를 불러오는 중…</p></div><span id="aiBadge" class="badge">확인 중</span></header>
   <section class="card"><h2>요약</h2><p id="summary">불러오는 중…</p></section>
+  <section class="card eventCard"><h2>이벤트 · 공식 뉴스</h2><p id="eventSummary" class="eventSummary">이벤트 정보를 확인하는 중…</p><div id="eventCatalysts" class="list"></div></section>
   <section class="grid"><div class="card"><h2>주요 변화</h2><div id="highlights" class="list"></div></div><div class="card"><h2>관찰 목록</h2><div id="watch" class="list"></div></div></section>
   <section class="card"><h2>데이터 경고</h2><div id="warnings" class="list muted"></div></section>
   <section class="card"><h2>출처</h2><div id="sources" class="list"></div></section>
