@@ -24,6 +24,6 @@ test('child chart emits symbol sync and shell consumes it',()=>{
   assert.match(shell,/pulse-symbol-sync/);
 });
 
-test('mobile analysis title is shortened',()=>{
-  assert.match(shell,/analysis:\{title:'분석'/);
+test('mobile analysis title remains concise in V4',()=>{
+  assert.match(shell,/analysis:\{title:'통합 차트'/);
 });
