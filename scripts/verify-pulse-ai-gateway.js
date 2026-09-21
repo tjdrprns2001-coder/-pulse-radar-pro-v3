@@ -4,8 +4,8 @@ const {createOpenAIGateway,normalizeBrief}=require('../lib/pulse-ai/openai-gatew
 (async()=>{
   const unavailable=createOpenAIGateway({apiKey:''});
   assert.equal(unavailable.available,false);
-  const n=normalizeBrief({summary:'x',highlights:[{symbol:'AAAUSDT'}],sources:[{title:'ok',url:'https://example.com/a'},{title:'bad',url:'javascript:alert(1)'}]},{model:'m',usedWeb:true});
-  assert.equal(n.summary,'x');assert.equal(n.sources.length,1);assert.equal(n.sources[0].url,'https://example.com/a');
+  const n=normalizeBrief({summary:'x',highlights:[{symbol:'AAAUSDT'}],eventCatalysts:[{symbol:'AAA',eventType:'listing',titleKo:'신규 상장',summaryKo:'공식 공지',eventTime:'2026-09-22T00:00:00Z',sourceTier:'A',sourceName:'공식',sourceUrl:'https://example.com/event',confirmed:true},{symbol:'BAD',sourceUrl:'javascript:alert(1)'}],sources:[{title:'ok',url:'https://example.com/a'},{title:'bad',url:'javascript:alert(1)'}]},{model:'m',usedWeb:true});
+  assert.equal(n.summary,'x');assert.equal(n.eventCatalysts.length,1);assert.equal(n.eventCatalysts[0].sourceTier,'A');assert.equal(n.sources.length,1);assert.equal(n.sources[0].url,'https://example.com/a');
 
   let calls=0,apiKeyHeader='',auth='',calledUrl='',body='';
   const fetchImpl=async(url,opts)=>{
@@ -27,12 +27,12 @@ const {createOpenAIGateway,normalizeBrief}=require('../lib/pulse-ai/openai-gatew
   assert.equal(sent.generationConfig?.responseMimeType,'application/json','Gemini should be asked for JSON output');
 
   let webBody='';
-  const webFetch=async(url,opts)=>{webBody=opts.body;return{ok:true,status:200,json:async()=>({modelVersion:'gemini-3.8-flash',candidates:[{content:{parts:[{text:'```json\n{"summary":"최근 상장 소식이 확인됐습니다.","highlights":["공식 출처 확인"],"watch":[],"dataWarnings":[],"sources":[{"title":"Official","url":"https://example.com/news"}]}\n```'}]}}]})}};
+  const webFetch=async(url,opts)=>{webBody=opts.body;return{ok:true,status:200,json:async()=>({modelVersion:'gemini-3.8-flash',candidates:[{content:{parts:[{text:'```json\n{"summary":"최근 상장 소식이 확인됐습니다.","highlights":["공식 출처 확인"],"watch":[],"eventCatalysts":[{"symbol":"MARSCOIN","eventType":"listing","titleKo":"신규 상장","summaryKo":"공식 상장 공지","eventTime":"2026-09-22T00:00:00Z","sourceTier":"A","sourceName":"Official","sourceUrl":"https://example.com/news","confirmed":true}],"dataWarnings":[],"sources":[{"title":"Official","url":"https://example.com/news"}]}\n```'}]}}]})}};
   const webGateway=createOpenAIGateway({apiKey:'secret-key',fetchImpl:webFetch});
   const ko=await webGateway.brief({context:{task:'recent news',symbol:'MARSCOINUSDT'},useWeb:true,deep:false});
   assert.equal(ko.summary,'최근 상장 소식이 확인됐습니다.','fenced JSON must be parsed, not rendered raw');
   assert.equal(ko.highlights.length,1,'parsed highlights must remain structured');
-  assert.equal(ko.sources.length,1,'parsed sources must remain structured');
+  assert.equal(ko.sources.length,1,'parsed sources must remain structured');assert.equal(ko.eventCatalysts.length,1,'event catalysts must remain structured');
   const webSent=JSON.parse(webBody);
   assert(Array.isArray(webSent.tools)&&webSent.tools.some(x=>x.google_search),'web-enabled requests must use Gemini Google Search grounding');
 
