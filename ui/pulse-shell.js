@@ -29,7 +29,7 @@
     performance:'more',backtest:'more',historical:'more',risk:'more',diagnostics:'more'
   };
   const $=id=>document.getElementById(id),frame=$('frame'),loading=$('loading'),side=$('side'),shade=$('shade'),presets=window.PulsePresets,dataState=window.PulseDataState;
-  let current='home';
+  let current='home',universeCounts={core:null,extended:null};
 
   function cleanSymbol(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
   function readRecent(){try{const a=JSON.parse(localStorage.getItem('pr_recent')||'[]');return Array.isArray(a)&&a[0]?a[0]:'BTCUSDT'}catch{return'BTCUSDT'}}
@@ -54,6 +54,15 @@
   function attachChildDataState(){try{const d=frame.contentDocument;if(!d||!dataState)return;ensureChildStyle(d);const existing=d.getElementById('dataState')||d.getElementById('pulseChildDataState');if(existing){const obs=()=>{const id=existing.dataset.pulseDataState||(/오류|error|실패/i.test(existing.textContent||'')?'api-degraded':'live');setTopState(id)};obs();new MutationObserver(obs).observe(existing,{childList:true,subtree:true,characterData:true,attributes:true});return}const status=d.getElementById('status');if(status){const update=()=>setTopState(/오류|error|실패/i.test(status.textContent||'')?'api-degraded':'live');update();new MutationObserver(update).observe(status,{childList:true,subtree:true,characterData:true})}}catch(e){console.warn('data-state injection failed',e)}}
   function injectShellMode(){try{const d=frame.contentDocument;if(!d)return;ensureChildStyle(d);d.querySelectorAll('a[href="/"],a[href="/scanner-shell-v13.html"],a[href="/pulse-unified.html"]').forEach(a=>{a.onclick=e=>{e.preventDefault();parent.postMessage({type:'pulse-nav',view:'home'},'*')}});applyPresetToChild();attachChildDataState()}catch(e){console.warn('shell injection failed',e)}}
 
+  function scopeText(key){
+    if(key==='radar')return'DEX 별도';
+    if(['autoscan','assistantscan','report','analysis','multi','ict','structure','liquidity','surge','snapshot'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
+    if(key==='intel'||key==='pulseai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
+    return'연구 도구';
+  }
+  function updateUniverseChip(key=current){const el=$('universeChip');if(el)el.textContent=scopeText(key)}
+  async function loadUniverseCounts(){try{const r=await fetch('/api/market?catalog=1',{cache:'no-store'}),d=await r.json();if(r.ok&&d?.ok){universeCounts={core:Number(d.coreFuturesCount)||0,extended:Number(d.total)||0};updateUniverseChip()}}catch{}}
   function markActive(key){
     document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===key));
     const root=ROOT[key]||'home';
@@ -61,7 +70,7 @@
   }
   function setView(key,push=true){
     if(!V[key])key='home';current=key;const o=V[key];
-    $('pageTitle').textContent=o.title;$('pageDesc').textContent=o.desc;markActive(key);
+    $('pageTitle').textContent=o.title;$('pageDesc').textContent=o.desc;markActive(key);updateUniverseChip(key);
     loading.classList.remove('hide');frame.src=srcFor(key);
     if(push){const u=new URL(location.href);u.searchParams.set('view',key);u.searchParams.set('symbol',symbol());u.searchParams.set('preset',activePreset().id);history.replaceState(null,'',u)}
     closeMenu();emit('pulse:viewchange',{view:key});
@@ -77,5 +86,5 @@
   window.addEventListener('message',e=>{if(e.data?.type==='pulse-symbol-sync')return syncChildSymbol(e.data.symbol);if(e.data?.type==='pulse-nav'&&V[e.data.view]){if(e.data.symbol)$('symbol').value=cleanSymbol(e.data.symbol);setView(e.data.view,true)}});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 
-  const q=new URLSearchParams(location.search);$('symbol').value=cleanSymbol(q.get('symbol')||readRecent());const loaded=presets.loadPreset(),requested=presets.getPreset(q.get('preset')||loaded.id);$('preset').value=requested.id;setTopState('live');setView(q.get('view')||'home',false);
+  loadUniverseCounts();const q=new URLSearchParams(location.search);$('symbol').value=cleanSymbol(q.get('symbol')||readRecent());const loaded=presets.loadPreset(),requested=presets.getPreset(q.get('preset')||loaded.id);$('preset').value=requested.id;setTopState('live');setView(q.get('view')||'home',false);
 })();
