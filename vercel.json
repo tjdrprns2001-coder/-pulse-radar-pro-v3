@@ -1,31 +1,123 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {"deploymentEnabled": {"calibration-lab": false}},
-  "functions": {
-    "api/index.js": { "maxDuration": 20 },
-    "api/radar.js": { "maxDuration": 20 },
-    "api/onchain-flow.js": { "maxDuration": 20 },
-    "api/market-flow.js": { "maxDuration": 20 }
+  "git": {
+    "deploymentEnabled": {
+      "calibration-lab": false
+    }
   },
-  "redirects": [{ "source": "/", "destination": "/pulse-unified.html", "permanent": false }],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 20
+    },
+    "api/radar.js": {
+      "maxDuration": 20
+    },
+    "api/onchain-flow.js": {
+      "maxDuration": 20
+    },
+    "api/market-flow.js": {
+      "maxDuration": 20
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/pulse-unified.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
-    { "source": "/analysis", "destination": "/analysis-shell-v12.html" },
-    { "source": "/liquidity", "destination": "/liquidity-lab-v2.html" },
-    { "source": "/radar", "destination": "/radar.html" },
-    { "source": "/api/backtest", "destination": "/api/index?route=backtest" },
-    { "source": "/api/calibration-freeze", "destination": "/api/index?route=calibration-freeze" },
-    { "source": "/api/calibration-health", "destination": "/api/index?route=calibration-health" },
-    { "source": "/api/detail", "destination": "/api/index?route=detail" },
-    { "source": "/api/historical-structure-study", "destination": "/api/index?route=historical-structure-study" },
-    { "source": "/api/htf", "destination": "/api/index?route=htf" },
-    { "source": "/api/independent-temporal", "destination": "/api/index?route=independent-temporal" },
-    { "source": "/api/market", "destination": "/api/index?route=market" },
-    { "source": "/api/micro-features", "destination": "/api/index?route=micro-features" },
-    { "source": "/api/pattern", "destination": "/api/index?route=pattern" },
-    { "source": "/api/pattern-validation", "destination": "/api/index?route=pattern-validation" },
-    { "source": "/api/structure-study", "destination": "/api/index?route=structure-study" },
-    { "source": "/api/structure", "destination": "/api/index?route=structure" },
-    { "source": "/api/temporal-features", "destination": "/api/index?route=temporal-features" },
-    { "source": "/api/trendline-study", "destination": "/api/index?route=trendline-study" }
+    {
+      "source": "/analysis",
+      "destination": "/analysis-shell-v12.html"
+    },
+    {
+      "source": "/liquidity",
+      "destination": "/liquidity-lab-v2.html"
+    },
+    {
+      "source": "/radar",
+      "destination": "/radar.html"
+    },
+    {
+      "source": "/api/backtest",
+      "destination": "/api/index?route=backtest"
+    },
+    {
+      "source": "/api/calibration-freeze",
+      "destination": "/api/index?route=calibration-freeze"
+    },
+    {
+      "source": "/api/calibration-health",
+      "destination": "/api/index?route=calibration-health"
+    },
+    {
+      "source": "/api/detail",
+      "destination": "/api/index?route=detail"
+    },
+    {
+      "source": "/api/historical-structure-study",
+      "destination": "/api/index?route=historical-structure-study"
+    },
+    {
+      "source": "/api/htf",
+      "destination": "/api/index?route=htf"
+    },
+    {
+      "source": "/api/independent-temporal",
+      "destination": "/api/index?route=independent-temporal"
+    },
+    {
+      "source": "/api/market",
+      "destination": "/api/index?route=market"
+    },
+    {
+      "source": "/api/micro-features",
+      "destination": "/api/index?route=micro-features"
+    },
+    {
+      "source": "/api/pattern",
+      "destination": "/api/index?route=pattern"
+    },
+    {
+      "source": "/api/pattern-validation",
+      "destination": "/api/index?route=pattern-validation"
+    },
+    {
+      "source": "/api/structure-study",
+      "destination": "/api/index?route=structure-study"
+    },
+    {
+      "source": "/api/structure",
+      "destination": "/api/index?route=structure"
+    },
+    {
+      "source": "/api/temporal-features",
+      "destination": "/api/index?route=temporal-features"
+    },
+    {
+      "source": "/api/trendline-study",
+      "destination": "/api/index?route=trendline-study"
+    },
+    {
+      "source": "/api/signal-alerts",
+      "destination": "/api/index?route=signal-alerts"
+    },
+    {
+      "source": "/api/signal-backfill",
+      "destination": "/api/index?route=signal-backfill"
+    },
+    {
+      "source": "/api/signal-calibration",
+      "destination": "/api/index?route=signal-calibration"
+    },
+    {
+      "source": "/api/signal-health",
+      "destination": "/api/index?route=signal-health"
+    },
+    {
+      "source": "/api/signal-performance",
+      "destination": "/api/index?route=signal-performance"
+    }
   ]
 }
