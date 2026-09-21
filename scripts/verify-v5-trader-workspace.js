@@ -4,7 +4,7 @@ const read=p=>fs.readFileSync(p,'utf8');
 const shell=read('pulse-unified.html'),shellJs=read('ui/pulse-shell.js'),home=read('workspace-home.html');
 const chart=read('unified-chart.html'),chartJs=read('ui/chart/unified-chart-v5.js');
 const snap=read('mtf-snapshot-pro.html'),snapJs=read('ui/trader/mtf-snapshot-pro.js'),snapshotRecord=require('../ui/trader/snapshot-record.js');
-const dante=read('dante-lab.html'),methods=require('../ui/dante/dante-methods.js');
+const dante=read('dante-lab.html'),methods=require('../ui/dante/dante-methods.js'),snapshotRendererApi=require('../ui/trader/snapshot-renderer.js');
 const ictTrainer=read('ict-trainer.html'),ictTrainerJs=read('ui/ict-trainer/app.js'),ictTrainerEngine=require('../ui/ict-trainer/engine.js');
 const trader=require('../ui/trader/analysis-engine.js'),scan=read('ui/coin-scan.js'),report=read('ui/coin-report.js');
 const vercel=JSON.parse(read('vercel.json'));
@@ -53,6 +53,22 @@ assert(danteLabJs.includes('focusMethod:methodId'),'Dante snapshots must pass se
 assert(danteLabJs.includes('multi(false)'),'Dante method selection must auto-fill cached multi-TF comparison');
 for(const id of ['bowl224','ma-hit','concrete','highheel','symmetry','share','kijun-scalp'])assert(snapshotRenderer.includes("method==='"+id+"'"),'method-specific snapshot geometry missing '+id);
 assert(snapshotRenderer.includes('nearestZones')&&snapshotRenderer.includes('nearestLiquidity'),'focused snapshots must declutter SMC/liquidity overlays');
+assert(snapshotRenderer.includes('layoutLabels')&&snapshotRenderer.includes('dedupeOverlayLabels'),'snapshot label collision manager missing');
+const clustered=snapshotRendererApi.layoutLabels([
+  {text:'ERL High',x:900,y:100,width:86,height:20,priority:96},
+  {text:'Old High',x:900,y:102,width:82,height:20,priority:42,optional:true},
+  {text:'Rejection',x:900,y:104,width:92,height:20,priority:70},
+  {text:'EQH/BSL',x:900,y:106,width:84,height:20,priority:88}
+],{W:1000,H:400,top:40,bottom:360,gap:3}).filter(x=>!x.hidden);
+for(let i=0;i<clustered.length;i++)for(let j=i+1;j<clustered.length;j++){const a=clustered[i],b=clustered[j],hit=a.left<b.right+3&&a.right+3>b.left&&a.top<b.bottom+3&&a.bottom+3>b.top;assert(!hit,'snapshot labels must not overlap')}
+const deduped=snapshotRendererApi.dedupeOverlayLabels([
+  {text:'ERL High',y:100,priority:96,order:0},
+  {text:'Old High',y:104,priority:42,order:1},
+  {text:'EQH/BSL',y:180,priority:88,order:2},
+  {text:'EQH/BSL',y:187,priority:88,order:3}
+]);
+assert(deduped.some(x=>x.text==='ERL High')&&!deduped.some(x=>x.text==='Old High'),'ERL must suppress redundant Old High label');
+assert.equal(deduped.filter(x=>x.text==='EQH/BSL').length,1,'near-duplicate liquidity labels must collapse');
 
 const candles=Array.from({length:520},(_,i)=>{const base=100+i*.03+Math.sin(i/9)*2;return{time:(i+1)*3600000,open:base-.3,high:base+1,low:base-1,close:base+.3,volume:1000+(i%20)*30}});
 const summary=trader.summarize({candles,analysis:{trendlines:{}},smc:{mss:[],sweeps:[],fvgs:[],orderBlocks:[]},liquidity:{levels:[],sweeps:[]}});
