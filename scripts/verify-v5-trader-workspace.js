@@ -27,6 +27,11 @@ assert(home.includes('ai.aiGenerated')&&home.includes('규칙 기반'),'AI/rules
 for(const id of ['structure','smc','ict','liquidity','volume-profile','moving-average','dante'])assert(chart.includes('data-overlay="'+id+'"'),'chart overlay missing '+id);
 for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pane="'+p+'"'),'indicator pane missing '+p);
 for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAveragePlugin','buildIctContext','analyzeSmcV2','analyzeLiquidity'])assert(chartJs.includes(s),'chart V5 logic missing '+s);
+assert(chart.includes('/ui/chart/unified-chart-v5.js?v=20260922-safari1'),'professional chart Safari fix cache-bust missing');
+assert(chartJs.includes("const b=document.createElement('b')"),'summary fact node b must be declared for Safari strict mode');
+assert(!chartJs.includes("s.textContent=k,b=document.createElement('b')"),'undeclared summary b assignment must not regress');
+assert(chartJs.includes('function displayValue(')&&chartJs.includes('function normalizedBias('),'object-safe summary display helpers missing');
+assert(chartJs.includes("htfBias=normalizedBias(htf?.bias)"),'HTF bias must be normalized before rendering/SMC context');
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
 assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
