@@ -47,7 +47,7 @@
     if(!d)return;
     d.documentElement.dataset.shell='1';
     if(!d.getElementById('pulseChildNormalize')){
-      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v4';d.head.appendChild(link);
+      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v41';d.head.appendChild(link);
     }
     let st=d.getElementById('pulseShellInjected');
     if(!st){st=d.createElement('style');st.id='pulseShellInjected';st.textContent='header.top>nav,header.top>.links,header .nav,header .links{display:none!important}.pulse-shell-hidden{display:none!important}';d.head.appendChild(st)}
