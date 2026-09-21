@@ -25,8 +25,8 @@
     renderList('eventCatalysts',data.eventCatalysts,eventRow);
     renderList('highlights',data.highlights,x=>row(text(x.symbol||x.title||'변화'),text(x.reason||x.category||''),x.symbol||null));
     renderList('watch',data.watch,x=>row(text(x.symbol||x.title||'관찰'),text(x.category||x.reason||''),x.symbol||null));
-    renderList('warnings',data.dataWarnings,x=>row('주의',text(x)));
-    const src=$('sources');clear(src);if(!data.sources?.length)src.append(row('출처 없음',''));else for(const x of data.sources){const a=document.createElement('a');a.className='source';a.rel='noopener noreferrer';a.target='_blank';a.href=x.url;a.textContent=text(x.title||x.url);src.append(a)}
+    renderList('warnings',data.dataWarnings,x=>row('주의',text(x)));$('warningsCard').hidden=!(data.dataWarnings||[]).length;
+    const src=$('sources');clear(src);$('sourcesCard').hidden=!(data.sources||[]).length;if(data.sources?.length)for(const x of data.sources){const a=document.createElement('a');a.className='source';a.rel='noopener noreferrer';a.target='_blank';a.href=x.url;a.textContent=text(x.title||x.url);src.append(a)}
   }
   async function load(){try{const r=await fetch('/api/pulse-ai?mode=brief',{headers:{Accept:'application/json'}});const j=await r.json();render(j)}catch(e){render({summary:'Pulse AI 브리핑을 불러오지 못했습니다.',eventSummary:'이벤트 정보를 불러오지 못했습니다.',eventCatalysts:[],dataWarnings:[e.message],highlights:[],watch:[],sources:[]})}}
   async function ask(){const q=$('question').value.trim();if(!q)return;$('answer').textContent='분석 중…';$('ask').disabled=true;try{const r=await fetch('/api/pulse-ai?mode=chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const j=await r.json();$('answer').textContent=text(j.answer||j.summary||j.error||'응답 없음')}catch(e){$('answer').textContent=`오류: ${e.message}`}finally{$('ask').disabled=false}}
