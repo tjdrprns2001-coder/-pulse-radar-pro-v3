@@ -12,6 +12,10 @@ const {createMemoryStore,createBlobStore}=require('../lib/signal-performance/sto
   assert.equal((await s.getOutcome(snap.id)).horizons.m15.returnPct,3,'outcome may update');
   assert.equal((await s.listSnapshots()).length,1);
   assert.equal((await s.listOutcomes()).length,1);
+  assert.equal(await s.putTransitionSnapshot('EV1',{eventId:'EV1',symbol:'BTCUSDT'}),true);
+  assert.equal(await s.putTransitionSnapshot('EV1',{eventId:'EV1',symbol:'ETHUSDT'}),false,'transition snapshot must be immutable');
+  assert.equal((await s.getTransitionSnapshot('EV1')).symbol,'BTCUSDT');
+  assert.equal((await s.listTransitionSnapshots()).length,1);
 
   const map=new Map();
   const fakeStore={
@@ -26,5 +30,9 @@ const {createMemoryStore,createBlobStore}=require('../lib/signal-performance/sto
   await b.putOutcome('A',{id:'A',ok:true});
   assert.equal((await b.getOutcome('A')).ok,true);
   assert.equal((await b.listSnapshots()).length,1);
+  assert.equal(await b.putTransitionSnapshot('EV2',{eventId:'EV2',symbol:'ETHUSDT'}),true);
+  assert.equal(await b.putTransitionSnapshot('EV2',{eventId:'EV2',symbol:'BTCUSDT'}),false);
+  assert.equal((await b.getTransitionSnapshot('EV2')).symbol,'ETHUSDT');
+  assert.equal((await b.listTransitionSnapshots()).length,1);
   console.log('signal performance store PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
