@@ -25,6 +25,9 @@ assert(Number.isFinite(out.momentumSignals.rsi1h),'1h RSI should be finite with 
 assert(Number.isFinite(out.momentumSignals.rsi15m),'15m RSI should be finite with enough candles');
 assert(Object.prototype.hasOwnProperty.call(out,'priceChange1h'),'deep scan must expose recent 1h price extension');
 assert(Object.prototype.hasOwnProperty.call(out,'priceChange15m'),'deep scan must expose recent 15m price extension');
+for(const k of ['rvol4h','rsi1h','rsi15m','rsi5m','macd1hPositive','maAligned1h','obv1hUp','breakout4h','lowerTfReset'])assert(Object.prototype.hasOwnProperty.call(out.v2Input,k),'v2 DNA input '+k+' required');
+assert(Array.isArray(out.v2Flow.dnaTags),'v2 DNA tags required');
+assert(Object.prototype.hasOwnProperty.call(out.v2Flow,'absorptionPresurge'),'absorption PRE-SURGE flag required');
 assert(Number.isFinite(out.priceChange1h),'1h recent price extension should be finite');
 assert(Number.isFinite(out.priceChange15m),'15m recent price extension should be finite');
 const blocked=deep.analyzeDeep({symbol:'XLMUSDT',frames,dataState:'stale'});
