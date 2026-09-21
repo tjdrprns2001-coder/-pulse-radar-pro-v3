@@ -42,6 +42,9 @@ assert(snapJs.includes('higherTfBias')&&snapJs.includes('mmxmAlignment'),'snapsh
 assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'"),'snapshot summary must expose DOL status and MMXM alignment');
 assert(!snapJs.includes("className='miniSummary'")&&!snapJs.includes("className='miniMeta'"),'8TF mini cards must be chart-only below the TF header');
 assert(!/function miniCard[\s\S]{0,1200}ruleSummary\(/.test(snapJs),'8TF mini cards must not render descriptive summaries');
+assert(snapJs.includes("cv.dataset.labels='0'")&&snapJs.includes("renderCanvas(cv,tf,data,{labels:false})"),'8TF mini charts must disable overlay label badges');
+assert(/async function saveAll[\s\S]{0,1800}renderCanvas\(temp,tf,data,\{labels:false\}\)/.test(snapJs),'8TF PNG must also hide overlay label badges');
+assert(snapJs.includes('opts.labels=labels'),'snapshot renderer bridge must pass label visibility explicitly');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('.compareGrid')&&read('ui/trader/mtf-snapshot-pro.css').includes('.compareRow'),'snapshot comparison responsive styles missing');
 assert(snap.includes('id="compareGrid" class="compareGrid" hidden')&&snap.includes('id="compareTableCard" class="card compareTableCard" hidden'),'empty comparison canvases/table must start hidden');
@@ -74,6 +77,7 @@ assert(snapshotRenderer.includes('nearestZones')&&snapshotRenderer.includes('nea
 assert(snapshotRenderer.includes('layoutLabels')&&snapshotRenderer.includes('dedupeOverlayLabels'),'snapshot label collision manager missing');
 assert(snapshotRenderer.includes('zoneStartX'),'PD zones must start from their originating candle');
 assert(snapshotRenderer.includes("category:'structure'")&&snapshotRenderer.includes("text:'MSS '")&&snapshotRenderer.includes("text:'CISD '"),'MSS/CISD labels must participate in collision layout');
+assert(snapshotRenderer.includes('show.labels!==false')&&snapshotRenderer.includes('enabled:show.labels!==false'),'snapshot renderer must preserve zones/lines while allowing badge text suppression');
 assert(snapshotRenderer.includes('limitOverlayLabels'),'mobile snapshot label cap missing');
 const capped=snapshotRendererApi.limitOverlayLabels([
   {text:'ERL High',priority:96,order:0},{text:'EQH/BSL',priority:88,order:1},{text:'EQL/SSL',priority:88,order:2},
