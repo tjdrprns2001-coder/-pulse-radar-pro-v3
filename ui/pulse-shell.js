@@ -14,6 +14,7 @@
     intel:{title:'코인 정보·일정·뉴스',desc:'공식 일정 · 언락 · 뉴스 · 선물시장 압력',path:'/coin-intel.html'},
     ict:{title:'ICT 전문 트레이너',desc:'유동성 · ERL/IRL · PD Array · CISD · IPDA · MMXM · 8TF',path:'/ict-trainer.html'},
     simpletrading:{title:'클래식 패턴 실전 랩',desc:'Simple Trading Book · 캔들 · 전략 1~7 · 차트 패턴',path:'/simple-trading-lab.html'},
+    forexbook:{title:'Forex Book 실전 랩',desc:'p.201~350 · 캔들 · 지표 · 리스크 · 거시경제',path:'/forex-book-lab.html'},
     structure:{title:'시장 구조',desc:'스윙 · BOS · CHoCH · 구조 연구',path:'/structure-lab.html'},
     liquidity:{title:'유동성',desc:'FVG · Sweep · Liquidity 연구',path:'/liquidity-lab-v2.html'},
     surge:{title:'급등 패턴',desc:'PRE-SURGE · 급등 전후 패턴 연구',path:'/surge-pattern-lab.html'},
@@ -29,7 +30,7 @@
   const ROOT={
     home:'home',pulseai:'ai',
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
-    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
+    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
@@ -61,7 +62,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','multi','ict','simpletrading','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','multi','ict','simpletrading','forexbook','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
