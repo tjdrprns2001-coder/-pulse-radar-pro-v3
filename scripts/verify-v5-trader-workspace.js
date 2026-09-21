@@ -3,7 +3,7 @@ const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const read=p=>fs.readFileSync(p,'utf8');
 const shell=read('pulse-unified.html'),shellJs=read('ui/pulse-shell.js'),home=read('workspace-home.html');
 const chart=read('unified-chart.html'),chartJs=read('ui/chart/unified-chart-v5.js');
-const snap=read('mtf-snapshot-pro.html'),snapJs=read('ui/trader/mtf-snapshot-pro.js');
+const snap=read('mtf-snapshot-pro.html'),snapJs=read('ui/trader/mtf-snapshot-pro.js'),snapshotRecord=require('../ui/trader/snapshot-record.js');
 const dante=read('dante-lab.html'),methods=require('../ui/dante/dante-methods.js');
 const ictTrainer=read('ict-trainer.html'),ictTrainerJs=read('ui/ict-trainer/app.js'),ictTrainerEngine=require('../ui/ict-trainer/engine.js');
 const trader=require('../ui/trader/analysis-engine.js'),scan=read('ui/coin-scan.js'),report=read('ui/coin-report.js');
@@ -29,8 +29,13 @@ for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pa
 for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAveragePlugin','buildIctContext','analyzeSmcV2','analyzeLiquidity'])assert(chartJs.includes(s),'chart V5 logic missing '+s);
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
-assert(snap.includes('canvas id="snapshot"')&&snap.includes('PNG 저장'),'snapshot render/export missing');
-assert(snap.includes('추세선')&&snap.includes('SMC/ICT')&&snap.includes('매물대')&&snap.includes('이평'),'snapshot overlay controls incomplete');
+assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG'),'snapshot render/export missing');
+for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
+assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
+assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
+assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('for(let i=0;i<TF.length;i++){const tf=TF[i]'),'8TF snapshots must use direct intervals with sequential fetch');
+assert(snapJs.includes('IntersectionObserver')&&snapJs.includes('ruleSummary'),'snapshot lazy rendering or rule-based summary missing');
+assert(snapJs.includes('saveEventBundle')&&scan.includes("searchParams.set('eventId'"),'transition-event snapshot archive wiring missing');
 
 for(const term of ['ERL/IRL','PD Array','CISD','IPDA','MMXM','1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m'])assert(ictTrainer.includes(term),'ICT trainer UI missing '+term);
 for(const group of ['OLD_HIGH_LOW','ORDER_BLOCK','REJECTION_BLOCK','FVG','LIQUIDITY_VOID','MITIGATION_BLOCK','BREAKER_BLOCK'])assert(read('ui/ict-trainer/engine.js').includes(group),'ICT PD Array group missing '+group);
@@ -54,6 +59,10 @@ assert(ictTf.available&&ictTf.pdArrayGroups.length===7,'ICT trainer timeframe en
 assert(ictTf.modules?.liquidity&&ictTf.modules?.pdArray&&ictTf.modules?.delivery&&ictTf.modules?.mmxm,'ICT trainer coaching modules incomplete');
 const ictFractal=ictTrainerEngine.analyzeFractal({'1h':ictTf,'4h':{...ictTf,tf:'4h'}});
 assert(ictFractal.available&&Number.isFinite(ictFractal.alignment),'ICT trainer fractal engine unavailable');
+const replay=snapshotRecord.buildRecord({symbol:'BTCUSDT',tf:'1h',candles,analysis:{trendlines:{}},smc:{mss:[]},liquidity:{levels:[]},ict:ictTf,params:{overlays:{trend:true,structure:true,pd:true,liquidity:true}}});
+assert(replay.snapshotId.includes('BTCUSDT_1H_')&&replay.engineVersion===ictTf.version,'snapshot ID must bind symbol/TF/engine');
+assert.equal(replay.confirmedBarTime,candles.at(-1).time*1000,'snapshot ID time must come from last confirmed candle');
+assert(replay.candles.length===candles.length&&replay.analysis.overlays.pdArrays.length<=5,'replay record must preserve candles and decluttered overlay coordinates');
 assert(Number.isFinite(summary.rsi),'trader RSI unavailable');
 assert(summary.volumeProfile?.bins?.length===24,'volume profile bins invalid');
 assert(Array.isArray(summary.dante)&&summary.dante.length>=10,'Dante scoring unavailable');
@@ -64,5 +73,5 @@ assert(report.includes('mtf-snapshot-pro.html')&&report.includes('dante-lab.html
 assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
 assert(!Object.keys(vercel.functions||{}).some(k=>/dante|snapshot|trader/i.test(k)),'V5 static features must not consume new Hobby serverless slots');
 
-for(const f of ['ui/trader/analysis-engine.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
+for(const f of ['ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
 console.log('PulseRadar V5 trader workspace PASS');
