@@ -30,7 +30,7 @@ for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAverageP
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
 assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
-for(const id of ['compareToggle','compareSection','compareEvent','compareOld','compareNow','compareTable'])assert(snap.includes('id="'+id+'"'),'snapshot compare UI missing '+id);
+for(const id of ['compareToggle','compareSection','compareEvent','compareGrid','compareOld','compareNow','compareTableCard','compareTable'])assert(snap.includes('id="'+id+'"'),'snapshot compare UI missing '+id);
 for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
 assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
@@ -40,11 +40,16 @@ assert(snapJs.includes('pdText')&&snapJs.includes('snapshotDisplay')&&snapJs.inc
 assert(snapJs.includes('ensureMarketContext')&&snapJs.includes('dolState')&&snapJs.includes('priceText'),'snapshot live DOL/tick-size display helpers missing');
 assert(snapJs.includes('higherTfBias')&&snapJs.includes('mmxmAlignment'),'snapshot higher-TF MMXM alignment missing');
 assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'"),'snapshot summary must expose DOL status and MMXM alignment');
-assert(snapJs.includes("className='miniMeta'")&&snapJs.includes('miniContextText'),'8TF cards must expose compact DOL/MMXM context');
+assert(!snapJs.includes("className='miniSummary'")&&!snapJs.includes("className='miniMeta'"),'8TF mini cards must be chart-only below the TF header');
+assert(!/function miniCard[\s\S]{0,1200}ruleSummary\(/.test(snapJs),'8TF mini cards must not render descriptive summaries');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('.compareGrid')&&read('ui/trader/mtf-snapshot-pro.css').includes('.compareRow'),'snapshot comparison responsive styles missing');
+assert(snap.includes('id="compareGrid" class="compareGrid" hidden')&&snap.includes('id="compareTableCard" class="card compareTableCard" hidden'),'empty comparison canvases/table must start hidden');
+assert(snapJs.includes("$('compareGrid').hidden=true")&&snapJs.includes("$('compareTableCard').hidden=true")&&snapJs.includes("$('compareGrid').hidden=false")&&snapJs.includes("$('compareTableCard').hidden=false"),'compare empty/loaded visibility contract missing');
 assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
 assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
+assert(!/[,;]\s*[on]\s*=\s*document\.createElement/.test(snapJs),'compare DOM nodes o/n must be explicitly declared for Safari strict mode');
+assert(snapJs.includes("const o=document.createElement('span')")&&snapJs.includes("const n=document.createElement('span')"),'compare row declarations regression');
 assert(snapJs.includes('fetchEventBundle')&&snapJs.includes('exportEventJson'),'server transition snapshot fetch/export missing');
 for(const fn of ['fetchEventList','loadCompareEvents','renderCompare','replayCanvas','recordForTf'])assert(snapJs.includes(fn),'snapshot compare logic missing '+fn);
 assert(snapJs.includes('RR.replayData(record)'),'archived comparison must replay immutable record data instead of recalculating ICT');
