@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v4">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v41">
 <title>Pulse AI Autopilot</title>
-<link rel="stylesheet" href="/ui/pulse-ai.css">
-<script src="/ui/pulse-ai.js?v=20260921-events1" defer></script>
+<link rel="stylesheet" href="/ui/pulse-ai.css?v=20260921-v41">
+<script src="/ui/pulse-ai.js?v=20260921-v41" defer></script>
 </head>
 <body>
 <main class="pulseAI" aria-live="polite">
@@ -12,8 +12,8 @@
   <section class="card"><h2>요약</h2><p id="summary">불러오는 중…</p></section>
   <section class="card eventCard"><h2>이벤트 · 공식 뉴스</h2><p id="eventSummary" class="eventSummary">이벤트 정보를 확인하는 중…</p><div id="eventCatalysts" class="list"></div></section>
   <section class="grid"><div class="card"><h2>주요 변화</h2><div id="highlights" class="list"></div></div><div class="card"><h2>관찰 목록</h2><div id="watch" class="list"></div></div></section>
-  <section class="card"><h2>데이터 경고</h2><div id="warnings" class="list muted"></div></section>
-  <section class="card"><h2>출처</h2><div id="sources" class="list"></div></section>
+  <section class="card" id="warningsCard"><h2>데이터 경고</h2><div id="warnings" class="list muted"></div></section>
+  <section class="card" id="sourcesCard"><h2>출처</h2><div id="sources" class="list"></div></section>
   <section class="card chat"><h2>Pulse AI에게 질문</h2><div class="chatRow"><input id="question" maxlength="1000" placeholder="예: 지금 가장 의미 있는 변화가 뭐야?" aria-label="Pulse AI 질문"><button id="ask">질문</button></div><div id="answer" class="answer"></div></section>
 </main>
 </body>

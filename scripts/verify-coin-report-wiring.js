@@ -8,5 +8,5 @@ assert(shell.includes("report:{title:'종합 분석'"));
 assert(shell.includes("if(e.data.symbol)$('symbol').value=cleanSymbol(e.data.symbol)"));
 assert(unified.includes('/ui/pulse-shell.js?v=20260921-v4'));
 assert(scanHtml.includes('/ui/coin-scan.js?v=20260921-v4'));
-assert(aiHtml.includes('pulse-ai.js?v=20260921-events1'));
+assert(aiHtml.includes('pulse-ai.js?v=20260921-v41'));
 console.log('coin report wiring PASS');

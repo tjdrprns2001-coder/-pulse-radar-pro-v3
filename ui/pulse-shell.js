@@ -15,9 +15,11 @@
     liquidity:{title:'유동성',desc:'FVG · Sweep · Liquidity 연구',path:'/liquidity-lab-v2.html'},
     surge:{title:'급등 패턴',desc:'PRE-SURGE · 급등 전후 패턴 연구',path:'/surge-pattern-lab.html'},
     snapshot:{title:'MTF 스냅샷',desc:'다중 시간봉 구조 스냅샷',path:'/snapshot-analysis.html'},
+    chartsnapshot:{title:'차트 스냅샷',desc:'복원된 MTF 스냅샷 · Signal Quality v2',path:'/snapshot-analysis-restored.html'},
     performance:{title:'성과 검증',desc:'신호 성과 · Calibration · 품질 검증',path:'/signal-performance.html'},
     backtest:{title:'백테스트',desc:'과거 구간 전략 검증',path:'/backtest.html'},
     historical:{title:'과거 검증',desc:'Historical validation',path:'/historical-validation.html'},
+    backfill:{title:'과거 데이터 백필',desc:'과거 OHLCV · BACKTESTED 표본 생성',path:'/historical-backfill.html'},
     risk:{title:'리스크 계산기',desc:'포지션 리스크 계산',path:'/risk-calculator.html'},
     diagnostics:{title:'진단 센터',desc:'API · 데이터 · 분석 모듈 상태',path:'/diagnostics.html'}
   };
@@ -26,7 +28,7 @@
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
     report:'analysis',analysis:'analysis',multi:'analysis',ict:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',
     intel:'info',
-    performance:'more',backtest:'more',historical:'more',risk:'more',diagnostics:'more'
+    performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
   const $=id=>document.getElementById(id),frame=$('frame'),loading=$('loading'),side=$('side'),shade=$('shade'),presets=window.PulsePresets,dataState=window.PulseDataState;
   let current='home',universeCounts={core:null,extended:null};
@@ -35,9 +37,9 @@
   function readRecent(){try{const a=JSON.parse(localStorage.getItem('pr_recent')||'[]');return Array.isArray(a)&&a[0]?a[0]:'BTCUSDT'}catch{return'BTCUSDT'}}
   function symbol(){return cleanSymbol($('symbol').value)}
   function activePreset(){return presets?.getPreset($('preset')?.value||'clean')||{id:'clean'}}
-  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,join=o.path.includes('?')?'&':'?';return o.path+join+'symbol='+encodeURIComponent(s)+'&preset='+encodeURIComponent(p)+'&shell=1'}
+  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20260921-v41');return u.pathname+u.search}
   function emit(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
-  function openMenu(){side.classList.add('open');shade.classList.add('open')}
+  function openMenu(){side.scrollTop=0;side.classList.add('open');shade.classList.add('open')}
   function closeMenu(){side.classList.remove('open');shade.classList.remove('open')}
   function setTopState(state){const el=$('dataState');if(!el||!dataState)return;const m=dataState.formatDataState(state);el.dataset.pulseDataState=m.id;el.dataset.severity=m.severity;el.textContent=m.label}
 
@@ -45,7 +47,7 @@
     if(!d)return;
     d.documentElement.dataset.shell='1';
     if(!d.getElementById('pulseChildNormalize')){
-      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v4';d.head.appendChild(link);
+      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v41';d.head.appendChild(link);
     }
     let st=d.getElementById('pulseShellInjected');
     if(!st){st=d.createElement('style');st.id='pulseShellInjected';st.textContent='header.top>nav,header.top>.links,header .nav,header .links{display:none!important}.pulse-shell-hidden{display:none!important}';d.head.appendChild(st)}

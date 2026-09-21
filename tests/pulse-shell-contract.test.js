@@ -23,7 +23,8 @@ test('mobile core labels appear once each',()=>{
   for(const label of ['홈','스캔','분석','정보','AI']) assert.equal((mobile.match(new RegExp('>'+label+'<','g'))||[]).length,1,label);
 });
 test('shell propagates preset and symbol to child routes',()=>{
-  assert.match(shellJs,/symbol=.*preset=/s);
+  assert.match(shellJs,/searchParams\.set\('symbol',s\)/);
+  assert.match(shellJs,/searchParams\.set\('preset',p\)/);
   assert.match(shellJs,/pulse:preset-applied/);
 });
 test('shell surfaces explicit data-state metadata',()=>{

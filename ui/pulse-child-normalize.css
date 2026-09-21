@@ -35,3 +35,10 @@ html[data-shell="1"] .mcApp{max-width:100%!important}
   html[data-shell="1"] .mcApp{padding-left:8px!important;padding-right:8px!important}
   button,.btn,.tab,.filter{min-height:40px}
 }
+html[data-shell="1"] body>.app>.top{display:none!important}
+html[data-shell="1"] body>.app>.nav{display:none!important}
+@media(max-width:700px){
+  html[data-shell="1"] body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  html[data-shell="1"] .toolbar{max-width:100%!important}
+  html[data-shell="1"] .toolbar>*{min-width:0}
+}
