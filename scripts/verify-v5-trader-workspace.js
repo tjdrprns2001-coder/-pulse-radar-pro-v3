@@ -29,7 +29,7 @@ for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pa
 for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAveragePlugin','buildIctContext','analyzeSmcV2','analyzeLiquidity'])assert(chartJs.includes(s),'chart V5 logic missing '+s);
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
-assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG'),'snapshot render/export missing');
+assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
 for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
 assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
@@ -39,7 +39,9 @@ assert(snapJs.includes('pdText')&&snapJs.includes('snapshotDisplay')&&snapJs.inc
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
 assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
-assert(snapJs.includes('saveEventBundle')&&scan.includes("searchParams.set('eventId'"),'transition-event snapshot archive wiring missing');
+assert(snapJs.includes('fetchEventBundle')&&snapJs.includes('exportEventJson'),'server transition snapshot fetch/export missing');
+assert(!snapJs.includes('RR.saveEventBundle({eventId:ev.eventId'),'snapshot UI must never relabel later live candles as the transition event');
+assert(scan.includes('eventSnapshotId')&&scan.includes("searchParams.set('eventId'"),'scanner must link exact server-captured transition event');
 
 for(const term of ['ERL/IRL','PD Array','CISD','IPDA','MMXM','1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m'])assert(ictTrainer.includes(term),'ICT trainer UI missing '+term);
 for(const group of ['OLD_HIGH_LOW','ORDER_BLOCK','REJECTION_BLOCK','FVG','LIQUIDITY_VOID','MITIGATION_BLOCK','BREAKER_BLOCK'])assert(read('ui/ict-trainer/engine.js').includes(group),'ICT PD Array group missing '+group);
