@@ -1,14 +1,16 @@
 (function(){
   const V={
-    home:{title:'통합 홈',desc:'스캔 · 분석 · 뉴스 · 검증을 한 곳에서',path:'/workspace-home.html'},
+    home:{title:'시장 데스크',desc:'전체시장 · 1시간 브리핑 · AI 후보',path:'/workspace-home.html'},
     pulseai:{title:'Pulse AI',desc:'시장 변화 · 이벤트 · 뉴스 한글 브리핑',path:'/pulse-ai.html'},
     scanner:{title:'확장 시장 탐색',desc:'현물 + 8개 선물거래소 · 기초자산 중복 제거',path:'/index.html'},
     autoscan:{title:'자동 전체스캔',desc:'코어 유니버스 전체 · 상태별 자동 분류',path:'/coin-scan.html'},
     assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
-    report:{title:'종합 분석',desc:'멀티TF · SMC/ICT · 수급 · 뉴스 · 반증',path:'/coin-report.html'},
-    analysis:{title:'통합 차트',desc:'구조 · SMC · ICT · 유동성 · 단테',path:'/unified-chart.html'},
-    multi:{title:'MTF 다중 차트',desc:'같은 종목을 여러 시간봉으로 비교',path:'/multi-chart.html'},
+    analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
+    mtfsnapshot:{title:'8TF 스냅샷',desc:'1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m',path:'/mtf-snapshot-pro.html'},
+    report:{title:'종합 리포트',desc:'멀티TF · SMC/ICT · 수급 · 뉴스 · 반증',path:'/coin-report.html'},
+    dante:{title:'주식단테 실전 랩',desc:'공개 기법 · 자동/수동 체크 · 차트 오버레이 · 멀티TF',path:'/dante-lab.html'},
+    multi:{title:'레거시 MTF 차트',desc:'기존 다중 차트 연구 화면',path:'/multi-chart.html'},
     intel:{title:'코인 정보·일정·뉴스',desc:'공식 일정 · 언락 · 뉴스 · 선물시장 압력',path:'/coin-intel.html'},
     ict:{title:'ICT · IPDA',desc:'유동성 · MSS/CISD · PD Array',path:'/ict-narrative-lab.html'},
     structure:{title:'시장 구조',desc:'스윙 · BOS · CHoCH · 구조 연구',path:'/structure-lab.html'},
@@ -26,7 +28,7 @@
   const ROOT={
     home:'home',pulseai:'ai',
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
-    report:'analysis',analysis:'analysis',multi:'analysis',ict:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',
+    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',multi:'analysis',ict:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
@@ -37,7 +39,7 @@
   function readRecent(){try{const a=JSON.parse(localStorage.getItem('pr_recent')||'[]');return Array.isArray(a)&&a[0]?a[0]:'BTCUSDT'}catch{return'BTCUSDT'}}
   function symbol(){return cleanSymbol($('symbol').value)}
   function activePreset(){return presets?.getPreset($('preset')?.value||'clean')||{id:'clean'}}
-  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20260921-v41');return u.pathname+u.search}
+  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20260921-v5');return u.pathname+u.search}
   function emit(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
   function openMenu(){side.scrollTop=0;side.classList.add('open');shade.classList.add('open')}
   function closeMenu(){side.classList.remove('open');shade.classList.remove('open')}
@@ -47,7 +49,7 @@
     if(!d)return;
     d.documentElement.dataset.shell='1';
     if(!d.getElementById('pulseChildNormalize')){
-      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v41';d.head.appendChild(link);
+      const link=d.createElement('link');link.id='pulseChildNormalize';link.rel='stylesheet';link.href='/ui/pulse-child-normalize.css?v=20260921-v5';d.head.appendChild(link);
     }
     let st=d.getElementById('pulseShellInjected');
     if(!st){st=d.createElement('style');st.id='pulseShellInjected';st.textContent='header.top>nav,header.top>.links,header .nav,header .links{display:none!important}.pulse-shell-hidden{display:none!important}';d.head.appendChild(st)}
@@ -58,7 +60,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','report','analysis','multi','ict','structure','liquidity','surge','snapshot'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','multi','ict','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
@@ -78,7 +80,7 @@
     closeMenu();emit('pulse:viewchange',{view:key});
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
-  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','multi','report'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
+  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','multi','report','dante'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
   function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
