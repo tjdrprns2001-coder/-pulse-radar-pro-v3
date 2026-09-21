@@ -14,7 +14,7 @@
     intel:{title:'코인 정보·일정·뉴스',desc:'공식 일정 · 언락 · 뉴스 · 선물시장 압력',path:'/coin-intel.html'},
     ict:{title:'ICT 전문 트레이너',desc:'유동성 · ERL/IRL · PD Array · CISD · IPDA · MMXM · 8TF',path:'/ict-trainer.html'},
     simpletrading:{title:'클래식 패턴 실전 랩',desc:'Simple Trading Book · 캔들 · 전략 1~7 · 차트 패턴',path:'/simple-trading-lab.html'},
-    forexbook:{title:'Forex Book 실전 랩',desc:'p.201~350 · 캔들 · 지표 · 리스크 · 거시경제',path:'/forex-book-lab.html'},
+    forexbook:{title:'Forex Book 실전 랩',desc:'p.1~350 · 기초 · 심리 · 패턴 · 리스크 · 거시경제',path:'/forex-book-lab.html'},
     bookconfluence:{title:'책 합성 실전 랩',desc:'기술적 차트 분석 · 코린이 입문서 · Confluent Zone · 시간/가격론',path:'/book-confluence-lab.html'},
     structure:{title:'시장 구조',desc:'스윙 · BOS · CHoCH · 구조 연구',path:'/structure-lab.html'},
     liquidity:{title:'유동성',desc:'FVG · Sweep · Liquidity 연구',path:'/liquidity-lab-v2.html'},
