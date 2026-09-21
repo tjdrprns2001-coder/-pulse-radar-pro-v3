@@ -15,10 +15,10 @@ const intel=read('coin-intel.html');
 const assistant=read('ui/assistant-scan.js');
 const vercel=JSON.parse(read('vercel.json'));
 
-assert(shell.includes('PulseRadar Pro v4'),'V4 shell branding missing');
+assert(shell.includes('PulseRadar Pro v5'),'V5 shell branding missing');
 assert.equal((shell.match(/class="mBtn/g)||[]).length,5,'mobile nav must have exactly five primary buttons');
-for(const v of ['home','autoscan','report','intel','pulseai'])assert(shell.includes('data-view="'+v+'"'),'missing primary mobile view '+v);
-assert(home.includes('코어 유니버스')&&home.includes('확장 유니버스')&&home.includes('DEX'),'workspace universe explanation missing');
+for(const v of ['home','autoscan','analysis','dante','pulseai'])assert(shell.includes('data-view="'+v+'"'),'missing primary mobile view '+v);
+assert(home.includes('코어 유니버스')&&home.includes('확장 유니버스')&&home.includes('1시간 시장 브리핑'),'V5 market desk coverage missing');
 assert(shellJs.includes("coreFuturesCount")&&shellJs.includes("DEX 별도"),'global universe scope chip logic missing');
 assert(shellCss.includes('grid-template-rows:auto auto'),'mobile topbar must use two-row layout');
 assert(scan.includes("mode=summary&limit=500"),'auto scanner must request the full core universe');
@@ -30,4 +30,4 @@ const events=intel.indexOf('id="eventsSection"'),news=intel.indexOf('id="newsSec
 assert(events>0&&news>events&&deriv>news,'coin intel must prioritize events and news');
 for(const p of ['coin-scan.html','assistant-scan.html','coin-report.html','coin-intel.html','radar.html','multi-chart.html','unified-chart.html','pulse-ai.html'])assert(read(p).includes('pulse-child-normalize.css'),'mobile normalization missing: '+p);
 assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
-console.log('PulseRadar V4 renewal contract PASS');
+console.log('PulseRadar V5 renewal compatibility contract PASS');

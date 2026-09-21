@@ -40,13 +40,14 @@ test('restored chart snapshot is cloned separately and adds weekly timeframe',()
   assert.match(weekly,/runSnapshotAnalysis/);
 });
 
-test('unified shell exposes restored snapshot directly in V4 navigation',()=>{
+test('V5 shell exposes pro 8TF snapshot and preserves legacy restored snapshot',()=>{
   const shell=fs.readFileSync('pulse-unified.html','utf8');
   const shellJs=fs.readFileSync('ui/pulse-shell.js','utf8');
   assert.doesNotMatch(shell,/pulse-shell-snapshot-restore\.js/);
+  assert.match(shell,/data-view="mtfsnapshot"/);
+  assert.match(shell,/8TF 스냅샷/);
+  assert.match(shellJs,/mtfsnapshot:\{title:'8TF 스냅샷'/);
+  assert.match(shellJs,/mtf-snapshot-pro\.html/);
   assert.match(shell,/data-view="chartsnapshot"/);
-  assert.match(shellJs,/chartsnapshot:\{title:'차트 스냅샷'/);
   assert.match(shellJs,/snapshot-analysis-restored\.html/);
-  assert.match(shell,/MTF 스냅샷/);
-  assert.match(shell,/차트 스냅샷/);
 });

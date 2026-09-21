@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const shell=fs.readFileSync('ui/pulse-shell.js','utf8'),html=fs.readFileSync('pulse-unified.html','utf8'),css=fs.readFileSync('ui/multi-chart/multi-chart.css','utf8');
-test('shell exposes a canonical multi chart view',()=>{assert.match(shell,/multi:\{title:'MTF 다중 차트'/);assert.match(shell,/path:'\/multi-chart\.html'/);assert.match(html,/data-view="multi"/)});
-test('mobile analysis root keeps multi chart available through grouped navigation',()=>{assert.match(html,/class="mBtn" data-view="report" data-root="analysis"/);assert.match(html,/class="navBtn" data-view="multi"/);assert.match(html,/MTF 다중 차트/)});
+test('shell preserves the legacy multi chart research view',()=>{assert.match(shell,/multi:\{title:'레거시 MTF 차트'/);assert.match(shell,/path:'\/multi-chart\.html'/);assert.match(html,/data-view="multi"/)});
+test('mobile analysis root points to V5 pro analysis while legacy multi remains grouped',()=>{assert.match(html,/class="mBtn" data-view="analysis" data-root="analysis"/);assert.match(html,/class="navBtn" data-view="multi"/);assert.match(html,/레거시 MTF 차트/);assert.match(html,/8TF 스냅샷/)});
 test('embedded workspace hides its standalone header and relies on one shell',()=>{assert.match(css,/html\[data-shell="1"\] \.mcTop\{display:none\}/)});
 test('workspace uses existing pulse-symbol-sync message contract',()=>{const js=fs.readFileSync('ui/multi-chart/multi-chart.js','utf8');assert.match(js,/pulse-symbol-sync/);assert.doesNotMatch(js,/mobileNav/)});
