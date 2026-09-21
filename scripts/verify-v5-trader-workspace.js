@@ -36,6 +36,10 @@ assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/sna
 assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('for(let i=0;i<TF.length;i++){const tf=TF[i]'),'8TF snapshots must use direct intervals with sequential fetch');
 assert(snapJs.includes('IntersectionObserver')&&snapJs.includes('ruleSummary'),'snapshot lazy rendering or rule-based summary missing');
 assert(snapJs.includes('pdText')&&snapJs.includes('snapshotDisplay')&&snapJs.includes('confirmedText'),'snapshot friendly display helpers missing');
+assert(snapJs.includes('ensureMarketContext')&&snapJs.includes('dolState')&&snapJs.includes('priceText'),'snapshot live DOL/tick-size display helpers missing');
+assert(snapJs.includes('higherTfBias')&&snapJs.includes('mmxmAlignment'),'snapshot higher-TF MMXM alignment missing');
+assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'"),'snapshot summary must expose DOL status and MMXM alignment');
+assert(snapJs.includes("className='miniMeta'")&&snapJs.includes('miniContextText'),'8TF cards must expose compact DOL/MMXM context');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
 assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
@@ -58,6 +62,8 @@ assert(danteLabJs.includes('multi(false)'),'Dante method selection must auto-fil
 for(const id of ['bowl224','ma-hit','concrete','highheel','symmetry','share','kijun-scalp'])assert(snapshotRenderer.includes("method==='"+id+"'"),'method-specific snapshot geometry missing '+id);
 assert(snapshotRenderer.includes('nearestZones')&&snapshotRenderer.includes('nearestLiquidity'),'focused snapshots must declutter SMC/liquidity overlays');
 assert(snapshotRenderer.includes('layoutLabels')&&snapshotRenderer.includes('dedupeOverlayLabels'),'snapshot label collision manager missing');
+assert(snapshotRenderer.includes('zoneStartX'),'PD zones must start from their originating candle');
+assert(snapshotRenderer.includes("category:'structure'")&&snapshotRenderer.includes("text:'MSS '")&&snapshotRenderer.includes("text:'CISD '"),'MSS/CISD labels must participate in collision layout');
 assert(snapshotRenderer.includes('limitOverlayLabels'),'mobile snapshot label cap missing');
 const capped=snapshotRendererApi.limitOverlayLabels([
   {text:'ERL High',priority:96,order:0},{text:'EQH/BSL',priority:88,order:1},{text:'EQL/SSL',priority:88,order:2},
@@ -80,6 +86,9 @@ const deduped=snapshotRendererApi.dedupeOverlayLabels([
 ]);
 assert(deduped.some(x=>x.text==='ERL High')&&!deduped.some(x=>x.text==='Old High'),'ERL must suppress redundant Old High label');
 assert.equal(deduped.filter(x=>x.text==='EQH/BSL').length,1,'near-duplicate liquidity labels must collapse');
+const visibleCandles=Array.from({length:140},(_,i)=>({time:i+61}));
+assert(snapshotRendererApi.zoneStartX({index:100},{candles:Array.from({length:200}),visible:visibleCandles,pad:58,step:5})>58,'visible PD zone must start after its origin candle');
+assert.equal(snapshotRendererApi.zoneStartX({index:20},{candles:Array.from({length:200}),visible:visibleCandles,pad:58,step:5}),58,'offscreen PD origin must clamp to chart left edge');
 
 const candles=Array.from({length:520},(_,i)=>{const base=100+i*.03+Math.sin(i/9)*2;return{time:(i+1)*3600000,open:base-.3,high:base+1,low:base-1,close:base+.3,volume:1000+(i%20)*30}});
 const summary=trader.summarize({candles,analysis:{trendlines:{}},smc:{mss:[],sweeps:[],fvgs:[],orderBlocks:[]},liquidity:{levels:[],sweeps:[]}});
