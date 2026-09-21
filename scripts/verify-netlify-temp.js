@@ -24,7 +24,7 @@ for(const [name,src] of [['coin-scan',coinScan],...Object.entries(v2)]){
   if(!/from\s+['"]@netlify\/blobs['"]/.test(src))throw new Error(name+' must statically import @netlify/blobs');
   if(!/getStore/.test(src))throw new Error(name+' must inject getStore');
 }
-for(const name of v2Names)if(!new RegExp(`api\\/${name}\\.js`).test(v2[name]))throw new Error('shared '+name+' handler not reused');
+for(const name of v2Names){const expected=name==='research-backtest'?`api/${name}.js`:`handlers/${name}.js`;if(!v2[name].includes(expected))throw new Error('shared '+name+' handler not reused')}
 if(!/api\/coin-scan\.js/.test(coinScan))throw new Error('shared coin scan handler not reused');
 if(!/ctx\.getStore/.test(coinScanApi))throw new Error('coin scan API must pass injected getStore into auxiliary recorders');
 if(!/queryStringParameters/.test(radar)||!/statusCode/.test(radar)||!/headers/.test(radar))throw new Error('legacy radar adapter contract missing');
