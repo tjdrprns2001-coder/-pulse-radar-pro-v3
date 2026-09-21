@@ -4,6 +4,7 @@
     pulseai:{title:'Pulse AI',desc:'전체 코인 자동 감시 · 변화 감지 · AI 브리핑',path:'/pulse-ai.html'},
     report:{title:'종합 분석',desc:'1W→15m · SMC/ICT · 패턴 · 수급 · 최종 스냅샷',path:'/coin-report.html'},
     autoscan:{title:'자동 코인 분류',desc:'바이낸스 현물 USDT 전체 자동 스캔 · 상태별 분류',path:'/coin-scan.html'},
+    assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'전체 코인 · 멀티체인 DEX 실시간 이상징후',path:'/radar.html'},
     analysis:{title:'분석',desc:'구조 · SMC · 단테 · MTF · 모멘텀',path:'/unified-chart.html'},
     smc:{title:'SMC',desc:'Smart Money Concepts · 구조 · 유동성 · 수급',path:'/unified-chart.html',preset:'smc'},
