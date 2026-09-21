@@ -37,7 +37,7 @@ module.exports=async function handler(req,res,ctx={}){
     if(mode==='summary'){
       const base=await s.run({mode:'summary',limit:250});
       const symbols=(base.candidateSymbols||[]).slice(0,limit);
-      return res.status(200).json({status:'ok',mode:'summary',scanner:'assistant-v2-research',paramSet:Assistant.PARAM_SET,updatedAt:Date.now(),scanCount:base.scanCount,marketBreadth:base.marketBreadth,candidateSymbols:symbols});
+      return res.status(200).json({status:'ok',mode:'summary',scanner:'assistant-v2-research',paramSet:Assistant.PARAM_SET,updatedAt:Date.now(),scanCount:base.scanCount,universeMeta:base.universeMeta||{key:'binance-usdt-perpetual',label:'코어 유니버스 · Binance USDT 무기한',count:base.scanCount},marketBreadth:base.marketBreadth,candidateSymbols:symbols});
     }
     const symbols=String(q.symbols||'').split(',').map(x=>x.trim().toUpperCase()).filter(Boolean).slice(0,20);
     const deep=await s.run({mode:'deep',symbols,limit:20});

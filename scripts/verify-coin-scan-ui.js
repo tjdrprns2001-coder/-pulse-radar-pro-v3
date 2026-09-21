@@ -30,7 +30,7 @@ assert(css.includes('.tradeSignal'),'trade signal layout style required');
 assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
-assert(html.includes('/ui/coin-scan.js?v=20260921-v2flow'),'official v2 scanner UI must cache-bust mobile clients');
+assert(html.includes('/ui/coin-scan.js?v=20260921-v4'),'official v2 scanner UI must cache-bust V4 mobile clients');
 assert(js.includes('v2Flow')&&js.includes('true taker')&&js.includes('OI 4H'),'official v2 flow fields must be rendered');
 assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
 assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');

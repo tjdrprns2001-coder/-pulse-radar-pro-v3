@@ -3,3 +3,5 @@
 .dnaMatch{color:#9fc0ff;font-weight:800}.dnaMemory{color:#d9b3ff;font-weight:800}
 
 .v2Flow{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;padding:8px;border:1px solid #355b7d;border-radius:9px;background:#081927;font-size:9px;color:#a9c3dc}.v2Flow b{color:#79d9ff}.v2Flow span{padding:2px 5px;border-radius:999px;background:#0c2132}
+
+.cardDetail{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}.cardDetail>summary{cursor:pointer;color:#9fc0ff;font-size:10px;font-weight:800;list-style:none;padding:5px 0}.cardDetail>summary::-webkit-details-marker{display:none}.cardDetail>summary:after{content:'＋';float:right;color:#6d88a3}.cardDetail[open]>summary:after{content:'−'}@media(max-width:650px){.scanTop h1{font-size:21px}.health{grid-template-columns:repeat(2,minmax(0,1fr))}.health div{padding:8px}.cardFoot{align-items:flex-start;flex-direction:column}.cardFoot>span:last-child{display:flex;gap:6px;flex-wrap:wrap}.detail{display:inline-flex}.summary{font-size:11px;line-height:1.45}.v2Flow{font-size:9px}.v2Flow span{max-width:100%;overflow-wrap:anywhere}}

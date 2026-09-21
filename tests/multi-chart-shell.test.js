@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const shell=fs.readFileSync('ui/pulse-shell.js','utf8'),html=fs.readFileSync('pulse-unified.html','utf8'),css=fs.readFileSync('ui/multi-chart/multi-chart.css','utf8');
-test('shell exposes a canonical multi chart view',()=>{assert.match(shell,/multi:\{title:'다중 차트'/);assert.match(shell,/path:'\/multi-chart\.html'/);assert.match(html,/data-view="multi"/)});
-test('mobile MTF entry opens multi chart workspace',()=>{assert.match(html,/class="mBtn" data-view="multi"/)});
+test('shell exposes a canonical multi chart view',()=>{assert.match(shell,/multi:\{title:'MTF 다중 차트'/);assert.match(shell,/path:'\/multi-chart\.html'/);assert.match(html,/data-view="multi"/)});
+test('mobile analysis root keeps multi chart available through grouped navigation',()=>{assert.match(html,/class="mBtn" data-view="report" data-root="analysis"/);assert.match(html,/class="navBtn" data-view="multi"/);assert.match(html,/MTF 다중 차트/)});
 test('embedded workspace hides its standalone header and relies on one shell',()=>{assert.match(css,/html\[data-shell="1"\] \.mcTop\{display:none\}/)});
 test('workspace uses existing pulse-symbol-sync message contract',()=>{const js=fs.readFileSync('ui/multi-chart/multi-chart.js','utf8');assert.match(js,/pulse-symbol-sync/);assert.doesNotMatch(js,/mobileNav/)});

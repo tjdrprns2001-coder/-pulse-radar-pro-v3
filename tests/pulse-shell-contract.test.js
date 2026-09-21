@@ -20,7 +20,7 @@ test('canonical shell loads shared foundation assets',()=>{
 });
 test('mobile core labels appear once each',()=>{
   const mobile = unified.match(/<nav class="mobileNav"[\s\S]*?<\/nav>/)?.[0] || '';
-  for(const label of ['차트','MTF','구조','SMC','전체']) assert.equal((mobile.match(new RegExp('>'+label+'<','g'))||[]).length,1,label);
+  for(const label of ['홈','스캔','분석','정보','AI']) assert.equal((mobile.match(new RegExp('>'+label+'<','g'))||[]).length,1,label);
 });
 test('shell propagates preset and symbol to child routes',()=>{
   assert.match(shellJs,/symbol=.*preset=/s);
@@ -28,6 +28,6 @@ test('shell propagates preset and symbol to child routes',()=>{
 });
 test('shell surfaces explicit data-state metadata',()=>{
   assert.match(unified,/data-pulse-data-state="live"/);
-  assert.match(shellJs,/data-pulse-data-state/);
+  assert.match(shellJs,/dataset\.pulseDataState/);
   assert.match(shellJs,/api-degraded/);
 });

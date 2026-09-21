@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>PulseRadar Pro v3</title>
-<link rel="stylesheet" href="/ui/pulse-shell.css">
+<title>PulseRadar Pro v4</title>
+<link rel="stylesheet" href="/ui/pulse-shell.css?v=20260921-v4">
 <script src="/ui/pulse-presets.js"></script>
 <script src="/ui/pulse-data-state.js"></script>
-<script src="/ui/pulse-shell.js?v=20260917-report2" defer></script>
+<script src="/ui/pulse-shell.js?v=20260921-v4" defer></script>
 <script src="/ui/pulse-shell-snapshot-restore.js" defer></script>
 <script src="/ui/pulse-shell-v2-operations.js" defer></script>
 </head>
@@ -15,61 +15,80 @@
 <div class="drawerShade" id="shade"></div>
 <div class="app">
 <aside class="side" id="side" aria-label="전체 메뉴">
-  <div class="brand"><div class="logo">P</div><div><b>PulseRadar Pro v3</b><small>Unified Trading Research Workspace</small></div></div>
-  <div class="group"><div class="groupTitle">Core</div>
-    <button class="navBtn active" data-view="scanner"><span class="icon">⌁</span>시장 스캐너<span class="badge">LIVE</span></button>
-    <button class="navBtn" data-view="pulseai"><span class="icon">✦</span>Pulse AI<span class="badge">AI</span></button>
-    <button class="navBtn" data-view="autoscan"><span class="icon">⌕</span>자동 코인 분류<span class="badge">NEW</span></button>
-    <button class="navBtn" data-view="assistantscan"><span class="icon">◎</span>내 연구 스캔<span class="badge">v2</span></button>
-    <button class="navBtn" data-view="radar"><span class="icon">◉</span>LIVE RADAR<span class="badge">NEW</span></button>
-    <button class="navBtn" data-view="analysis"><span class="icon">◫</span>통합 상세 분석</button>
-    <button class="navBtn" data-view="multi"><span class="icon">▦</span>다중 차트</button>
-    <button class="navBtn" data-view="intel"><span class="icon">◎</span>코인 정보</button>
+  <div class="brand"><div class="logo">P</div><div><b>PulseRadar Pro v4</b><small>Unified Crypto Research</small></div></div>
+
+  <div class="group">
+    <div class="groupTitle">시작</div>
+    <button class="navBtn active" data-view="home"><span class="icon">⌂</span><span>통합 홈</span></button>
+    <button class="navBtn" data-view="pulseai"><span class="icon">✦</span><span>Pulse AI</span><span class="badge">AI</span></button>
   </div>
-  <div class="group"><div class="groupTitle">Smart Money</div>
-    <button class="navBtn" data-view="ict"><span class="icon">◇</span>ICT · IPDA 서사</button>
-    <button class="navBtn" data-view="liquidity"><span class="icon">≈</span>유동성 랩</button>
-    <button class="navBtn" data-view="structure"><span class="icon">⌁</span>시장 구조 랩</button>
+
+  <div class="group">
+    <div class="groupTitle">스캔</div>
+    <button class="navBtn" data-view="autoscan"><span class="icon">🔥</span><span>자동 전체스캔</span><span class="badge">CORE</span></button>
+    <button class="navBtn" data-view="assistantscan"><span class="icon">◎</span><span>내 연구 스캔</span><span class="badge">v2</span></button>
+    <button class="navBtn" data-view="scanner"><span class="icon">⌕</span><span>확장 시장 탐색</span></button>
+    <button class="navBtn" data-view="radar"><span class="icon">◉</span><span>LIVE RADAR</span></button>
   </div>
-  <div class="group"><div class="groupTitle">Patterns & MTF</div>
-    <button class="navBtn" data-view="surge"><span class="icon">↗</span>급등 패턴</button>
-    <button class="navBtn" data-view="snapshot"><span class="icon">▣</span>MTF 스냅샷</button>
-    <button class="navBtn" data-view="reaction"><span class="icon">⚡</span>반응 분석</button>
+
+  <div class="group">
+    <div class="groupTitle">분석</div>
+    <button class="navBtn" data-view="report"><span class="icon">▤</span><span>종합 분석</span></button>
+    <button class="navBtn" data-view="analysis"><span class="icon">◫</span><span>통합 차트</span></button>
+    <button class="navBtn" data-view="multi"><span class="icon">▦</span><span>MTF 다중 차트</span></button>
+    <button class="navBtn" data-view="intel"><span class="icon">◎</span><span>코인 정보·일정·뉴스</span></button>
   </div>
-  <div class="group"><div class="groupTitle">Validation</div>
-    <button class="navBtn" data-view="backtest"><span class="icon">↺</span>백테스트</button>
-    <button class="navBtn" data-view="historical"><span class="icon">◷</span>과거 검증</button>
-    <button class="navBtn" data-view="independent"><span class="icon">✓</span>독립 검증</button>
-    <button class="navBtn" data-view="temporal"><span class="icon">⏱</span>시간축 검증</button>
-  </div>
-  <div class="group"><div class="groupTitle">Research Tools</div>
-    <button class="navBtn" data-view="patterns"><span class="icon">△</span>패턴 검증</button>
-    <button class="navBtn" data-view="trendline"><span class="icon">╱</span>추세선 연구</button>
-    <button class="navBtn" data-view="diagnostics"><span class="icon">⚙</span>진단 센터</button>
-    <button class="navBtn" data-view="featurediag"><span class="icon">≡</span>기능 진단</button>
-  </div>
-  <div class="quick"><b>빠른 사용법</b><small>종목과 프리셋은 화면을 이동해도 유지됩니다.<br><span class="kbd">ESC</span> 메뉴 닫기</small></div>
+
+  <details class="advancedGroup">
+    <summary>스마트머니 · 패턴</summary>
+    <div class="group compact">
+      <button class="navBtn" data-view="ict"><span class="icon">◇</span><span>ICT · IPDA</span></button>
+      <button class="navBtn" data-view="structure"><span class="icon">⌁</span><span>시장 구조</span></button>
+      <button class="navBtn" data-view="liquidity"><span class="icon">≈</span><span>유동성</span></button>
+      <button class="navBtn" data-view="surge"><span class="icon">↗</span><span>급등 패턴</span></button>
+      <button class="navBtn" data-view="snapshot"><span class="icon">▣</span><span>MTF 스냅샷</span></button>
+    </div>
+  </details>
+
+  <details class="advancedGroup">
+    <summary>검증 · 운영 도구</summary>
+    <div class="group compact">
+      <button class="navBtn" data-view="performance"><span class="icon">✓</span><span>성과 검증</span></button>
+      <button class="navBtn" data-view="backtest"><span class="icon">↺</span><span>백테스트</span></button>
+      <button class="navBtn" data-view="historical"><span class="icon">◷</span><span>과거 검증</span></button>
+      <button class="navBtn" data-view="risk"><span class="icon">⚖</span><span>리스크 계산기</span></button>
+      <button class="navBtn" data-view="diagnostics"><span class="icon">⚙</span><span>진단 센터</span></button>
+    </div>
+  </details>
+
+  <div class="quick"><b>V4 기준</b><small>코어 유니버스 = Binance USDT 무기한 전체<br>확장 유니버스 = 현물 + 8개 선물거래소 중복 제거<br>DEX = 별도 확장 감시</small></div>
 </aside>
+
 <main class="main">
   <header class="topbar">
-    <button class="menuBtn" id="menuBtn" aria-label="전체 메뉴 열기">☰</button>
-    <div class="topTitle"><b id="pageTitle">시장 스캐너</b><span id="pageDesc">현물·선물 전체 종목 탐색</span></div>
-    <span class="stateBadge" id="dataState" data-pulse-data-state="live" data-severity="ok">실시간</span>
-    <select class="presetSelect" id="preset" aria-label="차트 프리셋"><option value="clean">Clean</option><option value="structure">Structure</option><option value="smc">SMC</option><option value="dante">Dante</option><option value="full">Full</option></select>
-    <div class="symbolBox"><input id="symbol" value="BTCUSDT" aria-label="symbol"><button class="go" id="go">적용</button></div>
-    <button class="openTab" id="openTab">새 탭 ↗</button>
+    <div class="topRow">
+      <button class="menuBtn" id="menuBtn" aria-label="전체 메뉴 열기">☰</button>
+      <div class="topTitle"><b id="pageTitle">통합 홈</b><span id="pageDesc">스캔 · 분석 · 뉴스 · 검증을 한 곳에서</span></div>
+      <span class="universeChip" id="universeChip">유니버스 확인 중</span><span class="stateBadge" id="dataState" data-pulse-data-state="live" data-severity="ok">실시간</span>
+      <button class="openTab" id="openTab">새 탭 ↗</button>
+    </div>
+    <div class="controlRow">
+      <select class="presetSelect" id="preset" aria-label="차트 프리셋">
+        <option value="clean">Clean</option><option value="structure">Structure</option><option value="smc">SMC</option><option value="dante">Dante</option><option value="full">Full</option>
+      </select>
+      <div class="symbolBox"><input id="symbol" value="BTCUSDT" aria-label="종목"><button class="go" id="go">적용</button></div>
+    </div>
   </header>
   <section class="frameWrap"><div class="loading" id="loading">화면 불러오는 중…</div><iframe class="frame" id="frame" title="PulseRadar module"></iframe></section>
 </main>
 </div>
+
 <nav class="mobileNav" aria-label="모바일 핵심 메뉴">
-  <button class="mBtn" data-view="pulseai"><span>✦</span>Pulse AI</button>
-  <button class="mBtn" data-view="radar"><span>◉</span>Radar</button>
-  <button class="mBtn" data-view="analysis"><span>◫</span>차트</button>
-  <button class="mBtn" data-view="multi"><span>▦</span>MTF</button>
-  <button class="mBtn" data-view="structure"><span>⌁</span>구조</button>
-  <button class="mBtn" data-view="smc"><span>◇</span>SMC</button>
-  <button class="mBtn" id="moreBtn"><span>☰</span>전체</button>
+  <button class="mBtn active" data-view="home" data-root="home"><span>⌂</span>홈</button>
+  <button class="mBtn" data-view="autoscan" data-root="scan"><span>🔥</span>스캔</button>
+  <button class="mBtn" data-view="report" data-root="analysis"><span>▤</span>분석</button>
+  <button class="mBtn" data-view="intel" data-root="info"><span>◎</span>정보</button>
+  <button class="mBtn" data-view="pulseai" data-root="ai"><span>✦</span>AI</button>
 </nav>
 </body>
 </html>
