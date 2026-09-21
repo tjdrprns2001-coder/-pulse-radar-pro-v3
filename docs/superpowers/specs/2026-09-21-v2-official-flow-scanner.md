@@ -30,8 +30,12 @@ Stages: observe, preparing, ignition-wait, ignition-early, progressed, overheate
 ## Samples
 Legacy sample DNA remains active. The library includes prior learned patterns and adds PTB OI-led neutral-taker reignition plus DRIFT, STRK, APT, WLD, TIA, DYDX, ZK, ETHFI, SKY, OP, DOT, SUI, TAO, PENDLE, LSK, BOME, PEPE, DOGE, BONK, SHIB, XLM, LINK families.
 
-PTB subtype:
-OI expansion + neutral true taker + RVOL shock + price hold + RVOL reignition.
+PTB subtype phases:
+- PTB_OI_LED_BUILD: OI leads while true taker remains neutral; volume shock/pre-spark may precede price expansion.
+- PTB_OI_LED_RELOAD: after the first shock, price holds while OI remains near its peak and RVOL cools.
+- PTB_OI_LED_REIGNITION: retained OI + price hold + 15m/5m RVOL reacceleration.
+
+Neutral true taker (0.8–1.2) does not invalidate the PTB path when OI lead/retention conditions are satisfied.
 
 ## Output contract
 Deep items expose:
