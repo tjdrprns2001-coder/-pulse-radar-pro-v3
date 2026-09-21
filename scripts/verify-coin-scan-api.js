@@ -60,6 +60,18 @@ const provider={
   assert.equal(recorderCalls,1,'deep scan should invoke performance recorder once');
   assert(Number.isFinite(isolatedDeep.items[0]?.lastPrice),'deep item must expose finite lastPrice for immutable snapshot');
 
+  let transitionCalls=0;
+  const transitionRecorder={
+    async observe({items,framesBySymbol}){transitionCalls++;assert(items.length===1);assert(framesBySymbol.C0USDT);items[0].eventSnapshotId='EV-A';items[0].isTransitionEvent=true;return{observed:1,transitions:1,archived:1,duplicates:0,skipped:0,errors:[]}},
+    async get(id){return id==='EV-A'?{eventId:'EV-A',symbol:'C0USDT',records:[{snapshotId:'S1'}]}:null},
+    async list(){return[{eventId:'EV-A',symbol:'C0USDT',detectedAt:222222,records:[{snapshotId:'S1'}],snapshotIds:['S1']}]}
+  };
+  const transitionService=createScanService({provider,now:()=>222222,transitionSnapshotRecorder:transitionRecorder});
+  const transitionDeep=await transitionService.run({mode:'deep',symbols:['C0USDT'],limit:1});
+  assert.equal(transitionCalls,1,'deep scan must invoke transition snapshot recorder at detection time');
+  assert.equal(transitionDeep.transitionSnapshotRecording.archived,1);
+  assert.equal(transitionDeep.items[0].eventSnapshotId,'EV-A');
+
   const cat=out.items[0]?.category;
   if(cat){const f=await service.run({mode:'summary',category:cat,limit:10});assert(f.items.every(x=>x.category===cat))}
   const sector=out.items.find(x=>x.sector)?.sector;
@@ -79,5 +91,12 @@ const provider={
   const res={setHeader(k,v){headers[k]=v},status(n){code=n;return this},json(v){body=v;return v}};
   await handler(req,res,{service});
   assert.equal(code,200);assert.equal(body.status,'ok');assert.equal(body.deepScanCount,2);assert(String(headers['Cache-Control']).includes('stale-while-revalidate'));
+
+  code=0;body=null;headers={};
+  await handler({query:{mode:'event-snapshots',action:'get',eventId:'EV-A'}},res,{service:transitionService});
+  assert.equal(code,200);assert.equal(body.bundle.eventId,'EV-A');assert(String(headers['Cache-Control']).includes('no-store'));
+  code=0;body=null;headers={};
+  await handler({query:{mode:'event-snapshots',action:'list',symbol:'C0USDT'}},res,{service:transitionService});
+  assert.equal(code,200);assert.equal(body.items[0].eventId,'EV-A');
   console.log('coin scan api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
