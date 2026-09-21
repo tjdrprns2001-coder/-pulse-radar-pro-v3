@@ -27,6 +27,7 @@ function frame({start=1700000000000,step=3600000,count=70,capturedAt}={}){
   assert(bundle.records.every(x=>x.candles.length===70),'all records must stop at the confirmed candle');
   assert(bundle.records.every(x=>x.params.capturedBy==='scanner-transition'),'bundle provenance must identify scanner capture');
   assert(bundle.snapshotIds.every(Boolean),'all 8TF records must have deterministic snapshot IDs');
+  assert(bundle.records.every(x=>Array.isArray(x.analysis?.overlays?.trendlines)),'transition bundle must preserve trendline overlay coordinates');
 
   const store=createMemoryStore(),service=createTransitionSnapshotService({store,now:()=>detectedAt});
   const first={...item,v2Type:'A-pre',v2Flow:{...item.v2Flow,type:'A-pre'},updatedAt:detectedAt-60000};
