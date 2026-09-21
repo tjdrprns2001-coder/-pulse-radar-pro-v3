@@ -31,7 +31,7 @@ assert(css.includes('.tradeSignal'),'trade signal layout style required');
 assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
-assert(/\/ui\/coin-scan\.js\?v=20260921-(?:v(?:41|5)|snap1|archive1)/.test(html),'official v2 scanner UI must use current mobile cache-bust');
+assert(/\/ui\/coin-scan\.js\?v=2026092[12]-(?:v(?:41|5)|snap1|archive1|fusion1)/.test(html),'official v2 scanner UI must use current mobile cache-bust');
 assert(js.includes('v2Flow')&&js.includes('true taker')&&js.includes('OI 4H'),'official v2 flow fields must be rendered');
 assert(js.includes('fusionMarkup')&&js.includes('책+DNA+수급+SMC/ICT')&&js.includes('fusionEligible')&&js.includes('fusionScore'),'fusion evidence must be rendered and ranked');
 assert(css.includes('.fusionEvidence'),'fusion evidence styles required');
