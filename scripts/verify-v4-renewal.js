@@ -1,0 +1,33 @@
+'use strict';
+const assert=require('assert');
+const fs=require('fs');
+const read=p=>fs.readFileSync(p,'utf8');
+
+const shell=read('pulse-unified.html');
+const shellJs=read('ui/pulse-shell.js');
+const shellCss=read('ui/pulse-shell.css');
+const home=read('workspace-home.html');
+const scan=read('ui/coin-scan.js');
+const scanCss=read('ui/coin-scan.css');
+const scanService=read('lib/coin-scan/scan-service.js');
+const market=read('handlers/market.js');
+const intel=read('coin-intel.html');
+const assistant=read('ui/assistant-scan.js');
+const vercel=JSON.parse(read('vercel.json'));
+
+assert(shell.includes('PulseRadar Pro v4'),'V4 shell branding missing');
+assert.equal((shell.match(/class="mBtn/g)||[]).length,5,'mobile nav must have exactly five primary buttons');
+for(const v of ['home','autoscan','report','intel','pulseai'])assert(shell.includes('data-view="'+v+'"'),'missing primary mobile view '+v);
+assert(home.includes('코어 유니버스')&&home.includes('확장 유니버스')&&home.includes('DEX'),'workspace universe explanation missing');
+assert(shellJs.includes("coreFuturesCount")&&shellJs.includes("DEX 별도"),'global universe scope chip logic missing');
+assert(shellCss.includes('grid-template-rows:auto auto'),'mobile topbar must use two-row layout');
+assert(scan.includes("mode=summary&limit=500"),'auto scanner must request the full core universe');
+assert(scanService.includes("universeMeta:{key:'binance-usdt-perpetual'"),'core scan universe metadata missing');
+assert(market.includes('coreFuturesCount')&&market.includes('spot-plus-8-futures-dedup'),'extended universe metadata missing');
+assert(scanCss.includes('.cardDetail'),'long auto-scan evidence must be collapsible');
+assert(assistant.includes('<details class="counter">'),'research counter-evidence must be collapsible');
+const events=intel.indexOf('id="eventsSection"'),news=intel.indexOf('id="newsSection"'),deriv=intel.indexOf('id="derivSection"');
+assert(events>0&&news>events&&deriv>news,'coin intel must prioritize events and news');
+for(const p of ['coin-scan.html','assistant-scan.html','coin-report.html','coin-intel.html','radar.html','multi-chart.html','unified-chart.html','pulse-ai.html'])assert(read(p).includes('pulse-child-normalize.css'),'mobile normalization missing: '+p);
+assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
+console.log('PulseRadar V4 renewal contract PASS');
