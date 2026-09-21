@@ -2,6 +2,7 @@ const assert=require('assert');
 const {detectEvents}=require('../lib/pulse-ai/event-detector.js');
 const {buildContext}=require('../lib/pulse-ai/context-builder.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {enrichCatalysts,summarizeCatalysts}=require('../lib/pulse-ai/event-catalyst.js');
 
 const base={status:'ok',updatedAt:1000,scanCount:3,items:[
  {symbol:'AAAUSDT',category:'급등 전조 관찰',sector:'AI',candidateScore:55,priority:90,dataState:'live',reasons:['r1'],tfState:{'1h':'up'}},
@@ -23,6 +24,14 @@ const ctx=buildContext(withMissing,detectEvents(withMissing,prev),{maxSymbols:2}
 assert(ctx.symbols.length<=2,'context must be bounded');
 const a=ctx.symbols.find(x=>x.symbol==='AAAUSDT');if(a)assert.equal(a.fundingPct,null,'missing values must remain null');
 assert(!JSON.stringify(ctx).includes('OPENAI_API_KEY'));
+const eventNow=Date.UTC(2026,8,21,4,0,0);
+const enriched=enrichCatalysts([{symbol:'AAA',eventType:'mainnet',titleKo:'메인넷 업그레이드',summaryKo:'공식 일정',eventTime:'2026-09-22T04:00:00Z',sourceTier:'A',sourceName:'AAA 공식',sourceUrl:'https://example.com/official',confirmed:true}],base,eventNow);
+assert.equal(enriched[0].eventTypeKo,'메인넷');
+assert.equal(enriched[0].sourceTierKo,'공식 확정');
+assert.equal(enriched[0].timingKo,'D-1');
+assert.equal(enriched[0].technicalStateKo,'기술 신호 동반');
+assert(enriched[0].catalystScore>0);
+assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건'));
 
 (async()=>{
   const scanService={run:async()=>base};
