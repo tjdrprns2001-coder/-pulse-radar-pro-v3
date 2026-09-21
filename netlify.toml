@@ -2,6 +2,13 @@
   publish = "."
   functions = "netlify/functions"
 
+
+[[redirects]]
+  from = "/api/assistant-scan*"
+  to = "/.netlify/functions/assistant-scan:splat"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/api/pulse-ai*"
   to = "/.netlify/functions/pulse-ai:splat"
