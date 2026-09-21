@@ -31,7 +31,10 @@ async function catalog(){
   }
   const symbols=[...map.values()].sort((a,b)=>a.symbol.localeCompare(b.symbol));
   const mf=fR.status==='fulfilled'?fR.value:null;
-  return{ok:true,version:'catalog-v5-multi-exchange-futures',total:symbols.length,spotCount:symbols.filter(x=>x.spot).length,futuresCount:symbols.filter(x=>x.futures).length,futuresOnlyCount:symbols.filter(x=>x.futures&&!x.spot).length,symbols,requiredFutures:REQUIRED_FUTURES,
+  const coreFuturesCount=Number(mf?.sources?.binance?.count)||symbols.filter(x=>x.futures&&x.futuresExchanges?.includes('binance')).length;
+  const spotCount=symbols.filter(x=>x.spot).length,futuresCount=symbols.filter(x=>x.futures).length,futuresOnlyCount=symbols.filter(x=>x.futures&&!x.spot).length;
+  return{ok:true,version:'catalog-v6-unified-universe',total:symbols.length,coreFuturesCount,spotCount,futuresCount,futuresOnlyCount,symbols,requiredFutures:REQUIRED_FUTURES,
+    universe:{core:{key:'binance-usdt-perpetual',label:'코어 유니버스 · Binance USDT 무기한',count:coreFuturesCount},extended:{key:'spot-plus-8-futures-dedup',label:'확장 유니버스 · 현물 + 8개 선물거래소 중복 제거',count:symbols.length,spotCount,futuresCount},dex:{key:'dex-extended-monitoring',label:'DEX 확장 감시 · 페어/토큰 단위 별도 집계'}},
     futuresExchangeCount:mf?.exchangeCount||0,futuresSources:mf?.sources||{},sourceContracts:mf?.sourceContracts||0,duplicateContractsRemoved:mf?.duplicateContractsRemoved||0,updatedAt:new Date().toISOString()};
 }
 function fallbackFutureRow(symbol){
@@ -76,8 +79,10 @@ module.exports=async function handler(req,res){
     const sourceContracts=Number(f?.sourceContracts)||futureRows.length;
     const duplicateContractsRemoved=Number(f?.duplicateContractsRemoved)||Math.max(0,sourceContracts-futuresUniqueCount);
     return res.status(200).json({
-      ok:true,version:'spot+multi-futures-v4',market:'spot+futures',updatedAt:new Date().toISOString(),total:rows.length,eligible:rows.filter(x=>x.pass).length,results:rows,
+      ok:true,version:'spot+multi-futures-v5-unified-universe',market:'spot+futures',updatedAt:new Date().toISOString(),total:rows.length,eligible:rows.filter(x=>x.pass).length,results:rows,
       spotCount:sr.length,futuresCount:futuresUniqueCount,futuresOnlyCount:fr.length,futuresExchangeCount:exchangeCount,futuresSources:f?.sources||{},
+      coreFuturesCount:Number(f?.sources?.binance?.count)||futureRows.filter(x=>x.exchanges?.includes('binance')).length,
+      universe:{core:{key:'binance-usdt-perpetual',label:'코어 유니버스 · Binance USDT 무기한',count:Number(f?.sources?.binance?.count)||futureRows.filter(x=>x.exchanges?.includes('binance')).length},extended:{key:'spot-plus-8-futures-dedup',label:'확장 유니버스 · 현물 + 8개 선물거래소 중복 제거',count:rows.length,spotCount:sr.length,futuresCount:futuresUniqueCount},dex:{key:'dex-extended-monitoring',label:'DEX 확장 감시 · 별도 집계'}},
       sourceContracts,duplicateContractsRemoved,externalOnlyCount:fr.filter(x=>x.deepSupported===false).length,
       futuresFeedOk:!!f?.ok,futuresFallback,futuresError:f?.ok?futuresError:(f?.error||futuresError||'futures feed unavailable'),
       note:'Binance 현물 + Binance/Bybit/OKX/Gate/Bitget/MEXC/KuCoin/Hyperliquid 무기한 선물. 기초자산 기준 중복 제거 후 한 코인당 한 행으로 표시'
