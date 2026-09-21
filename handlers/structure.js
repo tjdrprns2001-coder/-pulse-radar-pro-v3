@@ -20,6 +20,26 @@ async function getCoinGecko(path){const ctl=new AbortController(),to=setTimeout(
 const num=v=>{v=Number(v);return Number.isFinite(v)?v:null};
 function pct(a,b){a=num(a);b=num(b);return a!=null&&b!=null&&a!==0?(b-a)/Math.abs(a)*100:null}
 function pressureFrom({oi24,fundingPct,taker}){const flags=[];if(oi24!=null&&oi24>=15)flags.push('OI 증가');if(oi24!=null&&oi24<=-15)flags.push('OI 감소');if(fundingPct!=null&&Math.abs(fundingPct)>=.03)flags.push(fundingPct>0?'양(+) 펀딩':'음(-) 펀딩');if(taker!=null&&taker>=1.15)flags.push('공격적 매수 우위');if(taker!=null&&taker<=.87)flags.push('공격적 매도 우위');return{flags,pressure:flags.length>=3?'레버리지 과열':flags.length?'레버리지 확대':'중립'}}
+async function marketMeta(symbol,market='spot'){
+  try{
+    let info=null;
+    if(market==='futures'){
+      const all=await fetchAny(BASES,'/fapi/v1/exchangeInfo',5000);
+      info=Array.isArray(all?.symbols)?all.symbols.find(x=>String(x.symbol).toUpperCase()===symbol):null;
+    }else{
+      const all=await fetchAny(SPOT_BASES,'/api/v3/exchangeInfo?symbol='+encodeURIComponent(symbol),5000);
+      info=Array.isArray(all?.symbols)?all.symbols[0]:null;
+      if(!info){
+        const fut=await fetchAny(BASES,'/fapi/v1/exchangeInfo',5000).catch(()=>null);
+        info=Array.isArray(fut?.symbols)?fut.symbols.find(x=>String(x.symbol).toUpperCase()===symbol):null;
+      }
+    }
+    if(!info)return{ok:true,meta:true,available:false,symbol,market};
+    const priceFilter=(info.filters||[]).find(x=>x.filterType==='PRICE_FILTER')||{};
+    const lot=(info.filters||[]).find(x=>x.filterType==='LOT_SIZE')||{};
+    return{ok:true,meta:true,available:true,symbol,market,tickSize:num(priceFilter.tickSize),minPrice:num(priceFilter.minPrice),stepSize:num(lot.stepSize),pricePrecision:num(info.pricePrecision),quantityPrecision:num(info.quantityPrecision),status:info.status||null};
+  }catch(e){return{ok:true,meta:true,available:false,symbol,market,error:e?.message||'Market metadata unavailable'}}
+}
 async function liveKline(symbol,interval,market='spot'){
   try{
     const isFutures=market==='futures';
@@ -50,4 +70,4 @@ if(!p&&!o&&!h.length&&!t.length){const fallback=(await bybitDerivatives(symbol).
 const mark=num(p?.markPrice),contracts=num(o?.openInterest),oiUsd=contracts!=null&&mark!=null?contracts*mark:null,oi24=h.length>1?pct(h[0]?.sumOpenInterestValue,h.at(-1)?.sumOpenInterestValue):null,funding=num(p?.lastFundingRate),fundingPct=funding!=null?funding*100:null,ratios=t.map(x=>num(x.buySellRatio)).filter(Number.isFinite),taker=ratios.length?ratios.reduce((a,b)=>a+b,0)/ratios.length:null,{flags,pressure}=pressureFrom({oi24,fundingPct,taker});
 return{ok:true,derivatives:true,available:true,symbol,updatedAt:new Date().toISOString(),markPrice:mark,openInterestContracts:contracts,openInterestUsdApprox:oiUsd,openInterestChange24hPct:oi24,fundingRatePct:fundingPct,takerBuySellRatio:taker,pressure,flags,source:'Binance USD-M public market data'}
 }
-module.exports=async function handler(req,res){res.setHeader('Cache-Control','s-maxage=5, stale-while-revalidate=10');try{const symbol=String(req.query.symbol||'BTCUSDT').toUpperCase().replace(/[^A-Z0-9]/g,''),interval=String(req.query.interval||'1h');if(String(req.query.live||'')==='1')return res.status(200).json(await liveKline(symbol,interval,String(req.query.market||'spot')));if(String(req.query.derivatives||'')==='1')return res.status(200).json(await derivatives(symbol));const s=await runSpot(req);if(s.code<400&&s.body?.ok)return res.status(200).json(withEnhancedTrendlines({...s.body,market:'spot'},interval));const limit=Number(req.query.limit)||500;const f=await futures.structure(symbol,interval,limit);return res.status(200).json(withEnhancedTrendlines(f,interval))}catch(e){return res.status(502).json({ok:false,error:e?.message||'Structure fetch failed'})}}
+module.exports=async function handler(req,res){res.setHeader('Cache-Control','s-maxage=5, stale-while-revalidate=10');try{const symbol=String(req.query.symbol||'BTCUSDT').toUpperCase().replace(/[^A-Z0-9]/g,''),interval=String(req.query.interval||'1h');if(String(req.query.live||'')==='1')return res.status(200).json(await liveKline(symbol,interval,String(req.query.market||'spot')));if(String(req.query.derivatives||'')==='1')return res.status(200).json(await derivatives(symbol));if(String(req.query.meta||'')==='1')return res.status(200).json(await marketMeta(symbol,String(req.query.market||'spot')));const s=await runSpot(req);if(s.code<400&&s.body?.ok)return res.status(200).json(withEnhancedTrendlines({...s.body,market:'spot'},interval));const limit=Number(req.query.limit)||500;const f=await futures.structure(symbol,interval,limit);return res.status(200).json(withEnhancedTrendlines(f,interval))}catch(e){return res.status(502).json({ok:false,error:e?.message||'Structure fetch failed'})}}
