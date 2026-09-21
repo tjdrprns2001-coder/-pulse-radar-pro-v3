@@ -33,6 +33,12 @@ assert(Array.isArray(methods.methods)&&methods.methods.length>=13,'Dante method 
 for(const id of ['bowl224','ma-hit','concrete','highheel','symmetry','share','kijun-scalp','256','reverse-wave','elliott','dead-dive','open-price','close-bet','force-balance'])assert(methods.methods.some(x=>x.id===id),'Dante method missing '+id);
 assert(dante.includes('비공개/유료 세부 규칙은 임의로 공식화하지 않습니다.'),'Dante provenance boundary missing');
 assert(dante.includes('멀티TF 검사')&&dante.includes('PNG 저장'),'Dante practice controls missing');
+assert(dante.includes('format-detection')&&dante.includes('snapshotCaption'),'iPhone auto-link guard or dynamic snapshot caption missing');
+const danteLabJs=read('ui/dante/dante-lab.js'),snapshotRenderer=read('ui/trader/snapshot-renderer.js');
+assert(danteLabJs.includes('focusMethod:methodId'),'Dante snapshots must pass selected method into renderer');
+assert(danteLabJs.includes('multi(false)'),'Dante method selection must auto-fill cached multi-TF comparison');
+for(const id of ['bowl224','ma-hit','concrete','highheel','symmetry','share','kijun-scalp'])assert(snapshotRenderer.includes("method==='"+id+"'"),'method-specific snapshot geometry missing '+id);
+assert(snapshotRenderer.includes('nearestZones')&&snapshotRenderer.includes('nearestLiquidity'),'focused snapshots must declutter SMC/liquidity overlays');
 
 const candles=Array.from({length:520},(_,i)=>{const base=100+i*.03+Math.sin(i/9)*2;return{time:(i+1)*3600000,open:base-.3,high:base+1,low:base-1,close:base+.3,volume:1000+(i%20)*30}});
 const summary=trader.summarize({candles,analysis:{trendlines:{}},smc:{mss:[],sweeps:[],fvgs:[],orderBlocks:[]},liquidity:{levels:[],sweeps:[]}});
