@@ -38,6 +38,8 @@ function frame({start=1700000000000,step=3600000,count=70,capturedAt}={}){
   assert.equal(r.transitions,1,'A-pre→A must be a type transition');
   assert.equal(r.archived,1,'transition must archive immediately without opening the UI');
   assert(second.eventSnapshotId,'scanner item must expose the durable event snapshot ID');
+  assert.equal(second.v2Csv.type_transition,'A-pre→A');
+  assert.equal(second.v2Csv.is_transition_event,true,'research CSV must reference the same archived type transition');
   const saved=await service.get(second.eventSnapshotId);
   assert(saved&&saved.records.length===8,'server archive must be retrievable');
   assert.equal(saved.detectedAt,detectedAt,'archive time must equal scanner detection time');
