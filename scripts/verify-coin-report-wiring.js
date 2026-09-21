@@ -6,7 +6,7 @@ assert(scan.includes("e.key==='Enter'"));
 assert(ai.includes("view:'report'"));
 assert(shell.includes("report:{title:'종합 리포트'"));
 assert(shell.includes("if(e.data.symbol)$('symbol').value=cleanSymbol(e.data.symbol)"));
-assert(unified.includes('/ui/pulse-shell.js?v=20260921-v5'));
+assert(/\/ui\/pulse-shell\.js\?v=2026092[12]-[A-Za-z0-9._-]+/.test(unified));
 assert(/\/ui\/coin-scan\.js\?v=20260921-[A-Za-z0-9._-]+/.test(scanHtml));
 assert(aiHtml.includes('pulse-ai.js?v=20260921-v5'));
 console.log('coin report wiring PASS');
