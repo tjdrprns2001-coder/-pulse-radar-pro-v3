@@ -42,8 +42,8 @@ assert(snapJs.includes('higherTfBias')&&snapJs.includes('mmxmAlignment'),'snapsh
 assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'"),'snapshot summary must expose DOL status and MMXM alignment');
 assert(!snapJs.includes("className='miniSummary'")&&!snapJs.includes("className='miniMeta'"),'8TF mini cards must be chart-only below the TF header');
 assert(!/function miniCard[\s\S]{0,1200}ruleSummary\(/.test(snapJs),'8TF mini cards must not render descriptive summaries');
-assert(snapJs.includes("cv.dataset.labels='0'")&&snapJs.includes("renderCanvas(cv,tf,data,{labels:false})"),'8TF mini charts must disable overlay label badges');
-assert(/async function saveAll[\s\S]{0,1800}renderCanvas\(temp,tf,data,\{labels:false\}\)/.test(snapJs),'8TF PNG must also hide overlay label badges');
+assert(!snapJs.includes("cv.dataset.labels='0'"),'live 8TF mini charts must keep overlay labels visible');
+assert(/async function saveAll[\s\S]{0,1800}renderCanvas\(temp,tf,data,\{labels:false\}\)/.test(snapJs),'8TF PNG export must hide overlay label badges');
 assert(snapJs.includes('opts.labels=labels'),'snapshot renderer bridge must pass label visibility explicitly');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('.compareGrid')&&read('ui/trader/mtf-snapshot-pro.css').includes('.compareRow'),'snapshot comparison responsive styles missing');
