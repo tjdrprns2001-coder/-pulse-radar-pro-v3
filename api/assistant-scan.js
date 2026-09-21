@@ -14,7 +14,7 @@ function rangePosition(rows,lookback=60){
   const hs=a.map(x=>finite(x?.[2])).filter(Number.isFinite),ls=a.map(x=>finite(x?.[3])).filter(Number.isFinite),c=finite(a.at(-1)?.[4]);
   if(!hs.length||!ls.length||c==null)return null;const hi=Math.max(...hs),lo=Math.min(...ls);return hi>lo?((c-lo)/(hi-lo))*100:null;
 }
-async function detailFor(p,item){
+async function detailFor(p,item,fundingInfo){
   const s=item.symbol;
   const [oi,tk1,tk15,w,d]=await Promise.all([
     p.getV2OiProfile(s),p.getV2TakerSeries(s,'1h',8),p.getV2TakerSeries(s,'15m',12),p.getKlines(s,'1w',90),p.getKlines(s,'1d',90)
@@ -27,7 +27,7 @@ async function detailFor(p,item){
     fundingRate:finite(item.fundingRate),range1wPct:rangePosition(w),range1dPct:rangePosition(d)
   };
   const verdict=Assistant.classify(input);
-  return{...item,assistant:{...verdict,oiBuckets:buckets,range1wPct:input.range1wPct,range1dPct:input.range1dPct,taker1h:input.taker1h,taker15m:input.taker15m,source:'Binance USDT Futures',fundingPeriod:'N/A'}};
+  return{...item,assistant:{...verdict,oiBuckets:buckets,range1wPct:input.range1wPct,range1dPct:input.range1dPct,taker1h:input.taker1h,taker15m:input.taker15m,source:'Binance USDT Futures',fundingPeriod:(fundingInfo&&fundingInfo.get(s))||'N/A'}};
 }
 module.exports=async function handler(req,res,ctx={}){
   const {provider:p,service:s}=ctx.provider&&ctx.service?{provider:ctx.provider,service:ctx.service}:getRuntime();
@@ -41,7 +41,7 @@ module.exports=async function handler(req,res,ctx={}){
     }
     const symbols=String(q.symbols||'').split(',').map(x=>x.trim().toUpperCase()).filter(Boolean).slice(0,20);
     const deep=await s.run({mode:'deep',symbols,limit:20});
-    const items=[];for(const item of deep.items||[])items.push(await detailFor(p,item));
+    const fundingInfo=await p.getFundingInfoMap();const items=[];for(const item of deep.items||[])items.push(await detailFor(p,item,fundingInfo));
     items.sort((a,b)=>{const rank={'A · 연속 미결제약정 구축':0,'A-pre · 구축 초입':1,'C 후보 · 정리 후 재구축':2,'NFB · 음펀딩 구축':3,'B 후보 · 흐름 선행':4,'C 후보 · 미결제약정 정리':5,'미완성':9,'미완성(데이터 부족)':10};return(rank[a.assistant?.type]??8)-(rank[b.assistant?.type]??8)});
     return res.status(200).json({status:'ok',mode:'deep',scanner:'assistant-v2-research',paramSet:Assistant.PARAM_SET,updatedAt:Date.now(),items});
   }catch(e){return res.status(502).json({status:'error',error:String(e?.message||e),items:[]})}
