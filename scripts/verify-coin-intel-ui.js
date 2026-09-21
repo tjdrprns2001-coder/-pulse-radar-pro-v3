@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('assert');
+const fs=require('fs');
+const html=fs.readFileSync('coin-intel.html','utf8');
+for(const x of ['📅 일정','📰 뉴스','🔥 소각·언락','📊 선물','ℹ️ 개요'])assert(html.includes(x),'missing quick nav '+x);
+for(const id of ['eventsSection','newsSection','burnSection','derivSection','projectSection'])assert(html.includes('id="'+id+'"'),'missing anchor '+id);
+const events=html.indexOf('id="eventsSection"');
+const news=html.indexOf('id="newsSection"');
+const deriv=html.indexOf('id="derivSection"');
+const project=html.indexOf('id="projectSection"');
+assert(events>0&&news>events&&deriv>news&&project>deriv,'mobile content order must prioritize events and news');
+assert(html.includes('scroll-margin-top:88px'),'jump target offset missing');
+console.log('coin intel quick navigation PASS');
