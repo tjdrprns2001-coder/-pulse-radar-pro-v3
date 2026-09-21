@@ -40,12 +40,13 @@ test('restored chart snapshot is cloned separately and adds weekly timeframe',()
   assert.match(weekly,/runSnapshotAnalysis/);
 });
 
-test('unified shell exposes restored snapshot beside existing MTF snapshot',()=>{
+test('unified shell exposes restored snapshot directly in V4 navigation',()=>{
   const shell=fs.readFileSync('pulse-unified.html','utf8');
-  const bridge=fs.readFileSync('ui/pulse-shell-snapshot-restore.js','utf8');
-  assert.match(shell,/pulse-shell-snapshot-restore\.js/);
-  assert.match(bridge,/data-view/);
-  assert.match(bridge,/chartsnapshot/);
-  assert.match(bridge,/snapshot-analysis-restored\.html/);
-  assert.match(bridge,/MTF 스냅샷|차트 스냅샷/);
+  const shellJs=fs.readFileSync('ui/pulse-shell.js','utf8');
+  assert.doesNotMatch(shell,/pulse-shell-snapshot-restore\.js/);
+  assert.match(shell,/data-view="chartsnapshot"/);
+  assert.match(shellJs,/chartsnapshot:\{title:'차트 스냅샷'/);
+  assert.match(shellJs,/snapshot-analysis-restored\.html/);
+  assert.match(shell,/MTF 스냅샷/);
+  assert.match(shell,/차트 스냅샷/);
 });
