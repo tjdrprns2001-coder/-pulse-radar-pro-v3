@@ -14,6 +14,7 @@ for(const root of ['home','scan','analysis','dante','ai'])assert(shell.includes(
 assert(shell.includes('주식단테 실전 랩')&&shell.includes('8TF 스냅샷'),'V5 primary tools missing');
 assert(shellJs.includes("mtfsnapshot:{title:'8TF 스냅샷'")&&shellJs.includes("dante:{title:'주식단테 실전 랩'"),'V5 routes missing');
 assert(shellJs.includes("searchParams.set('build','20260921-v5')"),'V5 child cache-bust missing');
+for(const page of ['dante-lab.html','mtf-snapshot-pro.html','unified-chart.html']){const src=read(page),sp=src.indexOf('/ui/chart/session-profile.js'),liq=src.indexOf('/ui/chart/liquidity-engine.js');assert(sp>=0&&liq>sp,'session profile must load before liquidity engine: '+page);}
 
 assert(home.includes('REFRESH=3600000'),'home must refresh hourly');
 for(const p of ['/api/market?','/api/coin-scan?','/api/pulse-ai?'])assert(home.includes(p),'market desk feed missing '+p);
