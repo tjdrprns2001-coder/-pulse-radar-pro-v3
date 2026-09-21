@@ -1,0 +1,25 @@
+const fs=require('fs'),path=require('path'),assert=require('assert'),vm=require('vm');
+const root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const engine=require(path.join(root,'ui/simple-trading/simple-trading-engine.js'));
+assert.equal(engine.VERSION,'1.0.0');
+assert.deepEqual(engine.STATES,['FORMING','READY','BREAKOUT','RETEST','CONFIRMED','ACTIVE','FAILED']);
+for(const fn of ['detectCandles','detectChartPatterns','detectStrategies','analyze'])assert.equal(typeof engine[fn],'function','missing '+fn);
+const src=read('ui/simple-trading/simple-trading-engine.js');
+for(const id of ['hammer','morning-star','bullish-engulfing','three-white-soldiers','hanging-man','shooting-star','bearish-engulfing','evening-star','three-black-crows','doji','spinning-top'])assert(src.includes("'"+id+"'"),'missing candle '+id);
+for(const id of ['double-top','double-bottom','triple-top','triple-bottom','head-shoulders','inverse-head-shoulders','falling-wedge','rising-wedge','bullish-rectangle','bearish-rectangle','bullish-pennant','bearish-pennant','rounding-bottom','rounding-top','cup-handle','inverse-cup-handle','bullish-bat','bearish-bat','bullish-abcd','bearish-abcd','bullish-three-drives','bearish-three-drives','bullish-expanding-triangle','bearish-expanding-triangle','bullish-flag','bearish-flag'])assert(src.includes(id),'missing chart pattern '+id);
+for(let i=1;i<=7;i++)assert(src.includes("'strategy-"+i+"'"),'missing strategy '+i);
+const candles=[];for(let i=0;i<18;i++){const b=100-i*.4;candles.push({time:i+1,open:b+.25,high:b+.4,low:b-.5,close:b,volume:100})}
+candles.push({time:19,open:93.2,high:93.35,low:92.7,close:92.9,volume:100});
+candles.push({time:20,open:92.75,high:93.8,low:92.6,close:93.65,volume:160});
+assert(engine.detectCandles(candles).some(x=>x.id==='bullish-engulfing'),'bullish engulfing detector failed');
+const analysis=engine.analyze({candles});
+assert(analysis.available&&analysis.sourcePages.strategies==='28-34','source metadata missing');
+assert(analysis.disclaimer.includes('근사 규칙'),'numeric-threshold provenance warning missing');
+const html=read('simple-trading-lab.html'),labJs=read('ui/simple-trading/simple-trading-lab.js'),chart=read('unified-chart.html'),chartJs=read('ui/chart/unified-chart-v5.js'),shell=read('ui/pulse-shell.js'),shellHtml=read('pulse-unified.html');
+for(const term of ['클래식 패턴 실전 랩','캔들','전략 1~7','차트 패턴','책 규칙 + 자동화 근사'])assert(html.includes(term),'Korean lab UI missing '+term);
+assert(labJs.includes("FORMING:'형성중'")&&labJs.includes("CONFIRMED:'확인 완료'")&&labJs.includes("FAILED:'무효화'"),'Korean stage mapping missing');
+assert(chart.includes('data-overlay="simple-trading"')&&chart.includes('simple-trading-engine.js')&&chart.includes('simple-trading-plugin.js'),'unified chart wiring missing');
+assert(chartJs.includes("ST.analyze({candles:analysis.candles})")&&chartJs.includes('createSimpleTradingPlugin'),'unified chart engine/plugin integration missing');
+assert(shell.includes("simpletrading:{title:'클래식 패턴 실전 랩'")&&shellHtml.includes('data-view="simpletrading"'),'workspace navigation missing');
+for(const f of ['ui/simple-trading/simple-trading-engine.js','ui/simple-trading/simple-trading-lab.js','ui/chart/plugins/simple-trading-plugin.js','ui/chart/unified-chart-v5.js','ui/pulse-shell.js'])new vm.Script(read(f),{filename:f});
+console.log('Simple Trading Book Korean integration PASS');
