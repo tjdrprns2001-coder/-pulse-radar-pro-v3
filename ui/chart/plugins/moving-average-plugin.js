@@ -1,0 +1,5 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseMovingAveragePlugin=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){'use strict';
+const STD=[5,10,20,60,120],DANTE=[112,224,448];
+function createMovingAveragePlugin(){let ctx=null,visible=true,series=[];function clear(){for(const s of series){try{ctx?.chart?.removeSeries(s)}catch{}}series=[]}return{id:'moving-average',version:'1.0.0',requiredData:['rawCandles'],mount(c){ctx=c},update(state={}){clear();if(!ctx||!visible)return;const rows=state.rawCandles||[],api=state.dataApi;if(!api)return;const mode=state.maMode||'standard',periods=mode==='dante'?DANTE:mode==='all'?[...STD,...DANTE]:STD;for(const p of periods){if(rows.length<p)continue;const s=ctx.addLineSeries({lineWidth:p>=112?2:1,lineStyle:p>=224?2:0});s.setData(api.emaSeries(rows,p));series.push(s)}},setVisible(v){visible=!!v;if(!visible)clear()},dispose(){clear();ctx=null}}}
+return{STD,DANTE,createMovingAveragePlugin};
+});
