@@ -1,7 +1,7 @@
 import {getStore} from '@netlify/blobs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const handler=require('../../api/signal-backfill.js');
+const handler=require('../../handlers/signal-backfill.js');
 const {createSignalRuntime}=require('../../lib/signal-performance/runtime.js');
 function queryFrom(url){return Object.fromEntries(new URL(url).searchParams.entries())}
 function bridge(){let code=200,payload=null;const headers={};return{res:{setHeader(k,v){headers[k]=String(v)},status(n){code=n;return this},json(v){payload=v;headers['Content-Type']='application/json; charset=utf-8';return v}},response(){return new Response(JSON.stringify(payload??{}),{status:code,headers})}}}

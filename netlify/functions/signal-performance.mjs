@@ -1,7 +1,7 @@
 import { getStore } from '@netlify/blobs';
 import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
-const handler=require('../../api/signal-performance.js');
+const handler=require('../../handlers/signal-performance.js');
 
 function queryFrom(url){return Object.fromEntries(new URL(url).searchParams.entries())}
 function bridgeResponse(){
