@@ -30,6 +30,7 @@ for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAverageP
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
 assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
+for(const id of ['compareToggle','compareSection','compareEvent','compareOld','compareNow','compareTable'])assert(snap.includes('id="'+id+'"'),'snapshot compare UI missing '+id);
 for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
 assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
@@ -41,9 +42,13 @@ assert(snapJs.includes('higherTfBias')&&snapJs.includes('mmxmAlignment'),'snapsh
 assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'"),'snapshot summary must expose DOL status and MMXM alignment');
 assert(snapJs.includes("className='miniMeta'")&&snapJs.includes('miniContextText'),'8TF cards must expose compact DOL/MMXM context');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
+assert(read('ui/trader/mtf-snapshot-pro.css').includes('.compareGrid')&&read('ui/trader/mtf-snapshot-pro.css').includes('.compareRow'),'snapshot comparison responsive styles missing');
 assert(!/[,;]\s*s\s*=\s*document\.createElement/.test(snapJs),'snapshot DOM nodes must declare s explicitly for Safari strict mode');
 assert(snapJs.includes("const s=document.createElement('span')"),'snapshot span declaration regression');
 assert(snapJs.includes('fetchEventBundle')&&snapJs.includes('exportEventJson'),'server transition snapshot fetch/export missing');
+for(const fn of ['fetchEventList','loadCompareEvents','renderCompare','replayCanvas','recordForTf'])assert(snapJs.includes(fn),'snapshot compare logic missing '+fn);
+assert(snapJs.includes('RR.replayData(record)'),'archived comparison must replay immutable record data instead of recalculating ICT');
+assert(!/replayCanvas[\s\S]{0,500}E\.analyzeTimeframe/.test(snapJs),'archived replay must not rerun current ICT engine');
 assert(!snapJs.includes('RR.saveEventBundle({eventId:ev.eventId'),'snapshot UI must never relabel later live candles as the transition event');
 assert(scan.includes('eventSnapshotId')&&scan.includes("searchParams.set('eventId'"),'scanner must link exact server-captured transition event');
 
@@ -101,6 +106,10 @@ const replay=snapshotRecord.buildRecord({symbol:'BTCUSDT',tf:'1h',candles,analys
 assert(replay.snapshotId.includes('BTCUSDT_1H_')&&replay.engineVersion===ictTf.version,'snapshot ID must bind symbol/TF/engine');
 assert.equal(replay.confirmedBarTime,candles.at(-1).time*1000,'snapshot ID time must come from last confirmed candle');
 assert(replay.candles.length===candles.length&&replay.analysis.overlays.pdArrays.length<=5,'replay record must preserve candles and decluttered overlay coordinates');
+const replayData=snapshotRecord.replayData(replay);
+assert.equal(replayData.candles.length,candles.length,'replay data must use stored candles');
+assert.strictEqual(replayData.ict,replay.analysis.ict,'replay data must use stored ICT analysis object');
+assert(replayData.raw.source==='saved-transition','replay data provenance missing');
 assert(Number.isFinite(summary.rsi),'trader RSI unavailable');
 assert(summary.volumeProfile?.bins?.length===24,'volume profile bins invalid');
 assert(Array.isArray(summary.dante)&&summary.dante.length>=10,'Dante scoring unavailable');
