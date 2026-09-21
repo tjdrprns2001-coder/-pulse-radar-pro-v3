@@ -9,8 +9,8 @@ return '<article><div class="top"><b>'+esc(x.symbol)+'</b><span>'+esc(a.stage||'
 function render(items){$('rows').innerHTML=items.length?items.map(card).join(''):'<div class="empty">현재 정밀 후보가 없습니다.</div>'}
 async function run(){if(state.running)return;state.running=true;$('scan').disabled=true;$('status').textContent='1차 전체스캔 중…';try{
  const r=await fetch('/api/assistant-scan?mode=summary&limit=24',{cache:'no-store'});const s=await r.json();if(!r.ok||s.status!=='ok')throw new Error(s.error||'전체스캔 실패');
- const syms=s.candidateSymbols||[];$('status').textContent='정밀검사 0 / '+syms.length;let all=[];
- for(let i=0;i<syms.length;i+=6){const chunk=syms.slice(i,i+6);const d=await fetch('/api/assistant-scan?mode=deep&symbols='+encodeURIComponent(chunk.join(',')),{cache:'no-store'});const j=await d.json();if(d.ok&&j.status==='ok'){all=all.concat(j.items||[]);render(all)}$('status').textContent='정밀검사 '+Math.min(i+chunk.length,syms.length)+' / '+syms.length}
- $('updated').textContent=new Date().toLocaleString('ko-KR',{hour12:false});$('status').textContent='완료 · '+all.length+'개 정밀검사';
+ const syms=s.candidateSymbols||[];$('status').textContent='코어 '+(s.scanCount||0)+'개 · 정밀검사 0 / '+syms.length;let all=[];
+ for(let i=0;i<syms.length;i+=6){const chunk=syms.slice(i,i+6);const d=await fetch('/api/assistant-scan?mode=deep&symbols='+encodeURIComponent(chunk.join(',')),{cache:'no-store'});const j=await d.json();if(d.ok&&j.status==='ok'){all=all.concat(j.items||[]);render(all)}$('status').textContent='코어 '+(s.scanCount||0)+'개 · 정밀검사 '+Math.min(i+chunk.length,syms.length)+' / '+syms.length}
+ $('updated').textContent=new Date().toLocaleString('ko-KR',{hour12:false});$('status').textContent='완료 · 코어 '+(s.scanCount||0)+'개 중 '+all.length+'개 정밀검사';
  }catch(e){$('status').textContent='오류 · '+e.message}finally{state.running=false;$('scan').disabled=false}}
 $('scan').addEventListener('click',run);run();})();
