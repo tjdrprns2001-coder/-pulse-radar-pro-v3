@@ -1,9 +1,9 @@
 'use strict';
 const assert=require('assert');
-const calibration=require('../api/signal-calibration.js');
-const alerts=require('../api/signal-alerts.js');
-const health=require('../api/signal-health.js');
-const backfill=require('../api/signal-backfill.js');
+const calibration=require('../handlers/signal-calibration.js');
+const alerts=require('../handlers/signal-alerts.js');
+const health=require('../handlers/signal-health.js');
+const backfill=require('../handlers/signal-backfill.js');
 function res(){let statusCode=200,body=null,headers={};return{setHeader(k,v){headers[k]=String(v)},status(n){statusCode=n;return this},json(v){body=v;return v},out(){return{statusCode,body,headers}}}}
 (async()=>{
   const performance={async getPerformance(){return{generatedAt:1,calibration:{minSamples:30,classes:{'PRE-SURGE':{horizons:{h1:{sampleCount:30,status:'통계 사용 가능'}}}}}}}};
