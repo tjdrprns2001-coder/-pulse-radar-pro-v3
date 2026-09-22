@@ -2,7 +2,7 @@
   const LABELS={PDH:'PDH',PDL:'PDL',PWH:'PWH',PWL:'PWL',EQH:'EQH',EQL:'EQL'};
   const OVERLAY_LABELS={SWING_HIGH:'BSL',EQH:'BSL·EQH',PDH:'BSL·PDH',PWH:'BSL·PWH',SWING_LOW:'SSL',EQL:'SSL·EQL',PDL:'SSL·PDL',PWL:'SSL·PWL'};
   const ACTIVE_STATES=new Set(['active','probed','swept']);
-  const TF_MS={5m:300000,15m:900000,1h:3600000,4h:14400000,12h:43200000,1d:86400000,3d:259200000,1w:604800000};
+  const TF_MS={'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000};
   function candleMs(x){const v=Number(x?.time??x?.openTime??x?.timestamp);if(Number.isFinite(v))return v>1e12?v:v>1e9?v*1000:NaN;const p=Date.parse(x?.time);return Number.isFinite(p)?p:NaN}
   function lastConfirmedIndex(candles=[],tf=''){if(!candles.length)return-1;const dur=TF_MS[String(tf).toLowerCase()]||0,t=candleMs(candles.at(-1));return dur&&Number.isFinite(t)&&t+dur>Date.now()-1500?candles.length-2:candles.length-1}
   function sweepLabel(sw){const up=String(sw.dir||'')==='up';return sw.variant==='GRAB'?(up?'G↑':'G↓'):(up?'S↑':'S↓');}
