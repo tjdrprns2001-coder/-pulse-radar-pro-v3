@@ -35,6 +35,32 @@ Binance USDⓈ-M FFUSDT 1H data.
 - High during sampled surge window: 0.18418
 - Low during sampled surge window: 0.12481
 
+## Harvested raw checkpoints
+
+These checkpoints preserve the sampled path rather than only the aggregated windows.
+
+| Relative point | UTC timestamp | Close | 1H volume | OI value | Taker B/S |
+|---|---|---:|---:|---:|---:|
+| T-72H | 2026-09-16 21:00 | 0.13590 | 2.652M | 48.149M | 0.7132 |
+| T-48H | 2026-09-17 21:00 | 0.13070 | 2.174M | 47.428M | 1.0468 |
+| T-24H | 2026-09-18 21:00 | 0.12612 | 2.419M | 44.661M | 1.1787 |
+| T-12H | 2026-09-19 09:00 | 0.12697 | 2.803M | 45.377M | 0.7348 |
+| T-6H | 2026-09-19 15:00 | 0.12492 | 3.532M | 45.197M | 0.6143 |
+| T-3H | 2026-09-19 18:00 | 0.12484 | 0.966M | 44.650M | 1.1781 |
+| T-1H | 2026-09-19 20:00 | 0.12498 | 1.138M | 44.494M | 1.2103 |
+| T0 | 2026-09-19 21:00 | 0.12529 | 1.603M | 44.495M | 1.4682 |
+| T+6H | 2026-09-20 03:00 | 0.13013 | 2.523M | 44.863M | 1.5277 |
+| T+12H | 2026-09-20 09:00 | 0.12646 | 1.694M | 45.248M | 0.7634 |
+| T+24H | 2026-09-20 21:00 | 0.18182 | 71.145M | 57.215M | 1.1417 |
+
+### Harvest notes
+
+- T-72H → T-24H showed price weakness with OI cleanup rather than accumulation.
+- The most important micro-sequence is **T-6H → T-3H → T-1H → T0**.
+- At T-6H taker was still weak (0.6143), then flipped to **1.1781 → 1.2103 → 1.4682** while price remained pinned around 0.1248–0.1253.
+- OI stayed near 44.5M into T0, so OI was not the early trigger.
+- T+24H volume exploded to about **71.1M** and OI expanded to about **57.2M**, confirming post-ignition participation.
+
 ## Reverse-engineered pre-surge sequence
 
 | Window | Price | OI | Avg taker B/S | Avg volume | Interpretation |
@@ -49,7 +75,7 @@ Binance USDⓈ-M FFUSDT 1H data.
 
 Approximate taker progression before ignition:
 
-- ~T-6H: taker moved above 1
+- ~T-6H: weak / sub-1
 - ~T-3H: 1.178
 - ~T-1H: 1.210
 - T0 reference: 1.468
@@ -144,6 +170,9 @@ Observed:
 - taker 24H: 0.791
 - recent 12H volume vs prior 12H: ~0.70x
 - mark price: ~0.12806
+- general account L/S: 0.5437
+- top-trader position L/S: 3.5112
+- funding: ~0.000292%
 
 Current classification:
 
