@@ -1,5 +1,5 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseMultiTfScenarioEngine=api})(typeof globalThis!=='undefined'?globalThis:this,function(){'use strict';
-const ORDER=['1w','1d','4h','1h','15m'],WEIGHTS={1w:25,1d:25,4h:22,1h:18,'15m':10};
+const ORDER=['1w','1d','4h','1h','15m'],WEIGHTS={'1w':25,'1d':25,'4h':22,'1h':18,'15m':10};
 const finite=v=>Number.isFinite(Number(v)),n=(v,d=0)=>finite(v)?Number(v):d,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function dir(v){const s=String(v??'').toLowerCase();if(s.includes('bull')||s.includes('up')||s.includes('상승'))return 1;if(s.includes('bear')||s.includes('down')||s.includes('하락'))return-1;return 0}
 function nearest(levels,price,above){const p=n(price,NaN);if(!finite(p))return null;const rows=(levels||[]).filter(x=>finite(x?.price)&&(above?n(x.price)>p:n(x.price)<p));rows.sort((a,b)=>Math.abs(n(a.price)-p)-Math.abs(n(b.price)-p));return rows[0]||null}
