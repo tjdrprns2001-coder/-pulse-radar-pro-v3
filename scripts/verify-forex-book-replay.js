@@ -91,11 +91,12 @@ assert.equal(success.labels.Hit_24H_12pct,true);
 assert.equal(control.outcome_class,'CONTROL');
 assert.equal(control.labels.Hit_6H_8pct,false);
 assert.equal(control.labels.Hit_24H_12pct,false);
+const flat=Replay.flattenReplayRecord(successDecision,success);assert.equal(flat.stage_label,successDecision.stage_label);assert.equal(flat.next_open,100);assert.equal(flat.hit_6h_8pct,true);assert.equal(flat.future_candle_seen,false);
 
 const smoke=Replay.batchSummary({decisions:[successDecision,controlDecision],outcomes:[success,control]});
 assert.equal(smoke.surgeCount,1);
 assert.equal(smoke.controlCount,1);
-assert.equal(smoke.performanceConclusionAllowed,false,'tiny smoke batch must never authorize a performance conclusion');
+assert.equal(smoke.performanceConclusionAllowed,false,'tiny smoke batch must never authorize a performance conclusion');assert.equal(smoke.classBalanceReady,false);
 
 const manyDecisions=[],manyOutcomes=[];
 for(let i=0;i<50;i++){
@@ -104,7 +105,7 @@ for(let i=0;i<50;i++){
   manyDecisions.push(d);manyOutcomes.push(o);
 }
 const formal=Replay.batchSummary({decisions:manyDecisions,outcomes:manyOutcomes});
-assert.equal(formal.performanceConclusionAllowed,true);
+assert.equal(formal.performanceConclusionAllowed,true);assert.equal(formal.classBalanceReady,true);
 assert.equal(formal.evaluatedCount,50);
 assert.equal(formal.surgeCount,25);
 assert.equal(formal.controlCount,25);
