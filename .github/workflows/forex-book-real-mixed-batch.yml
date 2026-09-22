@@ -1,0 +1,32 @@
+name: Forex Book Real Mixed Batch
+
+on:
+  pull_request:
+    paths:
+      - "scripts/run-forex-book-real-mixed-batch.js"
+      - "lib/research-backtest-v2/forex-book-replay.js"
+      - ".github/workflows/forex-book-real-mixed-batch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run frozen mixed historical replay
+        run: node scripts/run-forex-book-real-mixed-batch.js
+      - name: Upload replay artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forex-book-real-mixed-batch
+          path: artifacts/forex-book-replay/
+          if-no-files-found: warn
+          retention-days: 14
