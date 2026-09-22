@@ -9,12 +9,12 @@ const START_TS=Date.parse(process.env.REPLAY_START||'2026-07-01T23:59:59.999Z');
 const END_TS=Date.parse(process.env.REPLAY_END||'2026-09-15T23:59:59.999Z');
 const STEP_MS=24*60*60*1000;
 const FUTURE_MS=72*60*60*1000;
-const BASE='https://fapi.binance.com';
+const BASES=['https://data-api.binance.vision','https://api.binance.com','https://api1.binance.com'];
 
 const SYMBOLS=Object.freeze([
   'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','ADAUSDT',
-  'LINKUSDT','AVAXUSDT','SUIUSDT','1000PEPEUSDT','WIFUSDT','1000BONKUSDT',
-  '1000SHIBUSDT','1000FLOKIUSDT','FETUSDT','ENAUSDT','ONDOUSDT','NEARUSDT',
+  'LINKUSDT','AVAXUSDT','SUIUSDT','PEPEUSDT','WIFUSDT','BONKUSDT',
+  'SHIBUSDT','FLOKIUSDT','FETUSDT','ENAUSDT','ONDOUSDT','NEARUSDT',
   'APTUSDT','TAOUSDT'
 ]);
 const TF_MS=Object.freeze({
@@ -79,30 +79,37 @@ function futureRows(rows,cutoff){
     return o!=null&&c!=null&&o>cutoff&&c<=cutoff+FUTURE_MS;
   });
 }
-async function fetchJson(url,attempt=0){
-  const res=await fetch(url,{headers:{'user-agent':'PulseRadar-Research/1.0'}});
-  if(res.status===429||res.status===418){
-    if(attempt>=6)throw new Error('rate limited '+res.status);
-    await sleep(1200*Math.pow(2,attempt));return fetchJson(url,attempt+1);
+async function fetchJson(pathname,attempt=0){
+  let lastError=null;
+  for(const base of BASES){
+    try{
+      const res=await fetch(base+pathname,{headers:{'user-agent':'PulseRadar-Research/1.0'}});
+      if(res.status===429||res.status===418){
+        if(attempt>=6)throw new Error('rate limited '+res.status);
+        await sleep(1200*Math.pow(2,attempt));return fetchJson(pathname,attempt+1);
+      }
+      if(!res.ok){
+        const txt=await res.text().catch(()=> '');
+        lastError=new Error(base+' HTTP '+res.status+' '+txt.slice(0,160));
+        continue;
+      }
+      return res.json();
+    }catch(e){lastError=e}
   }
-  if(!res.ok){
-    const txt=await res.text().catch(()=> '');
-    throw new Error('HTTP '+res.status+' '+txt.slice(0,160));
-  }
-  return res.json();
+  throw lastError||new Error('all Binance spot public-data endpoints failed');
 }
 async function fetchKlines(symbol,tf,startTime,endTime){
   const out=[];let cursor=startTime,guard=0;
   while(cursor<=endTime&&guard++<100){
-    const url=BASE+'/fapi/v1/klines?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+
-      '&startTime='+Math.floor(cursor)+'&endTime='+Math.floor(endTime)+'&limit=1500';
+    const url='/api/v3/klines?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+
+      '&startTime='+Math.floor(cursor)+'&endTime='+Math.floor(endTime)+'&limit=1000';
     const rows=await fetchJson(url);
     if(!Array.isArray(rows)||!rows.length)break;
     out.push(...rows);
     const last=rows.at(-1),next=finite(last?.[6]);
     if(next==null||next<cursor)break;
     cursor=next+1;
-    if(rows.length<1500)break;
+    if(rows.length<1000)break;
     await sleep(35);
   }
   const seen=new Set();
@@ -212,7 +219,7 @@ async function main(){
       startTs:START_TS,startIso:new Date(START_TS).toISOString(),
       endTs:END_TS,endIso:new Date(END_TS).toISOString(),
       cutoffCount:cutoffs.length,symbolCount:SYMBOLS.length,symbols:SYMBOLS,
-      selectedTf:'1h',historicalDerivativeContext:'not supplied in v1 batch'
+      selectedTf:'1h',marketSource:'Binance spot public historical klines',historicalDerivativeContext:'not supplied in v1 batch'
     },
     allObservations:all,
     stageTransitions:transitions,
