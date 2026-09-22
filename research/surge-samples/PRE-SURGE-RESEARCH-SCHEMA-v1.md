@@ -4,12 +4,13 @@ This file defines the standard research schema for all future surge / pre-surge 
 
 ## Goal
 
-Every sample must preserve four independent layers:
+Every sample must preserve five independent layers:
 
 1. **Book Structure Layer**
 2. **SMC / ICT Layer**
 3. **Derivatives DNA Layer**
-4. **Ignition Confirmation Layer**
+4. **Spot Lead / Cross-Exchange Layer**
+5. **Ignition Confirmation Layer**
 
 The purpose is not to force every successful surge into one pattern. The purpose is to classify multiple valid surge paths without survivorship bias.
 
@@ -162,9 +163,93 @@ Price down
 Known example:
 - STAR
 
+
 ---
 
-## 4. Ignition Confirmation Layer
+## 4. Spot Lead / Cross-Exchange Layer
+
+Record where available:
+
+- Binance spot price / volume / RVOL
+- futures price / volume
+- futures-vs-spot basis
+- basis velocity / basis flip
+- spot return vs futures return
+- spot share of combined spot+futures turnover
+- external spot volume by exchange
+- exchange-to-exchange price lead
+- Binance spot listing availability
+- index-price behavior when Binance spot is unavailable
+- external spot-led accumulation candidates
+
+### A. SPOT_LEAD
+
+```
+Spot price/volume accelerates first
+→ Futures remains neutral/discounted
+→ Futures later follows
+→ Liquidity break
+```
+
+Interpretation:
+spot demand is leading the move.
+
+### B. FUTURES_CHASE
+
+```
+Spot/index holds
+→ Futures basis neutral/negative
+→ Basis flips positive / expands
+→ Futures RVOL and taker accelerate
+→ Breakout
+```
+
+Interpretation:
+derivatives participation arrives after spot/index strength.
+
+### C. EXTERNAL_SPOT_LEAD
+
+```
+Binance futures OI/taker weak or uninformative
+→ External spot volume rises
+→ Price holds / advances
+→ Binance futures later responds
+```
+
+Interpretation:
+non-Binance spot markets may lead the move.
+
+### D. SPOT_SUPPORTED_OI_LEAD
+
+```
+OI builds
+→ Spot participation expands
+→ Basis stays near neutral
+→ Breakout volume expands
+```
+
+Interpretation:
+the move is not purely futures-premium driven.
+
+Known research examples:
+
+- EPIC — spot-supported OI lead candidate
+- INTW — futures-chase candidate
+- FARTCOIN — external spot-led ignition candidate
+- OPG — derivatives/taker-led, little evidence of spot lead
+
+### Basis notes
+
+- Small positive basis alone is not sufficient evidence of futures leadership.
+- A rising price with basis near zero or negative can indicate stronger spot support.
+- A rapid basis flip from negative/neutral to positive around T0 can mark futures catch-up.
+- Basis must be time-aligned with the same T0 used for the sample.
+- When Binance spot is unavailable, use index-price basis and tag the sample as indirect spot evidence.
+
+
+---
+
+## 5. Ignition Confirmation Layer
 
 Do not mark a sample as confirmed ignition unless enough of the following are observed:
 
@@ -259,6 +344,19 @@ Do not delete failed or duplicate samples.
 
 ---
 
+
+## T0 stage standard
+
+Classify T0 explicitly:
+
+- `BASE_T0` — base/absorption/reset stage before clear ignition
+- `IGNITION_T0` — LTF volume/taker/structure ignition begins
+- `BREAKOUT_T0` — HTF or key resistance is already broken with confirmation
+
+This separation reduces hindsight leakage in backtests.
+
+---
+
 ## Scanner routing
 
 The scanner should evaluate all routes in parallel:
@@ -269,6 +367,8 @@ BOOK STRUCTURE
 SMC / ICT
       ↓
 DERIVATIVES DNA
+      ↓
+SPOT / CROSS-EXCHANGE
       ↓
 IGNITION CONFIRMATION
 ```
@@ -282,6 +382,10 @@ PURE_TAKER_ACCUMULATION
 OI_BUILD_FLUSH_IGNITION
 SLOW_ACCUMULATION
 SHORT_BUILD_SQUEEZE
+SPOT_LEAD
+FUTURES_CHASE
+EXTERNAL_SPOT_LEAD
+SPOT_SUPPORTED_OI_LEAD
 ```
 
 A candidate can match more than one route.
@@ -297,6 +401,11 @@ The chart/book layer answers:
 The derivatives layer answers:
 
 > **Who is positioning first?**
+
+
+The spot/cross-exchange layer answers:
+
+> **Which venue is leading the move?**
 
 The ignition layer answers:
 
