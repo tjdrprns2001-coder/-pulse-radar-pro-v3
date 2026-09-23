@@ -40,7 +40,7 @@ assert.equal(zetaBuild.sampleSubtype,'ZETA_FLOW_LED_BUILD');
 const zetaExpansion=V2.evaluate({symbol:'ZETAUSDT',price1hPct:48,price24hPct:65,oi1hPct:108,oi4hPct:111,oi8hPct:113,taker1h:[2.55,1.47,1.32,1.29,1.38,.99],taker15m:[1.8,5.07,2.04,1.48,2.37,.87],fundingRate:.005,htfRangePct:20,structureImproving:true,rvol1h:125,bosUp:true,breakout:true});
 assert.equal(zetaExpansion.sampleSubtype,'ZETA_DIRECT_OI_EXPANSION');
 
-const zetaDna=V2.evaluate({symbol:'ZETAUSDT',price1hPct:.4,price24hPct:4,oi4hPct:.5,oi12hPct:-.1,oi8hPct:.2,taker1h:[1.35,1.55,1.42,1.6,1.3,1.5],fundingRate:.005,structureImproving:true,rsi5m:26});
+const zetaDna=V2.evaluate({symbol:'ZETAUSDT',price1hPct:.4,price24hPct:4,oi4hPct:.5,oi12hPct:-.1,oi8hPct:.2,taker1h:[1.35,1.55,1.42,1.6,1.3,1.5],fundingRate:.005,structureImproving:true,rsi15m:26});
 assert(zetaDna.dnaTags.includes('ZETA_FLOW_COMPRESSION'));
 assert.equal(zetaDna.dnaStage,'FLOW-LED PRE-SURGE');
 
