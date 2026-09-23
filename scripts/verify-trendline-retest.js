@@ -57,7 +57,7 @@ function setBar(rows,i,line,opts){rows[i]=candle(i,line,opts);return rows}
 
 // 5. sameBarConfirmAllowed is explicit and deterministic.
 {
-  const L=baseLine(),rows=build(8,L);
+  const L=baseLine(),rows=build(7,L);
   setBar(rows,5,L,{closeOffset:.7,openOffset:-.2,highOffset:.9,lowOffset:-.3,atr:2});
   setBar(rows,6,L,{closeOffset:.25,openOffset:.3,highOffset:.4,lowOffset:-.1,atr:10});
   const yes=E.evaluateLineLifecycle({candles:rows,line:L,side:'resistance',params:{sameBarConfirmAllowed:true}});
