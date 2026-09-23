@@ -38,3 +38,5 @@
 .finalStateSummary{margin:8px 0 0;color:#aebfd2;font-size:10px;line-height:1.5;border-top:1px solid #1d3046;padding-top:8px}
 .finalStateBox[data-state="준비중"]{border-color:#315987}
 .finalStateBox[data-state="준비중"] .finalStateMain b{color:#d8e5f5}
+
+#longTrendLabel.disabled{opacity:.45;border-style:dashed;cursor:not-allowed}#longTrendLabel.disabled input{cursor:not-allowed}
