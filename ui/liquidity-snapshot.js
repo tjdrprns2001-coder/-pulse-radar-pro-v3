@@ -1,12 +1,12 @@
 (()=>{'use strict';
-const M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine;
+const M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,JOURNAL=window.PulseLiquidityEventJournal;
 const PRIMARY_TF=M?.TF_ORDER||['1w','1d','4h','1h','15m'];
 const EXTRA_TF=M?.EXTRA_TF_ORDER||['3d','12h','5m'];
 const ALL_TF=[...new Set([...PRIMARY_TF,...EXTRA_TF])];
 const LABEL={'1w':'1W','3d':'3D','1d':'1D','12h':'12H','4h':'4H','1h':'1H','15m':'15m','5m':'5m'};
 const HTF={'1w':'1w','3d':'1w','1d':'1w','12h':'1d','4h':'1d','1h':'4h','15m':'1h','5m':'15m'};
 const $=id=>document.getElementById(id);
-let currentTf='1h',model=null,raw=null,htfRaw=null,trendRetest=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
+let currentTf='1h',model=null,raw=null,htfRaw=null,trendRetest=null,journalStore=null,journalState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
 
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function finite(v){return Number.isFinite(Number(v))}
@@ -99,6 +99,24 @@ function renderCards(){
   renderLiquidityList();renderPdList();
 }
 
+function outcomeKo(v){return v==='DOL_REACHED'?'DOL 도달':v==='INVALIDATED'?'무효화':v==='BOTH_SAME_BAR'?'동일봉 충돌':v==='UNAVAILABLE'?'데이터 부족':'추적 중'}
+function outcomeTone(v){return v==='DOL_REACHED'?'confirm':v==='INVALIDATED'?'risk':v==='BOTH_SAME_BAR'?'wait':'info'}
+function shortId(id){const s=String(id||'');return s.length>14?s.slice(-12):s}
+function renderJournal(){
+  if(!journalState){$('journalCurrent').innerHTML='<div class="dataRow"><div class="dataMain"><b>저장 준비</b></div><div class="dataValue">로컬 저장소 사용 가능 시 자동 기록</div></div>';$('journalStats').innerHTML='';$('journalRecent').innerHTML='';return}
+  const c=journalState.current,o=c.outcome||{},events=(c.events||[]).map(x=>x.type).join(' → ')||'BASELINE';
+  $('journalCurrent').innerHTML='<div class="journalHero '+outcomeTone(o.status)+'"><div><span>현재 Snapshot</span><b>'+escapeHtml(shortId(c.id))+' · '+escapeHtml(outcomeKo(o.status))+'</b></div><div><span>MFE / MAE</span><b>'+escapeHtml(fmt(o.mfePct,2))+'% / -'+escapeHtml(fmt(o.maePct,2))+'%</b></div><div><span>이벤트 체인</span><b>'+escapeHtml(events)+'</b></div></div>';
+  const s=journalState.stats||{};$('journalStats').innerHTML='<span>전체 '+(s.total||0)+'</span><span class="ok">DOL '+(s.dolReached||0)+'</span><span class="bad">무효 '+(s.invalidated||0)+'</span><span class="wait">동일봉 '+(s.ambiguous||0)+'</span><span>추적 '+(s.open||0)+'</span>';
+  $('journalRecent').innerHTML=(journalState.recent||[]).slice(0,4).map(x=>'<div class="journalRow"><div><b>'+escapeHtml(shortId(x.id))+'</b><span>'+escapeHtml(x.stage||'N/A')+' · '+escapeHtml((x.events||[]).map(e=>e.type).slice(-3).join(' → ')||'BASELINE')+'</span></div><div class="journalOutcome '+outcomeTone(x.outcome?.status)+'">'+escapeHtml(outcomeKo(x.outcome?.status))+'<small>MFE '+escapeHtml(fmt(x.outcome?.mfePct,2))+'% · MAE -'+escapeHtml(fmt(x.outcome?.maePct,2))+'%</small></div></div>').join('');
+}
+function updateJournal(symbol){
+  if(!JOURNAL||!journalStore||!model?.ok)return;
+  try{const snapshot=JOURNAL.buildSnapshot({symbol,timeframe:currentTf,model,trendRetest});journalState=JOURNAL.recordAndResolve({store:journalStore,snapshot,candles:raw?.candles||[]});renderJournal()}catch(e){journalState=null;$('journalCurrent').innerHTML='<div class="dataRow warn"><div class="dataMain"><b>이벤트 저장 실패</b></div><div class="dataValue">'+escapeHtml(e.message||String(e))+'</div></div>'}
+}
+function exportJournal(){
+  if(!journalStore)return;const rows=journalStore.list(),blob=new Blob([JSON.stringify({version:JOURNAL?.VERSION||'unknown',exportedAt:Date.now(),rows},null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='pulseradar-liquidity-journal-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)
+}
+
 function roundedRect(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
 function tag(ctx,text,x,y,{fill='#07131f',stroke='#29445d',color='#e8f1fb',font='bold 17px system-ui'}={}){ctx.save();ctx.font=font;const w=Math.ceil(ctx.measureText(text).width)+18,h=28;ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=1;roundedRect(ctx,x,y,w,h,7);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.textBaseline='middle';ctx.fillText(text,x+9,y+h/2+1);ctx.restore();return w}
 function line(ctx,x1,y1,x2,y2,color,width=1,dash=[]){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore()}
@@ -165,7 +183,7 @@ async function toggleFullscreen(){
   if(pseudoFull){pseudoFull=false;card.classList.remove('pseudoFullscreen');document.body.classList.remove('chartLocked');updateFullscreenUi();return}
   try{if(card.requestFullscreen){await card.requestFullscreen();return}throw new Error('fullscreen unsupported')}catch{pseudoFull=true;card.classList.add('pseudoFullscreen');document.body.classList.add('chartLocked');updateFullscreenUi()}
 }
-function savePng(){const cv=$('snapshot');if(!model||!cv)return;cv.toBlob(blob=>{if(!blob)return;const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=clean($('symbol').value)+'-'+currentTf+'-liquidity-map.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)},'image/png')}
+function savePng(){const cv=$('snapshot');if(!model||!cv)return;cv.toBlob(blob=>{if(!blob)return;const a=document.createElement('a'),u=URL.createObjectURL(blob),sid=journalState?.current?.id?('-'+shortId(journalState.current.id)):'';a.href=u;a.download=clean($('symbol').value)+'-'+currentTf+'-liquidity-map'+sid+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)},'image/png')}
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('symbol',clean($('symbol').value));u.searchParams.set('tf',currentTf);history.replaceState(null,'',u)}
 function selectTf(t){if(!ALL_TF.includes(t))return;currentTf=t;document.querySelectorAll('#tfTabs button,#extraTfTabs button').forEach(x=>x.classList.toggle('active',x.dataset.tf===t));$('extraTfTabs').hidden=true;$('moreTfBtn').setAttribute('aria-expanded','false');showAllLiquidity=false;showAllPd=false;updateUrl();run()}
 function addTfButtons(){for(const t of PRIMARY_TF){const b=document.createElement('button');b.textContent=LABEL[t];b.dataset.tf=t;b.classList.toggle('active',t===currentTf);b.onclick=()=>selectTf(t);$('tfTabs').append(b)}for(const t of EXTRA_TF){const b=document.createElement('button');b.textContent=LABEL[t]+(t==='5m'?' · 참고':'');b.dataset.tf=t;b.classList.toggle('active',t===currentTf);b.onclick=()=>selectTf(t);$('extraTfTabs').append(b)}}
@@ -180,11 +198,13 @@ async function run(){
     trendRetest=TRE?.analyzeTrendlineRetests({candles:raw.candles,trendlines:raw.trendlines||{},timeframe:currentTf})||null;
     $('chartTitle').textContent=symbol+' · '+LABEL[currentTf]+(model.referenceOnly?' · 참고':'');
     $('chartMeta').textContent='HTF '+LABEL[htf]+' · '+biasKo(hb)+' · 확정봉 '+model.candles.length+'개 · 진행봉 제외';
-    renderCards();draw();syncSymbol(symbol);updateUrl();$('status').textContent='완료';setTone($('status'),toneForPhase(model.scenario));
+    renderCards();updateJournal(symbol);draw();syncSymbol(symbol);updateUrl();$('status').textContent='완료';setTone($('status'),toneForPhase(model.scenario));
   }catch(e){if(token!==seq)return;$('status').textContent='분석 실패';setTone($('status'),'tone-risk');$('scenarioCompact').innerHTML='<div class="scenarioRow risk"><span>오류</span><b>'+escapeHtml(e.message||String(e))+'</b></div>'}
 }
 function init(){
   const q=new URLSearchParams(location.search),symbol=clean(q.get('symbol')||'BTCUSDT'),tf=String(q.get('tf')||'1h');$('symbol').value=symbol;if(ALL_TF.includes(tf))currentTf=tf;addTfButtons();
+  try{if(JOURNAL&&window.localStorage)journalStore=JOURNAL.createLocalStorageStore(window.localStorage)}catch{journalStore=null}
+  $('journalExport').onclick=exportJournal;
   $('run').onclick=run;$('savePng').onclick=savePng;$('expandChart').onclick=toggleFullscreen;$('snapshot').onclick=inspectCanvas;$('snapshot').ondblclick=toggleFullscreen;
   $('symbol').onkeydown=e=>{if(e.key==='Enter')run()};document.querySelectorAll('[data-layer]').forEach(x=>x.onchange=draw);
   $('liqMore').onclick=()=>{showAllLiquidity=!showAllLiquidity;renderLiquidityList()};$('pdMore').onclick=()=>{showAllPd=!showAllPd;renderPdList()};
