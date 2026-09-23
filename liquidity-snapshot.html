@@ -1,6 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/liquidity-snapshot.css?v=20260924-lq2"><title>PulseRadar Pro · 유동성 스냅샷</title></head><body>
 <main class="liqApp">
-<header class="hero"><div><span class="eyebrow">PRO LIQUIDITY MAP · ICT/SMC</span><h1>유동성 스냅샷</h1><p>확정봉 기준으로 주요 유동성·Sweep/Reclaim·PD Array를 압축해 보여줍니다. 스윕 후보는 가격 예측이 아니라 관찰 우선순위입니다.</p></div><span id="status" class="status tone-info">대기</span></header>
+<header class="hero"><div><span class="eyebrow">PRO LIQUIDITY MAP · ICT/SMC</span><h1>유동성 스냅샷</h1><p>확정봉 기준으로 주요 유동성·Sweep/Reclaim·PD Array를 압축해 보여줍니다. 스윕 후보는 가격 예측이 아니라 관찰 우선순위입니다.</p></div><span id="status" class="status tone-info" aria-live="polite">대기</span></header>
 
 <section class="toolbar">
   <input id="symbol" value="BTCUSDT" aria-label="종목">
@@ -31,7 +31,7 @@
 
 <article class="chartCard" id="chartCard">
   <div class="cardHead"><div><h2 id="chartTitle">BTCUSDT · 1H</h2><p id="chartMeta">확정봉 기반 직접 렌더링</p></div><div class="chartActions"><button id="expandChart" type="button">차트 확대 ⛶</button><button id="savePng" type="button">PNG</button></div></div>
-  <div class="canvasWrap" id="canvasWrap"><canvas id="snapshot" width="1600" height="900" aria-label="유동성 스냅샷 차트"></canvas><div id="levelDetail" class="levelDetail" hidden></div><div class="landscapeHint">모바일에서는 가로모드가 더 읽기 좋습니다.</div></div>
+  <div class="canvasWrap" id="canvasWrap"><canvas id="snapshot" width="1600" height="900" aria-label="유동성 스냅샷 차트"></canvas><div id="levelDetail" class="levelDetail" role="status" aria-live="polite" hidden></div><div class="landscapeHint">모바일에서는 가로모드가 더 읽기 좋습니다.</div></div>
   <div class="legend"><span><abbr title="Buy-side Liquidity · 매수 측 유동성">BSL</abbr> 상단</span><span><abbr title="Sell-side Liquidity · 매도 측 유동성">SSL</abbr> 하단</span><span><abbr title="Draw on Liquidity · 가격이 향할 수 있는 유동성">DOL</abbr> 우선 타겟</span><span><abbr title="Reclaim · 이탈한 레벨 재회복">Reclaim</abbr> 확인</span></div>
 </article>
 
