@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>PulseRadar V5 · 장기추세선 분석</title>
 <link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5">
-<link rel="stylesheet" href="/ui/long-trend-dashboard.css?v=20260923-ltd1">
+<link rel="stylesheet" href="/ui/long-trend-dashboard.css?v=20260923-ltd2">
 </head>
 <body>
 <main class="ltApp">
@@ -14,10 +14,10 @@
     <div>
       <span class="eyebrow">PULSERADAR V5 · LONG-TERM TREND DESK</span>
       <h1>장기추세선 분석</h1>
-      <p>28D → 14D → 1W → 3D → 1D → 4H 확정 구조를 한 화면에서 비교하고, 품질 가중 평균으로 최종 추세선을 합성합니다.</p>
+      <p>28D → 14D → 1W → 3D → 1D → 4H 확정 구조를 한 화면에서 비교하고, TF별 확정 구조를 비교하고, 1D 시간축 위에 표시용 가중 합성선과 방향 합의를 분리해 보여줍니다.</p>
     </div>
     <div class="heroBadges">
-      <span>Canonical Swing</span><span>Log Regression</span><span>ATR Break Guard</span>
+      <span>Log-close Canonical Swing</span><span>Log Regression</span><span>ATR Polarity Flip</span><span class="researchChip">RESEARCH ONLY</span>
     </div>
   </header>
 
@@ -36,51 +36,20 @@
   <section class="methodStrip" aria-label="장기추세선 계산 원칙">
     <div><span>합성 주기</span><b>28D · 14D</b><small>Binance 1D 확정봉 고정 개수 롤업</small></div>
     <div><span>원생 주기</span><b>1W · 3D · 1D · 4H</b><small>거래소 확정 구조 사용</small></div>
-    <div><span>선택 기준</span><b>확정 Swing ≥ 3</b><small>회귀 적합도 · 수렴도 · 무결성 · 최근성</small></div>
+    <div><span>활성 기준</span><b>확정 Swing ≥ 6</b><small>라인 피팅은 최소 3터치 · 카드 활성은 확정 스윙 6개</small></div>
     <div><span>무효화</span><b>ATR 기반</b><small>후보 이탈 → 확정 이탈 → 역할 전환</small></div>
   </section>
 
-  <section class="tfGrid" id="tfGrid">
-    <article class="tfCard" data-tf="28d">
-      <div class="tfHead"><div><b>28D</b><small>초장기 구조</small></div><span class="trendBadge" id="badge-28d">대기</span></div>
-      <div class="ohlc" id="ohlc-28d">-</div><div class="miniChart" id="chart-28d"></div>
-      <div class="tfStats" id="stats-28d"><span>분석 전</span></div>
-    </article>
-    <article class="tfCard" data-tf="14d">
-      <div class="tfHead"><div><b>14D</b><small>장기 구조</small></div><span class="trendBadge" id="badge-14d">대기</span></div>
-      <div class="ohlc" id="ohlc-14d">-</div><div class="miniChart" id="chart-14d"></div>
-      <div class="tfStats" id="stats-14d"><span>분석 전</span></div>
-    </article>
-    <article class="tfCard" data-tf="1w">
-      <div class="tfHead"><div><b>1W</b><small>주봉 구조</small></div><span class="trendBadge" id="badge-1w">대기</span></div>
-      <div class="ohlc" id="ohlc-1w">-</div><div class="miniChart" id="chart-1w"></div>
-      <div class="tfStats" id="stats-1w"><span>분석 전</span></div>
-    </article>
-    <article class="tfCard" data-tf="3d">
-      <div class="tfHead"><div><b>3D</b><small>중장기 구조</small></div><span class="trendBadge" id="badge-3d">대기</span></div>
-      <div class="ohlc" id="ohlc-3d">-</div><div class="miniChart" id="chart-3d"></div>
-      <div class="tfStats" id="stats-3d"><span>분석 전</span></div>
-    </article>
-    <article class="tfCard" data-tf="1d">
-      <div class="tfHead"><div><b>1D</b><small>일봉 구조</small></div><span class="trendBadge" id="badge-1d">대기</span></div>
-      <div class="ohlc" id="ohlc-1d">-</div><div class="miniChart" id="chart-1d"></div>
-      <div class="tfStats" id="stats-1d"><span>분석 전</span></div>
-    </article>
-    <article class="tfCard" data-tf="4h">
-      <div class="tfHead"><div><b>4H</b><small>실행 전환 구조</small></div><span class="trendBadge" id="badge-4h">대기</span></div>
-      <div class="ohlc" id="ohlc-4h">-</div><div class="miniChart" id="chart-4h"></div>
-      <div class="tfStats" id="stats-4h"><span>분석 전</span></div>
-    </article>
-  </section>
+  <section class="tfGrid" id="tfGrid" aria-live="polite"></section>
 
-  <section class="summaryCard">
+  <section class="summaryCard" id="summaryCard">
     <div class="summaryHead">
-      <div><span class="eyebrow">WEIGHTED MULTI-TF CONSENSUS</span><h2>평균치 최종 추세선</h2><p>각 TF에서 현재가에 가장 가까운 유효 장기선을 선택한 뒤, TF 중요도 × 선 품질로 가중해 로그 공간에서 합성합니다.</p></div>
+      <div><span class="eyebrow">DISPLAY-ONLY COMPOSITE + CONSENSUS</span><h2>평균치 최종 추세선 <em>표시용 합성</em></h2><p>1D 캔들을 공통 x축으로 사용하고, TF별 로그 기울기와 기준시점 절편만 고정 가중치로 합성합니다. <b>실제 가격·캔들 평균이 아닙니다.</b></p></div>
       <button id="saveSummary" class="ghost">요약 차트 PNG</button>
     </div>
     <div class="summaryLayout">
       <div>
-        <div class="summaryLegend"><span><i class="line avg"></i>가중 평균 추세선</span><span><i class="line px"></i>현재 가격</span><span id="sourceCount">유효 TF 0/6</span></div>
+        <div class="summaryDisclosure">표시 원칙: 28D 24% · 14D 20% · 1W 16% · 3D 16% · 1D 14% · 4H 10%. 장기 60% / 단기 40%. 실제 가격 평균 아님.</div><div class="summaryLegend"><span><i class="line avg"></i>TF 기울기·절편 가중 합성선</span><span><i class="line px"></i>1D 현재 가격</span><span id="sourceCount">유효 TF 0/6</span></div>
         <div id="summaryChart" class="summaryChart"></div>
       </div>
       <aside class="summaryAside">
@@ -88,16 +57,16 @@
           <span>종합 방향성</span><b id="direction">대기</b><small id="directionMeta">분석 실행 후 표시</small>
         </div>
         <div class="gaugeGrid">
-          <div class="gauge"><span>추세 강도</span><b id="strength">-</b><small>품질 × 정렬도</small></div>
-          <div class="gauge"><span>정렬도</span><b id="alignment">-</b><small>6TF 방향 일치율</small></div>
+          <div class="gauge"><span>추세 강도</span><b id="strength">-</b><small>R² 70% + 스케일 불변 일일 로그기울기 30% · 승률 아님</small></div>
+          <div class="gauge"><span>정렬도</span><b id="alignment">-</b><small>종합 방향과 같은 배지 수 / 유효 TF 수</small></div>
         </div>
         <div class="infoGrid">
-          <div><span>평균 일일 기울기</span><b id="avgSlope">-</b></div>
+          <div><span>합성 일일 로그기울기</span><b id="avgSlope">-</b></div>
           <div><span>평균선 거리</span><b id="avgDistance">-</b></div>
           <div><span>상위프레임</span><b id="htfState">-</b></div>
           <div><span>구조 무결성</span><b id="integrity">-</b></div>
         </div>
-        <div class="summaryText" id="summaryText">현재 종목의 장기 구조를 분석하면 요약이 표시됩니다.</div>
+        <div class="factGrid"><div class="factCard"><span>상위프레임 우세</span><b id="htfFact">-</b><small id="htfFactMeta">28D · 1W · 3D 배지 합의</small></div><div class="factCard"><span>추세선 기울기</span><b id="slopeFact">-</b><small>화면 각도가 아닌 일당 로그수익률</small></div><div class="factCard"><span>구조 유지</span><b id="structureFact">-</b><small id="structureFactMeta">1D 주요 지지선 기준</small></div></div><div class="summaryText" id="summaryText">현재 종목의 장기 구조를 분석하면 요약이 표시됩니다.</div>
       </aside>
     </div>
   </section>
@@ -108,12 +77,14 @@
     <div id="matrix" class="matrix"><div class="empty">분석 전입니다.</div></div>
   </section>
 
-  <footer>※ 교육·연구용 구조 시각화입니다. 14D/28D는 거래소 원생 주기가 아니라 확정 1D 봉의 고정 개수 합성입니다. 장기추세선 품질 점수는 수익 확률이 아닙니다.</footer>
+  <footer>※ RESEARCH ONLY · UNVALIDATED. 교육·연구용 구조 시각화입니다. 14D/28D는 거래소 원생 주기가 아니라 확정 1D 봉의 고정 개수 합성입니다. 합성선은 TF별 로그 기울기·절편의 표시용 가중합이며 실제 가격 평균이 아닙니다. 추세 강도와 품질 점수는 수익 확률이 아닙니다.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
 <script src="/ui/chart/chart-data.js"></script>
 <script src="/ui/chart/chart-core.js"></script>
 <script src="/ui/chart/long-term-trendline-engine.js?v=20260923-lt2"></script>
-<script src="/ui/long-trend-dashboard.js?v=20260923-ltd1"></script>
+<script src="/ui/long-trend/card-engine.js?v=20260923-ltd2"></script>
+<script src="/ui/long-trend/aggregate-engine.js?v=20260923-ltd2"></script>
+<script src="/ui/long-trend-dashboard.js?v=20260923-ltd2"></script>
 </body>
 </html>
