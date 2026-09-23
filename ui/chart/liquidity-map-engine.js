@@ -5,8 +5,10 @@
   if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseLiquidityMapEngine=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Smc,Liquidity){'use strict';
 
-const VERSION='LIQUIDITY_SNAPSHOT_v1';
+const VERSION='LIQUIDITY_SNAPSHOT_v1.1';
 const TF_ORDER=['1w','1d','4h','1h','15m'];
+const EXTRA_TF_ORDER=['3d','12h','5m'];
+const SUPPORTED_TF_ORDER=['1w','3d','1d','12h','4h','1h','15m','5m'];
 const finite=v=>Number.isFinite(Number(v)),n=(v,d=null)=>finite(v)?Number(v):d,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function sec(t){const x=n(t,0);return x>1e12?Math.trunc(x/1000):Math.trunc(x)}
 function normalizeCandles(rows=[]){
@@ -41,11 +43,21 @@ function levelLabel(l){
   if(t==='EQH'||t==='EQL'||t==='PDH'||t==='PDL'||t==='PWH'||t==='PWL')return t;
   return l.side==='buy'?'BSL':'SSL';
 }
-function dedupeLevels(levels=[],atr=0){
-  const out=[],tol=Math.max(Math.abs(atr)*.08,1e-12);
-  for(const x of [...levels].sort((a,b)=>a.price-b.price)){
-    const hit=out.find(y=>y.side===x.side&&Math.abs(y.price-x.price)<=tol);
-    if(!hit)out.push(x);else if((x.score||0)>(hit.score||0))Object.assign(hit,x);
+function clusterLevels(levels=[],atr=0,current=0){
+  const out=[],tol=Math.max(Math.abs(atr)*.10,Math.abs(current)*.0008,1e-12);
+  const rows=[...levels].sort((a,b)=>a.price-b.price);
+  for(const x of rows){
+    const clusterable=x.label==='EQH'||x.label==='EQL';
+    const hit=out.find(y=>y.side===x.side&&y.label===x.label&&Math.abs(y.price-x.price)<=tol);
+    if(!hit){out.push({...x,clusterCount:1,clusterLow:x.price,clusterHigh:x.price,sourceIds:[x.sourceId].filter(Boolean)});continue}
+    if(clusterable||hit.clusterCount>0){
+      const count=hit.clusterCount+1,total=hit.price*hit.clusterCount+x.price;
+      hit.price=total/count;hit.clusterCount=count;hit.clusterLow=Math.min(hit.clusterLow,x.price);hit.clusterHigh=Math.max(hit.clusterHigh,x.price);
+      hit.score=Math.min(100,Math.max(hit.score,x.score)+Math.min(8,(count-1)*2));hit.external=hit.external||x.external;
+      hit.touches=n(hit.touches,0)+n(x.touches,0);hit.confirmedAt=Math.max(n(hit.confirmedAt,-1),n(x.confirmedAt,x.index??-1));
+      hit.sourceIds=[...(hit.sourceIds||[]),x.sourceId].filter(Boolean);
+      hit.distanceAtr=atr>0?Math.abs(hit.price-current)/atr:null;hit.distancePct=current?((hit.price/current)-1)*100:null;
+    }
   }
   return out;
 }
@@ -61,16 +73,22 @@ function scoreLiquidityLevel(l,{current,atr,range}={}){
   if(n(l.touches,0)>=2)score+=Math.min(12,n(l.touches,0)*3);
   const distanceAtr=atr>0?Math.abs(price-current)/atr:null;
   if(distanceAtr!=null)score-=Math.min(24,distanceAtr*2);
-  if(String(l.state||'active').toLowerCase()==='swept'||String(l.state||'').toLowerCase()==='consumed')score-=35;
-  return{score:Number(clamp(score,0,100).toFixed(1)),external,distanceAtr};
+  const lifecyclePenalty=(String(l.state||'active').toLowerCase()==='swept'||String(l.state||'').toLowerCase()==='consumed')?35:0;
+  score-=lifecyclePenalty;
+  const typeBonus=(type==='EQH'||type==='EQL')?28:(type==='PWH'||type==='PWL')?22:(type==='PDH'||type==='PDL')?18:12;
+  return{score:Number(clamp(score,0,100).toFixed(1)),external,distanceAtr,scoreBreakdown:{typeBonus,externalBonus:external?18:0,touchBonus:n(l.touches,0)>=2?Math.min(12,n(l.touches,0)*3):0,distancePenalty:distanceAtr!=null?Math.min(24,distanceAtr*2):0,lifecyclePenalty}};
 }
 function collectLiquidityLevels(liq={},current,atr,range){
   const src=(liq.levels||[]).filter(x=>finite(x.price)&&['buy','sell'].includes(String(x.side))).map(x=>{
     const price=Number(x.price),calc=scoreLiquidityLevel(x,{current,atr,range});
     return{...x,price,label:levelLabel(x),...calc,bucket:calc.external?'external':'internal',distancePct:current?((price/current)-1)*100:null};
   });
-  const deduped=dedupeLevels(src,atr);
-  return deduped.filter(x=>x.side==='buy'?x.price>current:x.price<current).sort((a,b)=>b.score-a.score||Math.abs(a.price-current)-Math.abs(b.price-current));
+  const clustered=clusterLevels(src,atr,current);
+  return clustered.filter(x=>x.side==='buy'?x.price>current:x.price<current).sort((a,b)=>
+    b.score-a.score||
+    Math.abs(a.price-current)-Math.abs(b.price-current)||
+    n(b.confirmedAt,b.index??-1)-n(a.confirmedAt,a.index??-1)
+  );
 }
 function sweepIndex(s){return n(s?.index,s?.sweepIndex??s?.confirmedAt??-1)}
 function sweepDir(s){
@@ -145,7 +163,9 @@ function buildLiquidityMap(input={}){
   const overlays=buildOverlayObjects({levels,pd,smc,scenario,current,range});
   const nearestBuy=levels.filter(x=>x.side==='buy').sort((a,b)=>Math.abs(a.price-current)-Math.abs(b.price-current))[0]||null;
   const nearestSell=levels.filter(x=>x.side==='sell').sort((a,b)=>Math.abs(a.price-current)-Math.abs(b.price-current))[0]||null;
-  return{ok:true,version:VERSION,timeframe:String(input.timeframe||''),current,atr,candles,canonicalSwings,canonicalEvents,range,smc,liquidity:liq,levels,pdArrays:pd,scenario,overlays,summary:{nearestBsl:nearestBuy,nearestSsl:nearestSell,position:range.position||(current>range.mid?'premium':current<range.mid?'discount':'equilibrium'),phase:scenario.phase,bias:scenario.bias}};
+  const rangePositionPct=finite(range?.low)&&finite(range?.high)&&range.high>range.low?clamp((current-range.low)/(range.high-range.low)*100,0,100):null;
+  const timeframe=String(input.timeframe||'');
+  return{ok:true,version:VERSION,timeframe,referenceOnly:timeframe==='5m',current,atr,candles,canonicalSwings,canonicalEvents,range:{...range,positionPct:rangePositionPct},smc,liquidity:liq,levels,pdArrays:pd,scenario,overlays,summary:{nearestBsl:nearestBuy,nearestSsl:nearestSell,position:range.position||(current>range.mid?'premium':current<range.mid?'discount':'equilibrium'),rangePositionPct,phase:scenario.phase,bias:scenario.bias}};
 }
-return{VERSION,TF_ORDER,normalizeCandles,lastAlternatingRange,collectPdArrays,collectLiquidityLevels,recentSweepState,buildScenario,buildOverlayObjects,buildLiquidityMap};
+return{VERSION,TF_ORDER,EXTRA_TF_ORDER,SUPPORTED_TF_ORDER,normalizeCandles,lastAlternatingRange,collectPdArrays,collectLiquidityLevels,clusterLevels,recentSweepState,buildScenario,buildOverlayObjects,buildLiquidityMap};
 });
