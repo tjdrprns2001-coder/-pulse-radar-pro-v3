@@ -1,23 +1,55 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/liquidity-snapshot.css?v=20260924-lq1"><title>PulseRadar Pro · 유동성 스냅샷</title></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/liquidity-snapshot.css?v=20260924-lq2"><title>PulseRadar Pro · 유동성 스냅샷</title></head><body>
 <main class="liqApp">
-<header class="hero"><div><span class="eyebrow">PRO LIQUIDITY MAP · ICT/SMC</span><h1>유동성 스냅샷</h1><p>확정봉만 사용해 BSL·SSL·EQH/EQL·FVG·OB·Breaker·Sweep·Reclaim·MSS를 한 장의 차트에 직접 그립니다. 예상 경로는 확정 예측이 아니라 미청산 유동성·구조 근거 기반 관찰 시나리오입니다.</p></div><span id="status" class="status">대기</span></header>
-<section class="toolbar"><input id="symbol" value="BTCUSDT" aria-label="종목"><div id="tfTabs" class="tfTabs"></div><button id="run" class="primary">분석 실행</button><button id="savePng">PNG 저장</button></section>
-<section class="switches" aria-label="오버레이 표시"><label><input type="checkbox" data-layer="liquidity" checked> BSL/SSL·EQH/EQL</label><label><input type="checkbox" data-layer="pd" checked> FVG/OB/Breaker</label><label><input type="checkbox" data-layer="structure" checked> Sweep·MSS</label><label><input type="checkbox" data-layer="scenario" checked> 시나리오 경로</label></section>
-<section class="summaryStrip"><div><span>현재 단계</span><b id="sumPhase">-</b></div><div><span>구조 편향</span><b id="sumBias">-</b></div><div><span>Dealing Range</span><b id="sumPosition">-</b></div><div><span>우선 유동성 타겟</span><b id="sumTarget">-</b></div><div><span>반증 관찰선</span><b id="sumInvalid">-</b></div></section>
-<section class="layout">
-  <article class="chartCard"><div class="cardHead"><div><h2 id="chartTitle">BTCUSDT · 1H</h2><p id="chartMeta">확정봉 기반 직접 렌더링</p></div><span id="targetBadge" class="targetBadge">타겟 계산 전</span></div><div class="canvasWrap"><canvas id="snapshot" width="1600" height="900"></canvas></div><div class="legend"><span>● BSL/상단 유동성</span><span>● SSL/하단 유동성</span><span>▰ PD Array</span><span>↗ 조건부 시나리오</span></div></article>
-  <aside class="sidePanel">
-    <section class="panel scenarioPanel"><h2>전문 시나리오</h2><div id="scenarioText" class="scenarioText">분석 전입니다.</div><ol id="scenarioSteps" class="steps"></ol></section>
-    <section class="panel"><h2>주요 유동성</h2><div id="liquidityList" class="dataList"></div></section>
-    <section class="panel"><h2>반응 후보 PD Array</h2><div id="pdList" class="dataList"></div></section>
-    <section class="panel"><h2>구조 확인 근거</h2><div id="evidenceList" class="dataList"></div></section>
-    <section class="panel note"><h2>판정 원칙</h2><p>스윕 후보는 가격 목표가 아니라 관찰 우선순위입니다. wick 침투만으로 확정하지 않고 종가 리클레임, MSS/CHoCH, Displacement를 함께 확인합니다. 15m은 실행 보조, 상위 TF는 유동성 방향과 큰 범위를 확인하는 용도입니다.</p></section>
-  </aside>
+<header class="hero"><div><span class="eyebrow">PRO LIQUIDITY MAP · ICT/SMC</span><h1>유동성 스냅샷</h1><p>확정봉 기준으로 주요 유동성·Sweep/Reclaim·PD Array를 압축해 보여줍니다. 스윕 후보는 가격 예측이 아니라 관찰 우선순위입니다.</p></div><span id="status" class="status tone-info" aria-live="polite">대기</span></header>
+
+<section class="toolbar">
+  <input id="symbol" value="BTCUSDT" aria-label="종목">
+  <div id="tfTabs" class="tfTabs" aria-label="기본 타임프레임"></div>
+  <div class="moreTfWrap"><button id="moreTfBtn" aria-expanded="false">더보기 ▾</button><div id="extraTfTabs" class="extraTfTabs" hidden></div></div>
+  <button id="run" class="primary">분석 실행</button>
 </section>
+
+<section class="switches" aria-label="오버레이 표시">
+  <label><input type="checkbox" data-layer="liquidity" checked> 유동성</label>
+  <label><input type="checkbox" data-layer="pd" checked> PD Array</label>
+  <label><input type="checkbox" data-layer="structure" checked> Sweep·MSS</label>
+  <label><input type="checkbox" data-layer="scenario" checked> 조건부 경로</label>
+</section>
+
+<section class="summaryStrip" aria-label="핵심 요약">
+  <div class="summaryItem"><span>Bias</span><b id="sumBias">-</b></div>
+  <div class="summaryItem"><span>HTF 정렬</span><b id="sumHtf">-</b></div>
+  <div class="summaryItem"><span>Stage</span><b id="sumStage">-</b></div>
+  <div class="summaryItem"><span>Range</span><b id="sumRange">-</b></div>
+  <div class="summaryItem"><span>DOL</span><b id="sumTarget">-</b></div>
+  <div class="summaryItem"><span>Trigger</span><b id="sumTrigger">-</b></div>
+  <div class="summaryItem"><span>Invalidation</span><b id="sumInvalid">-</b></div>
+</section>
+
+<p class="scoreNote">점수는 승률이 아니라 유동성·구조 근거의 상대적 완성도입니다. <button id="scoreHelp" class="textBtn" type="button">구성 보기</button></p>
+<div id="scoreHelpPanel" class="helpPanel" hidden>유동성 유형, 외부/내부 위치, 반복 터치, 현재가와의 ATR 거리, 이미 소모된 레벨 여부를 합성한 상대 점수입니다. 동일 점수는 거리와 최근성을 우선합니다.</div>
+
+<article class="chartCard" id="chartCard">
+  <div class="cardHead"><div><h2 id="chartTitle">BTCUSDT · 1H</h2><p id="chartMeta">확정봉 기반 직접 렌더링</p></div><div class="chartActions"><button id="expandChart" type="button">차트 확대 ⛶</button><button id="savePng" type="button">PNG</button></div></div>
+  <div class="canvasWrap" id="canvasWrap"><canvas id="snapshot" width="1600" height="900" aria-label="유동성 스냅샷 차트"></canvas><div id="levelDetail" class="levelDetail" role="status" aria-live="polite" hidden></div><div class="landscapeHint">모바일에서는 가로모드가 더 읽기 좋습니다.</div></div>
+  <div class="legend"><span><abbr title="Buy-side Liquidity · 매수 측 유동성">BSL</abbr> 상단</span><span><abbr title="Sell-side Liquidity · 매도 측 유동성">SSL</abbr> 하단</span><span><abbr title="Draw on Liquidity · 가격이 향할 수 있는 유동성">DOL</abbr> 우선 타겟</span><span><abbr title="Reclaim · 이탈한 레벨 재회복">Reclaim</abbr> 확인</span></div>
+</article>
+
+<section class="compactGrid">
+  <section class="panel scenarioPanel"><div class="panelHead"><h2>관찰 시나리오</h2><span class="muted">조건부</span></div><div id="scenarioCompact" class="scenarioCompact"></div></section>
+  <section class="panel"><div class="panelHead"><h2>구조 확인 근거</h2><span id="confirmedMeta" class="muted">-</span></div><div id="evidenceList" class="dataList"></div></section>
+</section>
+
+<section class="compactGrid listsGrid">
+  <section class="panel"><div class="panelHead"><h2>주요 유동성</h2><button id="liqMore" class="moreBtn" type="button" hidden></button></div><div id="liquidityList" class="dataList"></div></section>
+  <section class="panel"><div class="panelHead"><h2>반응 후보 PD Array</h2><button id="pdMore" class="moreBtn" type="button" hidden></button></div><div id="pdList" class="dataList"></div></section>
+</section>
+
+<details class="panel note"><summary>판정 원칙 · 용어 도움말</summary><div class="noteBody"><p>wick 침투만으로 스윕을 확정하지 않고 종가 Reclaim, MSS/CHoCH, Displacement를 함께 확인합니다. 5m은 참고 전용이며 방향 판정 근거로 승격하지 않습니다.</p><dl><dt>BSL</dt><dd>매수 측 유동성</dd><dt>SSL</dt><dd>매도 측 유동성</dd><dt>DOL</dt><dd>가격이 향할 가능성이 있는 유동성</dd><dt>Reclaim</dt><dd>이탈한 레벨 재회복</dd><dt>Displacement</dt><dd>구조 변화를 동반한 강한 가격 이동</dd></dl></div></details>
 </main>
 <script src="/ui/chart/session-profile.js?v=20260921-v5"></script>
 <script src="/ui/chart/smc-engine.js"></script>
 <script src="/ui/chart/liquidity-engine.js"></script>
-<script src="/ui/chart/liquidity-map-engine.js?v=20260924-lq1"></script>
-<script src="/ui/liquidity-snapshot.js?v=20260924-lq1" defer></script>
+<script src="/ui/chart/liquidity-map-engine.js?v=20260924-lq2"></script>
+<script src="/ui/liquidity-snapshot.js?v=20260924-lq2" defer></script>
 </body></html>

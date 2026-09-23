@@ -9,15 +9,31 @@ const shell=fs.readFileSync('pulse-unified.html','utf8');
 const shellJs=fs.readFileSync('ui/pulse-shell.js','utf8');
 const scan=fs.readFileSync('ui/coin-scan.js','utf8');
 
-for(const s of ['유동성 스냅샷','BSL·SSL','EQH/EQL','FVG','OB','Breaker','PNG 저장','snapshot'])assert(html.includes(s),'page missing '+s);
+for(const s of ['유동성 스냅샷','핵심 요약','차트 확대','scoreHelp','liqMore','pdMore','levelDetail','판정 원칙 · 용어 도움말'])assert(html.includes(s),'page missing '+s);
 for(const s of ['session-profile.js','smc-engine.js','liquidity-engine.js','liquidity-map-engine.js','liquidity-snapshot.js'])assert(html.includes(s),'engine wiring missing '+s);
-for(const s of ["getContext('2d')",'scenario','liquidity','structure','savePng','/api/structure','SWEEP + RECLAIM','Draw →'])assert(js.includes(s),'direct renderer missing '+s);
-assert(css.includes('aspect-ratio:16/9'),'snapshot aspect ratio missing');
-assert(css.includes('@media(max-width:720px)'),'mobile layout missing');
+for(const s of ["getContext('2d')",'requestFullscreen','pseudoFullscreen','inspectCanvas','rangePositionPct','showAllLiquidity','showAllPd','EXTRA_TF','5m 단독 신호','DOL →'])assert(js.includes(s),'mobile interaction missing '+s);
+for(const s of ['.chartCard:fullscreen','.chartCard.pseudoFullscreen','overflow-x:auto','aspect-ratio:1.18/1','.levelDetail','.stateBadge'])assert(css.includes(s),'mobile style missing '+s);
 assert(shell.includes('data-view="liquiditysnapshot"')&&shell.includes('유동성 스냅샷'),'shell menu missing');
 assert(shellJs.includes("liquiditysnapshot:{title:'유동성 스냅샷'")&&shellJs.includes("path:'/liquidity-snapshot.html'"),'shell route missing');
 assert(scan.includes('liquidityUrl')&&scan.includes('유동성 지도'),'scanner deep link missing');
-assert.deepEqual(Engine.TF_ORDER,['1w','1d','4h','1h','15m'],'liquidity snapshot TFs must exclude 5m decision view');
+assert.deepEqual(Engine.TF_ORDER,['1w','1d','4h','1h','15m'],'primary TF order changed unexpectedly');
+assert.deepEqual(Engine.EXTRA_TF_ORDER,['3d','12h','5m'],'extra TF order missing');
+assert.deepEqual(Engine.SUPPORTED_TF_ORDER,['1w','3d','1d','12h','4h','1h','15m','5m'],'8TF support mismatch');
+
+const clustered=Engine.collectLiquidityLevels({
+  levels:[
+    {type:'EQH',side:'buy',price:105,quality:50,touches:2,confirmedAt:10,sourceId:'a'},
+    {type:'EQH',side:'buy',price:105.04,quality:54,touches:2,confirmedAt:12,sourceId:'b'},
+    {type:'SWING_HIGH',side:'buy',price:108,quality:40,confirmedAt:8,sourceId:'c'},
+    {type:'EQL',side:'sell',price:95,quality:48,touches:2,confirmedAt:11,sourceId:'d'},
+    {type:'EQL',side:'sell',price:94.96,quality:52,touches:2,confirmedAt:13,sourceId:'e'}
+  ]
+},100,2,{low:94,high:108});
+const eqh=clustered.find(x=>x.label==='EQH'),eql=clustered.find(x=>x.label==='EQL');
+assert(eqh&&eqh.clusterCount===2,'EQH nearby levels must cluster');
+assert(eql&&eql.clusterCount===2,'EQL nearby levels must cluster');
+assert(Array.isArray(eqh.sourceIds)&&eqh.sourceIds.length===2,'cluster sources must be preserved');
+assert(eqh.scoreBreakdown,'score breakdown must be exposed');
 
 const candles=[];
 for(let i=0;i<220;i++){
@@ -36,5 +52,10 @@ assert(Array.isArray(out.levels)&&out.levels.length>0,'liquidity levels required
 assert(Array.isArray(out.pdArrays),'PD arrays required');
 assert(out.scenario&&['PRE_SWEEP','SWEEP_WAIT_RECLAIM','POST_SWEEP_DRAW'].includes(out.scenario.phase),'scenario phase required');
 assert(Array.isArray(out.overlays)&&out.overlays.some(x=>x.type==='current'),'overlay contract required');
-assert(out.summary&&Object.prototype.hasOwnProperty.call(out.summary,'position'),'range position required');
-console.log('liquidity snapshot map PASS');
+assert(Number.isFinite(out.summary.rangePositionPct),'dealing range position percentage required');
+assert(out.range.positionPct===out.summary.rangePositionPct,'range position percentage should be shared');
+
+const ref=Engine.buildLiquidityMap({candles,canonicalSwings:swings,canonicalEvents:events,timeframe:'5m',htfBias:'up'});
+assert(ref.ok&&ref.referenceOnly===true,'5m must remain reference-only');
+
+console.log('liquidity snapshot mobile polish PASS');
