@@ -25,7 +25,9 @@ function defaultService(getStore){
 module.exports=async function handler(req,res,ctx={}){
   const service=ctx.service||defaultService(ctx.getStore);
   const q=req&&req.query||{};
-  const mode=String(q.mode||'summary');
+  const requestedMode=String(q.mode||'summary');
+  const precision=['1','true','yes','precision','정밀'].includes(String(q.precision||'').toLowerCase())||requestedMode.toLowerCase()==='precision';
+  const mode=requestedMode.toLowerCase()==='precision'?'deep':requestedMode;
   const category=q.category?String(q.category):null;
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
@@ -43,7 +45,7 @@ module.exports=async function handler(req,res,ctx={}){
       const rows=await service.listTransitionSnapshots({symbol:q.symbol||null,limit});
       return res.status(200).json({status:'ok',items:rows.map(x=>({eventId:x.eventId,symbol:x.symbol,detectedAt:x.detectedAt,detectedAtIso:x.detectedAtIso,eventMeta:x.eventMeta,snapshotIds:x.snapshotIds||[]}))});
     }
-    return res.status(200).json(await service.run({mode,category,sector,limit,symbols}));
+    return res.status(200).json(await service.run({mode,category,sector,limit,symbols,precision}));
   }
   catch(e){return res.status(Number(e&&e.statusCode)||502).json({status:'error',updatedAt:Date.now(),error:String(e&&e.message||e),scanCount:0,deepScanCount:0,partial:true,dataHealth:{live:0,delayed:0,blocked:0,errors:1},categories:{},candidateSymbols:[],items:[]})}
 };
