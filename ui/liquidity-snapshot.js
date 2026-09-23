@@ -100,7 +100,7 @@ function draw(){
   ctx.clearRect(0,0,W,H);ctx.fillStyle='#050d16';ctx.fillRect(0,0,W,H);
   const L=92,R=285,T=75,B=82,plotRight=W-R,plotW=plotRight-L,plotH=H-T-B,c=model.candles.slice(-140),offset=model.candles.length-c.length;
   const extras=[];for(const q of model.overlays){if(finite(q.price))extras.push(Number(q.price));if(finite(q.low))extras.push(Number(q.low));if(finite(q.high))extras.push(Number(q.high))}
-  const rawLow=Math.min(...c.map(x=>x.low),...extras),rawHigh=Math.max(...c.map(x=>x.high),span=Math.max(rawHigh-rawLow,Math.abs(model.current)*.002,1e-9),lo=rawLow-span*.045,hi=rawHigh+span*.045;
+  const rawLow=Math.min(...c.map(x=>x.low),...extras),rawHigh=Math.max(...c.map(x=>x.high),...extras),span=Math.max(rawHigh-rawLow,Math.abs(model.current)*.002,1e-9),lo=rawLow-span*.045,hi=rawHigh+span*.045;
   const y=p=>T+(hi-Number(p))/(hi-lo)*plotH,x=i=>L+(i+.5)*(plotW/Math.max(1,c.length));
   const clickTargets=[];
   ctx.fillStyle='#071522';ctx.fillRect(plotRight,T,R-34,plotH);
