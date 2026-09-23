@@ -4,6 +4,7 @@ const read=p=>fs.readFileSync(p,'utf8');
 const shell=read('pulse-unified.html'),shellJs=read('ui/pulse-shell.js'),home=read('workspace-home.html');
 const chart=read('unified-chart.html'),chartJs=read('ui/chart/unified-chart-v5.js');
 const longTrend=read('long-trend-dashboard.html'),longTrendJs=read('ui/long-trend-dashboard.js'),longTrendCss=read('ui/long-trend-dashboard.css');
+const longCard=require('../ui/long-trend/card-engine.js'),longAgg=require('../ui/long-trend/aggregate-engine.js'),longValidation=require('../lib/long-trend-validation.js');
 const snap=read('mtf-snapshot-pro.html'),snapJs=read('ui/trader/mtf-snapshot-pro.js'),snapshotRecord=require('../ui/trader/snapshot-record.js');
 const dante=read('dante-lab.html'),methods=require('../ui/dante/dante-methods.js'),snapshotRendererApi=require('../ui/trader/snapshot-renderer.js');
 const ictTrainer=read('ict-trainer.html'),ictTrainerJs=read('ui/ict-trainer/app.js'),ictTrainerEngine=require('../ui/ict-trainer/engine.js');
@@ -27,11 +28,27 @@ for(const p of ['/api/market?','/api/coin-scan?','/api/pulse-ai?'])assert(home.i
 assert(home.includes('AI 후보 코인')&&home.includes('1시간 시장 브리핑'),'market desk summary/candidates missing');
 assert(home.includes('ai.aiGenerated')&&home.includes('규칙 기반'),'AI/rules provenance distinction missing');
 
-for(const tf of ['28d','14d','1w','3d','1d','4h'])assert(longTrend.includes('data-tf="'+tf+'"'),'long trend card missing '+tf);
-assert(longTrend.includes('평균치 최종 추세선')&&longTrend.includes('id="summaryChart"')&&longTrend.includes('id="matrix"'),'long trend summary/matrix UI missing');
-for(const term of ['PulseLongTermTrendlineEngine.analyzeTrendlines','TF_WEIGHT','dailyLogSlope','levelAtRef','takeScreenshot','Promise.all([worker(),worker()])'])assert(longTrendJs.includes(term),'long trend dashboard logic missing '+term);
-assert(longTrendJs.includes("['28d','14d','1w','3d','1d','4h']")||longTrendJs.includes("['28d','14d','1w','3d','1d','4h']"),'long trend TF order missing');
-assert(longTrendCss.includes('grid-template-columns:repeat(3')&&longTrendCss.includes('@media(max-width:720px)'),'long trend responsive grid missing');
+assert(longTrend.includes('평균치 최종 추세선')&&longTrend.includes('표시용 합성')&&longTrend.includes('실제 가격·캔들 평균이 아닙니다.'),'long trend composite disclosure missing');
+assert(longTrend.includes('id="tfGrid"')&&longTrendJs.includes('function tfCard(tf)'),'TF cards must reuse one component factory');
+for(const tf of ['28d','14d','1w','3d','1d','4h'])assert(longTrendJs.includes("'"+tf+"'"),'long trend TF missing '+tf);
+for(const term of ['PulseLongTrendCardEngine','PulseLongTrendAggregateEngine','extractLogCloseCanonicalSwings','IntersectionObserver','takeScreenshot','Promise.all([worker(),worker()])'])assert(longTrend.includes(term)||longTrendJs.includes(term),'long trend v2 logic missing '+term);
+assert(longTrend.includes('RESEARCH ONLY')&&longTrend.includes('UNVALIDATED'),'long trend research-only boundary missing');
+assert(longTrendCss.includes('grid-template-columns:repeat(3')&&longTrendCss.includes('@media(max-width:720px)')&&longTrendCss.includes('.summaryDisclosure'),'long trend responsive/disclosure styles missing');
+assert.deepEqual(longAgg.TF_ORDER,['28d','14d','1w','3d','1d','4h']);
+assert(Math.abs(longAgg.TF_WEIGHTS['28d']+longAgg.TF_WEIGHTS['14d']+longAgg.TF_WEIGHTS['1w']-.60)<1e-12,'HTF weight must equal 60%');
+assert(Math.abs(longAgg.TF_WEIGHTS['3d']+longAgg.TF_WEIGHTS['1d']+longAgg.TF_WEIGHTS['4h']-.40)<1e-12,'lower TF weight must equal 40%');
+const logRows=Array.from({length:140},(_,i)=>{const close=100*Math.exp(i*.0025)*(1+Math.sin(i/5)*.025);return{time:(i+1)*86400000,open:close*.999,high:close*1.01,low:close*.99,close,volume:1000,atr:2}});
+const logSwings=longCard.extractLogCloseCanonicalSwings(logRows,{pivotLeft:3,pivotRight:3});assert(logSwings.length>=6&&logSwings.every(x=>x.source==='log-close'),'confirmed log-close canonical swings missing');
+const cardFixture={};
+for(const tf of longAgg.TF_ORDER)cardFixture[tf]={tf,available:true,badge:'상승',badgeKey:'UP',regressionScore:80,slopeDailyPct:.2,dailyLogSlope:Math.log(1.002),integrity:85,latestTime:140*86400,displayLine:{projectedPrice:120},supportMaintained:true};
+cardFixture['4h']={...cardFixture['4h'],badge:'하락',badgeKey:'DOWN'};
+const consensus=longAgg.buildSummary(cardFixture,logRows);
+assert.equal(consensus.direction.label,'상승');assert(Math.abs(consensus.alignment-5/6*100)<1e-9,'5/6 alignment must be 83.33');
+assert(consensus.composite&&consensus.composite.baseTimeframe==='1d'&&consensus.composite.actualPriceAverage===false,'display composite must use normalized 1D time base and never average candles');
+assert(consensus.strength.score>0&&consensus.scoreSemantics.includes('not win probability'),'trend strength semantics missing');
+const validationRows=Array.from({length:140},(_,i)=>({eventId:'e'+String(i).padStart(3,'0'),symbolAgeBucket:i%2?'new':'old',marketRegime:['up','flat','down','risk'][i%4],score:140-i,hit:i<12}));
+const pv=longValidation.precisionAtK(validationRows,10);assert.equal(pv.precision,1,'Precision@K calculation regression');
+const vg=longValidation.evaluateValidation(validationRows,{perStratum:30,promotionMinSamples:120,promotionMinPrecisionAt10:.9});assert(vg.precisions[10]&&typeof vg.promoted==='boolean','long trend validation gate missing');
 
 for(const id of ['structure','smc','ict','liquidity','volume-profile','moving-average','dante'])assert(chart.includes('data-overlay="'+id+'"'),'chart overlay missing '+id);
 for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pane="'+p+'"'),'indicator pane missing '+p);
@@ -138,5 +155,5 @@ assert(report.includes('mtf-snapshot-pro.html')&&report.includes('dante-lab.html
 assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
 assert(!Object.keys(vercel.functions||{}).some(k=>/dante|snapshot|trader/i.test(k)),'V5 static features must not consume new Hobby serverless slots');
 
-for(const f of ['ui/long-trend-dashboard.js','ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
+for(const f of ['ui/long-trend/card-engine.js','ui/long-trend/aggregate-engine.js','ui/long-trend-dashboard.js','ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
 console.log('PulseRadar V5 trader workspace PASS');
