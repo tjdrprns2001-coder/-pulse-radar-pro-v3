@@ -6,7 +6,8 @@ async function runSpot(req){const c=capture();try{await spot(req,c.res)}catch(e)
 function withEnhancedTrendlines(body,interval){
   try{
     if(!body?.ok||!Array.isArray(body.candles)||!Array.isArray(body.canonicalSwings))return body;
-    const trendlines=buildTrendlines({candles:body.candles,swings:body.canonicalSwings,bias:body.bias,interval,source:'canonical_swing_regression_v2'});
+    const confirmedCandles=body.candles.filter(x=>x&&x.partial!==true);
+    const trendlines=buildTrendlines({candles:confirmedCandles,swings:body.canonicalSwings,bias:body.bias,interval,source:'canonical_swing_regression_v2'});
     return{...body,trendlines,trendlineComparison:{...(body.trendlineComparison||{}),enhancedCanonical:{support:trendlines.support,resistance:trendlines.resistance,pair:trendlines.pair}},trendlineEngine:{version:'2.0',source:'shared canonical swing regression',rules:trendlines.parameters}};
   }catch(e){return{...body,trendlineEngine:{version:'2.0',error:e?.message||'trendline enhancement failed'}}}
 }
