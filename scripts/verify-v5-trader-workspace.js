@@ -3,6 +3,7 @@ const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const read=p=>fs.readFileSync(p,'utf8');
 const shell=read('pulse-unified.html'),shellJs=read('ui/pulse-shell.js'),home=read('workspace-home.html');
 const chart=read('unified-chart.html'),chartJs=read('ui/chart/unified-chart-v5.js');
+const longTrend=read('long-trend-dashboard.html'),longTrendJs=read('ui/long-trend-dashboard.js'),longTrendCss=read('ui/long-trend-dashboard.css');
 const snap=read('mtf-snapshot-pro.html'),snapJs=read('ui/trader/mtf-snapshot-pro.js'),snapshotRecord=require('../ui/trader/snapshot-record.js');
 const dante=read('dante-lab.html'),methods=require('../ui/dante/dante-methods.js'),snapshotRendererApi=require('../ui/trader/snapshot-renderer.js');
 const ictTrainer=read('ict-trainer.html'),ictTrainerJs=read('ui/ict-trainer/app.js'),ictTrainerEngine=require('../ui/ict-trainer/engine.js');
@@ -16,6 +17,8 @@ assert(shell.includes('주식단테 실전 랩')&&shell.includes('8TF 스냅샷'
 assert(shell.includes('ICT 전문 트레이너'),'ICT trainer navigation missing');
 assert(shellJs.includes("ict:{title:'ICT 전문 트레이너'")&&shellJs.includes("path:'/ict-trainer.html'"),'ICT trainer route missing');
 assert(shellJs.includes("mtfsnapshot:{title:'8TF 스냅샷'")&&shellJs.includes("dante:{title:'주식단테 실전 랩'"),'V5 routes missing');
+assert(shell.includes('data-view="longtrend"')&&shell.includes('장기추세선'),'long-term trend menu missing');
+assert(shellJs.includes("longtrend:{title:'장기추세선'")&&shellJs.includes("path:'/long-trend-dashboard.html'"),'long-term trend route missing');
 assert(shellJs.includes("searchParams.set('build','20260921-v5')"),'V5 child cache-bust missing');
 for(const page of ['dante-lab.html','mtf-snapshot-pro.html','unified-chart.html']){const src=read(page),sp=src.indexOf('/ui/chart/session-profile.js'),liq=src.indexOf('/ui/chart/liquidity-engine.js');assert(sp>=0&&liq>sp,'session profile must load before liquidity engine: '+page);}
 
@@ -23,6 +26,12 @@ assert(home.includes('REFRESH=3600000'),'home must refresh hourly');
 for(const p of ['/api/market?','/api/coin-scan?','/api/pulse-ai?'])assert(home.includes(p),'market desk feed missing '+p);
 assert(home.includes('AI 후보 코인')&&home.includes('1시간 시장 브리핑'),'market desk summary/candidates missing');
 assert(home.includes('ai.aiGenerated')&&home.includes('규칙 기반'),'AI/rules provenance distinction missing');
+
+for(const tf of ['28d','14d','1w','3d','1d','4h'])assert(longTrend.includes('data-tf="'+tf+'"'),'long trend card missing '+tf);
+assert(longTrend.includes('평균치 최종 추세선')&&longTrend.includes('id="summaryChart"')&&longTrend.includes('id="matrix"'),'long trend summary/matrix UI missing');
+for(const term of ['PulseLongTermTrendlineEngine.analyzeTrendlines','TF_WEIGHT','dailyLogSlope','levelAtRef','takeScreenshot','Promise.all([worker(),worker()])'])assert(longTrendJs.includes(term),'long trend dashboard logic missing '+term);
+assert(longTrendJs.includes("['28d','14d','1w','3d','1d','4h']")||longTrendJs.includes("['28d','14d','1w','3d','1d','4h']"),'long trend TF order missing');
+assert(longTrendCss.includes('grid-template-columns:repeat(3')&&longTrendCss.includes('@media(max-width:720px)'),'long trend responsive grid missing');
 
 for(const id of ['structure','smc','ict','liquidity','volume-profile','moving-average','dante'])assert(chart.includes('data-overlay="'+id+'"'),'chart overlay missing '+id);
 for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pane="'+p+'"'),'indicator pane missing '+p);
@@ -129,5 +138,5 @@ assert(report.includes('mtf-snapshot-pro.html')&&report.includes('dante-lab.html
 assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
 assert(!Object.keys(vercel.functions||{}).some(k=>/dante|snapshot|trader/i.test(k)),'V5 static features must not consume new Hobby serverless slots');
 
-for(const f of ['ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
+for(const f of ['ui/long-trend-dashboard.js','ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
 console.log('PulseRadar V5 trader workspace PASS');
