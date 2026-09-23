@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>PulseRadar V5 · 장기추세선 분석</title>
+<link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5">
+<link rel="stylesheet" href="/ui/long-trend-dashboard.css?v=20260923-ltd1">
+</head>
+<body>
+<main class="ltApp">
+  <header class="ltHero">
+    <div>
+      <span class="eyebrow">PULSERADAR V5 · LONG-TERM TREND DESK</span>
+      <h1>장기추세선 분석</h1>
+      <p>28D → 14D → 1W → 3D → 1D → 4H 확정 구조를 한 화면에서 비교하고, 품질 가중 평균으로 최종 추세선을 합성합니다.</p>
+    </div>
+    <div class="heroBadges">
+      <span>Canonical Swing</span><span>Log Regression</span><span>ATR Break Guard</span>
+    </div>
+  </header>
+
+  <section class="ltToolbar">
+    <div class="symbolCtl">
+      <label for="symbol">종목</label>
+      <input id="symbol" value="BTCUSDT" autocomplete="off" spellcheck="false" aria-label="종목">
+      <button id="run" class="primary">6TF 분석</button>
+    </div>
+    <div class="toolbarMeta">
+      <span id="dataState" class="stateChip" data-state="idle">대기</span>
+      <span id="updatedAt">-</span>
+    </div>
+  </section>
+
+  <section class="methodStrip" aria-label="장기추세선 계산 원칙">
+    <div><span>합성 주기</span><b>28D · 14D</b><small>Binance 1D 확정봉 고정 개수 롤업</small></div>
+    <div><span>원생 주기</span><b>1W · 3D · 1D · 4H</b><small>거래소 확정 구조 사용</small></div>
+    <div><span>선택 기준</span><b>확정 Swing ≥ 3</b><small>회귀 적합도 · 수렴도 · 무결성 · 최근성</small></div>
+    <div><span>무효화</span><b>ATR 기반</b><small>후보 이탈 → 확정 이탈 → 역할 전환</small></div>
+  </section>
+
+  <section class="tfGrid" id="tfGrid">
+    <article class="tfCard" data-tf="28d">
+      <div class="tfHead"><div><b>28D</b><small>초장기 구조</small></div><span class="trendBadge" id="badge-28d">대기</span></div>
+      <div class="ohlc" id="ohlc-28d">-</div><div class="miniChart" id="chart-28d"></div>
+      <div class="tfStats" id="stats-28d"><span>분석 전</span></div>
+    </article>
+    <article class="tfCard" data-tf="14d">
+      <div class="tfHead"><div><b>14D</b><small>장기 구조</small></div><span class="trendBadge" id="badge-14d">대기</span></div>
+      <div class="ohlc" id="ohlc-14d">-</div><div class="miniChart" id="chart-14d"></div>
+      <div class="tfStats" id="stats-14d"><span>분석 전</span></div>
+    </article>
+    <article class="tfCard" data-tf="1w">
+      <div class="tfHead"><div><b>1W</b><small>주봉 구조</small></div><span class="trendBadge" id="badge-1w">대기</span></div>
+      <div class="ohlc" id="ohlc-1w">-</div><div class="miniChart" id="chart-1w"></div>
+      <div class="tfStats" id="stats-1w"><span>분석 전</span></div>
+    </article>
+    <article class="tfCard" data-tf="3d">
+      <div class="tfHead"><div><b>3D</b><small>중장기 구조</small></div><span class="trendBadge" id="badge-3d">대기</span></div>
+      <div class="ohlc" id="ohlc-3d">-</div><div class="miniChart" id="chart-3d"></div>
+      <div class="tfStats" id="stats-3d"><span>분석 전</span></div>
+    </article>
+    <article class="tfCard" data-tf="1d">
+      <div class="tfHead"><div><b>1D</b><small>일봉 구조</small></div><span class="trendBadge" id="badge-1d">대기</span></div>
+      <div class="ohlc" id="ohlc-1d">-</div><div class="miniChart" id="chart-1d"></div>
+      <div class="tfStats" id="stats-1d"><span>분석 전</span></div>
+    </article>
+    <article class="tfCard" data-tf="4h">
+      <div class="tfHead"><div><b>4H</b><small>실행 전환 구조</small></div><span class="trendBadge" id="badge-4h">대기</span></div>
+      <div class="ohlc" id="ohlc-4h">-</div><div class="miniChart" id="chart-4h"></div>
+      <div class="tfStats" id="stats-4h"><span>분석 전</span></div>
+    </article>
+  </section>
+
+  <section class="summaryCard">
+    <div class="summaryHead">
+      <div><span class="eyebrow">WEIGHTED MULTI-TF CONSENSUS</span><h2>평균치 최종 추세선</h2><p>각 TF에서 현재가에 가장 가까운 유효 장기선을 선택한 뒤, TF 중요도 × 선 품질로 가중해 로그 공간에서 합성합니다.</p></div>
+      <button id="saveSummary" class="ghost">요약 차트 PNG</button>
+    </div>
+    <div class="summaryLayout">
+      <div>
+        <div class="summaryLegend"><span><i class="line avg"></i>가중 평균 추세선</span><span><i class="line px"></i>현재 가격</span><span id="sourceCount">유효 TF 0/6</span></div>
+        <div id="summaryChart" class="summaryChart"></div>
+      </div>
+      <aside class="summaryAside">
+        <div class="primaryState" id="directionBox" data-direction="neutral">
+          <span>종합 방향성</span><b id="direction">대기</b><small id="directionMeta">분석 실행 후 표시</small>
+        </div>
+        <div class="gaugeGrid">
+          <div class="gauge"><span>추세 강도</span><b id="strength">-</b><small>품질 × 정렬도</small></div>
+          <div class="gauge"><span>정렬도</span><b id="alignment">-</b><small>6TF 방향 일치율</small></div>
+        </div>
+        <div class="infoGrid">
+          <div><span>평균 일일 기울기</span><b id="avgSlope">-</b></div>
+          <div><span>평균선 거리</span><b id="avgDistance">-</b></div>
+          <div><span>상위프레임</span><b id="htfState">-</b></div>
+          <div><span>구조 무결성</span><b id="integrity">-</b></div>
+        </div>
+        <div class="summaryText" id="summaryText">현재 종목의 장기 구조를 분석하면 요약이 표시됩니다.</div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="matrixCard">
+    <div class="sectionHead"><div><h2>6TF 장기추세 매트릭스</h2><p>가격과 선의 위치, 일일 로그기울기, 역할 전환 상태를 동시에 비교합니다.</p></div><span class="matrixNote">점수 = 승률이 아닌 선 품질</span></div>
+    <div class="matrixHead"><span>TF</span><span>방향</span><span>선 종류</span><span>거리</span><span>일일 기울기</span><span>상태</span><span>품질</span></div>
+    <div id="matrix" class="matrix"><div class="empty">분석 전입니다.</div></div>
+  </section>
+
+  <footer>※ 교육·연구용 구조 시각화입니다. 14D/28D는 거래소 원생 주기가 아니라 확정 1D 봉의 고정 개수 합성입니다. 장기추세선 품질 점수는 수익 확률이 아닙니다.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="/ui/chart/chart-data.js"></script>
+<script src="/ui/chart/chart-core.js"></script>
+<script src="/ui/chart/long-term-trendline-engine.js?v=20260923-lt2"></script>
+<script src="/ui/long-trend-dashboard.js?v=20260923-ltd1"></script>
+</body>
+</html>
