@@ -5,6 +5,8 @@ const DEFAULT_PARAMS=Object.freeze({
   slopeNeutralDailyPct:.02,
   closeToleranceAtr:.35,
   structureLookbackPerSide:2,
+  pivotLeft:3,
+  pivotRight:3,
   neutralOnBreakCandidate:true,
   confirmedBreakStages:Object.freeze(['BREAK_CONFIRMED','ROLE_FLIP'])
 });
@@ -13,6 +15,24 @@ const sec=t=>{const n=num(t);return Math.trunc(n>1e12?n/1000:n)};
 function mergeParams(p={}){return{...DEFAULT_PARAMS,...p,confirmedBreakStages:Array.isArray(p.confirmedBreakStages)?p.confirmedBreakStages:DEFAULT_PARAMS.confirmedBreakStages}}
 function confirmedCandles(rows=[]){return rows.filter(x=>x&&x.partial!==true&&finite(x.close)&&finite(x.time??x.openTime))}
 function normSwings(swings=[]){return swings.filter(s=>s&&s.status!=='provisional'&&s.status!=='discarded'&&s.status!=='replaced'&&s.confirmed!==false).map(s=>({type:String(s.type||'').toUpperCase(),price:num(s.price),index:num(s.index??s.pivotIndex??s.i),confirmedAt:num(s.confirmedAt??s.index??s.pivotIndex??s.i)})).filter(s=>finite(s.price)&&finite(s.index)&&finite(s.confirmedAt)&&['H','HIGH','L','LOW'].includes(s.type)).sort((a,b)=>a.confirmedAt-b.confirmedAt||a.index-b.index)}
+function extractLogCloseCanonicalSwings(rows=[],params={}){
+  const P=mergeParams(params),candles=confirmedCandles(rows),logs=candles.map(x=>Math.log(num(x.close))),raw=[];
+  for(let i=P.pivotLeft;i<candles.length-P.pivotRight;i++){
+    const v=logs[i],left=logs.slice(i-P.pivotLeft,i),right=logs.slice(i+1,i+1+P.pivotRight);
+    const isH=left.every(x=>v>x)&&right.every(x=>v>=x),isL=left.every(x=>v<x)&&right.every(x=>v<=x);
+    if(isH||isL)raw.push({type:isH?'H':'L',price:num(candles[i].close),pivotIndex:i,index:i,confirmedAt:i+P.pivotRight,swingId:'LC-'+i+'-'+(isH?'H':'L'),source:'log-close'});
+  }
+  const out=[];
+  for(const p of raw){
+    const prev=out.at(-1);
+    if(!prev){out.push(p);continue}
+    if(prev.type===p.type){
+      const moreExtreme=p.type==='H'?p.price>prev.price:p.price<prev.price;
+      if(moreExtreme)out[out.length-1]=p;
+    }else out.push(p);
+  }
+  return out;
+}
 function structureRegime(swings=[],lookback=2){
   const s=normSwings(swings),highs=s.filter(x=>x.type==='H'||x.type==='HIGH').slice(-lookback),lows=s.filter(x=>x.type==='L'||x.type==='LOW').slice(-lookback);
   if(highs.length<2||lows.length<2)return{key:'INSUFFICIENT',label:'구조 부족',hh:false,hl:false,lh:false,ll:false};
@@ -56,5 +76,5 @@ function buildCardResult({tf,raw,analysis,params}={}){
   const supportMaintained=!!support&&!supportBreak&&['above','near'].includes(supportRel);
   return{tf,available:true,badge,badgeKey,reason,bars,confirmedSwings,structure,latestClose:num(last.close),latestTime:sec(last.time??last.openTime),atr,displayLine,lineSide:lead?.effectiveSide||lead?.side||null,quality,r2,regressionScore,integrity,slopeDailyPct,dailyLogSlope:finite(lead?.dailyLogSlope)?num(lead.dailyLogSlope):0,distancePct,polarityStage:lead?.polarity?.stage||'ACTIVE',supportMaintained,validationStatus:'UNVALIDATED',signalStatus:'RESEARCH_ONLY',params:P};
 }
-return{DEFAULT_PARAMS,mergeParams,confirmedCandles,normSwings,structureRegime,lineCloseRelation,chooseDisplayLine,buildCardResult};
+return{DEFAULT_PARAMS,mergeParams,confirmedCandles,normSwings,extractLogCloseCanonicalSwings,structureRegime,lineCloseRelation,chooseDisplayLine,buildCardResult};
 });
