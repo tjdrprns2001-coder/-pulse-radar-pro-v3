@@ -9,9 +9,9 @@ const shell=fs.readFileSync('pulse-unified.html','utf8');
 const shellJs=fs.readFileSync('ui/pulse-shell.js','utf8');
 const scan=fs.readFileSync('ui/coin-scan.js','utf8');
 
-for(const s of ['유동성 스냅샷','핵심 요약','차트 확대','scoreHelp','liqMore','pdMore','levelDetail','판정 원칙 · 용어 도움말'])assert(html.includes(s),'page missing '+s);
-for(const s of ['session-profile.js','smc-engine.js','liquidity-engine.js','liquidity-map-engine.js','liquidity-snapshot.js'])assert(html.includes(s),'engine wiring missing '+s);
-for(const s of ["getContext('2d')",'requestFullscreen','pseudoFullscreen','inspectCanvas','rangePositionPct','showAllLiquidity','showAllPd','EXTRA_TF','5m 단독 신호','DOL →'])assert(js.includes(s),'mobile interaction missing '+s);
+for(const s of ['유동성 스냅샷','핵심 요약','차트 확대','scoreHelp','liqMore','pdMore','levelDetail','판정 원칙 · 용어 도움말','추세선 리테스트','TL B/R'])assert(html.includes(s),'page missing '+s);
+for(const s of ['session-profile.js','smc-engine.js','liquidity-engine.js','liquidity-map-engine.js','trendline-retest-engine.js','liquidity-snapshot.js'])assert(html.includes(s),'engine wiring missing '+s);
+for(const s of ["getContext('2d')",'requestFullscreen','pseudoFullscreen','inspectCanvas','rangePositionPct','showAllLiquidity','showAllPd','EXTRA_TF','5m 단독 신호','DOL →','trendRetest','RETESTING','TL 무효화'])assert(js.includes(s),'mobile interaction missing '+s);
 for(const s of ['.chartCard:fullscreen','.chartCard.pseudoFullscreen','overflow-x:auto','aspect-ratio:1.18/1','.levelDetail','.stateBadge'])assert(css.includes(s),'mobile style missing '+s);
 assert(shell.includes('data-view="liquiditysnapshot"')&&shell.includes('유동성 스냅샷'),'shell menu missing');
 assert(shellJs.includes("liquiditysnapshot:{title:'유동성 스냅샷'")&&shellJs.includes("path:'/liquidity-snapshot.html'"),'shell route missing');
