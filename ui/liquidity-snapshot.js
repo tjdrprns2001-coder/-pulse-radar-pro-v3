@@ -76,7 +76,6 @@ function renderCards(){
   $('sumTarget').textContent=s.target?(s.target.label+' '+price(s.target.price)):'N/A';
   $('sumTrigger').textContent=triggerText(s);
   $('sumInvalid').textContent=price(s.invalidation);
-  const badge=$('stageBadge');badge.textContent=phaseShort(s);setTone(badge,toneForPhase(s));
   $('scenarioCompact').innerHTML=scenarioRows(s).map(x=>'<div class="scenarioRow '+x[2]+'"><span>'+escapeHtml(x[0])+'</span><b>'+escapeHtml(x[1])+'</b></div>').join('');
   const sw=s.sweep||{},mss=model.smc?.mss?.at(-1),disp=model.smc?.displacements?.at(-1);
   const evidence=[
