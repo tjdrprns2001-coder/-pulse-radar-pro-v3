@@ -11,7 +11,7 @@ const scan=fs.readFileSync('ui/coin-scan.js','utf8');
 
 for(const s of ['유동성 스냅샷','BSL·SSL','EQH/EQL','FVG','OB','Breaker','PNG 저장','snapshot'])assert(html.includes(s),'page missing '+s);
 for(const s of ['session-profile.js','smc-engine.js','liquidity-engine.js','liquidity-map-engine.js','liquidity-snapshot.js'])assert(html.includes(s),'engine wiring missing '+s);
-for(const s of ['canvas','scenario','liquidity','structure','savePng','/api/structure','SWEEP + RECLAIM','Draw →'])assert(js.includes(s),'direct renderer missing '+s);
+for(const s of ["getContext('2d')",'scenario','liquidity','structure','savePng','/api/structure','SWEEP + RECLAIM','Draw →'])assert(js.includes(s),'direct renderer missing '+s);
 assert(css.includes('aspect-ratio:16/9'),'snapshot aspect ratio missing');
 assert(css.includes('@media(max-width:720px)'),'mobile layout missing');
 assert(shell.includes('data-view="liquiditysnapshot"')&&shell.includes('유동성 스냅샷'),'shell menu missing');
