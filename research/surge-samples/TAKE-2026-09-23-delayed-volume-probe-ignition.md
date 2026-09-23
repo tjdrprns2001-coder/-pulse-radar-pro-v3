@@ -353,3 +353,460 @@ This sample should be kept separately from OI Lead examples and used to test whe
 - Binance Spot `TAKEUSDT` was unavailable at sampling time, so spot-volume leadership and spot/futures basis are N/A.
 - T0 in this document is the final 1H ignition candle, while the earlier 24H outcome window begins before T0.
 - This is a historical successful example and must be paired with failed volume-probe/recompression controls during validation to avoid survivorship bias.
+
+
+---
+
+# Deep-Dive Refinement — confirmed-bar / 1m microstructure review
+
+## Why this refinement was added
+
+The original TAKE sample correctly identified a delayed volume-probe route, but deeper reconstruction changed one important interpretation:
+
+**TAKE should not be described as a clean 15-hour hidden accumulation / reaccumulation sequence.**
+
+During the interval after the large probe and before final ignition:
+
+- price retraced;
+- OBV fell;
+- taker-derived cumulative delta fell;
+- aggregate flow was not continuously buy-dominant.
+
+The stronger interpretation is:
+
+```
+Probe Memory
+→ Deep Recompression
+→ Volume Dry
+→ LTF Reset
+→ Micro Buy-Pulse Cluster
+→ Old Probe High Raid
+→ Close BOS
+→ Displacement
+→ OI Chase
+```
+
+Therefore the scanner tag `REACCUMULATION` should **not** be automatically applied to TAKE-like setups unless independent OBV/CVD/spot evidence supports it.
+
+## Confirmed-bar PRE-T0 state
+
+To avoid lookahead, the following PRE-T0 snapshot uses only bars fully closed before the final 1H expansion candle beginning at 2026-09-23 05:00 UTC.
+
+### 1D
+
+- last confirmed close: 0.06089
+- RSI: ~58.46
+- MACD histogram: slightly negative
+- EMA20: 0.05767
+- EMA50: 0.05240
+- EMA112: 0.04230
+- EMA224: 0.06239
+- RVOL: ~0.85x
+- taker-buy share: ~47.5%
+
+Interpretation:
+
+- medium-term EMA structure had recovered;
+- price remained just below EMA224;
+- daily momentum was not overbought;
+- long-term resistance was still present.
+
+### 4H
+
+- close: 0.06108
+- RSI: ~68.11
+- MACD histogram: positive
+- EMA20 > EMA50 ≈ EMA112 > EMA224
+- RVOL: ~0.77x
+
+Interpretation:
+
+```
+Structure Ready + Volume Dry
+```
+
+### 1H
+
+- close: 0.06100
+- RSI: ~61.54
+- MACD histogram: positive
+- EMA20 > EMA50 > EMA112 > EMA224
+- RVOL: ~0.49x
+- taker-buy share: ~62.0%
+
+This is one of the highest-value PRE-T0 observations:
+
+**trend structure was already constructive while hourly turnover had contracted to roughly half of its recent baseline.**
+
+### 15m
+
+- close: 0.06100
+- RSI: ~60.09
+- MACD histogram: slightly positive
+- EMA20 > EMA50 > EMA112 > EMA224
+- RVOL: ~0.48x
+
+### 5m
+
+- close: 0.06100
+- RSI: ~61.06
+- MACD histogram: slightly negative
+- EMA stack remained constructive
+- RVOL: ~0.73x
+- short-term OBV slope negative
+
+Interpretation:
+
+- HTF structure intact;
+- LTF momentum reset;
+- no confirmed expansion yet.
+
+## The important historical probe level
+
+The major 15m probe occurred at:
+
+**2026-09-22 14:00 UTC**
+
+- open: 0.05994
+- high: **0.06438**
+- low: 0.05982
+- close: 0.06364
+- volume: 3,217,825
+- RVOL: ~21.72x
+- taker-buy share: ~61.53%
+
+The probe high **0.06438** became a critical memory level.
+
+## Deep recompression after the probe
+
+From the probe until final ignition:
+
+- elapsed time: ~15H
+- 15m bars between events: 59
+- lowest price: 0.05864
+- pre-ignition close: 0.06100
+- change from probe close: ~-4.15%
+- max drawdown from probe close: ~-7.86%
+- distance from pre-ignition price to old probe high: ~+5.54%
+
+This was **not** a shallow flag immediately beneath resistance.
+
+It was a materially deeper reset.
+
+Recommended tag:
+
+`DEEP_RECOMPRESSION_AFTER_PROBE`
+
+rather than automatically calling it upper compression.
+
+## Volume drying after the probe
+
+Average volume after the large probe collapsed sharply.
+
+Relative to the probe candle volume:
+
+- average volume during the following recompression: ~6.9%
+- average volume during the final ~4H before ignition: ~3.1%
+
+Sequence:
+
+```
+RVOL ~21.7x Probe
+→ price retracement
+→ no structural collapse
+→ turnover decays toward near-idle levels
+```
+
+This suggests a useful scanner memory rule:
+
+> A large probe should not be discarded merely because continuation is delayed. Keep it alive while the structural base survives and post-probe volume contracts.
+
+## Important negative finding: no continuous hidden accumulation
+
+The full post-probe interval did **not** show persistent positive flow.
+
+### 15m probe → pre-ignition
+
+- price: ~-4.15%
+- OBV: decreased
+- taker-derived CVD: decreased
+- net taker delta: approximately -13.8% of sampled volume
+
+### 1H view
+
+- price remained broadly stable/slightly higher across the broader window
+- OBV: decreased
+- CVD: decreased
+- net taker delta: approximately -11.2%
+
+Therefore:
+
+```
+Do NOT infer:
+"smart money continuously accumulated for 15 hours"
+```
+
+A better description is:
+
+```
+Probe
+→ real sell / cleanup pressure
+→ volume exhaustion
+→ late flow reversal
+```
+
+## Micro Buy-Pulse Cluster before the breakout
+
+The final high-value precursor appears only when the last minutes are decomposed.
+
+### 1m observations
+
+#### 05:39 UTC
+
+- close: 0.06087
+- RVOL: ~7.12x
+- taker-buy share: **97.6%**
+
+#### 05:42 UTC
+
+- close: 0.06092
+- RVOL: ~16.67x
+- taker-buy share: **98.7%**
+
+#### 05:45 UTC
+
+- taker-buy share: **95.3%**
+
+Price had not yet materially expanded.
+
+This gives a useful tag:
+
+`BUY_PRESSURE_WITHOUT_EXPANSION`
+
+and then:
+
+`MICRO_BUY_PULSE_CLUSTER`
+
+The distinction matters because an extreme buy-share pulse alone does not prove immediate breakout. It identifies pressure building against resting liquidity.
+
+## Actual ignition mechanics
+
+### 05:54 UTC — initial raid / displacement
+
+- open: 0.06075
+- high: **0.06453**
+- close: 0.06372
+- RVOL: **~182.64x**
+- taker-buy share: ~63.6%
+
+The candle traded through the old probe high:
+
+`0.06438`
+
+This is the initial liquidity raid / displacement event.
+
+### 05:55 UTC — close-based BOS confirmation
+
+- open: 0.06384
+- high: 0.06621
+- close: **0.06599**
+- RVOL: ~56.66x
+
+This candle closed decisively above the old probe high.
+
+Research distinction:
+
+```
+05:54 = raid / initial displacement
+05:55 = close-based BOS confirmation
+```
+
+This directly supports the scanner rule:
+
+> Wick penetration is not enough. Prefer a close-based break above the remembered probe high before promoting the setup to confirmed ignition.
+
+## Post-BOS displacement
+
+Subsequent 1m closes:
+
+- 05:54 — 0.06372
+- 05:55 — 0.06599
+- 05:56 — 0.07054
+- 05:57 — 0.07562
+- 05:58 — 0.07912
+- 05:59 — 0.08137
+
+After the confirmed break, the setup transitioned from PRE-IGNITION to EXPANSION very quickly.
+
+## Taker interpretation after ignition
+
+Taker-buy share did **not** remain persistently above 60% once full expansion began.
+
+Examples:
+
+- 05:54 — ~63.6%
+- 05:55 — ~46.4%
+- 05:56 — ~48.8%
+- 05:57 — ~51.9%
+- 05:58 — ~46.7%
+- 05:59 — ~38.8%
+
+Therefore a rule such as:
+
+`require taker-buy > 60% throughout the breakout`
+
+would be too restrictive.
+
+TAKE suggests:
+
+- pre-ignition extreme buy-share pulses are useful;
+- after displacement begins, two-way turnover, profit-taking, covering, and chasing can distort aggregate taker ratios;
+- structure + RVOL + close-based BOS should gain weight after ignition.
+
+## OI remains a lagging confirmation
+
+Pre-ignition OI remained almost flat:
+
+- T-24H: ~66.81M
+- T-6H: ~67.27M
+- T-1H: ~67.31M
+- T0 region: ~67.41M
+
+Post-expansion:
+
+- +1H: ~75.19M
+- +2H: ~86.62M
+- +3H: ~106.85M
+
+Thus the final route remains:
+
+`FLOW_FIRST / OI_LATE`
+
+OI should be used as:
+
+`OI_CHASE_CONFIRM`
+
+not as a precondition for this pattern.
+
+## Risk context
+
+This was not a pristine uncrowded setup.
+
+Before ignition:
+
+- global account L/S roughly 3.3–3.6
+- top-trader position L/S roughly 1.9
+- funding reached ~+0.0597% several hours before the move
+- funding remained positive near ignition
+
+Therefore the high-value safeguard is:
+
+**do not front-run the route only because a probe exists.**
+
+Prefer:
+
+```
+probe memory valid
++ structural base survives
++ volume dry
++ HTF structure constructive
++ LTF reset
++ micro buy-pulse cluster
++ remembered probe high raid
++ CLOSE-BASED BOS
+```
+
+before upgrading to confirmed ignition.
+
+## Refined scanner route
+
+### Stage A — PROBE_MEMORY
+
+- prior 5m/15m RVOL >= 5x
+- preferably >= 10x for a strong probe
+- store probe high / low / close
+- preserve timestamp and elapsed time
+
+### Stage B — DEEP_RECOMPRESSION
+
+- price may retrace several percent
+- probe low / structural invalidation remains intact
+- do not require a shallow flag
+
+### Stage C — VOLUME_DRY
+
+- average post-probe volume materially below probe volume
+- TAKE reference:
+  - post-probe average ~6.9% of probe volume
+  - final 4H average ~3.1%
+
+### Stage D — LTF_RESET
+
+- HTF structure remains constructive
+- LTF RSI/MACD/OBV may temporarily cool
+- no requirement for persistent positive CVD
+
+### Stage E — MICRO_BUY_PULSE_CLUSTER
+
+High priority when repeated 1m/5m observations show:
+
+- taker-buy >= 70%
+- stronger if >= 90%
+- multiple pulses rather than one isolated reading
+- price has not yet fully expanded
+
+### Stage F — PROBE_HIGH_RAID
+
+- renewed RVOL expansion
+- price trades through stored probe high
+
+### Stage G — CLOSE_BOS_CONFIRM
+
+- candle closes above stored probe high / local external liquidity
+- displacement present
+- route promoted to confirmed ignition
+
+### Stage H — OI_CHASE_CONFIRM
+
+- OI expands after price
+- confirms leverage chasing the already-active move
+- must not be required for Stage A–G
+
+## Final refined DNA
+
+```
+PROBE_MEMORY
+→ DEEP_RECOMPRESSION
+→ VOLUME_DRY
+→ LTF_RESET
+→ MICRO_BUY_PULSE_CLUSTER
+→ PROBE_HIGH_RAID
+→ CLOSE_BOS_CONFIRM
+→ DISPLACEMENT
+→ OI_CHASE_CONFIRM
+```
+
+### Do not automatically tag
+
+- continuous accumulation
+- hidden smart-money accumulation
+- spot-led move
+- OI lead
+
+without separate evidence.
+
+## Validation requirement
+
+This is still a known successful sample.
+
+The next required control cohort is:
+
+```
+large volume probe
+→ recompression
+→ volume dry
+→ no valid close-based probe-high BOS
+→ no subsequent surge
+```
+
+Compare successful TAKE-like samples with those failed controls before assigning predictive weight to `PROBE_MEMORY` or `MICRO_BUY_PULSE_CLUSTER`.
