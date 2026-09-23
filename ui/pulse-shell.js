@@ -8,6 +8,7 @@
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
     analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
     mtfsnapshot:{title:'8TF 스냅샷',desc:'1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m',path:'/mtf-snapshot-pro.html'},
+    liquiditysnapshot:{title:'유동성 스냅샷',desc:'BSL·SSL · EQH/EQL · Sweep/Reclaim · FVG/OB/Breaker · 조건부 경로',path:'/liquidity-snapshot.html'},
     longtrend:{title:'장기추세선',desc:'28D → 14D → 1W → 3D → 1D → 4H · 가중 평균 최종 추세선',path:'/long-trend-dashboard.html'},
     report:{title:'종합 리포트',desc:'멀티TF · SMC/ICT · 수급 · 뉴스 · 반증',path:'/coin-report.html'},
     dante:{title:'주식단테 실전 랩',desc:'공개 기법 · 자동/수동 체크 · 차트 오버레이 · 멀티TF',path:'/dante-lab.html'},
@@ -32,7 +33,7 @@
   const ROOT={
     home:'home',pulseai:'ai',
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
-    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
+    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
@@ -64,7 +65,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','liquiditysnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
@@ -84,7 +85,7 @@
     closeMenu();emit('pulse:viewchange',{view:key});
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
-  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','longtrend','multi','report','ict','dante'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
+  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','liquiditysnapshot','longtrend','multi','report','ict','dante'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
   function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
