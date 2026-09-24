@@ -10,10 +10,10 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null;
     if(typeof getStore==='function'){
       try{
-        const store=createBlobStore({getStore});
+        const store=createBlobStore({getStore});marketValidationStore=store;
         const resolver=createBinanceResolver({});
         performanceRecorder=createSignalPerformanceService({store,resolver});
         alertRecorder=createAlertService({store});
@@ -21,7 +21,7 @@ function defaultService(getStore){
         recommendationHistory=createRecommendationHistoryService({store,resolver});
       }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore});
   }
   return singleton;
 }
@@ -35,7 +35,7 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
@@ -57,6 +57,19 @@ module.exports=async function handler(req,res,ctx={}){
       };
       const recording=await service.recordRecommendationPromotion(row,{updatedAt:Date.now(),marketSource:String(body.marketSource||'book-ai-client'),derivativesSource:body.derivativesSource?String(body.derivativesSource):null});
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
+    }
+    if(mode==='validation'){
+      const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
+      const at=Number(q.at)||null;return res.status(200).json(await service.getMarketValidation(symbol,{decisionTimestamp:at,persist:String(q.persist||'1')!=='0'}));
+    }
+    if(mode==='validation-snapshots'){
+      const action=String(q.action||'list').toLowerCase();
+      if(action==='get'||action==='replay'){
+        const id=String(q.id||'').trim();if(!id)return res.status(400).json({status:'error',error:'id required'});
+        if(action==='replay'){const replay=await service.replayMarketValidation(id);if(!replay)return res.status(404).json({status:'error',error:'validation snapshot not found'});return res.status(200).json({status:'ok',mode:'validation-snapshots',action:'replay',replay})}
+        const snapshot=await service.getMarketValidationSnapshot(id);if(!snapshot)return res.status(404).json({status:'error',error:'validation snapshot not found'});return res.status(200).json({status:'ok',mode:'validation-snapshots',action:'get',snapshot});
+      }
+      const rows=await service.listMarketValidationSnapshots({symbol:q.symbol||null,limit});return res.status(200).json({status:'ok',mode:'validation-snapshots',action:'list',items:rows.map(x=>({snapshotId:x.snapshotId,symbol:x.canonical?.symbol,decisionTimestamp:x.canonical?.decisionTimestamp,validationStatus:x.result?.validationStatus,canonicalHash:x.canonicalHash}))});
     }
     if(mode==='intelligence'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
