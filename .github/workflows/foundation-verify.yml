@@ -11,6 +11,7 @@ on:
       - feat/unified-v2-m3-2-collision
       - feat/realtime-crypto-radar
       - signal-quality-v2-operations
+      - feat/final-99-release
     paths:
       - '.github/workflows/**'
       - 'api/**'
