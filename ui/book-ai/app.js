@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,LM=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine,TA=window.PulseTraderAnalysis;
-const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
+const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer,Promotion=window.PulseRecommendationPromotion;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
 let last=null,runSeq=0;
@@ -85,21 +85,50 @@ const AUTO_CACHE_KEY='book-ai-auto-recommend-v1';
 function setAutoMeta(text,state=''){const el=$('autoMeta');if(!el)return;el.textContent=text;el.className='muted '+state}
 function saveAutoCache(bundle,source){try{localStorage.setItem(AUTO_CACHE_KEY,JSON.stringify({ts:Date.now(),bundle,source}))}catch{}}
 function readAutoCache(){try{return JSON.parse(localStorage.getItem(AUTO_CACHE_KEY)||'null')}catch{return null}}
+const PROMOTION_CACHE_KEY='book-ai-promotion-cache-v1';
+function uniqText(rows){return[...new Set((rows||[]).filter(Boolean).map(String))]}
+function readPromotionCache(){try{return JSON.parse(localStorage.getItem(PROMOTION_CACHE_KEY)||'{}')||{}}catch{return{}}}
+function writePromotionCache(x){try{localStorage.setItem(PROMOTION_CACHE_KEY,JSON.stringify(x||{}))}catch{}}
+function cacheConfirmedBook(symbol,rules){
+  if(!Promotion||!Promotion.bookConfirmed(rules))return null;
+  const cache=readPromotionCache(),ids=(rules?.bookSetups||[]).filter(x=>x?.status==='CONFIRMED').map(x=>x.ruleId);
+  cache[symbol]={confirmed:true,bookScore:Promotion.bookScore(rules),ruleIds:ids,updatedAt:Date.now()};writePromotionCache(cache);return cache[symbol];
+}
+function groupPromotionRows(rows=[]){
+  const out={recommended:[],confirmed:[],ready:[],watch:[],wait:[],excluded:[]};
+  for(const x of rows){const s=String(x?.state||'WAIT').toUpperCase(),k=s==='RECOMMEND'?'recommended':s==='CONFIRMED'?'confirmed':s==='READY'?'ready':s==='WATCH'?'watch':s==='WAIT'?'wait':'excluded';out[k].push(x)}
+  return out;
+}
+function allPromotionRows(bundle={}){return[...(bundle.recommended||[]),...(bundle.confirmed||[]),...(bundle.ready||[]),...(bundle.watch||[]),...(bundle.wait||[]),...(bundle.excluded||[])]}
+function applyPromotionCache(bundle={}){
+  if(!Promotion)return bundle;
+  const cache=readPromotionCache(),maxAge=6*3600000,rows=allPromotionRows(bundle).map(x=>{
+    const b=cache[x.symbol],book=b&&Date.now()-Number(b.updatedAt||0)<=maxAge?{confirmed:b.confirmed,status:b.confirmed?'CONFIRMED':null,score:b.bookScore}:null;
+    const p=Promotion.evaluate({item:x.item||{},book,priorState:x.state});
+    return{...x,state:p.state,label:p.label,promotion:p,reasons:uniqText([...(x.reasons||[]),...(p.reasons||[])]).slice(0,8),missing:uniqText(p.missing||[]).slice(0,8),invalidations:uniqText([...(x.invalidations||[]),...(p.invalidations||[])]).slice(0,8)};
+  });
+  return groupPromotionRows(rows);
+}
+async function postPromotion(row,marketSource='book-ai-client'){
+  if(!row?.symbol)return null;
+  const item=row.item||{},payload={symbol:row.symbol,state:row.state,label:row.label,score:row.score,reasons:row.reasons||[],missing:row.missing||[],invalidations:row.invalidations||[],marketSource,item:{lastPrice:item.lastPrice,scanClass:item.scanClass,v2Type:item.v2Type,v3LongTier:item.v3LongTier,bookConfirmedRuleIds:readPromotionCache()?.[row.symbol]?.ruleIds||[]}};
+  try{return await jsonTimeout('/api/coin-scan?mode=recommendation-history&action=observe',7000,{method:'POST',body:JSON.stringify(payload)})}catch{return null}
+}
 function renderAutoRecommendations(bundle={},source='Scanner v3'){
-  const box=$('autoRecommendations');if(!box)return;box.innerHTML='';
-  const recommended=Array.isArray(bundle.recommended)?bundle.recommended:[],watch=Array.isArray(bundle.watch)?bundle.watch:[];
-  const rows=[...recommended,...watch].slice(0,5);
-  if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 자동 추천 조건을 충족한 종목이 없습니다.</div>';setAutoMeta(source+' · 추천 조건 대기','warn');return}
+  const box=$('autoRecommendations');if(!box)return;box.innerHTML='';bundle=applyPromotionCache(bundle);
+  const recommended=bundle.recommended||[],confirmed=bundle.confirmed||[],ready=bundle.ready||[],watch=bundle.watch||[];
+  const rows=[...recommended,...confirmed,...ready,...watch].slice(0,6);
+  if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 자동 추천 승격 조건을 충족한 종목이 없습니다.</div>';setAutoMeta(source+' · 승격 조건 대기','warn');return}
   for(const x of rows){
     const b=document.createElement('button');b.type='button';b.className='autoItem auto-'+String(x.state||'WATCH');b.dataset.symbol=x.symbol;
     const top=document.createElement('div');top.className='autoTop';
     const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';tag.textContent=x.label||'관찰';left.append(sym,tag);
     const score=document.createElement('em');score.textContent=Math.round(Number(x.score)||0)+'점';top.append(left,score);
-    const p=document.createElement('p');p.textContent=(x.reasons||[]).slice(0,4).join(' · ')||'조건 적합도 계산';
-    const m=document.createElement('small');m.textContent=(x.missing||[]).length?'다음 확인 · '+x.missing.slice(0,3).join(' · '):'핵심 조건 확인';
+    const p=document.createElement('p');p.textContent=(x.reasons||[]).slice(0,4).join(' · ')||'승격 조건 계산';
+    const m=document.createElement('small');m.textContent=(x.missing||[]).length?'다음 관문 · '+x.missing.slice(0,3).join(' · '):'핵심 관문 통과';
     b.append(top,p,m);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
   }
-  setAutoMeta(source+' · '+recommended.length+' 추천 / '+watch.length+' 관찰',recommended.length?'ok':'warn');
+  setAutoMeta(source+' · '+recommended.length+' 추천 / '+confirmed.length+' 확정 / '+ready.length+' 준비 / '+watch.length+' 관찰',recommended.length?'ok':confirmed.length||ready.length?'warn':'');
 }
 function renderStructureAuto(rows=[]){
   const watch=(rows||[]).slice(0,5).map(x=>({symbol:x.symbol,score:x.watchScore||0,state:'WATCH',label:'구조 관찰',reasons:x.reasons||[],missing:['Scanner v3','OI/taker 확인'],invalidations:[]}));
@@ -164,9 +193,36 @@ function presurgeFallbackRows(data){
     .slice(0,8)
     .map(x=>({symbol:x.symbol,watchScore:Number(x.score)||0,scanClass:x.state||'SPOT',v2Type:'SPOT PRE-SURGE',v3Tier:'Spot fallback',priceChange24h:Number.isFinite(Number(x.price24))?Number(x.price24):null,reasons:(x.reasons||[]).slice(0,4)}));
 }
-function jsonTimeout(url,ms=8000){
-  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),ms);
-  return fetch(url,{cache:'no-store',signal:ctrl.signal}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}).finally(()=>clearTimeout(timer));
+function jsonTimeout(url,ms=8000,opts={}){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),ms),headers={...(opts.headers||{})};if(opts.body&&!headers['Content-Type'])headers['Content-Type']='application/json';
+  return fetch(url,{cache:'no-store',...opts,headers,signal:ctrl.signal}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}).finally(()=>clearTimeout(timer));
+}
+async function verifyPromotionRow(row,marketSource='Scanner v3'){
+  if(!Promotion||!row?.item||!A||!R||!Live)return row;
+  const symbol=row.symbol,started=Date.now(),raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:started}),chart=buildChart(raw,'4h',started),now=Date.now(),closed=lastClosedTime({candles:chart.candles});
+  const persisted=persistConfirmedEvidence({symbol,chart,now}),journal=persisted.journal||journalReadOnly(),gate=persisted.gate||gateReadOnly();
+  const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
+  const adapter=A.adaptBookAiInput({analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,sources:{
+    scanner:source(row.item,boundedObservedAt(row.item.updatedAt,now),'v3'),
+    presurge:source(row.item.preSurge,boundedObservedAt(row.item.updatedAt,now),'PRE_SURGE_v2'),
+    ict:source(chart.ict,closed,chart.ict?.version||'ICT'),structure:source(raw,closed,raw.version||'structure'),
+    forexBook:source(chart.book,closed,chart.book?.version),journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
+    trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
+  }});
+  const rules=R.evaluate(adapter),book=cacheConfirmedBook(symbol,rules),p=Promotion.evaluate({item:row.item,book:rules,priorState:row.state});
+  const next={...row,state:p.state,label:p.label,promotion:p,reasons:uniqText([...(row.reasons||[]),...(p.reasons||[])]).slice(0,8),missing:p.missing||[],invalidations:uniqText([...(row.invalidations||[]),...(p.invalidations||[])]).slice(0,8)};
+  if(book||p.state!==row.state)await postPromotion(next,marketSource);
+  return next;
+}
+async function backgroundPromoteReady(bundle,source='Scanner v3'){
+  if(!Promotion)return bundle;let current=applyPromotionCache(bundle),rows=allPromotionRows(current),targets=[...(current.ready||[])].slice(0,3);
+  for(const target of targets){
+    try{
+      const next=await verifyPromotionRow(target,source);rows=rows.map(x=>x.symbol===next.symbol?next:x);current=groupPromotionRows(rows);renderAutoRecommendations(current,source+' · Book AI 승격 확인');saveAutoCache(current,source);
+      if(next.state==='RECOMMEND'||next.state==='CONFIRMED'){refreshAutoHistory();refreshAutoStats()}
+    }catch(_e){}
+  }
+  return current;
 }
 async function scannerWatchRows(){
   if(!WL)throw new Error('Watchlist selector unavailable');
@@ -175,7 +231,7 @@ async function scannerWatchRows(){
   const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
   if(!seed.length)throw new Error('Scanner 후보 없음');
   const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),12000);
-  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner');refreshAutoHistory();refreshAutoStats()}
+  if(deep.autoRecommendations){const sourceName=deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3',promoted=applyPromotionCache(deep.autoRecommendations);renderAutoRecommendations(promoted,sourceName);saveAutoCache(promoted,deep.marketSource||'scanner');refreshAutoHistory();refreshAutoStats();backgroundPromoteReady(promoted,deep.marketSource||sourceName).catch(()=>{})}
   const selected=WL.select(deep.items||[],8);
   if(!selected.length)throw new Error('Scanner 정밀 후보 없음');
   return selected;
@@ -290,7 +346,7 @@ function overviewModel(result,chart){
 }
 function renderOverview(result,chart){
   const f=result?.fusion||null,m=overviewModel(result,chart),symbol=f?.symbol||result?.symbol||'UNKNOWN';
-  $('oneLine').textContent=f?[symbol,f.setupState,f.bias?.value||'N/A','HTF '+(f.htfAlignment||'UNKNOWN'),'근거 '+m.score].join(' · '):[symbol,'CHART ONLY',m.bias,'Scanner N/A','Book AI 점수 N/A'].join(' · ');
+  $('oneLine').textContent=f?[symbol,f.setupState,result?.promotion?.label?'승격 '+result.promotion.label:null,f.bias?.value||'N/A','HTF '+(f.htfAlignment||'UNKNOWN'),'근거 '+m.score].filter(Boolean).join(' · '):[symbol,'CHART ONLY',m.bias,'Scanner N/A','Book AI 점수 N/A'].join(' · ');
   $('overviewBias').textContent=m.bias;$('overviewState').textContent=m.state||'-';$('overviewTrigger').textContent=m.trigger;$('overviewInvalid').textContent=m.invalid;$('overviewTarget').textContent=m.target;$('overviewScore').textContent=m.score;
   $('overviewBowl').textContent=(m.bowl.matched?'조건 일치':'관찰')+' · '+(m.bowl.score||0)+'점';
   $('overviewConcrete').textContent=(m.concrete.matched?'조건 일치':'관찰')+' · '+(m.concrete.score||0)+'점';
@@ -390,15 +446,16 @@ async function run(){
         trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
       }
     });
-    const rules=R.evaluate(adapter),storage=Store.create(localStorage),previous=storage.get(symbol)?.lifecycle||null;
+    const rules=R.evaluate(adapter),bookPromotion=Promotion?Promotion.evaluate({item,book:rules}):null;if(bookPromotion?.confirmed)cacheConfirmedBook(symbol,rules);if(bookPromotion)postPromotion({symbol,state:bookPromotion.state,label:bookPromotion.label,score:Number(rules?.bookEvidence?.normalizedScore??rules?.bookEvidence?.total??0),reasons:bookPromotion.reasons||[],missing:bookPromotion.missing||[],invalidations:bookPromotion.invalidations||[],item},scan.marketSource||'book-ai-manual').catch(()=>{});
+    const storage=Store.create(localStorage),previous=storage.get(symbol)?.lifecycle||null;
     const fusion=F.fuse({adapter,ruleResult:rules,previousLifecycle:previous});
     if(!fusion.resultReady)throw new Error('Scanner stage/bias 불완전 · '+fusion.incompleteReasons.join(', '));
     const summary=S.buildCanonicalSummary(fusion);S.assertCanonicalSummaryGrounded(summary,fusion);
     storage.set(symbol,fusion.setupLifecycle);
-    last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now};render(last,chart);
+    last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now,promotion:bookPromotion};render(last,chart);
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
-    $('status').textContent=symbol+' · '+fusion.setupState+' · 완료';
+    $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
   }catch(e){if(token===runSeq){$('status').textContent='오류 · '+(e.message||e);$('status').classList.add('error')}}finally{if(token===runSeq)$('run').disabled=false}
