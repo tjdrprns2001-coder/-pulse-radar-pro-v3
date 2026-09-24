@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert');
 const L=require('../ui/book-ai/live-evidence.js');
-const ASOF=2000000;
+const ASOF=Date.parse('2026-09-24T09:00:00Z');
 let createCalls=0,recordCalls=0;
 const journal={
   createBundle(){
