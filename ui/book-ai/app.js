@@ -190,29 +190,67 @@ async function refreshAutoStats(){
 }
 function fmtUsd(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';if(n>=1e9)return'USD '+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'USD '+(n/1e6).toFixed(2)+'M';if(n>=1e3)return'USD '+(n/1e3).toFixed(1)+'K';return'USD '+n.toFixed(0)}
 function renderIntelLoading(symbol){
-  if(!$('intelMeta'))return;$('intelMeta').textContent=(symbol||'코인')+' · 글로벌 데이터 확인 중…';
-  for(const id of ['intelCex','intelIndicators','intelDex','intelNews','intelEvents','intelWallets','intelVerify','intelCoverage'])$(id).textContent='확인 중';
-  for(const id of ['intelCexSub','intelIndicatorsSub','intelDexSub','intelNewsSub','intelEventsSub','intelWalletsSub','intelVerifySub','intelCoverageSub'])$(id).textContent='-';
-  $('intelDetails').innerHTML='<div class="watchEmpty">거래소·DEX·뉴스·이벤트·지갑 데이터를 병렬 확인하고 있습니다.</div>';
+  if($('spotMeta'))$('spotMeta').textContent=(symbol||'코인')+' · 현물 데이터 확인 중…';
+  if($('futuresMeta'))$('futuresMeta').textContent=(symbol||'코인')+' · 선물 데이터 확인 중…';
+  if($('intelMeta'))$('intelMeta').textContent=(symbol||'코인')+' · 공통 정보 확인 중…';
+  for(const id of ['spotCex','spotPrice','spotVolume','spotDex','futuresCex','futuresOi','futuresFlow','futuresBasis','intelIndicators','intelNews','intelEvents','intelWallets','intelVerify','intelCoverage'])if($(id))$(id).textContent='확인 중';
+  for(const id of ['spotCexSub','spotPriceSub','spotVolumeSub','spotDexSub','futuresCexSub','futuresOiSub','futuresFlowSub','futuresBasisSub','intelIndicatorsSub','intelNewsSub','intelEventsSub','intelWalletsSub','intelVerifySub','intelCoverageSub'])if($(id))$(id).textContent='-';
+  if($('spotDetails'))$('spotDetails').innerHTML='<div class="watchEmpty">현물 거래소·DEX 데이터를 확인하고 있습니다.</div>';
+  if($('futuresDetails'))$('futuresDetails').innerHTML='<div class="watchEmpty">선물·스왑·파생지표를 확인하고 있습니다.</div>';
+  if($('intelDetails'))$('intelDetails').innerHTML='<div class="watchEmpty">뉴스·이벤트·지갑·계약 검증 데이터를 확인하고 있습니다.</div>';
 }
 function addIntelRow(box,title,text,url){
   const d=document.createElement('div');d.className='intelRow';const b=document.createElement('b');b.textContent=title+' · ';d.append(b,document.createTextNode(text||'-'));
   if(url){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' · 원문';d.append(a)}box.append(d);
 }
-function renderMarketIntelligence(payload,error=null){
-  if(!$('intelMeta'))return;
-  if(error||!payload?.intelligence){$('intelMeta').textContent='시장정보 일부 제한';$('intelDetails').innerHTML='<div class="watchEmpty">'+String(error?.message||payload?.error||'시장정보를 불러오지 못했습니다.')+'</div>';return}
+function renderMarketIntelligence(payload,error=null,item=null){
+  if(error||!payload?.intelligence){
+    if($('spotMeta'))$('spotMeta').textContent='현물 정보 일부 제한';
+    if($('futuresMeta'))$('futuresMeta').textContent='선물 정보 일부 제한';
+    if($('intelMeta'))$('intelMeta').textContent='공통 정보 일부 제한';
+    if($('intelDetails'))$('intelDetails').innerHTML='<div class="watchEmpty">'+String(error?.message||payload?.error||'시장정보를 불러오지 못했습니다.')+'</div>';
+    return;
+  }
   const x=payload.intelligence,cex=x.cex||{},ind=x.indicators||{},dex=x.dex||{},news=x.news||{},events=x.events||{},wallets=x.wallets||{},verify=x.walletVerification||{},cov=x.coverage||{};
-  $('intelMeta').textContent=payload.symbol+' · '+(payload.marketScope==='spot+futures'?'Binance 현물+선물':payload.marketScope==='spot'?'Binance 현물':'Binance 선물')+' · '+fmtTime(payload.updatedAt);
-  $('intelCex').textContent=cex.available?(cex.exchangeCount+'개 거래소 · '+cex.marketCount+'개 시장'):'N/A';
-  $('intelCexSub').textContent=cex.available?'현물 '+cex.spotCount+' · 스왑/선물 '+cex.derivativesCount+' · 최대 가격편차 '+(Number.isFinite(Number(cex.maxPriceDispersionPct))?Number(cex.maxPriceDispersionPct).toFixed(2)+'%':'N/A'):'외부 CEX 데이터 없음';
+  const sources=Array.isArray(cex.sources)?cex.sources:[],spot=sources.filter(s=>s.marketType==='spot'),fut=sources.filter(s=>s.marketType!=='spot');
+  const spotVol=spot.map(s=>Number(s.quoteVolume24h)).filter(Number.isFinite).reduce((a,b)=>a+b,0),futVol=fut.map(s=>Number(s.quoteVolume24h)).filter(Number.isFinite).reduce((a,b)=>a+b,0);
+  const updated=fmtTime(payload.updatedAt);
+  if($('spotMeta'))$('spotMeta').textContent=payload.symbol+' · '+(payload.marketScope==='futures'?'Binance 현물 미상장':'Binance 현물')+' · '+updated;
+  if($('futuresMeta'))$('futuresMeta').textContent=payload.symbol+' · '+(payload.marketScope==='spot'?'Binance 선물 미상장':'Binance 선물')+' · '+updated;
+  if($('intelMeta'))$('intelMeta').textContent=payload.symbol+' · 뉴스/이벤트/지갑 · '+updated;
+
+  $('spotCex').textContent=spot.length?spot.length+'개 현물 시장':'N/A';
+  $('spotCexSub').textContent=spot.length?[...new Set(spot.map(s=>s.name))].join(' · '):'현물 CEX 데이터 없음';
+  $('spotPrice').textContent=Number.isFinite(Number(cex.spotMedianPrice))?fmtPrice(cex.spotMedianPrice):'N/A';
+  $('spotPriceSub').textContent=Number.isFinite(Number(cex.maxPriceDispersionPct))?'전체 시장 최대 가격편차 '+Number(cex.maxPriceDispersionPct).toFixed(2)+'%':'가격 교차검증 부족';
+  $('spotVolume').textContent=spotVol>0?fmtUsd(spotVol):'N/A';
+  $('spotVolumeSub').textContent='외부 현물 시장 24H 합산 · Binance 현물 별도 교차확인';
+  $('spotDex').textContent=dex.available?(dex.pairCount+'개 페어 · '+(dex.chains?.length||0)+'체인'):'N/A';
+  $('spotDexSub').textContent=dex.available?'DEX 유동성 '+fmtUsd(dex.liquidityUsd)+' · 24H '+fmtUsd(dex.volume24hUsd):'DEX 페어 미확인';
+
+  $('futuresCex').textContent=fut.length?fut.length+'개 선물/스왑 시장':'N/A';
+  $('futuresCexSub').textContent=fut.length?[...new Set(fut.map(s=>s.name))].join(' · '):'선물/스왑 데이터 없음';
+  const oi4=Number(item?.oi4hChangePct),oi8=Number(item?.oi8hChangePct),tk=Number(item?.trueTakerRatio),fr=Number(item?.fundingRate);
+  $('futuresOi').textContent=Number.isFinite(oi4)?((oi4>=0?'+':'')+oi4.toFixed(2)+'% · 4H'):'N/A';
+  $('futuresOiSub').textContent=Number.isFinite(oi8)?'8H '+(oi8>=0?'+':'')+oi8.toFixed(2)+'% · 외부 OI 교차검증 포함':'Binance OI 또는 외부 OI 데이터 부족';
+  $('futuresFlow').textContent=Number.isFinite(tk)?'Taker '+tk.toFixed(3):'Taker N/A';
+  $('futuresFlowSub').textContent='Funding '+(Number.isFinite(fr)?((fr>=0?'+':'')+fr.toFixed(4)+'%'):'N/A')+' · 선물 거래량 '+(futVol>0?fmtUsd(futVol):'N/A');
+  $('futuresBasis').textContent=Number.isFinite(Number(cex.spotFuturesBasisPct))?((Number(cex.spotFuturesBasisPct)>=0?'+':'')+Number(cex.spotFuturesBasisPct).toFixed(3)+'%'):'N/A';
+  $('futuresBasisSub').textContent='외부 현물 중앙가격 ↔ 선물/스왑 중앙가격';
+
+  const spotBox=$('spotDetails');spotBox.innerHTML='';
+  for(const s of spot.slice(0,12))addIntelRow(spotBox,s.name+' 현물','가격 '+(Number.isFinite(Number(s.price))?fmtPrice(s.price):'N/A')+' · 24H 거래 '+fmtUsd(s.quoteVolume24h));
+  if(dex.bestPair)addIntelRow(spotBox,'DEX 대표 페어',(dex.bestPair.chainId||'-')+' / '+(dex.bestPair.dexId||'-')+' · 유동성 '+fmtUsd(dex.bestPair.liquidityUsd));
+  if(!spotBox.children.length)spotBox.innerHTML='<div class="watchEmpty">현물 세부 데이터가 없습니다.</div>';
+
+  const futBox=$('futuresDetails');futBox.innerHTML='';
+  for(const s of fut.slice(0,12))addIntelRow(futBox,s.name+' '+(s.marketType==='perp'?'무기한':'스왑/선물'),'가격 '+(Number.isFinite(Number(s.price))?fmtPrice(s.price):'N/A')+' · 24H 거래 '+fmtUsd(s.quoteVolume24h)+(Number.isFinite(Number(s.fundingRate))?' · Funding '+Number(s.fundingRate).toFixed(6):''));
+  if(!futBox.children.length)futBox.innerHTML='<div class="watchEmpty">선물/스왑 세부 데이터가 없습니다.</div>';
+
   const i1=ind.timeframes?.['1h']||{};
   $('intelIndicators').textContent=ind.available?(ind.summary?.sourceCount||0)+'개 거래소 교차검증':'N/A';
   $('intelIndicatorsSub').textContent=ind.available?'1H EMA/MACD/OBV 상방 '+(ind.summary?.h1Bull??0)+'표 · 4H '+(ind.summary?.h4Bull??0)+'표 · RSI 중앙 '+(Number.isFinite(Number(i1.rsiMedian))?Number(i1.rsiMedian).toFixed(1):'N/A'):'외부 캔들 데이터 없음';
-  $('intelDex').textContent=dex.available?(dex.pairCount+'개 페어 · '+(dex.chains?.length||0)+'체인'):'N/A';
-  $('intelDexSub').textContent=dex.available?'유동성 '+fmtUsd(dex.liquidityUsd)+' · 24H 거래 '+fmtUsd(dex.volume24hUsd):'DEX 페어 미확인';
-  $('intelNews').textContent=news.available?news.count+'건':'0건';
-  $('intelNewsSub').textContent=news.items?.[0]?.title||'최근 관련 뉴스 없음';
+  $('intelNews').textContent=news.available?news.count+'건':'0건';$('intelNewsSub').textContent=news.items?.[0]?.title||'최근 관련 뉴스 없음';
   const scheduled=events.items||[],derived=events.newsDerived||[];
   $('intelEvents').textContent=scheduled.length?scheduled.length+'건 일정':derived.length?derived.length+'건 뉴스 이벤트':'N/A';
   $('intelEventsSub').textContent=scheduled[0]?.title||derived[0]?.title||events.reason||'확정 일정 없음';
@@ -222,13 +260,13 @@ function renderMarketIntelligence(payload,error=null){
   $('intelVerifySub').textContent='지갑 출처 '+(verify.verifiedAttributions||0)+'건 · 계약 '+String(verify.contractStatus||'N/A');
   const keys=['cex','indicators','dex','news','scheduledEvents','wallets'],covered=keys.filter(k=>cov[k]).length;
   $('intelCoverage').textContent=covered+'/'+keys.length;$('intelCoverageSub').textContent='조회 실패·미연결 값은 추정하지 않고 N/A 처리';
+
   const box=$('intelDetails');box.innerHTML='';
-  if(cex.sources?.length){const row=document.createElement('div');row.className='intelRow';const b=document.createElement('b');b.textContent='시장 소스';row.append(b);const chips=document.createElement('div');chips.className='intelSourceChips';for(const s of cex.sources.slice(0,24)){const sp=document.createElement('span');sp.className='intelChip';sp.textContent=s.name+' '+(s.marketType==='spot'?'현물':'스왑')+' '+(Number.isFinite(Number(s.price))?String(s.price):'N/A');chips.append(sp)}row.append(chips);box.append(row)}
   for(const n of (news.items||[]).slice(0,4))addIntelRow(box,'뉴스',n.title+(n.source?' · '+n.source:''),n.url);
   for(const e of scheduled.slice(0,3))addIntelRow(box,'예정 이벤트',e.title+(e.date?' · '+e.date:''),e.proof||e.source);
   for(const e of derived.slice(0,3))addIntelRow(box,'뉴스 기반 이벤트',e.title,e.url);
   for(const w of (wallets.items||[]).slice(0,4)){const from=w.from?.owner||w.from?.ownerType||w.from?.address||'미확인',to=w.to?.owner||w.to?.ownerType||w.to?.address||'미확인';addIntelRow(box,'대형 지갑',fmtUsd(w.amountUsd)+' · '+from+' → '+to)}
-  if(!box.children.length)box.innerHTML='<div class="watchEmpty">세부 교차검증 데이터가 아직 없습니다.</div>';
+  if(!box.children.length)box.innerHTML='<div class="watchEmpty">공통 세부 정보가 아직 없습니다.</div>';
 }
 function renderWatchlist(rows=[]){
   const box=$('watchlist');if(!box)return;box.innerHTML='';
@@ -485,7 +523,7 @@ async function run(){
       $('status').classList.add('warn');$('status').textContent=symbol+' · 차트 완료 · 스캐너 제한 · 4TF 확인 중…';
       await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
       $('status').textContent=symbol+' · 차트/4TF 완료 · 스캐너 제한';
-      const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error);
+      const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
@@ -516,7 +554,7 @@ async function run(){
     last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now,promotion:bookPromotion,causal:adapter.sources.causalIct};render(last,chart);
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
-    const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error);
+    const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
