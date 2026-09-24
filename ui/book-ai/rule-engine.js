@@ -88,6 +88,7 @@ function buildEventFacts(adapter){
 function isTrustedConfirmedEventFact(f){
   return Boolean(f?.eventId&&f?.provenance==='PERSISTED_JOURNAL'&&f?.eventStatus==='CONFIRMED');
 }
+function persistedEventBacked(facts=[]){return facts.filter(x=>x?.eventId&&x?.provenance==='PERSISTED_JOURNAL')}
 function trustedEventBacked(facts=[]){return facts.filter(isTrustedConfirmedEventFact)}
 function pushSynthetic(out,adapter,{factType,sourceEngine,sourceVersion,timeframe=null,value=null,observedAt=null,attributes={}}){
   const t=ms(observedAt??adapter?.engineSources?.[sourceEngine]?.observedAt??adapter?.analysisAsOf);
@@ -156,12 +157,12 @@ function makeRule(ruleId,status,facts,adapter){
 function evaluateRules(adapter,facts){
   const m=byType(facts),get=t=>m.get(t)||[],trusted=t=>trustedEventBacked(get(t));
   const breakFacts=[...get('TRENDLINE_BREAK'),...get('STRUCTURE_BREAK_EXPLICIT')],touch=get('RETEST_TOUCH'),confirm=get('RETEST_CONFIRMED'),reclaim=get('RECLAIM'),sweep=get('LIQUIDITY_SWEEP'),contraction=get('VOLUME_CONTRACTION'),ignition=get('RVOL_15M_IGNITION'),maCompression=get('MA_COMPRESSION'),maTransition=get('MA_ALIGNMENT_TRANSITION');
-  const trustedBreak=trusted('TRENDLINE_BREAK'),trustedConfirm=trusted('RETEST_CONFIRMED'),trustedReclaim=trusted('RECLAIM'),trustedSweep=trusted('LIQUIDITY_SWEEP');
+  const trustedBreak=trusted('TRENDLINE_BREAK'),trustedConfirm=trusted('RETEST_CONFIRMED'),trustedReclaim=trusted('RECLAIM'),trustedSweep=trusted('LIQUIDITY_SWEEP'),persistedTouch=persistedEventBacked(touch);
   const rows=[];
   rows.push(makeRule('BREAKOUT_RETEST',trustedBreak.length&&trustedConfirm.length?'CONFIRMED':breakFacts.length||confirm.length?'CANDIDATE':'NOT_CONFIRMED',[...breakFacts,...touch,...confirm],adapter));
   const flipEvidence=[...breakFacts,...reclaim,...confirm];
   rows.push(makeRule('SUPPORT_RESISTANCE_FLIP',trustedBreak.length&&(trustedReclaim.length||trustedConfirm.length)?'CONFIRMED':flipEvidence.length?'CANDIDATE':'NOT_CONFIRMED',flipEvidence,adapter));
-  rows.push(makeRule('TRENDLINE_REACTION',touch.length&&trustedConfirm.length?'CONFIRMED':touch.length||confirm.length?'CANDIDATE':'NOT_CONFIRMED',[...touch,...confirm],adapter));
+  rows.push(makeRule('TRENDLINE_REACTION',persistedTouch.length&&trustedConfirm.length?'CONFIRMED':touch.length||confirm.length?'CANDIDATE':'NOT_CONFIRMED',[...touch,...confirm],adapter));
   rows.push(makeRule('LIQUIDITY_SWEEP_RECLAIM',trustedSweep.length&&trustedReclaim.length?'CONFIRMED':sweep.length||reclaim.length?'CANDIDATE':'NOT_CONFIRMED',[...sweep,...reclaim],adapter));
   const volEvidence=[...contraction,...breakFacts,...ignition];
   rows.push(makeRule('VOLUME_CONTRACTION_BREAK',contraction.length&&ignition.length&&trustedBreak.length?'CONFIRMED':volEvidence.length?'CANDIDATE':'NOT_CONFIRMED',volEvidence,adapter));
@@ -222,5 +223,5 @@ function evaluate(adapter){
   const scored=scoreComponents(facts),evidenceAudit=buildEvidenceAudit({facts,rules,componentUsage:scored.componentUsage});
   return Contract.deepFreeze({version:VERSION,factVersion:FACT_VERSION,ruleVersion:RULE_VERSION,analysisAsOf:adapter.analysisAsOf,symbol:adapter.symbol,evidenceFacts:facts,bookSetups:rules,bookEvidence:scored.bookEvidence,componentUsage:scored.componentUsage,evidenceAudit});
 }
-return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,isTrustedConfirmedEventFact,eventBacked,trustedEventBacked,buildScannerFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
+return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,isTrustedConfirmedEventFact,eventBacked,persistedEventBacked,trustedEventBacked,buildScannerFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
 });
