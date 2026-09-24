@@ -11,9 +11,11 @@ function lastClosedTime(raw){const c=raw?.candles||[],x=c.at(-1);return Number(x
 function gateReadOnly(){
   if(!Gate)return null;
   try{
-    const db=Gate.createLocalStorageStore(localStorage).read(),round=db.rounds?.at(-1)||null;
-    const observedAt=Number(round?.decision?.decidedAt??round?.validation?.cutoffFrozenAt??round?.validationProgress?.updatedAt??round?.createdAt)||null;
-    return{data:{version:Gate.VERSION,state:round?.status||'INSUFFICIENT',round,progress:{archiveN:db.observations?.length||0,updatedAt:observedAt}},observedAt,version:Gate.VERSION};
+    const db=Gate.createLocalStorageStore(localStorage).read(),round=db.rounds?.at(-1)||null,observations=Array.isArray(db.observations)?db.observations:[];
+    if(!round&&!observations.length)return null;
+    const times=[round?.decision?.decidedAt,round?.validation?.cutoffFrozenAt,round?.validationProgress?.updatedAt,round?.createdAt,...observations.flatMap(x=>[x.outcomeUpdatedAt,x.confirmedAt])].map(Number).filter(Number.isFinite);
+    const observedAt=times.length?Math.max(...times):null;
+    return{data:{version:Gate.VERSION,state:round?.status||'INSUFFICIENT',round,progress:{archiveN:observations.length,updatedAt:observedAt}},observedAt,version:Gate.VERSION};
   }catch{return null}
 }
 function journalReadOnly(){
@@ -58,7 +60,7 @@ function render(result,chart){
   const f=result.fusion,s=result.summary,a=f.evidenceAudit||{};
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
   $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
-  $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.setupLifecycle?.dataState||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
+  $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.dataQuality?.state||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
   $('factCount').textContent=String(a.uniqueFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
   summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
   S.assertCanonicalSummaryGrounded(s,f);
