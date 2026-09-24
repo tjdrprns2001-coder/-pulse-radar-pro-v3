@@ -32,7 +32,7 @@ assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
 assert(/\/ui\/coin-scan\.js\?v=20260925-causal1/.test(html),'official v3 scanner UI must use current cache-bust');
-for(const s of ['v3Markup','장기 1W','정렬','true taker','RVOL 1H','5m 참고','EMA/SMA 1H','Causal ICT','인과성','근접 PD','정밀검사'])assert(js.includes(s)||html.includes(s),`official v3 flow UI missing ${s}`);
+for(const s of ['v3Markup','장기 1W','정렬','true taker','RVOL 1H','5m 참고','EMA/SMA 1H','Causal ICT','INSUFFICIENT_BARS','인과성','근접 PD','정밀검사'])assert(js.includes(s)||html.includes(s),`official v3 flow UI missing ${s}`);
 assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
 assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');
 console.log('coin scan ui PASS');
