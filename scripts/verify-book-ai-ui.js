@@ -77,7 +77,7 @@ assert(app.includes('structureFallbackRows'),'structure fallback required when b
 assert(app.includes('jsonTimeout'),'watchlist requests must have bounded wait time');
 assert(app.includes('technical:chart.technical'));
 assert(app.includes('renderDegraded'),'Book AI must support nonfatal scanner degradation');
-assert(app.includes("Scanner 제한"),'degraded scanner state must be visible');
+assert(app.includes("스캐너 제한"),'degraded scanner state must be visible in Korean');
 assert(app.includes("scanPromise=json"),'scanner request must be isolated from chart fetch');
 assert(app.includes('requestStartedAt=Date.now()'),'Book AI must distinguish request start from final analysisAsOf');
 assert(app.includes("item=scan?.items?.[0]||null,now=Date.now()"),'analysisAsOf must finalize after Scanner response arrives');
