@@ -10,10 +10,10 @@ const base={
   preSurge:{label:'가능성 높음'},xoiProfile:{available:true,positiveBreadth:2,leaderChangePct:2.8}
 };
 const rows=[
-  {...base,symbol:'BESTUSDT'},
-  {...base,symbol:'WATCHUSDT',v3LongTier:'SOFT_FAIL',v3AlignmentPct:58,oi4hChangePct:null,trueTakerRatio:null,tradeSignal:{level:'관찰',invalidations:[]},preSurge:{label:'관찰'}},
-  {...base,symbol:'RUNUSDT',priceChange24h:15},
-  {...base,symbol:'RISKUSDT',scanClass:{key:'DISTRIBUTION-RISK'},tradeSignal:{level:'제외',invalidations:['분배 위험']}}
+  {...base,symbol:'BESTUSDT',spotListed:true,futuresListed:true,marketScope:'spot+futures'},
+  {...base,symbol:'WATCHUSDT',spotListed:true,futuresListed:true,marketScope:'spot+futures',v3LongTier:'SOFT_FAIL',v3AlignmentPct:58,oi4hChangePct:null,trueTakerRatio:null,tradeSignal:{level:'관찰',invalidations:[]},preSurge:{label:'관찰'}},
+  {...base,symbol:'RUNUSDT',spotListed:true,futuresListed:true,marketScope:'spot+futures',priceChange24h:15},
+  {...base,symbol:'RISKUSDT',spotListed:true,futuresListed:true,marketScope:'spot+futures',scanClass:{key:'DISTRIBUTION-RISK'},tradeSignal:{level:'제외',invalidations:['분배 위험']}}
 ];
 
 const best=Auto.evaluate(rows[0]);
@@ -26,6 +26,8 @@ assert(watch.missing.length>0);
 assert.equal(Auto.evaluate(rows[2]).state,'EXCLUDE');
 assert.equal(Auto.evaluate(rows[3]).state,'EXCLUDE');
 
+const sameState=[{...base,symbol:'SPOTONLYUSDT',spotListed:true,futuresListed:false,marketScope:'spot'},{...base,symbol:'PERPUSDT',spotListed:false,futuresListed:true,marketScope:'futures'}];
+const ordered=Auto.recommend(sameState,2);assert.equal(ordered[0].symbol,'PERPUSDT','futures-listed coin must rank ahead of spot-only peer in same state');assert(Auto.marketPriority(ordered[0].item)>Auto.marketPriority(ordered[1].item));
 const out=Auto.summary(rows,5);
 assert.equal(out.ready[0].symbol,'BESTUSDT');
 assert.equal(out.recommended.length,0,'server scanner must not emit RECOMMEND without Book AI confirmation');
