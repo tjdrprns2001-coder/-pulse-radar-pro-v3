@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('assert');
+const Store=require('../ui/book-ai/storage.js');
+const Contract=require('../ui/book-ai/contract.js');
+const mem={m:new Map(),getItem(k){return this.m.get(k)||null},setItem(k,v){this.m.set(k,v)},removeItem(k){this.m.delete(k)}};
+assert.equal(Store.KEY.startsWith(Contract.BOOK_STORAGE_PREFIX),true);
+const s=Store.create(mem);assert.equal(s.get('BTCUSDT'),null);
+s.set('BTCUSDT',{currentState:'READY',sequenceId:'q1',analysisAsOf:10,transitionPath:['WATCH','READY']});
+assert.equal(s.get('btcusdt').lifecycle.currentState,'READY');
+assert.throws(()=>Store.create(mem,'pulse_legacy_ai_bad'),/Legacy AI storage access forbidden/i);
+s.clear('BTCUSDT');assert.equal(s.get('BTCUSDT'),null);
+console.log('book ai storage PASS');
