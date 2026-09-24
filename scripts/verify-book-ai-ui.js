@@ -35,9 +35,17 @@ assert(html.includes('id="autoHistory"'),'auto recommendation history required')
 assert(html.includes('id="autoStats"'),'auto recommendation performance dashboard required');
 for(const id of ['statSamples','statH1','statH4','statH24'])assert(html.includes('id="'+id+'"'),'missing auto performance metric '+id);
 assert(html.includes('id="watchMeta"'),'watch source status required');
-for(const id of ['intelMeta','intelCex','intelIndicators','intelDex','intelNews','intelEvents','intelWallets','intelVerify','intelCoverage','intelDetails'])assert(html.includes('id="'+id+'"'),'missing market intelligence UI '+id);
+for(const id of ['spotMeta','spotCex','spotPrice','spotVolume','spotDex','spotDetails','futuresMeta','futuresCex','futuresOi','futuresFlow','futuresBasis','futuresDetails','intelMeta','intelIndicators','intelNews','intelEvents','intelWallets','intelVerify','intelCoverage','intelDetails'])assert(html.includes('id="'+id+'"'),'missing split market intelligence UI '+id);
+assert(html.includes('현물 시장 패널'),'spot market panel required');
+assert(html.includes('선물 시장 패널'),'futures market panel required');
+assert(html.includes('공통 시장 정보'),'shared intelligence panel required');
 assert(app.includes('mode=intelligence&symbol='),'Book AI must load detailed market intelligence');
 assert(app.includes('renderMarketIntelligence'),'Book AI market intelligence renderer required');
+assert(app.includes("sources.filter(s=>s.marketType==='spot')"),'spot panel must filter spot-only sources');
+assert(app.includes("sources.filter(s=>s.marketType!=='spot')"),'futures panel must filter derivatives sources');
+assert(app.includes("$('futuresOi')"),'OI must render in futures panel');
+assert(app.includes("$('futuresFlow')"),'taker/funding must render in futures panel');
+assert(app.includes("$('spotDex')"),'DEX must render in spot panel');
 assert(app.includes('거래소·DEX·뉴스·이벤트·지갑 데이터를 병렬 확인'),'market intelligence loading state required');
 assert(html.indexOf('id="watchlist"')<html.indexOf('id="aggregateSnapshot"'),'recommendation list must be above charts');
 assert(html.indexOf('id="aggregateSnapshot"')<html.indexOf('id="snapshot"'),'aggregate chart must be above 4H overview');
