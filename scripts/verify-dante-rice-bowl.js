@@ -10,7 +10,7 @@ function params(){return{
   pivot:{left:1,right:1},
   dump:{lookbackBars:8,minDrawdownPct:10,minAtrExpansion:0,requireBearishLongMaHistory:true},
   base:{minBars:4,preferredDurationRatioMin:1.2,preferredDurationRatioMax:2,maxRangeAtr:20,maxEma224SlopeAbsAtrPerBar:10,requireLongerThanDecline:false,minConfirmedPivotCount:0},
-  breakout:{level:'EMA224_OR_GONGGURI',breakoutBufferAtr:.05,minRvol:1.1,ignitionRvol:2,requireConfirmedClose:true,minPriorClosesBelowPivot:3},
+  breakout:{level:'EMA224_OR_GONGGURI',breakoutBufferAtr:.05,minRvol:1.1,ignitionRvol:2,requireConfirmedClose:true,minPriorClosesBelowPivot:0},
   retest:{variant:'RETEST_5D_RECLAIM',toleranceAtr:.5,reclaimBufferAtr:.02,minHoldBars:1,maxRetestBars:8},
   expansion:{minDistanceAtrAboveTrigger:.5,requireHigherLow:false},
   reset:{newStructuralLow:true,emaSeparationReexpansion:true}
