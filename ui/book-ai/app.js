@@ -102,6 +102,24 @@ async function refreshAutoHistory(){
     return data.items||[];
   }catch(e){const meta=$('autoHistoryMeta');if(meta)meta.textContent='이력 조회 제한';return[]}
 }
+function pctText(v){const n=Number(v);return Number.isFinite(n)?(n>=0?'+':'')+n.toFixed(2)+'%':'-'}
+function renderAutoStats(stats={}){
+  const meta=$('autoStatsMeta'),samples=$('statSamples');if(samples)samples.textContent=String(Number(stats.sampleCount)||0);
+  const rows=[['h1','statH1','statH1Sub'],['h4','statH4','statH4Sub'],['h24','statH24','statH24Sub']];
+  for(const [key,id,subId] of rows){
+    const h=stats?.horizons?.[key]||{},main=$(id),sub=$(subId),n=Number(h.evaluatedCount)||0,ratio=Number(h.positiveRatio),mean=Number(h.meanReturnPct);
+    if(main)main.textContent=n&&Number.isFinite(ratio)?Math.round(ratio*100)+'% · '+pctText(mean):'-';
+    if(sub)sub.textContent=n?('평가 '+n+'건 · '+(h.sampleState||'표본 부족')):'평가 대기';
+  }
+  if(meta)meta.textContent=(Number(stats.sampleCount)||0)?'자동 추천 실적 누적':'추천 표본 대기';
+}
+async function refreshAutoStats(){
+  try{
+    const data=await jsonTimeout('/api/coin-scan?mode=recommendation-history&action=stats&state=RECOMMEND',7000);
+    renderAutoStats(data.stats||{});
+    return data.stats||{};
+  }catch(e){const meta=$('autoStatsMeta');if(meta)meta.textContent='성과 조회 제한';return null}
+}
 function renderWatchlist(rows=[]){
   const box=$('watchlist');if(!box)return;box.innerHTML='';
   if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
@@ -132,7 +150,7 @@ async function scannerWatchRows(){
   const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
   if(!seed.length)throw new Error('Scanner 후보 없음');
   const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),12000);
-  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner');refreshAutoHistory()}
+  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner');refreshAutoHistory();refreshAutoStats()}
   const selected=WL.select(deep.items||[],8);
   if(!selected.length)throw new Error('Scanner 정밀 후보 없음');
   return selected;
@@ -364,7 +382,7 @@ function save(){
   const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI',agg=$('aggregateSnapshot'),useAgg=agg?.dataset?.bookAiMtfRendered==='1';const a=document.createElement('a');a.href=useAgg?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=symbol+(useAgg?'-book-ai-mtf.png':'-book-ai-4h-overview.png');document.body.append(a);a.click();a.remove();
 }
 $('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();refreshAutoHistory();
+const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();refreshAutoHistory();refreshAutoStats();
 let autoRefreshTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshWatchlist()},300000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(readAutoCache()?.ts||0)>300000)refreshWatchlist()});
 })();
