@@ -195,10 +195,30 @@ function renderValidationLoading(symbol){
   if(!$('validationStatus'))return;
   $('validationStatus').className='validationStatus';$('validationStatus').textContent='검증 중';
   $('validationMeta').textContent=(symbol||'코인')+' · decision timestamp 기준 검증 중…';
-  $('validationDecision').textContent='-';$('validationCounts').textContent='-';$('validationSnapshot').textContent='-';$('validationReplay').textContent='미검증';
+  $('validationDecision').textContent='-';$('validationCounts').textContent='-';$('validationExecution').textContent='-';$('validationExecutionSub').textContent='spread · depth · slippage';$('validationLayers').textContent='-';$('validationSnapshot').textContent='-';$('validationReplay').textContent='미검증';
   $('replayValidation').disabled=true;$('replayValidation').dataset.snapshotId='';
-  $('validationGates').innerHTML='<div class="watchEmpty">신선도·교차검증·시간성 gate 확인 중…</div>';
+  for(const id of ['validationPerf24','validationLift24','validationFalse24','validationSamples'])if($(id))$(id).textContent='-';
+  for(const id of ['validationPerf24Sub','validationLift24Sub','validationFalse24Sub'])if($(id))$(id).textContent='표본 대기';
+  $('validationGates').innerHTML='<div class="watchEmpty">신선도·교차검증·시간성·체결성 gate 확인 중…</div>';
   $('validationEvidence').innerHTML='<div class="watchEmpty">증거 원장 생성 중…</div>';
+}
+function pctMaybe(v,d=2){const n=Number(v);return Number.isFinite(n)?((n>=0?'+':'')+n.toFixed(d)+'%'):'-'}
+function renderValidationPerformance(stats={}){
+  const v24=stats.byStatus?.VALIDATED?.horizons?.h24||{},lift=stats.validationLift?.h24||{},fr=stats.falseRejection?.h24||{},overall=stats.overall||{};
+  $('validationPerf24').textContent=Number.isFinite(Number(v24.meanReturnPct))?pctMaybe(v24.meanReturnPct)+' · 양(+) '+Math.round((Number(v24.positiveRatio)||0)*100)+'%':'-';
+  $('validationPerf24Sub').textContent='평가 '+(v24.evaluatedCount||0)+'건 · '+(v24.sampleState||'표본 부족');
+  $('validationLift24').textContent=Number.isFinite(Number(lift.meanReturnLiftPct))?pctMaybe(lift.meanReturnLiftPct):'-';
+  $('validationLift24Sub').textContent=Number.isFinite(Number(lift.positiveRatioLift))?'양(+) 비율 lift '+pctMaybe(Number(lift.positiveRatioLift)*100,1):'표본 부족';
+  $('validationFalse24').textContent=Number.isFinite(Number(fr.gt5PctRatio))?Math.round(Number(fr.gt5PctRatio)*100)+'%':'-';
+  $('validationFalse24Sub').textContent='거절 후 +5% 이상 · '+(fr.evaluatedCount||0)+'건 · '+(fr.sampleState||'표본 부족');
+  $('validationSamples').textContent=String(overall.sampleCount||0);
+}
+async function refreshValidationPerformance(){
+  try{
+    await jsonTimeout('/api/coin-scan?mode=validation-performance&action=evaluate',16000);
+    const data=await jsonTimeout('/api/coin-scan?mode=validation-performance&action=stats',12000);
+    renderValidationPerformance(data.stats||{});return data.stats||{};
+  }catch(_e){return null}
 }
 function renderValidation(payload,error=null){
   if(!$('validationStatus'))return;
@@ -212,6 +232,10 @@ function renderValidation(payload,error=null){
   $('validationMeta').textContent=[payload.symbol,'MARKET_VALIDATION_v1',v.reasonCodes?.length?'사유 '+v.reasonCodes.join(' · '):'gate 통과'].filter(Boolean).join(' · ');
   $('validationDecision').textContent=fmtTime(v.decisionTimestamp);
   $('validationCounts').textContent='지지 '+(counts.supportive||0)+' · 중립 '+(counts.neutral||0)+' · 반박 '+(counts.contradictory||0)+' · 누락 '+(counts.missing||0)+' · 오래됨 '+(counts.stale||0);
+  const ex=(v.evidence||[]).find(x=>x.id==='execution.liquidity'),worst=ex?.value?.worst;
+  $('validationExecution').textContent=worst?.available?('스프레드 '+(Number.isFinite(Number(worst.spreadBps))?Number(worst.spreadBps).toFixed(1)+'bp':'N/A')+' · '+(worst.market||'-')):'N/A';
+  $('validationExecutionSub').textContent=worst?.available?('10bp 깊이 '+fmtUsd(worst.depth10Usd)+' · 최대 슬리피지 '+(Number.isFinite(Number(worst.maxSlippageBps))?Number(worst.maxSlippageBps).toFixed(1)+'bp':'N/A')):(ex?.reason||'체결 데이터 없음');
+  $('validationLayers').textContent=[payload.rawPersisted?'RAW':'',payload.normalizedPersisted?'NORM':'',payload.persisted?'SNAP':''].filter(Boolean).join(' → ')||'저장 미확인';
   $('validationSnapshot').textContent=(v.snapshotId||'-')+(v.canonicalHash?' · '+String(v.canonicalHash).slice(0,12):'');
   $('validationReplay').textContent=payload.persisted?'저장됨 · 재현 대기':'저장 미확인';
   $('replayValidation').disabled=!v.snapshotId;$('replayValidation').dataset.snapshotId=v.snapshotId||'';
@@ -575,7 +599,7 @@ async function run(){
       await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
       $('status').textContent=symbol+' · 차트/4TF 완료 · 스캐너 제한';
       const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
-      const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);
+      const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);refreshValidationPerformance().catch(()=>{});
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
@@ -607,7 +631,7 @@ async function run(){
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
     const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
-    const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);
+    const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);refreshValidationPerformance().catch(()=>{});
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
