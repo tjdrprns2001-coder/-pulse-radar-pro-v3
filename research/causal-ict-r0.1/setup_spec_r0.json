@@ -1,0 +1,73 @@
+{
+  "setup_id": "CB-PUBLIC-ICT-R0.1",
+  "rule_version": "0.1.0",
+  "purpose": "Research-only causal OHLCV pattern specification. It is not a claim about ChartBro's proprietary or non-public rules and it does not submit orders.",
+  "data_contract": {
+    "timestamp_timezone": "UTC",
+    "bar_type": "standard_ohlcv",
+    "price_adjustment": "must_be_declared_by_data_provider",
+    "required_columns": ["timestamp", "open", "high", "low", "close"],
+    "optional_columns": ["volume"],
+    "tick_size": 0.01
+  },
+  "causal_clock": {
+    "signal_on": "confirmed_bar_close",
+    "feature_available_from": "known_bar_plus_one",
+    "entry_fill": "next_bar_open",
+    "same_bar_close_fill": false,
+    "intrabar_exit_policy": "conservative_stop_first"
+  },
+  "features": {
+    "atr_length": 14,
+    "swing_k": 3,
+    "pivot_tie_policy": "earliest_in_window",
+    "structure_break_basis": "close",
+    "epsilon_ticks": 1,
+    "liquidity": {
+      "min_touches": 2,
+      "cluster_window_bars": 100,
+      "atr_tolerance_mult": 0.1,
+      "minimum_tolerance_ticks": 2,
+      "reclaim_window_bars": 3,
+      "expiry_bars": 200
+    },
+    "fvg": {
+      "require_middle_body_direction": true,
+      "minimum_atr_mult": 0.1,
+      "minimum_gap_ticks": 2,
+      "expiry_bars": 20,
+      "mitigation_basis": "wick",
+      "merge_consecutive": false
+    },
+    "order_block": {
+      "trigger": "confirmed_BOS_or_MSS",
+      "candidate": "latest_opposite_body_before_break",
+      "lookback_bars": 5,
+      "maximum_candidate_atr_mult": 1.5,
+      "minimum_displacement_atr_mult": 1.0,
+      "zone_basis": "wick",
+      "expiry_bars": 20
+    },
+    "premium_discount": {
+      "anchors": "last_confirmed_opposite_swing_pair",
+      "equilibrium_half_width": 0.025,
+      "price_basis": "close"
+    }
+  },
+  "research_signal": {
+    "long": "reclaimed sell-side liquidity -> bullish MSS within mss_window -> later bullish FVG -> first partial FVG revisit in discount",
+    "short": "reclaimed buy-side liquidity -> bearish MSS within mss_window -> later bearish FVG -> first partial FVG revisit in premium",
+    "mss_window_bars": 8,
+    "one_trade_per_zone": true,
+    "pyramiding": 0
+  },
+  "risk_and_execution": {
+    "initial_equity": 100000.0,
+    "risk_fraction_per_trade": 0.005,
+    "fixed_reward_to_risk": 2.0,
+    "stop_buffer_ticks": 2,
+    "slippage_ticks_each_side": 1,
+    "commission_bps_each_side": 2.0,
+    "allow_overnight": true
+  }
+}
