@@ -23,7 +23,7 @@
 
 [[redirects]]
   from = "/api/dante-backtest*"
-  to = "/.netlify/functions/dante-backtest:splat"
+  to = "/.netlify/functions/api-index?route=dante-backtest"
   status = 200
   force = true
 
