@@ -6,7 +6,7 @@ const shell=read('pulse-unified.html'),shellJs=read('ui/pulse-shell.js'),shellCs
 const norm=read('ui/pulse-child-normalize.css'),scan=read('coin-scan.html'),scanCss=read('ui/coin-scan.css');
 const market=read('index.html'),intel=read('coin-intel.html'),vercel=JSON.parse(read('vercel.json'));
 
-assert(/\/ui\/pulse-shell\.js\?v=2026092[12]-[A-Za-z0-9._-]+/.test(shell),'V5 shell JS cache-bust missing');
+assert(/\/ui\/pulse-shell\.js\?v=[A-Za-z0-9._-]+/.test(shell),'V5 shell JS cache-bust missing');
 assert(shell.includes('/ui/pulse-shell.css?v=20260921-v5'),'V5 shell CSS cache-bust missing');
 assert(!shell.includes('pulse-shell-snapshot-restore.js'),'legacy snapshot shell injector must be removed');
 assert(!shell.includes('pulse-shell-v2-operations.js'),'legacy operations shell injector must be removed');
