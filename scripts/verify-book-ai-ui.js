@@ -39,10 +39,15 @@ for(const id of ['spotMeta','spotCex','spotPrice','spotVolume','spotDex','spotDe
 assert(html.includes('현물 시장 패널'),'spot market panel required');
 assert(html.includes('선물 시장 패널'),'futures market panel required');
 assert(html.includes('공통 시장 정보'),'shared intelligence panel required');
-for(const id of ['validationMeta','validationStatus','validationDecision','validationCounts','validationSnapshot','validationReplay','replayValidation','validationGates','validationEvidence'])assert(html.includes('id="'+id+'"'),'missing market validation UI '+id);
-assert(html.includes('MARKET_VALIDATION_v1'),'market validation version must be visible');
+for(const id of ['validationMeta','validationStatus','validationDecision','validationCounts','validationExecution','validationExecutionSub','validationLayers','validationSnapshot','validationReplay','replayValidation','validationGates','validationEvidence','validationPerf24','validationPerf24Sub','validationLift24','validationLift24Sub','validationFalse24','validationFalse24Sub','validationSamples'])assert(html.includes('id="'+id+'"'),'missing market validation UI '+id);
+assert(html.includes('MARKET_VALIDATION_v2'),'market validation v2 version must be visible');
 assert(app.includes('mode=validation&symbol='),'Book AI must request independent market validation');
 assert(app.includes('mode=validation-snapshots&action=replay'),'Book AI must support deterministic validation replay');
+assert(app.includes('mode=validation-performance&action=evaluate'),'Book AI must evaluate due validation outcomes');
+assert(app.includes('mode=validation-performance&action=stats'),'Book AI must load validation statistics');
+assert(app.includes("x.id==='execution.liquidity'"),'Book AI must render execution liquidity evidence');
+assert(app.includes('validationLift24'),'Book AI must render validation lift');
+assert(app.includes('validationFalse24'),'Book AI must render false rejection');
 assert(app.includes('renderValidation'),'market validation renderer required');
 assert(app.includes('supportive')&&app.includes('contradictory')&&app.includes('missing')&&app.includes('stale'),'evidence ledger stance rendering required');
 assert(app.includes('mode=intelligence&symbol='),'Book AI must load detailed market intelligence');
