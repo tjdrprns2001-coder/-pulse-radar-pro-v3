@@ -109,6 +109,9 @@ function baseAdapter(){
   assert.equal(r.evidenceAudit.ephemeralEventCount,5);
   assert.equal(r.evidenceAudit.persistedEventCount,0);
   assert.equal(r.evidenceAudit.trustedConfirmedEventCount,0);
+  const withoutLive=baseAdapter();withoutLive.sources.journal.events=[];
+  const baseline=Rule.evaluate(withoutLive);
+  assert.deepEqual(r.bookEvidence,baseline.bookEvidence,'LIVE_EPHEMERAL may change CANDIDATE facts but must not inflate Book Evidence v1 score');
 }
 {
   const a=baseAdapter();
@@ -133,5 +136,12 @@ function baseAdapter(){
   a.liveEvidence={events:[{eventId:'LIVE-e-touch',eventType:'TL_RETEST_TOUCH',snapshotId:'LIVE-s',sequenceId:'q1',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-3500,status:'DETECTED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-live-touch'}]};
   const r=Rule.evaluate(a);
   assert.equal(r.bookSetups.find(x=>x.ruleId==='TRENDLINE_REACTION').status,'CANDIDATE','live touch cannot complete persisted confirmation chain');
+}
+{
+  const a=baseAdapter(),base=Rule.evaluate(a);
+  a.liveEvidence={events:[{eventId:'LIVE-extra-mss',eventType:'MSS',snapshotId:'LIVE-s',sequenceId:'q1',symbol:'BTCUSDT',timeframe:'4h',confirmedAt:ASOF-1000,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-extra-mss'}]};
+  const live=Rule.evaluate(a);
+  assert.deepEqual(live.bookEvidence,base.bookEvidence,'adding live-only event must not change evidence score');
+  assert.equal(live.evidenceAudit.ephemeralEventCount,1);
 }
 console.log('book ai rule engine PASS');
