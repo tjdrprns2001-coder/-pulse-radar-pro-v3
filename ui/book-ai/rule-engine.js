@@ -195,7 +195,8 @@ function assertRuleEvidenceIntegrity({rules=[],facts=[],analysisAsOf}={}){
   return true;
 }
 function scoreComponents(facts=[]){
-  const m=byType(facts),used={},pick=t=>(m.get(t)||[]).map(x=>x.factId);
+  const scoreEligible=facts.filter(x=>x?.provenance!=='LIVE_EPHEMERAL');
+  const m=byType(scoreEligible),used={},pick=t=>(m.get(t)||[]).map(x=>x.factId);
   const add=(key,points,types)=>{const ids=uniq(types.flatMap(pick));if(!ids.length)return 0;used[key]=uniq([...(used[key]||[]),...ids]);return points};
   let bookStructure=0;bookStructure+=add('bookStructure',8,['TRENDLINE_BREAK','STRUCTURE_BREAK_EXPLICIT']);bookStructure+=add('bookStructure',5,['RETEST_TOUCH']);bookStructure+=add('bookStructure',7,['RETEST_CONFIRMED']);bookStructure+=add('bookStructure',5,['RECLAIM']);bookStructure=Math.min(25,bookStructure);
   let htfAlignment=0;htfAlignment+=add('htfAlignment',14,['HTF_LONG_PASS']);htfAlignment+=add('htfAlignment',4,['HTF_CORE_UP']);htfAlignment+=add('htfAlignment',2,['HTF_ALIGNMENT_STRONG']);htfAlignment=Math.min(20,htfAlignment);
@@ -203,7 +204,7 @@ function scoreComponents(facts=[]){
   let volumeRvol=0;volumeRvol+=add('volumeRvol',4,['RVOL_1H_ACTIVE']);volumeRvol+=add('volumeRvol',8,['RVOL_15M_IGNITION']);volumeRvol=Math.min(12,volumeRvol);
   let derivatives=0;derivatives+=add('derivatives',5,['OI_BUILD']);derivatives+=add('derivatives',5,['TAKER_CONFIRM']);derivatives=Math.min(10,derivatives);
   let retestReclaim=0;retestReclaim+=add('retestReclaim',2,['RETEST_TOUCH']);retestReclaim+=add('retestReclaim',3,['RETEST_CONFIRMED']);retestReclaim+=add('retestReclaim',3,['RECLAIM']);retestReclaim=Math.min(8,retestReclaim);
-  return{bookEvidence:Contract.computeEvidenceScore({bookStructure,htfAlignment,liquiditySmc,volumeRvol,derivatives,retestReclaim}),componentUsage:Object.fromEntries(Object.entries(used).map(([k,v])=>[k,uniq(v).sort()]))};
+  return{bookEvidence:Contract.computeEvidenceScore({bookStructure,htfAlignment,liquiditySmc,volumeRvol,derivatives,retestReclaim}),componentUsage:Object.fromEntries(Object.entries(used).map(([k,v])=>[k,uniq(v).sort()])),scorePolicy:{version:'BOOK_EVIDENCE_LIVE_GUARD_v1',liveEphemeralContribution:0}};
 }
 function buildEvidenceAudit({facts=[],rules=[],componentUsage={}}={}){
   const factMap=new Map(facts.map(x=>[x.factId,x])),usage={};let totalRuleFactReferences=0,totalComponentFactReferences=0;
