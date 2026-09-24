@@ -5,13 +5,13 @@ function rows(vals){return vals.map((v,i)=>({time:1000+i*1000,closeTime:1000+i*1
 const vals=[];for(let i=0;i<30;i++)vals.push(120-i*1.5);for(let i=0;i<10;i++)vals.push(76+i*1.8);
 const c=rows(vals),asOf=c.at(-1).closeTime+1;
 {
-  const r=E.analyze({candles:c,analysisAsOf:asOf,params:{ema:{fast:3,pivot:5,long:8}}});
+  const r=E.analyze({candles:c,analysisAsOf:asOf,params:{ema:{fast:3,pivot:5,long:8},emaSeed:{method:'SMA_FIXED',seedBars:8}}});
   assert.notEqual(r.state,'NO_STRIKE');
   assert.equal(r.status==='CANDIDATE'||r.status==='INVALIDATED',true);
   assert(r.paramsHash);
 }
 {
   const bad=[...c.slice(0,-1),{...c.at(-1),partial:true}];
-  assert.throws(()=>E.analyze({candles:bad,analysisAsOf:asOf,params:{ema:{fast:3,pivot:5,long:8}}}),/CLOSED_ONLY/i);
+  assert.throws(()=>E.analyze({candles:bad,analysisAsOf:asOf,params:{ema:{fast:3,pivot:5,long:8},emaSeed:{method:'SMA_FIXED',seedBars:8}}}),/CLOSED_ONLY/i);
 }
 console.log('dante ema strike PASS');
