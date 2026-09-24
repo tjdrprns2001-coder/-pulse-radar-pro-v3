@@ -136,7 +136,7 @@ function renderAutoRecommendations(bundle={},source='스캐너 v3'){
   for(const x of rows){
     const b=document.createElement('button');b.type='button';b.className='autoItem auto-'+String(x.state||'WATCH');b.dataset.symbol=x.symbol;
     const top=document.createElement('div');top.className='autoTop';
-    const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';tag.textContent=x.label||'관찰';left.append(sym,tag);
+    const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';const scope=x.item?.marketScope==='spot+futures'?'현물+선물':x.item?.marketScope==='spot'?'현물':x.item?.marketScope==='futures'?'선물':'';tag.textContent=[x.label||'관찰',scope].filter(Boolean).join(' · ');left.append(sym,tag);
     const score=document.createElement('em');score.textContent=Math.round(Number(x.score)||0)+'점';top.append(left,score);
     const p=document.createElement('p');p.textContent=(x.reasons||[]).slice(0,4).join(' · ')||'승격 조건 계산';
     const m=document.createElement('small');m.textContent=(x.missing||[]).length?'다음 관문 · '+x.missing.slice(0,3).join(' · '):'핵심 관문 통과';
@@ -251,7 +251,7 @@ async function scannerWatchRows(){
   return selected;
 }
 async function spotWatchRows(){
-  const spot=await jsonTimeout('/api/presurge',10000);
+  const spot=await jsonTimeout('/api/presurge',20000);
   const selected=presurgeFallbackRows(spot);
   if(!selected.length)throw new Error('Spot PRE-SURGE 후보 없음');
   return selected;
