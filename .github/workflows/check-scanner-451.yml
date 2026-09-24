@@ -1,0 +1,20 @@
+name: Scanner 451 fallback checks
+on:
+  push:
+    branches: [fix/scanner-451-spot-fallback]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check lib/coin-scan/binance-provider.js
+      - run: node --check lib/coin-scan/scan-service.js
+      - run: node scripts/verify-coin-scan-provider.js
+      - run: node scripts/verify-coin-scan-451-fallback.js
+      - run: node scripts/verify-coin-scan-core.js
+      - run: node scripts/verify-coin-scan-deep.js
+      - run: node scripts/verify-cross-oi-v2.js
+      - run: node scripts/verify-v3-scanner.js
