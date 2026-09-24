@@ -1,0 +1,33 @@
+name: Market validation v1 checks
+on:
+  push:
+    branches: [feat/market-validation-v1]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check lib/coin-scan/market-validation-engine.js
+      - run: node --check lib/coin-scan/scan-service.js
+      - run: node --check lib/signal-performance/store.js
+      - run: node --check api/coin-scan.js
+      - run: node --check ui/book-ai/app.js
+      - run: node scripts/verify-market-validation.js
+      - run: node scripts/verify-market-intelligence.js
+      - run: node scripts/verify-dual-market-ai30.js
+      - run: node scripts/verify-coin-scan-api.js
+      - run: node scripts/verify-coin-scan-451-fallback.js
+      - run: node scripts/verify-v3-scanner.js
+      - run: node scripts/verify-book-ai-watchlist.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-causal-ict-r01.js
+      - run: node scripts/verify-causal-ict-integration.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-coin-scan-ui.js
+      - run: node scripts/verify-recommendation-promotion.js
+      - run: node scripts/verify-v4-1-mobile.js
