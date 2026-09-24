@@ -14,10 +14,10 @@ function gateReadOnly(){
   if(!Gate)return null;
   try{
     const db=Gate.createLocalStorageStore(localStorage).read(),round=db.rounds?.at(-1)||null,observations=Array.isArray(db.observations)?db.observations:[];
-    if(!round&&!observations.length)return null;
-    const times=[round?.decision?.decidedAt,round?.validation?.cutoffFrozenAt,round?.validationProgress?.updatedAt,round?.createdAt,...observations.flatMap(x=>[x.outcomeUpdatedAt,x.confirmedAt])].map(Number).filter(Number.isFinite);
+    const initializedAt=Number(db.updatedAt);if(!round&&!observations.length&&!Number.isFinite(initializedAt))return null;
+    const times=[initializedAt,round?.decision?.decidedAt,round?.validation?.cutoffFrozenAt,round?.validationProgress?.updatedAt,round?.createdAt,...observations.flatMap(x=>[x.outcomeUpdatedAt,x.confirmedAt])].map(Number).filter(Number.isFinite);
     const observedAt=times.length?Math.max(...times):null;
-    return{data:{version:Gate.VERSION,state:round?.status||'INSUFFICIENT',round,progress:{archiveN:observations.length,updatedAt:observedAt}},observedAt,version:Gate.VERSION};
+    return{data:{version:Gate.VERSION,state:round?.status||db.lastState||'INSUFFICIENT',round,progress:{archiveN:observations.length,updatedAt:observedAt}},observedAt,version:Gate.VERSION};
   }catch{return null}
 }
 function journalReadOnly(){
@@ -26,6 +26,31 @@ function journalReadOnly(){
 }
 function boundedObservedAt(value,receivedAt){const v=Number(value),r=Number(receivedAt);if(!Number.isFinite(r))return Number.isFinite(v)?v:null;if(!Number.isFinite(v))return r;return Math.min(v,r)}
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
+const TF_MS=Object.freeze({'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000});
+function freshnessLimit(tf){const base=TF_MS[String(tf||'').toLowerCase()]||3600000;return Math.max(30*60*1000,base+30*60*1000)}
+async function fetchStructureFresh({symbol,interval,limit=560,analysisAsOf=Date.now()}={}){
+  let raw=await CD.fetchStructure({symbol,interval,limit});
+  const observed=lastClosedTime(raw),maxAge=freshnessLimit(interval);
+  if(Number.isFinite(observed)&&analysisAsOf-observed>maxAge){
+    raw=await CD.fetchStructure({symbol,interval,limit,cacheBust:analysisAsOf});
+    raw.__bookAiFreshRetry=true;
+  }
+  return raw;
+}
+function persistConfirmedEvidence({symbol,chart,now}={}){
+  if(!Journal||!Gate)return{journal:null,gate:null,persisted:false,reason:'ENGINE_UNAVAILABLE'};
+  try{
+    const bundle=Journal.createBundle({symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now});
+    const confirmed=(bundle.events||[]).filter(x=>x?.status==='CONFIRMED');
+    if(!confirmed.length)return{journal:journalReadOnly(),gate:gateReadOnly(),persisted:false,reason:'NO_CONFIRMED_EVENT'};
+    const journalStore=Journal.createLocalStorageStore(localStorage);
+    Journal.recordAndResolve({store:journalStore,snapshot:bundle.snapshot,events:bundle.events,referenceCandles:chart.candles,outcomeCandles:chart.candles,now});
+    const gateStore=Gate.createLocalStorageStore(localStorage);
+    const gateResult=Gate.evaluateGate({journalDb:journalStore.export(),store:gateStore,now});
+    const gateDb=gateStore.read();gateStore.write({...gateDb,updatedAt:now,lastState:gateResult?.state||gateDb.lastState||'INSUFFICIENT'});
+    return{journal:journalReadOnly(),gate:gateReadOnly(),persisted:true,confirmedCount:confirmed.length,gateState:gateResult?.state||null};
+  }catch(e){return{journal:journalReadOnly(),gate:gateReadOnly(),persisted:false,reason:String(e?.message||e)}}
+}
 function closedCandlesForAsOf(rows,analysisAsOf){
   return (Array.isArray(rows)?rows:[]).filter(c=>{
     if(!c||c.partial===true||c.isClosed===false||c.confirmed===false)return false;
@@ -305,7 +330,7 @@ function fillMini(card,chart){
 function failMini(card,e){card.querySelector('.tfMiniHead span').textContent='데이터 오류';const rows=card.querySelectorAll('.tfMiniRow b');rows.forEach(x=>x.textContent='N/A');if(rows[0])rows[0].title=String(e?.message||e||'error')}
 async function loadMtfBoard(symbol,chart4h,analysisAsOf,token){
   const box=$('mtfBoard');box.innerHTML='';const cards={},charts={'4h':chart4h};for(const tf of MINI_TFS){cards[tf]=makeMiniCard(tf);box.append(cards[tf])}
-  const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await CD.fetchStructure({symbol,interval:tf,limit:520}),tf,analysisAsOf);if(token!==runSeq)return;charts[tf]=chart;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
+  const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await fetchStructureFresh({symbol,interval:tf,limit:520,analysisAsOf}),tf,analysisAsOf);if(token!==runSeq)return;charts[tf]=chart;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
   await Promise.allSettled(jobs);if(token===runSeq)renderAggregate(symbol,charts);return charts;
 }
 function shortError(e){const s=String(e?.message||e||'Scanner unavailable');return s.length>120?s.slice(0,117)+'…':s}
@@ -335,7 +360,7 @@ async function run(){
   try{
     const requestStartedAt=Date.now();
     const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
-    const raw=await CD.fetchStructure({symbol,interval:'4h',limit:560});if(token!==runSeq)return;
+    const raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:requestStartedAt});if(token!==runSeq)return;
     const chart=buildChart(raw,'4h',requestStartedAt);
     const scanResult=await scanPromise;if(token!==runSeq)return;
     const scan=scanResult.data,item=scan?.items?.[0]||null,now=Date.now();
@@ -348,7 +373,8 @@ async function run(){
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
-    const closed=lastClosedTime({candles:chart.candles}),journal=journalReadOnly(),gate=gateReadOnly();
+    const closed=lastClosedTime({candles:chart.candles});
+    const persisted=persistConfirmedEvidence({symbol,chart,now}),journal=persisted.journal||journalReadOnly(),gate=persisted.gate||gateReadOnly();
     if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
     const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
     const adapter=A.adaptBookAiInput({
