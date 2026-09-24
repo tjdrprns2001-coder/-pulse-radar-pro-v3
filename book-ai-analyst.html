@@ -1,22 +1,11 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/book-ai/book-ai.css?v=20260925-validation2"><title>PulseRadar V5 · 책 기반 AI 분석</title></head><body><main class="app">
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/book-ai/book-ai.css?v=20260925-compact99"><title>PulseRadar V5 · 책 기반 AI 분석</title></head><body><main class="app">
 <header class="hero"><div><span class="eyebrow">책 기반 AI 분석 · 결정론적</span><h1>책 기반 AI 분석</h1><p>스캐너 v3 · ICT/SMC · 외환 책 데이터 · 이벤트 원장/검증 게이트 근거를 합성합니다. 점수는 승률이 아니라 근거 완성도입니다.</p></div><span id="status" class="badge">대기</span></header>
 <section class="toolbar"><input id="symbol" value="BTCUSDT" aria-label="종목"><button id="run" class="primary">책 기반 AI 분석</button><button id="savePng" disabled>요약 PNG</button></section>
 
-<section class="card autoCard"><div class="sectionHead"><div><span class="sectionKicker">자동 롱 후보</span><h2>자동 코인 추천</h2><span id="autoMeta" class="muted">스캐너 v3 · 롱 전용 조건 확인 중…</span></div><span class="autoCycle">5분 자동갱신</span></div><div id="autoRecommendations" class="autoList"><div class="watchEmpty">자동 추천을 계산하는 중…</div></div><div class="autoStatsHead"><b>추천 성과</b><span id="autoStatsMeta">성과 확인 중…</span></div><div id="autoStats" class="autoStats"><div class="autoStat"><span>추천 표본</span><b id="statSamples">-</b><small>누적 추천 이벤트</small></div><div class="autoStat"><span>1H</span><b id="statH1">-</b><small id="statH1Sub">평가 대기</small></div><div class="autoStat"><span>4H</span><b id="statH4">-</b><small id="statH4Sub">평가 대기</small></div><div class="autoStat"><span>24H</span><b id="statH24">-</b><small id="statH24Sub">평가 대기</small></div></div><div class="autoHistoryHead"><b>최근 추천 변화</b><span id="autoHistoryMeta">이력 확인 중…</span></div><div id="autoHistory" class="autoHistory"><div class="watchEmpty">추천 변화 이력이 없습니다.</div></div><div class="watchFoot">승격 흐름은 관찰 → 준비 → 확정 → 자동 추천 순서입니다. 점수는 조건 적합도이며 수익률·승률 예측이 아닙니다. 성과 통계는 과거 추천 결과 요약이며 표본이 적으면 참고용입니다.</div></section>
+<section class="card autoCard"><div class="sectionHead"><div><span class="sectionKicker">자동 롱 후보</span><h2>자동 코인 추천</h2><span id="autoMeta" class="muted">스캐너 v3 · 롱 전용 조건 확인 중…</span></div><span class="autoCycle">5분 자동갱신</span></div><div id="autoRecommendations" class="autoList"><div class="watchEmpty">자동 추천을 계산하는 중…</div></div><details class="compactSection autoExtras"><summary>추천 성과 · 최근 변화 보기</summary><div class="compactBody"><div class="autoStatsHead"><b>추천 성과</b><span id="autoStatsMeta">성과 확인 중…</span></div><div id="autoStats" class="autoStats"><div class="autoStat"><span>추천 표본</span><b id="statSamples">-</b><small>누적 추천 이벤트</small></div><div class="autoStat"><span>1H</span><b id="statH1">-</b><small id="statH1Sub">평가 대기</small></div><div class="autoStat"><span>4H</span><b id="statH4">-</b><small id="statH4Sub">평가 대기</small></div><div class="autoStat"><span>24H</span><b id="statH24">-</b><small id="statH24Sub">평가 대기</small></div></div><div class="autoHistoryHead"><b>최근 추천 변화</b><span id="autoHistoryMeta">이력 확인 중…</span></div><div id="autoHistory" class="autoHistory"><div class="watchEmpty">추천 변화 이력이 없습니다.</div></div><div class="watchFoot">승격 흐름은 관찰 → 준비 → 확정 → 자동 추천 순서입니다. 점수는 조건 적합도이며 수익률·승률 예측이 아닙니다. 성과 통계는 과거 추천 결과 요약이며 표본이 적으면 참고용입니다.</div></div></details></section>
 <section class="card watchCard"><div class="sectionHead"><div><span class="sectionKicker">관찰 후보</span><h2>추천 관찰 후보</h2><span id="watchMeta" class="muted">스캐너 v3 후보 확인 중…</span></div><button id="refreshCandidates" class="miniBtn">새로고침</button></div><div id="watchlist" class="watchlist"><div class="watchEmpty">후보를 불러오는 중…</div></div><div class="watchFoot">후보 점수는 조건 적합도이며 상승 확률이 아닙니다. 종목을 누르면 바로 책 기반 AI 분석으로 이동합니다.</div></section>
-<section class="marketSplit">
-  <section class="card intelCard spotPanel">
-    <div class="sectionHead"><div><span class="sectionKicker">현물 시장 패널</span><h2>현물 가격 · 거래량 · DEX · 현물 교차검증</h2><span id="spotMeta" class="muted">현물 데이터 대기</span></div><span class="marketBadge spotBadge">SPOT</span></div>
-    <div class="intelGrid marketGrid">
-      <article><span>현물 거래소</span><b id="spotCex">-</b><small id="spotCexSub">-</small></article>
-      <article><span>현물 중앙 가격</span><b id="spotPrice">-</b><small id="spotPriceSub">-</small></article>
-      <article><span>현물 거래량</span><b id="spotVolume">-</b><small id="spotVolumeSub">-</small></article>
-      <article><span>DEX</span><b id="spotDex">-</b><small id="spotDexSub">-</small></article>
-    </div>
-    <div id="spotDetails" class="intelDetails"><div class="watchEmpty">현물 교차검증 대기</div></div>
-  </section>
-
-  <section class="card intelCard futuresPanel">
+<section class="marketSplit futuresFocus">
+<section class="card intelCard futuresPanel">
     <div class="sectionHead"><div><span class="sectionKicker">선물 시장 패널</span><h2>OI · Taker · Funding · 스왑/선물 교차검증</h2><span id="futuresMeta" class="muted">선물 데이터 대기</span></div><span class="marketBadge futuresBadge">FUTURES</span></div>
     <div class="intelGrid marketGrid">
       <article><span>선물/스왑 거래소</span><b id="futuresCex">-</b><small id="futuresCexSub">-</small></article>
@@ -26,9 +15,19 @@
     </div>
     <div id="futuresDetails" class="intelDetails"><div class="watchEmpty">선물 교차검증 대기</div></div>
   </section>
+<details class="compactSection spotCompact"><summary>현물 시장 패널 펼치기</summary><div class="compactBody"><section class="card intelCard spotPanel">
+    <div class="sectionHead"><div><span class="sectionKicker">현물 시장 패널</span><h2>현물 가격 · 거래량 · DEX · 현물 교차검증</h2><span id="spotMeta" class="muted">현물 데이터 대기</span></div><span class="marketBadge spotBadge">SPOT</span></div>
+    <div class="intelGrid marketGrid">
+      <article><span>현물 거래소</span><b id="spotCex">-</b><small id="spotCexSub">-</small></article>
+      <article><span>현물 중앙 가격</span><b id="spotPrice">-</b><small id="spotPriceSub">-</small></article>
+      <article><span>현물 거래량</span><b id="spotVolume">-</b><small id="spotVolumeSub">-</small></article>
+      <article><span>DEX</span><b id="spotDex">-</b><small id="spotDexSub">-</small></article>
+    </div>
+    <div id="spotDetails" class="intelDetails"><div class="watchEmpty">현물 교차검증 대기</div></div>
+  </section></div></details>
 </section>
 
-<section class="card intelCard commonIntelPanel">
+<details class="compactSection commonCompact"><summary>공통 시장 정보 · 뉴스/이벤트/지갑 보기</summary><div class="compactBody"><section class="card intelCard commonIntelPanel">
   <div class="sectionHead"><div><span class="sectionKicker">공통 시장 정보</span><h2>보조지표 · 뉴스 · 이벤트 · 지갑 · 계약 검증</h2><span id="intelMeta" class="muted">공통 정보 대기</span></div><span class="muted">Binance 상장 코인만 표시</span></div>
   <div class="intelGrid">
     <article><span>외부 보조지표</span><b id="intelIndicators">-</b><small id="intelIndicatorsSub">-</small></article>
@@ -40,6 +39,8 @@
   </div>
   <div id="intelDetails" class="intelDetails"><div class="watchEmpty">분석 실행 후 공통 정보를 표시합니다.</div></div>
 </section>
+
+</div></details>
 
 <section class="card validationCard">
   <div class="sectionHead">
@@ -54,7 +55,7 @@
     <article><span>스냅샷</span><b id="validationSnapshot">-</b></article>
     <article><span>재현성</span><b id="validationReplay">미검증</b><button id="replayValidation" class="miniBtn" type="button" disabled>재현 검증</button></article>
   </div>
-  <div class="validationPerf">
+  <details class="compactSection validationMore"><summary>검증 성과 · Gate · 증거 원장 펼치기</summary><div class="compactBody">  <div class="validationPerf">
     <article><span>VALIDATED 24H</span><b id="validationPerf24">-</b><small id="validationPerf24Sub">표본 대기</small></article>
     <article><span>Validation Lift 24H</span><b id="validationLift24">-</b><small id="validationLift24Sub">표본 대기</small></article>
     <article><span>False Rejection 24H</span><b id="validationFalse24">-</b><small id="validationFalse24Sub">표본 대기</small></article>
@@ -64,10 +65,13 @@
     <div><h3>Gate 상태</h3><div id="validationGates" class="validationGates"><div class="watchEmpty">검증 실행 후 표시됩니다.</div></div></div>
     <div><h3>증거 원장</h3><div id="validationEvidence" class="validationEvidence"><div class="watchEmpty">지지 · 중립 · 반박 · 누락 · 오래됨을 개별 표시합니다.</div></div></div>
   </div>
+</div></details>
   <div class="note">시장검증은 Book AI 추천 점수와 분리됩니다. decision timestamp 이후 뉴스·지갑·시장 데이터는 검증 근거에서 제외하고, 조회 실패 값은 추정하지 않습니다.</div>
 </section>
 
-<section class="card aggregateCard"><div class="chartHead"><div><span class="sectionKicker">다중 시간프레임 종합</span><h2>종합 멀티TF 차트</h2><span>1D · 4H · 1H · 15m 한 장 요약</span></div><span id="mtfStatus">대기</span></div><canvas id="aggregateSnapshot" width="1280" height="900"></canvas><div class="note">4개 시간프레임의 112/224/448 EMA · 구조 · 유동성을 한 장에 합성합니다. 별도 매매 판정을 만들지 않습니다.</div></section>
+<details class="compactSection chartCompact"><summary>다중 시간프레임 종합 차트 펼치기</summary><div class="compactBody"><section class="card aggregateCard"><div class="chartHead"><div><span class="sectionKicker">다중 시간프레임 종합</span><h2>종합 멀티TF 차트</h2><span>1D · 4H · 1H · 15m 한 장 요약</span></div><span id="mtfStatus">대기</span></div><canvas id="aggregateSnapshot" width="1280" height="900"></canvas><div class="note">4개 시간프레임의 112/224/448 EMA · 구조 · 유동성을 한 장에 합성합니다. 별도 매매 판정을 만들지 않습니다.</div></section>
+
+</div></details>
 
 <section class="card overviewCard">
   <div class="chartHead"><div><span class="sectionKicker">최종 종합</span><h2>최종 종합 차트 · 4H</h2></div><span>112 · 224 · 448 EMA + 구조 · 유동성 · 가격 전달 배열(PD Array)</span></div>
@@ -96,10 +100,12 @@
   <div class="metric"><span>인과성 ICT</span><b id="causalState">-</b><small id="causalLedger">인과성 원장 대기</small></div>
 </section>
 
-<section class="card mtfSection">
+<details class="compactSection mtfCompact"><summary>1D · 4H · 1H · 15m 미니 보드 펼치기</summary><div class="compactBody"><section class="card mtfSection">
   <div class="sectionHead"><div><span class="sectionKicker">다중 시간프레임 미니 보드</span><h2>1D · 4H · 1H · 15m</h2></div><span class="muted">편향 · 상태 · 트리거 · EMA224 · 재회복/재시험</span></div>
   <div id="mtfBoard" class="mtfBoard"><div class="empty">분석 실행 후 표시됩니다.</div></div>
 </section>
+
+</div></details>
 
 <details class="detailStack">
   <summary>상세 근거 펼치기 · 표준 요약 / 책 규칙 / 데이터 품질</summary>
@@ -111,4 +117,4 @@
 </details>
 </main>
 <script src="/ui/chart/chart-data.js?v=20260925-fresh1"></script><script src="/ui/chart/causal-ict-engine.js?v=20260925-causal1"></script><script src="/ui/chart/causal-ict-ledger.js?v=20260925-causal1"></script><script src="/ui/chart/smc-engine.js"></script><script src="/ui/chart/session-profile.js?v=20260921-v5"></script><script src="/ui/chart/liquidity-engine.js"></script><script src="/ui/chart/liquidity-map-engine.js?v=20260924-live1"></script><script src="/ui/chart/trendline-retest-engine.js?v=20260924-live1"></script><script src="/ui/ict-trainer/engine.js?v=20260921-ict1"></script><script src="/ui/forex-book/forex-book-engine.js?v=20260922-book4"></script><script src="/ui/chart/liquidity-event-journal.js?v=20260924-j11"></script><script src="/ui/chart/sample-readiness-gate.js?v=20260924-g1"></script><script src="/ui/trader/analysis-engine.js?v=20260921-v5"></script>
-<script src="/ui/book-ai/contract.js?v=20260924-live1"></script><script src="/ui/book-ai/promotion-engine.js?v=20260925-final99"></script><script src="/ui/book-ai/mtf-composer.js?v=20260925-mtf2"></script><script src="/ui/book-ai/watchlist-selector.js?v=20260925-watch1"></script><script src="/ui/book-ai/live-evidence.js?v=20260924-live1"></script><script src="/ui/book-ai/adapter.js?v=20260925-fresh2"></script><script src="/ui/book-ai/rule-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/setup-state.js?v=20260924-ui1"></script><script src="/ui/book-ai/fusion-engine.js?v=20260924-ui1"></script><script src="/ui/book-ai/summary-template.js?v=20260924-ui1"></script><script src="/lib/analysis/snapshot-builder.js?v=20260924-ui1"></script><script src="/ui/trader/snapshot-renderer.js?v=20260921-accuracy1"></script><script src="/ui/book-ai/snapshot-composer.js?v=20260924-ui2"></script><script src="/ui/book-ai/storage.js?v=20260924-ui1"></script><script src="/ui/book-ai/app.js?v=20260925-final99"></script></body></html>
+<script src="/ui/book-ai/contract.js?v=20260924-live1"></script><script src="/ui/book-ai/promotion-engine.js?v=20260925-final99"></script><script src="/ui/book-ai/mtf-composer.js?v=20260925-mtf2"></script><script src="/ui/book-ai/watchlist-selector.js?v=20260925-watch1"></script><script src="/ui/book-ai/live-evidence.js?v=20260924-live1"></script><script src="/ui/book-ai/adapter.js?v=20260925-fresh2"></script><script src="/ui/book-ai/rule-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/setup-state.js?v=20260924-ui1"></script><script src="/ui/book-ai/fusion-engine.js?v=20260924-ui1"></script><script src="/ui/book-ai/summary-template.js?v=20260924-ui1"></script><script src="/lib/analysis/snapshot-builder.js?v=20260924-ui1"></script><script src="/ui/trader/snapshot-renderer.js?v=20260921-accuracy1"></script><script src="/ui/book-ai/snapshot-composer.js?v=20260924-ui2"></script><script src="/ui/book-ai/storage.js?v=20260924-ui1"></script><script src="/ui/book-ai/app.js?v=20260925-compact99"></script></body></html>
