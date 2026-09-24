@@ -14,13 +14,21 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
   r=await svc.observe({recommended:[],watch:[base],wait:[],excluded:[]},{updatedAt:now+60_000,marketSource:'spot-fallback'});
   assert.equal(r.recorded,0,'same state/score within cooldown must not spam history');
   now+=120_000;
-  const promoted={...base,state:'RECOMMEND',label:'자동 추천',score:78,item:{...base.item,v3LongTier:'PASS'}};
-  r=await svc.observe({recommended:[promoted],watch:[],wait:[],excluded:[]},{updatedAt:now,marketSource:'spot-fallback'});
-  assert.equal(r.recorded,1,'WATCH to RECOMMEND transition must persist immediately');
+  const ready={...base,state:'READY',label:'준비',score:72,item:{...base.item,v3LongTier:'PASS'}};
+  r=await svc.observe({recommended:[],confirmed:[],ready:[ready],watch:[],wait:[],excluded:[]},{updatedAt:now,marketSource:'spot-fallback'});
+  assert.equal(r.recorded,1,'WATCH to READY transition must persist immediately');
+  now+=120_000;
+  const confirmed={...ready,state:'CONFIRMED',label:'확정',score:75};
+  r=await svc.observe({recommended:[],confirmed:[confirmed],ready:[],watch:[],wait:[],excluded:[]},{updatedAt:now,marketSource:'book-ai-client'});
+  assert.equal(r.recorded,1,'READY to CONFIRMED transition must persist');
+  now+=120_000;
+  const promoted={...confirmed,state:'RECOMMEND',label:'자동 추천',score:78};
+  r=await svc.observe({recommended:[promoted],confirmed:[],ready:[],watch:[],wait:[],excluded:[]},{updatedAt:now,marketSource:'book-ai-client'});
+  assert.equal(r.recorded,1,'CONFIRMED to RECOMMEND transition must persist');
   let rows=await svc.list({symbol:'AAAUSDT',limit:10});
-  assert.equal(rows.length,2);
-  assert.equal(rows[0].direction,'WATCH→RECOMMEND');
-  assert.equal(rows[0].previousState,'WATCH');
+  assert.equal(rows.length,4);
+  assert.equal(rows[0].direction,'CONFIRMED→RECOMMEND');
+  assert.equal(rows[0].previousState,'CONFIRMED');
   assert.equal(rows[0].price,10);
   assert.equal(rows[0].marketSource,'spot-fallback');
 
