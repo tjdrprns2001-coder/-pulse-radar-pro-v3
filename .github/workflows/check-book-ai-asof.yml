@@ -5,12 +5,14 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node --check ui/book-ai/app.js
+      - run: node --check lib/coin-scan/recommendation-history.js
       - run: node scripts/verify-book-ai-adapter.js
       - run: node scripts/verify-book-ai-ui.js
       - run: node scripts/verify-book-ai-contract.js
@@ -18,3 +20,7 @@ jobs:
       - run: node scripts/verify-book-ai-rules.js
       - run: node scripts/verify-book-ai-fusion.js
       - run: node scripts/verify-book-ai-summary.js
+      - run: node scripts/verify-recommendation-history.js
+      - run: node scripts/verify-coin-scan-api.js
+      - run: node scripts/verify-book-ai-watchlist.js
+      - run: node scripts/verify-book-ai-mtf.js
