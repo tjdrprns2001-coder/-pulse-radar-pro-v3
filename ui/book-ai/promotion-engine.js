@@ -60,8 +60,8 @@ function evaluate({item={},book=null,priorState=null}={}){
   if(g.blocked.length)state='EXCLUDE';
   else if(g.readyCore)state='READY';
   else if(g.passed.length>=3)state='WATCH';
-  if(state!=='EXCLUDE'&&confirmed&&g.readyCore){state='CONFIRMED';reasons.push('책 근거 확정 + Scanner READY 조건 통과');}
-  else if(state!=='EXCLUDE'&&confirmed&&!g.readyCore){reasons.push('책 근거 확정');missing.push('시장 승격용 Scanner READY 조건');}
+  if(state!=='EXCLUDE'&&confirmed&&g.readyCore){state='CONFIRMED';reasons.unshift('책 근거 확정 + Scanner READY 조건 통과');}
+  else if(state!=='EXCLUDE'&&confirmed&&!g.readyCore){reasons.unshift('책 근거 확정');missing.push('시장 승격용 Scanner READY 조건');}
   if(state==='CONFIRMED'&&g.finalGate){state='RECOMMEND';reasons.push('최종 파생/거래량 게이트 통과');}
   if(confirmed&&g.readyCore&&!g.finalGate)missing.push('최종 OI/taker/RVOL/하위TF 게이트');
   const prior=text(priorState).toUpperCase(),transition=prior&&ORDER[prior]!=null&&prior!==state?prior+'→'+state:null;
