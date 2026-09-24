@@ -19,14 +19,55 @@ function featureRows(stats){
  return '<div class="thead"><span>피처</span><span>P50</span><span>Missing</span><span>성공-실패 P50 차이</span></div>'+rows.map(function(pair){const k=pair[0],v=pair[1],c=(stats.featureComparison||{})[k];return '<div class="trow"><b>'+esc(k)+'</b><span>'+num(v.p50)+'</span><span>'+pct(v.missingRate)+'</span><span>'+num(c&&c.medianDifference)+'</span></div>'}).join('')
 }
 function eventRows(items){if(!items.length)return'<div class="empty">저장된 이벤트가 없습니다.</div>';return items.slice(0,30).map(function(x){return '<article><b>'+esc(x.symbol)+'</b><span>'+esc(String(x.datasetSplit||'').toUpperCase())+'</span><small>'+new Date(Number(x.signalCandleCloseTs)).toLocaleString('ko-KR',{hour12:false})+'</small><small>entry '+esc(x.entryPrice)+'</small></article>'}).join('')}
+function engineCards(status){
+ const e=status.dataEngine||{},u=e.universe||{},session=status.sessionPolicy||{},lineage=status.lineagePolicy||{};
+ const rows=[['엔진',e.engineVersion||'-'],['거래소',e.exchange||'-'],['시장',e.marketType||'-'],['세션',e.session||session.label||'-'],['앵커',e.sessionAnchor||session.anchor||'-'],['데이터',e.marketSource||'-'],['결측 정책',e.missingPolicy||'-'],['Lineage',Array.isArray(lineage.events)?lineage.events.join(' · '):'-']];
+ return rows.map(r=>'<article><b>'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></article>').join('')
+}
+function presetCards(data){
+ const rows=Object.values(data||{});
+ if(!rows.length)return'<div class="empty">Dante 프리셋을 불러오지 못했습니다.</div>';
+ return rows.map(x=>'<article><b>'+esc(x.label||x.id)+'</b><span>'+esc(x.engine||'-')+'</span><small>'+esc(x.sourceBoundary||'research proxy')+'</small></article>').join('')
+}
+function reportRows(items){
+ if(!items.length)return'<div class="empty">아직 저장된 Dante 연구 리포트가 없습니다.</div>';
+ return items.slice(0,20).map(x=>{
+  const r=x.result||{},base=r.stress&&r.stress['1x']&&r.stress['1x'].report,walk=r.summary;
+  const line=x.type==='walk-forward'
+    ?('fold '+esc(walk&&walk.foldCount||0)+' · PF '+num(walk&&walk.meanProfitFactor))
+    :('신호 '+esc(r.signalCount||0)+' · PF '+num(base&&base.profitFactor)+' · MDD '+num(base&&base.maxDrawdownPct)+'%');
+  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.type)+'</span><small>'+line+'</small><small>'+new Date(Number(x.createdAt)).toLocaleString('ko-KR',{hour12:false})+'</small></article>'
+ }).join('')
+}
+function paperStatCards(s){
+ const rows=[['전체',s.total??0],['OPEN',s.open??0],['CLOSED',s.closed??0],['승률',valid(s.winRate)?(Number(s.winRate)*100).toFixed(1)+'%':'-'],['평균 수익률',valid(s.meanReturnPct)?Number(s.meanReturnPct).toFixed(2)+'%':'-']];
+ return rows.map(r=>'<article><b>'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></article>').join('')
+}
+function paperRows(items){
+ if(!items.length)return'<div class="empty">Paper Trading 기록이 없습니다.</div>';
+ return items.slice(0,30).map(x=>{
+  const ret=x.state==='CLOSED'?x.realizedReturnPct:x.unrealizedReturnPct;
+  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.state)+'</span><small>entry '+num(x.entryPrice)+' · mark '+num(x.lastMarkPrice)+'</small><small>return '+num(ret)+'%</small></article>'
+ }).join('')
+}
 async function load(){
  $('refresh').disabled=true;$('status').textContent='정식 데이터셋 확인 중…';const split=$('split').value;
  try{
-  const result=await Promise.all([get('/api/research-backtest?action=status'),get('/api/research-backtest?action=stats&split='+encodeURIComponent(split)),get('/api/research-backtest?action=events&split='+encodeURIComponent(split)+'&limit=50')]);
-  const status=result[0].data||{},stats=result[1].data||{},ev=result[2];
+  const result=await Promise.all([
+    get('/api/research-backtest?action=status'),
+    get('/api/research-backtest?action=stats&split='+encodeURIComponent(split)),
+    get('/api/research-backtest?action=events&split='+encodeURIComponent(split)+'&limit=50'),
+    get('/api/research-backtest?action=presets'),
+    get('/api/research-backtest?action=reports&limit=30'),
+    get('/api/research-backtest?action=paper-stats'),
+    get('/api/research-backtest?action=paper&limit=50')
+  ]);
+  const status=result[0].data||{},stats=result[1].data||{},ev=result[2],presets=result[3].data||{},reports=result[4],paperStats=result[5].data||{},paper=result[6];
+  $('engine').innerHTML=engineCards(status);$('dantePresets').innerHTML=presetCards(presets);
   $('integrity').innerHTML=integrity(status,stats);$('hit6').textContent=labelCard(stats.labels&&stats.labels.Hit_6H_8pct);$('hit24').textContent=labelCard(stats.labels&&stats.labels.Hit_24H_12pct);$('horizons').innerHTML=horizonCards(stats);$('features').innerHTML=featureRows(stats);$('events').innerHTML=eventRows(ev.items||[]);
+  $('researchReports').innerHTML=reportRows(reports.items||[]);$('paperStats').innerHTML=paperStatCards(paperStats);$('paperTrades').innerHTML=paperRows(paper.items||[]);
   $('status').textContent=split.toUpperCase()+' · 표본 '+String(stats.sampleCount||0)+' · '+(stats.validationIntegrity==='biased-universe-present'?'생존편향 경고':'데이터 무결성 확인');
- }catch(err){$('status').textContent='백테스트 데이터를 불러오지 못했습니다 · '+String(err&&err.message||err);['integrity','horizons','features','events'].forEach(id=>$(id).innerHTML='<div class="empty">데이터를 다시 불러와 주세요.</div>');$('hit6').textContent='-';$('hit24').textContent='-'}finally{$('refresh').disabled=false}
+ }catch(err){$('status').textContent='백테스트 데이터를 불러오지 못했습니다 · '+String(err&&err.message||err);['engine','dantePresets','integrity','horizons','features','events','researchReports','paperStats','paperTrades'].forEach(id=>$(id).innerHTML='<div class="empty">데이터를 다시 불러와 주세요.</div>');$('hit6').textContent='-';$('hit24').textContent='-'}finally{$('refresh').disabled=false}
 }
 function init(){$('refresh').addEventListener('click',load);$('split').addEventListener('change',load);load()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
