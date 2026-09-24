@@ -12,8 +12,13 @@ jobs:
           node-version: 22
       - run: node --check lib/coin-scan/binance-provider.js
       - run: node --check lib/coin-scan/scan-service.js
+      - run: node --check lib/coin-scan/auto-recommender.js
+      - run: node --check ui/book-ai/app.js
       - run: node scripts/verify-coin-scan-provider.js
       - run: node scripts/verify-coin-scan-451-fallback.js
+      - run: node scripts/verify-auto-recommender.js
+      - run: node scripts/verify-book-ai-watchlist.js
+      - run: node scripts/verify-book-ai-ui.js
       - run: node scripts/verify-coin-scan-core.js
       - run: node scripts/verify-coin-scan-deep.js
       - run: node scripts/verify-cross-oi-v2.js
