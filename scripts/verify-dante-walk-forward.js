@@ -6,7 +6,8 @@ const candles=Array.from({length:240},(_,i)=>({openTime:start+i*day,closeTime:st
 let riceCalls=0,d256Calls=0;
 function rice({candles:c}){riceCalls++;const i=c.length-1,hit=i===225;return{riceBowlState:hit?'PHASE_3_CONFIRMED':'PHASE_2_ACCUMULATION',sequenceId:'q1',paramsHash:'p1'}}
 function d256({candles:c}){d256Calls++;const i=c.length-1,hit=i===227||i===228;return{status:hit?'CANDIDATE':'NOT_CONFIRMED',state:hit?'LEAD_CANDIDATE':'NO_SETUP',paramsHash:'p2'}}
-const r=W.runWalkForward({symbol:'TEST',candles,riceParams:{emaSeed:{seedBars:224}},d256Params:{emaSeedBars:224},frictionPct:.25,horizons:[5],riceAnalyze:rice,d256Analyze:d256});
+const r=W.runWalkForward({symbol:'TEST',candles,riceParams:{emaSeed:{seedBars:224}},d256Params:{emaSeedBars:224},frictionPct:.25,horizons:[5],replayMode:'PREFIX_REFERENCE',riceAnalyze:rice,d256Analyze:d256});
+assert.equal(r.replayMode,'PREFIX_REFERENCE');
 assert.equal(r.events.length,2,'one Rice transition and one 256 candidate edge');
 const riceEvent=r.events.find(x=>x.strategy==='RICE_BOWL'),d256Event=r.events.find(x=>x.strategy==='DANTE_256');
 assert.equal(riceEvent.signalIndex,225);
