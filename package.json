@@ -1,6 +1,6 @@
 {
   "name": "pulse-radar-pro-v3",
-  "version": "3.13.0",
+  "version": "3.14.0",
   "private": true,
   "scripts": {
     "check:calibration": "node scripts/calibration-self-check.js",
@@ -111,7 +111,9 @@
     "test:dante-sensitivity": "node scripts/verify-dante-sensitivity.js",
     "test:dante-api": "node scripts/verify-dante-api.js",
     "test:book-ai-watchlist": "node scripts/verify-book-ai-watchlist.js",
-    "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js"
+    "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js",
+    "test:recommendation-validation-gate": "node scripts/verify-recommendation-validation-gate.js",
+    "test:final99": "node scripts/verify-final99-release.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
