@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('assert');
+const H=require('../lib/dante/backtest-harness.js');
+const D=require('../ui/dante/dante-625-engine.js');
+const rows=[];
+for(let i=0;i<6;i++)rows.push({time:1000+i*1000,closeTime:1000+i*1000,open:100+i,high:102+i,low:99+i,close:101+i,volume:1000,partial:false});
+const replay=H.replayPrefixes({candles:rows,analysisFn:D.analyze,minBars:3,args:{market:'CRYPTO'}});
+assert.equal(replay.length,4);assert.equal(replay[0].endIndex,2);assert.equal(replay.at(-1).analysisAsOf,rows.at(-1).closeTime);
+assert(replay.every(x=>x.result.status==='NOT_APPLICABLE'));
+const s=H.transitionStats(replay);assert.equal(s.samples,4);assert.equal(s.lastState,'MARKET_SESSION_UNSUPPORTED');
+console.log('dante backtest harness PASS');
