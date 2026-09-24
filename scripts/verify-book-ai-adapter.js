@@ -19,7 +19,7 @@ assert(A.DEFAULT_STALE_AFTER_MS.gate>A.DEFAULT_STALE_AFTER_MS.scanner);
       ict:source({version:'ICT_TRAINER_v1',topDown:'bullish'}),
       structure:source({version:'structure-v1',state:'ok'}),
       forexBook:source({version:'4.0.0',available:true}),
-      journal:source({version:'LIQUIDITY_EVENT_JOURNAL_v1.1',snapshots:[],events:[],outcomes:[]}),
+      journal:source({version:'LIQUIDITY_EVENT_JOURNAL_v1.1',snapshots:[{id:'s0',symbol:'BTCUSDT',capturedBarTime:ASOF-1000}],events:[],outcomes:[]}),
       gate:source({version:'SAMPLE_READINESS_GATE_v1',state:'OBSERVING'}),
       trendline:source({version:'TRENDLINE_RETEST_v1.1',state:'ACTIVE'})
     }
@@ -68,6 +68,8 @@ assert(A.DEFAULT_STALE_AFTER_MS.gate>A.DEFAULT_STALE_AFTER_MS.scanner);
   assert.equal(r.engineSources.structure.status,'ERROR');
   assert.equal(r.engineSources.ict.status,'AVAILABLE');
   assert.equal(r.engineSources.ict.reason,'FRESHNESS_UNKNOWN');
+  assert.equal(r.engineSources.gate.status,'MISSING');
+  assert.equal(r.engineSources.gate.reason,'OBSERVED_AT_UNAVAILABLE');
 }
 assert.throws(()=>A.adaptBookAiInput({
   analysisAsOf:ASOF,symbol:'BTCUSDT',
@@ -114,4 +116,24 @@ assert.throws(()=>A.adaptBookAiInput({
   assert.equal(r.engineSources.scanner.status,'AVAILABLE','exact stale boundary must remain available');
 }
 
+{
+  const db={
+    version:'LIQUIDITY_EVENT_JOURNAL_v1.1',
+    snapshots:[{id:'eth-only',symbol:'ETHUSDT',capturedBarTime:ASOF-H}],
+    events:[],outcomes:[]
+  };
+  const r=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{journal:{data:db}}});
+  assert.equal(r.engineSources.journal.status,'MISSING');
+  assert.equal(r.engineSources.journal.reason,'NO_SYMBOL_JOURNAL_DATA');
+  assert.equal(r.engineSources.journal.dataAvailable,false);
+}
+{
+  const r=A.adaptBookAiInput({
+    analysisAsOf:ASOF,symbol:'BTCUSDT',
+    sources:{gate:{data:{version:'SAMPLE_READINESS_GATE_v1',state:'OBSERVING',round:{createdAt:ASOF-H}}}}
+  });
+  assert.equal(r.engineSources.gate.status,'AVAILABLE');
+  assert.equal(r.engineSources.gate.reason,null);
+  assert.equal(r.engineSources.gate.observedAt,ASOF-H);
+}
 console.log('book ai adapter PASS');
