@@ -237,7 +237,7 @@ function fillMini(card,chart){
 }
 function failMini(card,e){card.querySelector('.tfMiniHead span').textContent='데이터 오류';const rows=card.querySelectorAll('.tfMiniRow b');rows.forEach(x=>x.textContent='N/A');if(rows[0])rows[0].title=String(e?.message||e||'error')}
 async function loadMtfBoard(symbol,chart4h,analysisAsOf,token){
-  const box=$('mtfBoard');box.innerHTML='';const cards={},charts={4h:chart4h};for(const tf of MINI_TFS){cards[tf]=makeMiniCard(tf);box.append(cards[tf])}
+  const box=$('mtfBoard');box.innerHTML='';const cards={},charts={'4h':chart4h};for(const tf of MINI_TFS){cards[tf]=makeMiniCard(tf);box.append(cards[tf])}
   const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await CD.fetchStructure({symbol,interval:tf,limit:520}),tf,analysisAsOf);if(token!==runSeq)return;charts[tf]=chart;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
   await Promise.allSettled(jobs);if(token===runSeq)renderAggregate(symbol,charts);return charts;
 }
