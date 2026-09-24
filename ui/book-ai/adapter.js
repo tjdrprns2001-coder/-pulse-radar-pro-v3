@@ -149,6 +149,9 @@ function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
   if(explicitObservedAt!=null&&explicitObservedAt>analysisAsOf)throw new Error(name+' observedAt after analysisAsOf');
   const observedAt=explicitObservedAt??inferObservedAt(name,data);
   if(observedAt!=null&&observedAt>analysisAsOf)throw new Error(name+' inferred observedAt after analysisAsOf');
+  const computedAt=raw.computedAt==null?null:ms(raw.computedAt),sourceBarClosedAt=raw.sourceBarClosedAt==null?null:ms(raw.sourceBarClosedAt);
+  if(computedAt!=null&&computedAt>analysisAsOf)throw new Error(name+' computedAt after analysisAsOf');
+  if(sourceBarClosedAt!=null&&sourceBarClosedAt>analysisAsOf)throw new Error(name+' sourceBarClosedAt after analysisAsOf');
   const ageMs=observedAt==null?null:Math.max(0,analysisAsOf-observedAt);
   const version=raw.version??data?.version??data?.analysisVersion??null;
   const journalEmpty=name==='journal'&&data!=null&&!((data.snapshots?.length||0)+(data.events?.length||0)+(data.outcomes?.length||0));
@@ -177,6 +180,8 @@ function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
     status,
     version:version==null?null:String(version),
     observedAt,
+    computedAt,
+    sourceBarClosedAt,
     staleAfterMs,
     ageMs,
     reason,
