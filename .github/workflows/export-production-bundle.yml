@@ -1,0 +1,17 @@
+name: Export production bundle
+on:
+  push:
+    branches: [feat/final-99-release]
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove git metadata
+        run: rm -rf .git
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pulseradar-production-source
+          path: .
+          include-hidden-files: true
+          retention-days: 1
