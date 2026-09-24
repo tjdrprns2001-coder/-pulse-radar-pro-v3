@@ -1,0 +1,19 @@
+name: Causal ICT R0.1 checks
+on:
+  push:
+    branches: [feat/causal-ict-r01]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check ui/chart/causal-ict-engine.js
+      - run: node --check ui/chart/causal-ict-ledger.js
+      - run: node --check lib/research-backtest-v2/causal-ict-backtest.js
+      - run: node --check lib/coin-scan/v3-scan-engine.js
+      - run: node --check ui/book-ai/app.js
+      - run: node scripts/verify-causal-ict-r01.js
