@@ -10,6 +10,7 @@ const BASE={
   stage:{code:'A',source:'scanner',paramsHash:'p1'},
   setupState:'READY',
   setupLifecycle:{dataState:'FRESH',transition:{reason:'FRESH_READINESS_GAINED'}},
+  dataQuality:{state:'FRESH',counts:{AVAILABLE:2,MISSING:0,STALE:0,ERROR:0},degradedSources:[],unknownFreshnessSources:[]},
   htfAlignment:'ALIGNED',
   bookSetups:[
     {ruleId:'BREAKOUT_RETEST',status:'CANDIDATE'},
@@ -61,16 +62,18 @@ const BASE={
 {
   const degraded={
     ...BASE,
-    setupLifecycle:{dataState:'DEGRADED',transition:{reason:'DATA_DEGRADED_HOLD'}},
+    setupLifecycle:{dataState:'FRESH',transition:{reason:'FRESH_READINESS_GAINED'}},
+    dataQuality:{state:'DEGRADED',counts:{AVAILABLE:2,MISSING:0,STALE:1,ERROR:0},degradedSources:['ict'],unknownFreshnessSources:[]},
     engineSources:{
-      scanner:{status:'STALE',reason:'AGE_EXCEEDED'},
-      journal:{status:'AVAILABLE',reason:null}
+      scanner:{status:'AVAILABLE',reason:null},
+      journal:{status:'AVAILABLE',reason:null},
+      ict:{status:'STALE',reason:'AGE_EXCEEDED'}
     }
   };
   const s=S.buildCanonicalSummary(degraded);
   assert(s.dataQuality.includes('데이터 품질 저하'));
-  assert(s.dataQuality.includes('scanner STALE'));
-  assert(s.counterEvidence.includes('기존 상태 유지'));
+  assert(s.dataQuality.includes('ict STALE'));
+  assert(!s.dataQuality.includes('데이터 정상'),'any stale/missing/error engine forbids normal-only summary');
   assert.equal(S.assertCanonicalSummaryGrounded(s,degraded),true);
 }
 {
@@ -92,5 +95,16 @@ const BASE={
 {
   const s=S.buildCanonicalSummary(BASE);
   assert.throws(()=>S.assertCanonicalSummaryGrounded({...s,llmUsed:true},BASE),/may not use LLM/i);
+}
+{
+  for(const [status,reason] of [['MISSING','NOT_PROVIDED'],['ERROR','SOURCE_ERROR']]){
+    const x={
+      ...BASE,
+      dataQuality:{state:'DEGRADED',counts:{AVAILABLE:1,MISSING:status==='MISSING'?1:0,STALE:0,ERROR:status==='ERROR'?1:0},degradedSources:['journal'],unknownFreshnessSources:[]},
+      engineSources:{scanner:{status:'AVAILABLE',reason:null},journal:{status,reason}}
+    };
+    const s=S.buildCanonicalSummary(x);
+    assert(!s.dataQuality.includes('데이터 정상'),status+' source may not be summarized as normal');
+  }
 }
 console.log('book ai canonical summary PASS');

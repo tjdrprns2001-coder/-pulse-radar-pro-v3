@@ -70,7 +70,7 @@ function activeRules(fusion){
 }
 function degradedSources(fusion){
   return Object.entries(fusion.engineSources||{})
-    .filter(([,x])=>x&&['MISSING','STALE','ERROR'].includes(x.status))
+    .filter(([,x])=>x&&(['MISSING','STALE','ERROR'].includes(x.status)||(x.status==='AVAILABLE'&&x.reason==='FRESHNESS_UNKNOWN')))
     .sort(([a],[b])=>a.localeCompare(b));
 }
 function buildCanonicalSummary(fusion={}){
@@ -88,7 +88,7 @@ function buildCanonicalSummary(fusion={}){
     claim(fusion,'setupState','setupState','Book AI 상태',v=>STATE_LABELS[v]||String(v)),
     claim(fusion,'htfAlignment','htfAlignment','상위 정렬',v=>ALIGNMENT_LABELS[v]||String(v)),
     claim(fusion,'evidenceScore','bookEvidence.normalizedScore','근거 완성도',v=>String(Math.round(Number(v)))),
-    claim(fusion,'dataState','setupLifecycle.dataState','데이터 상태',v=>DATA_STATE_LABELS[v]||String(v))
+    claim(fusion,'dataState','dataQuality.state','데이터 상태',v=>DATA_STATE_LABELS[v]||String(v))
   ];
 
   const rules=activeRules(fusion);

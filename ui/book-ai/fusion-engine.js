@@ -32,6 +32,22 @@ function currentJournal(adapter={},sequenceId=null){
 function sampleDnaShadow(){
   return{mode:'SHADOW_ONLY',similarityVersion:null,nearestSamples:[],similarityScore:null,scoreContribution:0,rankingContribution:0,status:'NOT_EVALUATED'};
 }
+function overallDataQuality(engineSources={}){
+  const counts={AVAILABLE:0,MISSING:0,STALE:0,ERROR:0};
+  const degradedSources=[],unknownFreshnessSources=[];
+  for(const [name,meta] of Object.entries(engineSources||{})){
+    if(counts[meta?.status]!=null)counts[meta.status]++;
+    const unknown=meta?.status==='AVAILABLE'&&meta?.reason==='FRESHNESS_UNKNOWN';
+    if(unknown)unknownFreshnessSources.push(name);
+    if(meta?.status!=='AVAILABLE'||unknown)degradedSources.push(name);
+  }
+  return{
+    state:degradedSources.length?'DEGRADED':'FRESH',
+    counts,
+    degradedSources:degradedSources.sort(),
+    unknownFreshnessSources:unknownFreshnessSources.sort()
+  };
+}
 function fuse({adapter,ruleResult,previousLifecycle=null}={}){
   if(!adapter?.adapterVersion)throw new Error('adapter required');
   if(!ruleResult?.version)throw new Error('ruleResult required');
@@ -61,6 +77,7 @@ function fuse({adapter,ruleResult,previousLifecycle=null}={}){
     stage,
     setupState:lifecycle.currentState,
     setupLifecycle:lifecycle,
+    dataQuality:overallDataQuality(adapter.engineSources||{}),
     htfAlignment:htfAlignment(adapter),
     bookSetups:clone(ruleResult.bookSetups||[]),
     evidenceFacts:clone(ruleResult.evidenceFacts||[]),
@@ -74,5 +91,5 @@ function fuse({adapter,ruleResult,previousLifecycle=null}={}){
     rankingContribution:0
   });
 }
-return{VERSION,htfAlignment,currentJournal,sampleDnaShadow,fuse};
+return{VERSION,htfAlignment,currentJournal,sampleDnaShadow,overallDataQuality,fuse};
 });

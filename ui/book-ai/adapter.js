@@ -118,6 +118,8 @@ function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
   if(observedAt!=null&&observedAt>analysisAsOf)throw new Error(name+' inferred observedAt after analysisAsOf');
   const ageMs=observedAt==null?null:Math.max(0,analysisAsOf-observedAt);
   const version=raw.version??data?.version??data?.analysisVersion??null;
+  const journalEmpty=name==='journal'&&data!=null&&!((data.snapshots?.length||0)+(data.events?.length||0)+(data.outcomes?.length||0));
+  const freshnessRequired=name==='journal'||name==='gate';
   let status,reason=null;
   if(raw.error){
     status='ERROR';
@@ -125,6 +127,12 @@ function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
   }else if(data==null){
     status='MISSING';
     reason=text(raw.reason)||'NOT_PROVIDED';
+  }else if(journalEmpty){
+    status='MISSING';
+    reason=text(raw.reason)||'NO_SYMBOL_JOURNAL_DATA';
+  }else if(freshnessRequired&&observedAt==null){
+    status='MISSING';
+    reason=text(raw.reason)||'OBSERVED_AT_UNAVAILABLE';
   }else if(observedAt!=null&&ageMs>staleAfterMs){
     status='STALE';
     reason=text(raw.reason)||'AGE_EXCEEDED';
@@ -139,7 +147,7 @@ function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
     staleAfterMs,
     ageMs,
     reason,
-    dataAvailable:data!=null
+    dataAvailable:data!=null&&status!=='MISSING'
   };
   Contract.normalizeEngineSources({[name]:meta},analysisAsOf);
   return{meta,data};
