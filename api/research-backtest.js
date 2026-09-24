@@ -15,15 +15,27 @@ module.exports=async function handler(req,res,ctx={}){
         const split=q.split?String(q.split):null;if(split&&!['train','validation','excluded'].includes(split))return res.status(400).json({status:'error',error:'invalid split'});
         const limit=Math.max(1,Math.min(200,Number(q.limit)||50));return res.status(200).json({status:'ok',items:await runtime.events({split,limit})});
       }
+      if(action==='presets')return res.status(200).json({status:'ok',data:runtime.dantePresets||{}});
+      if(action==='reports'){const limit=Math.max(1,Math.min(200,Number(q.limit)||30));return res.status(200).json({status:'ok',items:await runtime.reports({limit,type:q.type||null})})}
+      if(action==='report'){const item=await runtime.report(String(q.id||''));return item?res.status(200).json({status:'ok',data:item}):res.status(404).json({status:'error',error:'report not found'})}
+      if(action==='paper'){const limit=Math.max(1,Math.min(500,Number(q.limit)||100));return res.status(200).json({status:'ok',items:await runtime.paperList({state:q.state||null,symbol:q.symbol||null,limit})})}
+      if(action==='paper-stats')return res.status(200).json({status:'ok',data:await runtime.paperStats()});
       return res.status(400).json({status:'error',error:'invalid action'});
     }
     if(method!=='POST')return res.status(405).json({status:'error',error:'GET 또는 POST만 지원합니다.'});
-    if(!['run','evaluate'].includes(action))return res.status(400).json({status:'error',error:'invalid action'});
+    if(!['run','evaluate','dante-run','walk-forward','paper-open','paper-mark','paper-close'].includes(action))return res.status(400).json({status:'error',error:'invalid action'});
     const configured=String(ctx.adminToken??process.env.RESEARCH_BACKTEST_ADMIN_TOKEN??'');
     if(!configured)return res.status(503).json({status:'error',error:'research admin token is not configured'});
     if(String(header(req,'x-research-admin-token')||'')!==configured)return res.status(401).json({status:'error',error:'unauthorized'});
     const body=req?.body&&typeof req.body==='object'?req.body:{};
-    const data=action==='run'?await runtime.runCollection(body):await runtime.evaluate(body);
+    let data;
+    if(action==='run')data=await runtime.runCollection(body);
+    else if(action==='evaluate')data=await runtime.evaluate(body);
+    else if(action==='dante-run')data=await runtime.runDante(body);
+    else if(action==='walk-forward')data=await runtime.runWalkForward(body);
+    else if(action==='paper-open')data=await runtime.paperOpen(body);
+    else if(action==='paper-mark')data=await runtime.paperMark(body);
+    else if(action==='paper-close')data=await runtime.paperClose(body);
     return res.status(200).json({status:'ok',data});
   }catch(e){return res.status(Number(e?.statusCode)||503).json({status:'error',error:String(e?.message||e)})}
 };
