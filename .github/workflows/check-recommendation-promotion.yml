@@ -5,7 +5,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,9 +20,17 @@ jobs:
       - run: node scripts/verify-auto-recommender.js
       - run: node scripts/verify-recommendation-history.js
       - run: node scripts/verify-coin-scan-api.js
+      - run: node scripts/verify-coin-scan-451-fallback.js
+      - run: node scripts/verify-cross-oi-v2.js
+      - run: node scripts/verify-v3-scanner.js
       - run: node scripts/verify-book-ai-ui.js
       - run: node scripts/verify-book-ai-rules.js
       - run: node scripts/verify-book-ai-adapter.js
       - run: node scripts/verify-book-ai-live-evidence.js
       - run: node scripts/verify-book-ai-summary.js
       - run: node scripts/verify-book-ai-persistence-freshness.js
+      - run: node scripts/verify-v4-1-mobile.js
+      - run: node scripts/verify-v5-trader-workspace.js
+      - run: node scripts/verify-crypto-data-engine.js
+      - run: node scripts/verify-dante-crypto-research.js
+      - run: node scripts/verify-research-backtest-v2.js
