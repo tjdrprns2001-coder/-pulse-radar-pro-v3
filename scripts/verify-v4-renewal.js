@@ -22,7 +22,8 @@ assert(home.includes('코어 유니버스')&&home.includes('확장 유니버스'
 assert(shellJs.includes("coreFuturesCount")&&shellJs.includes("DEX 별도"),'global universe scope chip logic missing');
 assert(shellCss.includes('grid-template-rows:auto auto'),'mobile topbar must use two-row layout');
 assert(scan.includes("mode=summary&limit=500"),'auto scanner must request the full core universe');
-assert(scanService.includes("universeMeta:{key:'binance-usdt-perpetual'"),'core scan universe metadata missing');
+assert(scanService.includes("universeMeta:{key:'binance-usdt-dual-market'"),'core scan dual-market universe metadata missing');
+assert(scanService.includes("label:'통합 유니버스 · Binance USDT 현물 + 무기한 선물'"),'dual-market universe label missing');
 assert(market.includes('coreFuturesCount')&&market.includes('spot-plus-8-futures-dedup'),'extended universe metadata missing');
 assert(scanCss.includes('.cardDetail'),'long auto-scan evidence must be collapsible');
 assert(assistant.includes('<details class="counter">'),'research counter-evidence must be collapsible');
