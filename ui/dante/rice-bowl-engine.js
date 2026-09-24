@@ -85,7 +85,7 @@ function analyze({symbol='UNKNOWN',candles=[],analysisAsOf,params={},previous=nu
       if(dist>=P.expansion.minDistanceAtrAboveTrigger&&(!P.expansion.requireHigherLow||higherLow)){const f=rowFact('EXPANSION_CONFIRMED',c,i,{distanceAtr:dist,trigger});facts.push(f);transition('PHASE_4_EXPANSION',i,'ATR_EXPANSION',[f.factId]);continue}
       if(c.close<trigger-av*P.retest.reclaimBufferAtr){const f=rowFact('POST_CONFIRM_SUPPORT_LOST',c,i,{trigger});counter.push(f);transition('FAILED_RETEST',i,'POST_CONFIRM_SUPPORT_LOST',[f.factId]);continue}
     }
-    if(['PHASE_1_DUMP','PHASE_2_ACCUMULATION','FAILED_BREAKOUT','FAILED_RETEST'].includes(state)&&dumpStart!=null){
+    if(['PHASE_2_ACCUMULATION','FAILED_BREAKOUT','FAILED_RETEST'].includes(state)&&dumpStart!=null){
       const structuralLow=Math.min(...candles.slice(dumpStart,i).map(x=>x.low));
       if(i>dumpStart&&c.close<structuralLow-av*.25){
         const f=rowFact('STRUCTURAL_RESET',c,i,{priorLow:structuralLow});counter.push(f);transition('RESET',i,'NEW_STRUCTURAL_LOW',[f.factId]);sequenceId=null;dumpStart=baseStart=breakoutIndex=retestIndex=trigger=null;continue;
