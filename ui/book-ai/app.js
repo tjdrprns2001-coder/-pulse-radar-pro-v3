@@ -411,7 +411,7 @@ function render(result,chart){
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
   $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
   $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.dataQuality?.state||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
-  const causal=f?.engines?.causalIct||f?.sources?.causalIct||f?.adapter?.sources?.causalIct||null,causalMeta=f?.engineSources?.causalIct||{},stage=causal?.sequence?.long?.stage||'N/A',ledger=causal?.ledger;
+  const causal=result?.causal||null,causalMeta=f?.engineSources?.causalIct||{},stage=causal?.sequence?.long?.stage||'N/A',ledger=causal?.ledger;
   $('causalState').textContent=causalMeta.status==='AVAILABLE'?stage:causalMeta.status||'N/A';$('causalLedger').textContent=ledger?(ledger.prefixInvariant?'prefix invariant · '+String(ledger.bars||causal?.bars||'-')+' bars':'PREFIX DIVERGENCE'):(causal?.contract?.pass===false?'causal contract fail':'causal ledger 대기');
   $('factCount').textContent=String(a.uniqueFactCount??0)+' · P '+String(a.persistedFactCount??0)+' / L '+String(a.ephemeralFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0)+' · P '+String(a.persistedEventCount??0)+' / L '+String(a.ephemeralEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
   renderOverview(result,chart);summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
@@ -461,7 +461,7 @@ async function run(){
     if(!fusion.resultReady)throw new Error('Scanner stage/bias 불완전 · '+fusion.incompleteReasons.join(', '));
     const summary=S.buildCanonicalSummary(fusion);S.assertCanonicalSummaryGrounded(summary,fusion);
     storage.set(symbol,fusion.setupLifecycle);
-    last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now,promotion:bookPromotion};render(last,chart);
+    last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now,promotion:bookPromotion,causal:adapter.sources.causalIct};render(last,chart);
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
