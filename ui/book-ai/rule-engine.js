@@ -123,6 +123,17 @@ function buildScannerFacts(adapter){
   }
   return out;
 }
+function buildCausalFacts(adapter){
+  const out=[],data=adapter?.sources?.causalIct;if(!data)return out;
+  const version=adapter?.engineSources?.causalIct?.version||data.engine_version||'CAUSAL_ICT_R0_1_JS',observedAt=adapter?.engineSources?.causalIct?.observedAt??adapter.analysisAsOf;
+  const contract=data?.contract?.pass!==false;
+  pushSynthetic(out,adapter,{factType:contract?'CAUSAL_CONTRACT_PASS':'CAUSAL_CONTRACT_FAIL',sourceEngine:'causalIct',sourceVersion:version,timeframe:'4h',observedAt,value:contract?1:0,attributes:{errors:data?.contract?.errors||[]}});
+  const seq=data?.sequence?.long,stage=String(seq?.stage||'N/A');
+  pushSynthetic(out,adapter,{factType:'CAUSAL_LONG_STAGE',sourceEngine:'causalIct',sourceVersion:version,timeframe:'4h',observedAt,value:stage,attributes:{stage,reclaimBar:seq?.reclaim_bar??null,mssBar:seq?.mss_bar??null,fvgZoneId:seq?.fvg_zone_id??null,intentId:seq?.intent_id??null}});
+  const counts={};for(const e of data?.events||[])counts[e.event_type]=(counts[e.event_type]||0)+1;
+  for(const [type,factType] of [['LIQUIDITY_SWEEP_RECLAIMED','CAUSAL_SWEEP_RECLAIM'],['MSS_CONFIRMED','CAUSAL_MSS'],['FVG_CREATED','CAUSAL_FVG'],['ZONE_TOUCHED','CAUSAL_FVG_REVISIT'],['ORDER_INTENT_CREATED','CAUSAL_INTENT']])if(counts[type])pushSynthetic(out,adapter,{factType,sourceEngine:'causalIct',sourceVersion:version,timeframe:'4h',observedAt,value:counts[type],attributes:{count:counts[type]}});
+  return out;
+}
 function buildExplicitStructureFacts(adapter){
   const out=[];
   for(const [name,data] of [['structure',adapter?.sources?.structure],['forexBook',adapter?.sources?.forexBook]]){
@@ -138,7 +149,7 @@ function dedupeFacts(facts=[]){
   return [...map.values()].sort((a,b)=>String(a.factId).localeCompare(String(b.factId)));
 }
 function buildEvidenceFacts(adapter){
-  const facts=dedupeFacts([...buildEventFacts(adapter),...buildScannerFacts(adapter),...buildExplicitStructureFacts(adapter)]);
+  const facts=dedupeFacts([...buildEventFacts(adapter),...buildScannerFacts(adapter),...buildCausalFacts(adapter),...buildExplicitStructureFacts(adapter)]);
   Contract.assertEvidenceWithinAnalysisAsOf({analysisAsOf:adapter.analysisAsOf,events:facts.filter(x=>x.sourceKind==='EVENT').map(x=>({confirmedAt:x.confirmedAt}))});
   return facts;
 }
@@ -224,5 +235,5 @@ function evaluate(adapter){
   const scored=scoreComponents(facts),evidenceAudit=buildEvidenceAudit({facts,rules,componentUsage:scored.componentUsage});
   return Contract.deepFreeze({version:VERSION,factVersion:FACT_VERSION,ruleVersion:RULE_VERSION,analysisAsOf:adapter.analysisAsOf,symbol:adapter.symbol,evidenceFacts:facts,bookSetups:rules,bookEvidence:scored.bookEvidence,componentUsage:scored.componentUsage,evidenceAudit});
 }
-return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,isTrustedConfirmedEventFact,eventBacked,persistedEventBacked,trustedEventBacked,buildScannerFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
+return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,isTrustedConfirmedEventFact,eventBacked,persistedEventBacked,trustedEventBacked,buildScannerFacts,buildCausalFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
 });
