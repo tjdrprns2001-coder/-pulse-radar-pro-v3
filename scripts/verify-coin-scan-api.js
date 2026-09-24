@@ -120,6 +120,13 @@ const provider={
   code=0;body=null;headers={};
   await handler({query:{mode:'recommendation-history',action:'evaluate'}},res,{service:recService});
   assert.equal(code,200);assert.equal(body.action,'evaluate');assert.equal(body.evaluation.evaluated,1);
+  code=0;body=null;headers={};
+  const callsBefore=recommendationHistoryCalls;
+  await handler({method:'POST',query:{mode:'recommendation-history',action:'observe'},body:{symbol:'AAAUSDT',state:'RECOMMEND',label:'자동 추천',score:82,reasons:['Book AI persisted CONFIRMED'],missing:[],invalidations:[],marketSource:'book-ai-client',item:{lastPrice:10,scanClass:{key:'PRE-SURGE'},v2Type:'A-pre',v3LongTier:'PASS',bookConfirmedRuleIds:['LIQUIDITY_SWEEP_RECLAIM']}}},res,{service:recService});
+  assert.equal(code,200);assert.equal(body.action,'observe');assert(recommendationHistoryCalls>callsBefore,'promotion POST must reach recommendation history');
+  code=0;body=null;headers={};
+  await handler({method:'POST',query:{mode:'recommendation-history',action:'observe'},body:{symbol:'BAD!',state:'BOGUS'}},res,{service:recService});
+  assert.equal(code,400,'invalid promotion state must be rejected');
 
   console.log('coin scan api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
