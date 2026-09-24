@@ -37,6 +37,27 @@ module.exports=async function handler(req,res,ctx={}){
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
   res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
+    if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
+      let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
+      const symbol=String(body.symbol||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      const state=String(body.state||'').toUpperCase();
+      if(!symbol||!['WAIT','WATCH','READY','CONFIRMED','RECOMMEND','EXCLUDE'].includes(state))return res.status(400).json({status:'error',error:'invalid promotion payload'});
+      const item=body.item&&typeof body.item==='object'?body.item:{};
+      const row={
+        symbol,state,label:String(body.label||state).slice(0,40),score:Number.isFinite(Number(body.score))?Math.max(0,Math.min(100,Number(body.score))):0,
+        reasons:Array.isArray(body.reasons)?body.reasons.slice(0,8).map(x=>String(x).slice(0,120)):[],
+        missing:Array.isArray(body.missing)?body.missing.slice(0,8).map(x=>String(x).slice(0,120)):[],
+        invalidations:Array.isArray(body.invalidations)?body.invalidations.slice(0,8).map(x=>String(x).slice(0,120)):[],
+        item:{
+          lastPrice:Number.isFinite(Number(item.lastPrice))?Number(item.lastPrice):null,
+          scanClass:{key:String(item.scanClass?.key||item.scanClass||'')},
+          v2Type:String(item.v2Type||''),v3LongTier:String(item.v3LongTier||''),
+          bookConfirmedRuleIds:Array.isArray(item.bookConfirmedRuleIds)?item.bookConfirmedRuleIds.slice(0,8).map(String):[]
+        }
+      };
+      const recording=await service.recordRecommendationPromotion(row,{updatedAt:Date.now(),marketSource:String(body.marketSource||'book-ai-client'),derivativesSource:body.derivativesSource?String(body.derivativesSource):null});
+      return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
+    }
     if(mode==='recommendation-history'){
       const action=String(q.action||'list').toLowerCase();
       if(action==='stats'){
