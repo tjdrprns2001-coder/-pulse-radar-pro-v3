@@ -18,12 +18,15 @@ const EMA_STRIKE_STATES=Object.freeze([
   'NO_STRIKE','EMA112_APPROACH','EMA112_BREAK','EMA112_HOLD','EMA224_TARGET','EMA224_BREAK','EMA448_TARGET','FAILED'
 ]);
 const DEFAULT_PARAMS=Object.freeze({
+  sourceProfile:'REPORT_PROXY_2026_09_24',
   ema:Object.freeze({fast:112,pivot:224,long:448}),
-  atrPeriod:14,
+  emaSeed:Object.freeze({method:'SMA_FIXED',seedBars:224}),
+  atrPeriod:20,
+  pivot:Object.freeze({left:3,right:3}),
   dump:Object.freeze({lookbackBars:120,minDrawdownPct:25,minAtrExpansion:1.5,requireBearishLongMaHistory:true}),
-  base:Object.freeze({minBars:20,preferredDurationRatioMin:1.5,preferredDurationRatioMax:2,maxRangeAtr:8,maxEma224SlopeAbsAtrPerBar:.05}),
-  breakout:Object.freeze({level:'EMA224_OR_GONGGURI',breakoutBufferAtr:.20,minRvol:1.5,ignitionRvol:3,requireConfirmedClose:true}),
-  retest:Object.freeze({toleranceAtr:.30,reclaimBufferAtr:.10,minHoldBars:1,maxRetestBars:20}),
+  base:Object.freeze({minBars:20,preferredDurationRatioMin:1.5,preferredDurationRatioMax:2,maxRangeAtr:8,maxEma224SlopeAbsAtrPerBar:.05,requireLongerThanDecline:true,minConfirmedPivotCount:3}),
+  breakout:Object.freeze({level:'EMA224_OR_GONGGURI',breakoutBufferAtr:.20,minRvol:1.5,ignitionRvol:3,requireConfirmedClose:true,minPriorClosesBelowPivot:80}),
+  retest:Object.freeze({variant:'RETEST_5D_RECLAIM',toleranceAtr:.30,reclaimBufferAtr:.10,minHoldBars:1,maxRetestBars:5}),
   expansion:Object.freeze({minDistanceAtrAboveTrigger:1.5,requireHigherLow:true}),
   reset:Object.freeze({newStructuralLow:true,emaSeparationReexpansion:true})
 });
@@ -41,8 +44,15 @@ function stable(v){if(v==null||typeof v!=='object')return JSON.stringify(v);if(A
 function hash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16).padStart(8,'0')}
 function paramsHash(params){return'dante-v1-'+hash(stable(params))}
 function mergeParams(base,override){const out=clone(base);for(const [k,v] of Object.entries(override||{})){if(v&&typeof v==='object'&&!Array.isArray(v)&&out[k]&&typeof out[k]==='object')out[k]={...out[k],...clone(v)};else out[k]=clone(v)}return out}
-function normalizeParams(input={}){const p=mergeParams(DEFAULT_PARAMS,input);for(const k of ['fast','pivot','long'])num(p.ema[k],'ema.'+k);if(!(p.ema.fast<p.ema.pivot&&p.ema.pivot<p.ema.long))throw new Error('Dante EMA periods must be ascending');return freeze(p)}
+function normalizeParams(input={}){const p=mergeParams(DEFAULT_PARAMS,input);for(const k of ['fast','pivot','long'])num(p.ema[k],'ema.'+k);if(!(p.ema.fast<p.ema.pivot&&p.ema.pivot<p.ema.long))throw new Error('Dante EMA periods must be ascending');num(p.emaSeed.seedBars,'emaSeed.seedBars');if(p.emaSeed.method!=='SMA_FIXED')throw new Error('Dante emaSeed.method must be SMA_FIXED');return freeze(p)}
 function normalizeGongguriParams(input={}){const p={...GONGGURI_DEFAULTS,...clone(input)};for(const k of Object.keys(GONGGURI_DEFAULTS))num(p[k],'gongguri.'+k);if(p.minPriorTouches<2)throw new Error('gongguri.minPriorTouches must be >= 2');return freeze(p)}
+function seededEma(values=[],period,seedBars=224){
+  const out=Array(values.length).fill(null);period=num(period,'ema period');seedBars=num(seedBars,'ema seedBars');
+  if(values.length<seedBars)return out;
+  const seed=values.slice(0,seedBars).reduce((s,v)=>s+Number(v),0)/seedBars,alpha=2/(period+1);let prev=seed;out[seedBars-1]=seed;
+  for(let i=seedBars;i<values.length;i++){prev=Number(values[i])*alpha+prev*(1-alpha);out[i]=prev}
+  return out;
+}
 function assertClosedCandles(candles=[],analysisAsOf){
   const asOf=num(analysisAsOf,'analysisAsOf');
   for(const c of candles){
@@ -71,5 +81,5 @@ function assertShadowOnly(result={}){
   for(const k of ['rankingContribution','scannerStageContribution','bookEvidenceContribution'])if(Number(result[k]||0)!==0)throw new Error(k+' must be 0');
   return true;
 }
-return{VERSION,EVIDENCE_VERSION,RICE_VERSION,GONGGURI_VERSION,EMA_STRIKE_VERSION,MODE,RICE_STATES,EMA_STRIKE_STATES,DEFAULT_PARAMS,GONGGURI_DEFAULTS,finite,num,text,clone,freeze,stable,hash,paramsHash,mergeParams,normalizeParams,normalizeGongguriParams,assertClosedCandles,createEvidence,assertShadowOnly};
+return{VERSION,EVIDENCE_VERSION,RICE_VERSION,GONGGURI_VERSION,EMA_STRIKE_VERSION,MODE,RICE_STATES,EMA_STRIKE_STATES,DEFAULT_PARAMS,GONGGURI_DEFAULTS,finite,num,text,clone,freeze,stable,hash,paramsHash,mergeParams,normalizeParams,normalizeGongguriParams,seededEma,assertClosedCandles,createEvidence,assertShadowOnly};
 });
