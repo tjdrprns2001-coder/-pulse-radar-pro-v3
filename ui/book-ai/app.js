@@ -561,7 +561,7 @@ async function run(){
   const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error','warn');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
     const requestStartedAt=Date.now();renderIntelLoading(symbol);renderValidationLoading(symbol);
-    const validationPromise=jsonTimeout('/api/coin-scan?mode=validation&symbol='+encodeURIComponent(symbol)+'&at='+requestStartedAt,30000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
+    const validationPromise=jsonTimeout('/api/coin-scan?mode=validation&symbol='+encodeURIComponent(symbol),30000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const intelPromise=jsonTimeout('/api/coin-scan?mode=intelligence&symbol='+encodeURIComponent(symbol),22000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:requestStartedAt});if(token!==runSeq)return;
