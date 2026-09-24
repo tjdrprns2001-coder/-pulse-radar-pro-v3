@@ -9,7 +9,7 @@ if(!js.includes('action=stats'))throw new Error('stats API missing');
 if(!js.includes('action=events'))throw new Error('events API missing');
 for(const a of ['action=presets','action=reports','action=paper-stats','action=paper&limit=50'])if(!js.includes(a))throw new Error('crypto research API missing '+a);
 for(const id of ['engine','dantePresets','researchReports','paperStats','paperTrades'])if(!html.includes('id="'+id+'"'))throw new Error('missing crypto research panel '+id);
-for(const term of ['research proxy','실제 주문을 전송하지 않는 읽기 전용 검증 장부','CAGR','Sharpe','Sortino','Calmar','비용 1×','Buy&Hold','Bootstrap 평균 CI','PBO'])if(!html.includes(term)&&!js.includes(term))throw new Error('missing research boundary '+term);
+for(const term of ['research proxy','Causal ICT R0.1','CAUSAL_ICT_R0_1_JS','next-open fill','실제 주문을 전송하지 않는 읽기 전용 검증 장부','CAGR','Sharpe','Sortino','Calmar','비용 1×','Buy&Hold','Bootstrap 평균 CI','PBO'])if(!html.includes(term)&&!js.includes(term))throw new Error('missing research boundary '+term);
 if(/RESEARCH_BACKTEST_ADMIN_TOKEN|x-research-admin-token/.test(html+js))throw new Error('admin secret must not be in browser code');
 if(/미래\s*(확률|성공률)|future probability/i.test(html+js))throw new Error('UI must not describe history as future probability');
 if(!/survivorship|생존편향/i.test(js+html))throw new Error('survivorship warning missing');
