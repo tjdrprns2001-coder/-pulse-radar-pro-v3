@@ -23,6 +23,13 @@ function journalReadOnly(){
   try{const data=Journal.createLocalStorageStore(localStorage).export();if(!(data.snapshots?.length||data.events?.length||data.outcomes?.length))return null;return{data,version:Journal.VERSION}}catch{return null}
 }
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
+function closedCandlesForAsOf(rows,analysisAsOf){
+  return (Array.isArray(rows)?rows:[]).filter(c=>{
+    if(!c||c.partial===true||c.isClosed===false||c.confirmed===false)return false;
+    const t=Number(c.closeTime??c.closedAt);
+    return !Number.isFinite(t)||t<=analysisAsOf;
+  });
+}
 function rawBias(raw){
   const last=Array.isArray(raw?.events)?raw.events.at(-1):null;if(last?.dir)return last.dir;
   const v=String(raw?.bias?.label||raw?.bias||'').toLowerCase();
@@ -30,12 +37,13 @@ function rawBias(raw){
   if(v.includes('down')||v.includes('bear')||v.includes('하락'))return'down';
   return'neutral';
 }
-function buildChart(raw,tf='4h'){
+function buildChart(raw,tf='4h',analysisAsOf=Date.now()){
   if(!LM||!TRE)throw new Error('LiquidityMap/TrendlineRetest engine unavailable');
-  const model=LM.buildLiquidityMap({candles:raw.candles||[],canonicalSwings:raw.canonicalSwings||[],canonicalEvents:raw.events||[],timeframe:tf,htfBias:rawBias(raw)});
+  const sourceCandles=closedCandlesForAsOf(raw.candles||[],analysisAsOf);
+  const model=LM.buildLiquidityMap({candles:sourceCandles,canonicalSwings:raw.canonicalSwings||[],canonicalEvents:raw.events||[],timeframe:tf,htfBias:rawBias(raw)});
   if(!model?.ok)throw new Error(model?.error||'Liquidity Map 생성 실패');
   const candles=model.candles,smc=model.smc,liquidity=model.liquidity;
-  const trendRetest=TRE.analyzeTrendlineRetests({candles:raw.candles||[],trendlines:raw.trendlines||{},timeframe:tf});
+  const trendRetest=TRE.analyzeTrendlineRetests({candles:sourceCandles,trendlines:raw.trendlines||{},timeframe:tf});
   const ict=ICT.analyzeTimeframe({candles,smc,liquidity,tf});
   const book=BF.analyze({candles,smc,liquidity,ictContext:ict});
   return{candles,smc,liquidity,ict,book,model,trendRetest};
@@ -81,7 +89,7 @@ async function run(){
   try{
     const [scan,raw]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),CD.fetchStructure({symbol,interval:'4h',limit:560})]);
     const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
-    const chart=buildChart(raw,'4h'),now=Date.now(),closed=lastClosedTime({candles:chart.candles});
+    const now=Date.now(),chart=buildChart(raw,'4h',now),closed=lastClosedTime({candles:chart.candles});
     const journal=journalReadOnly(),gate=gateReadOnly();
     if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
     const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
