@@ -6,19 +6,21 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
 const {createSignalPerformanceService}=require('../lib/signal-performance/service.js');
 const {createAlertService}=require('../lib/signal-performance/alerts.js');
 const {createTransitionSnapshotService}=require('../lib/coin-scan/transition-snapshot-service.js');
+const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null;
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});
         performanceRecorder=createSignalPerformanceService({store,resolver:createBinanceResolver({})});
         alertRecorder=createAlertService({store});
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null}
+        recommendationHistory=createRecommendationHistoryService({store});
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory});
   }
   return singleton;
 }
