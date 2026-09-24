@@ -35,7 +35,7 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
@@ -57,6 +57,10 @@ module.exports=async function handler(req,res,ctx={}){
       };
       const recording=await service.recordRecommendationPromotion(row,{updatedAt:Date.now(),marketSource:String(body.marketSource||'book-ai-client'),derivativesSource:body.derivativesSource?String(body.derivativesSource):null});
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
+    }
+    if(mode==='intelligence'){
+      const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
+      return res.status(200).json(await service.getMarketIntelligence(symbol));
     }
     if(mode==='recommendation-history'){
       const action=String(q.action||'list').toLowerCase();
