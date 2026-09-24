@@ -46,5 +46,9 @@ assert(C.RICE_STATES.includes('RESET'));
   assert.equal(x[7],4.5,'EMA seed must be SMA of fixed seed window');
   assert(Number.isFinite(x[8]));
   assert.equal(C.DEFAULT_PARAMS.emaSeed.seedBars,224);
+  assert.equal(C.DEFAULT_PARAMS.breakout.minPriorClosesBelowPivot,80);
+  assert.equal(C.DEFAULT_PARAMS.base.minConfirmedPivotCount,3);
+  assert.equal(C.DEFAULT_PARAMS.base.requireLongerThanDecline,true);
+  assert.equal(C.DEFAULT_PARAMS.retest.maxRetestBars,5);
 }
 console.log('dante contract PASS');
