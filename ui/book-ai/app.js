@@ -79,6 +79,28 @@ function renderStructureAuto(rows=[]){
   const watch=(rows||[]).slice(0,5).map(x=>({symbol:x.symbol,score:x.watchScore||0,state:'WATCH',label:'구조 관찰',reasons:x.reasons||[],missing:['Scanner v3','OI/taker 확인'],invalidations:[]}));
   renderAutoRecommendations({recommended:[],watch},'4H 구조 fallback');
 }
+function historyDirectionLabel(v){const x=String(v||'');if(x==='NEW')return'NEW';if(x==='SCORE_UP')return'점수↑';if(x==='SCORE_DOWN')return'점수↓';if(x.includes('→'))return x;return'갱신'}
+function renderAutoHistory(rows=[]){
+  const box=$('autoHistory'),meta=$('autoHistoryMeta');if(!box)return;box.innerHTML='';
+  const list=(Array.isArray(rows)?rows:[]).slice(0,8);
+  if(!list.length){box.innerHTML='<div class="watchEmpty">추천 변화 이력이 없습니다.</div>';if(meta)meta.textContent='아직 기록 없음';return}
+  for(const x of list){
+    const d=document.createElement('button');d.type='button';d.className='autoHistoryItem';d.dataset.symbol=x.symbol;
+    const left=document.createElement('div');const top=document.createElement('div');top.className='autoHistoryTop';const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.textContent=historyDirectionLabel(x.direction);top.append(sym,tag);
+    const desc=document.createElement('small');desc.textContent=[x.label||x.state,Math.round(Number(x.score)||0)+'점',x.marketSource||null].filter(Boolean).join(' · ');
+    left.append(top,desc);
+    const time=document.createElement('time');time.textContent=x.capturedAt?fmtTime(x.capturedAt):'-';
+    d.append(left,time);d.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(d);
+  }
+  if(meta)meta.textContent='최근 '+list.length+'건';
+}
+async function refreshAutoHistory(){
+  try{
+    const data=await jsonTimeout('/api/coin-scan?mode=recommendation-history&limit=20',7000);
+    renderAutoHistory(data.items||[]);
+    return data.items||[];
+  }catch(e){const meta=$('autoHistoryMeta');if(meta)meta.textContent='이력 조회 제한';return[]}
+}
 function renderWatchlist(rows=[]){
   const box=$('watchlist');if(!box)return;box.innerHTML='';
   if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
@@ -109,7 +131,7 @@ async function scannerWatchRows(){
   const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
   if(!seed.length)throw new Error('Scanner 후보 없음');
   const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),12000);
-  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner')}
+  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner');refreshAutoHistory()}
   const selected=WL.select(deep.items||[],8);
   if(!selected.length)throw new Error('Scanner 정밀 후보 없음');
   return selected;
@@ -341,7 +363,7 @@ function save(){
   const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI',agg=$('aggregateSnapshot'),useAgg=agg?.dataset?.bookAiMtfRendered==='1';const a=document.createElement('a');a.href=useAgg?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=symbol+(useAgg?'-book-ai-mtf.png':'-book-ai-4h-overview.png');document.body.append(a);a.click();a.remove();
 }
 $('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();
+const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();refreshAutoHistory();
 let autoRefreshTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshWatchlist()},300000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(readAutoCache()?.ts||0)>300000)refreshWatchlist()});
 })();
