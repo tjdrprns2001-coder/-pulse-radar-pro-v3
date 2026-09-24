@@ -38,8 +38,17 @@ module.exports=async function handler(req,res,ctx={}){
   res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(mode==='recommendation-history'){
+      const action=String(q.action||'list').toLowerCase();
+      if(action==='stats'){
+        const stats=await service.getRecommendationStats({state:q.state||'RECOMMEND'});
+        return res.status(200).json({status:'ok',mode:'recommendation-history',action:'stats',updatedAt:Date.now(),stats});
+      }
+      if(action==='evaluate'){
+        const evaluation=await service.evaluateRecommendationHistory();
+        return res.status(200).json({status:'ok',mode:'recommendation-history',action:'evaluate',updatedAt:Date.now(),evaluation});
+      }
       const rows=await service.listRecommendationHistory({symbol:q.symbol||null,state:q.state||null,limit});
-      return res.status(200).json({status:'ok',mode:'recommendation-history',updatedAt:Date.now(),items:rows});
+      return res.status(200).json({status:'ok',mode:'recommendation-history',action:'list',updatedAt:Date.now(),items:rows});
     }
     if(mode==='event-snapshots'){
       const action=String(q.action||'list').toLowerCase();
