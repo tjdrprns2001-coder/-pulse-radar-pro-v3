@@ -61,10 +61,14 @@ assert(crowdEv.reason.includes('crowding'),'OI+funding must be labeled as crowdi
   async getMarketValidation(symbol){return{status:'ok',mode:'validation',symbol,validation:{validationStatus:'VALIDATED'}}},
   async replayMarketValidation(id){return{id,reproducible:true}},
   async getMarketValidationSnapshot(id){return{id}},
-  async listMarketValidationSnapshots(){return[]}
+  async listMarketValidationSnapshots(){return[]},
+  async evaluateMarketValidationPerformance(){return{attempted:1,evaluated:1}},
+  async getMarketValidationStats(){return{version:'MARKET_VALIDATION_STATS_v1',overall:{sampleCount:1,horizons:{}},byStatus:{},validationLift:{},falseRejection:{}}}
  };
  function res(){return{code:0,body:null,headers:{},setHeader(k,v){this.headers[k]=v},status(n){this.code=n;return this},json(v){this.body=v;return v}}}
  let out=res();await handler({query:{mode:'validation',symbol:'BTCUSDT'}},out,{service});assert.equal(out.code,200);assert.equal(out.body.mode,'validation');
  out=res();await handler({query:{mode:'validation-snapshots',action:'replay',id:'x'}},out,{service});assert.equal(out.code,200);assert.equal(out.body.replay.reproducible,true);
+ out=res();await handler({query:{mode:'validation-performance',action:'evaluate'}},out,{service});assert.equal(out.code,200);assert.equal(out.body.evaluation.evaluated,1);
+ out=res();await handler({query:{mode:'validation-performance',action:'stats'}},out,{service});assert.equal(out.code,200);assert.equal(out.body.stats.overall.sampleCount,1);
  console.log('market validation PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
