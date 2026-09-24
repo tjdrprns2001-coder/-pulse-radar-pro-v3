@@ -7,7 +7,6 @@
 if(!C)throw new Error('PulseDanteContract required');
 
 const VERSION=C.RICE_VERSION;
-function ema(values,p){const out=[];if(!values.length)return out;const a=2/(p+1);let prev=Number(values[0]);out[0]=prev;for(let i=1;i<values.length;i++){prev=Number(values[i])*a+prev*(1-a);out[i]=prev}return out}
 function sma(values,p){const out=Array(values.length).fill(null);let s=0;for(let i=0;i<values.length;i++){s+=values[i];if(i>=p)s-=values[i-p];if(i>=p-1)out[i]=s/p}return out}
 function atr(c,p=14){const tr=c.map((x,i)=>Math.max(x.high-x.low,Math.abs(x.high-(i?c[i-1].close:x.close)),Math.abs(x.low-(i?c[i-1].close:x.close))));return sma(tr,p)}
 function median(a){const x=a.filter(Number.isFinite).slice().sort((a,b)=>a-b);if(!x.length)return null;const m=Math.floor(x.length/2);return x.length%2?x[m]:(x[m-1]+x[m])/2}
@@ -16,6 +15,8 @@ function seqId(symbol,time){return'DANTE-'+String(symbol||'UNKNOWN').toUpperCase
 function rowFact(type,c,i,extra={}){return{factId:'dante-'+type+'-'+i+'-'+String(c.time??c.closeTime??i),factType:type,barIndex:i,time:c.time??c.closeTime??null,...extra}}
 function drawdownPct(c,i,lookback){const start=Math.max(0,i-lookback+1),hi=Math.max(...c.slice(start,i+1).map(x=>x.high));return hi>0?(1-c[i].close/hi)*100:0}
 function rangeAtr(c,start,end,atrSeries){if(start<0||end<start)return null;const hi=Math.max(...c.slice(start,end+1).map(x=>x.high)),lo=Math.min(...c.slice(start,end+1).map(x=>x.low)),a=atrSeries[end];return Number.isFinite(a)&&a>0?(hi-lo)/a:null}
+function priorConsecutiveBelow(closes,emaPivot,i){let n=0;for(let j=i-1;j>=0;j--){if(!Number.isFinite(emaPivot[j])||closes[j]>=emaPivot[j])break;n++}return n}
+function confirmedPivotCount(c,start,end,left=3,right=3){let count=0;for(let i=Math.max(start,left);i<=end-right;i++){const x=c[i],lo=c.slice(i-left,i+right+1);if(lo.every((r,j)=>j===left||x.low<r.low))count++;if(lo.every((r,j)=>j===left||x.high>r.high))count++}return count}
 function validTransition(from,to){
   const map={
     NO_PATTERN:['PHASE_1_DUMP'],PHASE_1_DUMP:['PHASE_2_ACCUMULATION','RESET'],PHASE_2_ACCUMULATION:['PHASE_3_BREAKOUT','RESET'],
@@ -29,11 +30,11 @@ function analyze({symbol='UNKNOWN',candles=[],analysisAsOf,params={},previous=nu
   C.assertClosedCandles(candles,analysisAsOf);
   const P=C.normalizeParams(params),n=candles.length;
   if(n<Math.max(P.ema.long+5,P.dump.lookbackBars))return C.createEvidence({sequenceId:previous?.sequenceId||null,riceBowlState:previous?.riceBowlState||'NO_PATTERN',stateReason:'DATA_INSUFFICIENT',params:P,analysisAsOf,evidenceFacts:[],transitionPath:previous?.transitionPath||[]});
-  const closes=candles.map(x=>Number(x.close)),e112=ema(closes,P.ema.fast),e224=ema(closes,P.ema.pivot),e448=ema(closes,P.ema.long),a=atr(candles,P.atrPeriod);
+  const closes=candles.map(x=>Number(x.close)),seed=P.emaSeed.seedBars,e112=C.seededEma(closes,P.ema.fast,seed),e224=C.seededEma(closes,P.ema.pivot,seed),e448=C.seededEma(closes,P.ema.long,seed),a=atr(candles,P.atrPeriod);
   let state=previous?.riceBowlState||'NO_PATTERN',sequenceId=previous?.sequenceId||null,transitionPath=(previous?.transitionPath||[]).slice(),facts=[],counter=[],stateEnteredAt=previous?.stateEnteredAt??null;
   let dumpStart=previous?.meta?.dumpStart??null,baseStart=previous?.meta?.baseStart??null,breakoutIndex=previous?.meta?.breakoutIndex??null,trigger=previous?.meta?.trigger??null,retestIndex=previous?.meta?.retestIndex??null;
   const transition=(to,i,reason,ids=[])=>{if(state!==to&&!validTransition(state,to))throw new Error('invalid Dante transition '+state+' -> '+to);const from=state;state=to;stateEnteredAt=candles[i]?.time??candles[i]?.closeTime??analysisAsOf;transitionPath.push({from,to,transitionAt:stateEnteredAt,transitionBarIndex:i,reason,evidenceFactIds:ids,counterEvidenceFactIds:[],paramsHash:C.paramsHash(P),sequenceId,analysisAsOf});};
-  for(let i=Math.max(P.ema.long,P.dump.lookbackBars)-1;i<n;i++){
+  for(let i=Math.max(P.emaSeed.seedBars,P.dump.lookbackBars)-1;i<n;i++){
     const c=candles[i],av=a[i];if(!Number.isFinite(av)||av<=0)continue;
     const dd=drawdownPct(candles,i,P.dump.lookbackBars),bearish=e112[i]<e224[i]&&e224[i]<e448[i];
     const recentAtr=median(a.slice(Math.max(0,i-20),i).filter(Number.isFinite)),atrExpansion=recentAtr>0?av/recentAtr:null;
@@ -56,9 +57,13 @@ function analyze({symbol='UNKNOWN',candles=[],analysisAsOf,params={},previous=nu
     if(state==='PHASE_2_ACCUMULATION'||state==='FAILED_BREAKOUT'){
       const level=Number.isFinite(gongguriLevel)?Math.max(e224[i],gongguriLevel):e224[i],buf=av*P.breakout.breakoutBufferAtr,rv=rvol(candles,i);
       const crossed=c.close>level+buf&&(i===0||candles[i-1].close<=e224[i-1]+(a[i-1]||av)*P.breakout.breakoutBufferAtr);
-      if(crossed&&rv!=null&&rv>=P.breakout.minRvol){
-        const f=rowFact('BREAKOUT_CONFIRMED',c,i,{trigger:level,rvol:rv,bufferAtr:P.breakout.breakoutBufferAtr});facts.push(f);trigger=level;breakoutIndex=i;transition('PHASE_3_BREAKOUT',i,'CONFIRMED_CLOSE_BREAKOUT',[f.factId]);continue;
+      const priorBelow=priorConsecutiveBelow(closes,e224,i),pivots=confirmedPivotCount(candles,baseStart??0,i-1,P.pivot.left,P.pivot.right);
+      const declineBars=dumpStart!=null&&baseStart!=null?Math.max(1,baseStart-dumpStart):null,baseBars=baseStart!=null?i-baseStart:null;
+      const durationOk=!P.base.requireLongerThanDecline||(declineBars!=null&&baseBars>declineBars),contextOk=priorBelow>=P.breakout.minPriorClosesBelowPivot&&pivots>=P.base.minConfirmedPivotCount&&durationOk;
+      if(crossed&&rv!=null&&rv>=P.breakout.minRvol&&contextOk){
+        const f=rowFact('BREAKOUT_CONFIRMED',c,i,{trigger:level,rvol:rv,bufferAtr:P.breakout.breakoutBufferAtr,priorBelowPivotBars:priorBelow,confirmedPivotCount:pivots,declineBars,baseBars});facts.push(f);trigger=level;breakoutIndex=i;transition('PHASE_3_BREAKOUT',i,'CONFIRMED_CLOSE_BREAKOUT',[f.factId]);continue;
       }
+      if(crossed&&!contextOk)counter.push(rowFact('BREAKOUT_CONTEXT_INCOMPLETE',c,i,{priorBelowPivotBars:priorBelow,requiredPriorBelow:P.breakout.minPriorClosesBelowPivot,confirmedPivotCount:pivots,requiredPivots:P.base.minConfirmedPivotCount,durationOk}));
     }
     if(state==='PHASE_3_BREAKOUT'){
       if(i>breakoutIndex){
@@ -91,5 +96,5 @@ function analyze({symbol='UNKNOWN',candles=[],analysisAsOf,params={},previous=nu
   const result=C.createEvidence({sequenceId,riceBowlState:state,stateReason:transitionPath.at(-1)?.reason||'NO_CHANGE',stateEnteredAt,params:P,analysisAsOf,evidenceFacts:facts,counterEvidence:counter,transitionPath,gongguri:{status:'NOT_EVALUATED',level:gongguriLevel??null,evidenceFactIds:[]},emaStrike:{status:'NOT_EVALUATED',evidenceFactIds:[]}});
   return C.freeze({...result,meta:{dumpStart,baseStart,breakoutIndex,retestIndex,trigger,durationRatio,emaLatest:{ema112:e112.at(-1),ema224:e224.at(-1),ema448:e448.at(-1)},atr:a.at(-1)}});
 }
-return{VERSION,ema,sma,atr,median,rvol,seqId,rowFact,drawdownPct,rangeAtr,validTransition,analyze};
+return{VERSION,sma,atr,median,rvol,seqId,rowFact,drawdownPct,rangeAtr,priorConsecutiveBelow,confirmedPivotCount,validTransition,analyze};
 });
