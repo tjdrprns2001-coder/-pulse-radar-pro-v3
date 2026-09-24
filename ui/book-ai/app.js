@@ -4,6 +4,7 @@ const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidity
 const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer,Promotion=window.PulseRecommendationPromotion,Causal=window.PulseCausalIctEngine,CausalLedger=window.PulseCausalIctLedger;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
+const KO_ENGINE={scanner:'스캐너',presurge:'급등 전조',ict:'ICT 분석',causalIct:'인과성 ICT',structure:'구조 분석',forexBook:'책 데이터',journal:'이벤트 원장',gate:'표본 검증 게이트',trendline:'추세선'};
 const KO_STATUS={AVAILABLE:'정상',MISSING:'누락',STALE:'오래됨',ERROR:'오류',CONFIRMED:'확정',CANDIDATE:'후보',NOT_CONFIRMED:'미확정',READY:'준비',WATCH:'관찰',WAIT:'대기',RECOMMEND:'자동 추천',EXCLUDE:'제외',EXCLUDED:'제외'};
 const KO_STAGE={WAIT_RECLAIM:'재회복 대기',WAIT_MSS:'MSS 확인 대기',WAIT_FVG:'FVG 확인 대기',WAIT_REVISIT:'FVG 재방문 대기',REVISIT:'재방문 확인',INTENT:'진입 의도 확인',FILLED:'가상 체결 완료',INSUFFICIENT_BARS:'봉 부족',NO_SETUP:'조건 없음',PARTIAL:'부분 정렬',MIXED:'혼조'};
 function koStatus(v){return KO_STATUS[String(v||'').toUpperCase()]||v||'-'}
@@ -311,7 +312,7 @@ function sourceCards(engineSources){
   const box=$('sources');box.innerHTML='';
   for(const [name,x] of Object.entries(engineSources||{})){
     const d=document.createElement('div');d.className='source '+x.status;
-    const b=document.createElement('b');b.textContent=name+' · '+koStatus(x.status);
+    const b=document.createElement('b');b.textContent=(KO_ENGINE[name]||name)+' · '+koStatus(x.status);
     const timing=x.computedAt?['계산 '+fmtTime(x.computedAt),x.sourceBarClosedAt?'기준봉 '+fmtTime(x.sourceBarClosedAt):null].filter(Boolean).join(' · '):(x.observedAt?'관측 '+fmtTime(x.observedAt):'관측시각 N/A');const p=document.createElement('p');p.textContent=[x.version||'version N/A',x.reason||'',timing].filter(Boolean).join(' · ');
     d.append(b,p);box.append(d);
   }
