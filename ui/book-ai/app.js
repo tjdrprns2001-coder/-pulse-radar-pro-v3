@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,LM=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine,TA=window.PulseTraderAnalysis;
-const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
+const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
 let last=null,runSeq=0;
@@ -50,6 +50,36 @@ function buildChart(raw,tf='4h',analysisAsOf=Date.now()){
   const book=BF.analyze({candles,smc,liquidity,ictContext:ict});
   const technical=TA?.summarize?TA.summarize({candles,analysis:raw,smc,liquidity,timeframe:tf}):null;
   return{raw,candles,smc,liquidity,ict,book,model,trendRetest,technical};
+}
+function renderWatchlist(rows=[]){
+  const box=$('watchlist');if(!box)return;box.innerHTML='';
+  if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
+  for(const x of rows){
+    const b=document.createElement('button');b.className='watchItem';b.type='button';b.dataset.symbol=x.symbol;
+    const top=document.createElement('div');top.className='wTop';const sym=document.createElement('b');sym.textContent=x.symbol;const score=document.createElement('em');score.textContent='관찰 '+Math.round(x.watchScore);top.append(sym,score);
+    const p=document.createElement('p');p.textContent=(x.reasons||[]).join(' · ')||'Scanner 관찰 후보';
+    const s=document.createElement('small');s.textContent=[x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(x.priceChange24h)?'24H '+(x.priceChange24h>=0?'+':'')+x.priceChange24h.toFixed(1)+'%':null].filter(Boolean).join(' · ');
+    b.append(top,p,s);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
+  }
+}
+async function refreshWatchlist(){
+  const box=$('watchlist');if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
+  try{
+    if(!WL)throw new Error('Watchlist selector unavailable');
+    const summary=await json('/api/coin-scan?mode=summary&limit=500');
+    const rows=Array.isArray(summary.items)?summary.items:[];
+    const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
+    if(!seed.length){renderWatchlist([]);return[]}
+    const deep=await json('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')));
+    const selected=WL.select(deep.items||[],8);renderWatchlist(selected);return selected;
+  }catch(e){if(box)box.innerHTML='<div class="watchEmpty">후보 로드 실패 · '+String(e?.message||e)+'</div>';return[]}
+}
+function renderAggregate(symbol,charts={}){
+  if(!MTF||!$('aggregateSnapshot'))return null;
+  const panels={};
+  for(const tf of MINI_TFS){const ch=charts[tf];if(!ch)continue;panels[tf]={...ch,analysis:ch.raw,technical:ch.technical,state:miniStage(ch),bias:rawBias(ch.raw)}}
+  const r=MTF.compose({canvas:$('aggregateSnapshot'),panels,renderer:SR,symbol});
+  $('mtfStatus').textContent=r.panelCount+'/4 TF';return r;
 }
 function sourceCards(engineSources){
   const box=$('sources');box.innerHTML='';
@@ -141,9 +171,9 @@ function fillMini(card,chart){
 }
 function failMini(card,e){card.querySelector('.tfMiniHead span').textContent='데이터 오류';const rows=card.querySelectorAll('.tfMiniRow b');rows.forEach(x=>x.textContent='N/A');if(rows[0])rows[0].title=String(e?.message||e||'error')}
 async function loadMtfBoard(symbol,chart4h,analysisAsOf,token){
-  const box=$('mtfBoard');box.innerHTML='';const cards={};for(const tf of MINI_TFS){cards[tf]=makeMiniCard(tf);box.append(cards[tf])}
-  const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await CD.fetchStructure({symbol,interval:tf,limit:520}),tf,analysisAsOf);if(token!==runSeq)return;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
-  await Promise.allSettled(jobs);
+  const box=$('mtfBoard');box.innerHTML='';const cards={},charts={4h:chart4h};for(const tf of MINI_TFS){cards[tf]=makeMiniCard(tf);box.append(cards[tf])}
+  const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await CD.fetchStructure({symbol,interval:tf,limit:520}),tf,analysisAsOf);if(token!==runSeq)return;charts[tf]=chart;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
+  await Promise.allSettled(jobs);if(token===runSeq)renderAggregate(symbol,charts);return charts;
 }
 function shortError(e){const s=String(e?.message||e||'Scanner unavailable');return s.length>120?s.slice(0,117)+'…':s}
 function degradedSummary(symbol,error){const reason=shortError(error);return{symbol,headline:symbol+' · 차트 엔진 정상 · Scanner 판정 N/A',htf:'HTF 차트는 표시되지만 Scanner v3 정렬 판정은 사용할 수 없습니다.',setup:'EMA 112/224/448 · 구조 · 유동성 · ICT/SMC 차트만 표시합니다.',evidence:'Book AI 근거 점수는 계산하지 않습니다.',dataQuality:'Scanner unavailable · '+reason,counterEvidence:'Scanner 복구 전 단계·편향·근거점수는 N/A',nextConfirmation:'Scanner 연결 복구 후 Book AI 분석을 다시 실행하세요.'}}
@@ -216,8 +246,8 @@ async function run(){
 }
 function save(){
   if(!last)return;
-  const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI';const a=document.createElement('a');a.href=C.pngDataUrl($('snapshot'));a.download=symbol+'-book-ai-4h-overview.png';document.body.append(a);a.click();a.remove();
+  const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI',agg=$('aggregateSnapshot'),useAgg=agg?.dataset?.bookAiMtfRendered==='1';const a=document.createElement('a');a.href=useAgg?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=symbol+(useAgg?'-book-ai-mtf.png':'-book-ai-4h-overview.png');document.body.append(a);a.click();a.remove();
 }
-$('run').onclick=run;$('savePng').onclick=save;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();
+$('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();
 })();

@@ -118,6 +118,10 @@
     {
       "source": "/api/signal-performance",
       "destination": "/api/index?route=signal-performance"
+    },
+    {
+      "source": "/api/dante-backtest",
+      "destination": "/api/index?route=dante-backtest"
     }
   ],
   "regions": [
