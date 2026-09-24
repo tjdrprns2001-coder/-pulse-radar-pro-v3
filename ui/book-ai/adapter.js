@@ -128,10 +128,12 @@ function normalizeLiveEvidence(input,{analysisAsOf,symbol}){
     const t=ms(e.confirmedAt??e.candleTime);
     if(t!=null&&t>analysisAsOf)throw new Error('live event after analysisAsOf');
   }
+  const observedAt=input.observedAt==null?null:ms(input.observedAt);
+  if(observedAt!=null&&observedAt>analysisAsOf)throw new Error('liveEvidence observed after analysisAsOf');
   return{
     version:input.version==null?null:String(input.version),
     provenance:'LIVE_EPHEMERAL',
-    observedAt:input.observedAt==null?null:ms(input.observedAt),
+    observedAt,
     snapshot,
     events
   };
