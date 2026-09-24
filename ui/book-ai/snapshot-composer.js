@@ -4,7 +4,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.PulseBookAiSnapshotComposer=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Builder){'use strict';
-const VERSION='BOOK_AI_SNAPSHOT_COMPOSER_v1';
+const VERSION='BOOK_AI_SNAPSHOT_COMPOSER_v2';
 function ensureCanvas(canvas){if(!canvas||typeof canvas.getContext!=='function')throw new Error('canvas required')}
 function overlayText(ctx,summary,W,H){
   const lines=[summary?.headline,summary?.htf,summary?.setup,summary?.counterEvidence].filter(Boolean).slice(0,4);
@@ -15,12 +15,21 @@ function overlayText(ctx,summary,W,H){
   lines.forEach((line,i)=>{const t=String(line);ctx.fillText(t.length>115?t.slice(0,112)+'…':t,18,y+43+i*21)});
   ctx.restore();
 }
-function compose({canvas,symbol,timeframe='4h',candles=[],analysis=null,smc=null,liquidity=null,ict=null,summary,renderer,show=null}={}){
+function chartTechnical(technical){
+  if(!technical)return null;
+  const ma=technical.ma||{},picked={};
+  for(const p of[112,224,448]){
+    if(Number.isFinite(Number(ma[p])))picked[p]=Number(ma[p]);
+    if(Array.isArray(ma['series'+p]))picked['series'+p]=ma['series'+p];
+  }
+  return{...technical,ma:picked};
+}
+function compose({canvas,symbol,timeframe='4h',candles=[],analysis=null,smc=null,liquidity=null,ict=null,technical=null,summary,renderer,show=null}={}){
   ensureCanvas(canvas);
   if(!renderer||typeof renderer.draw!=='function')throw new Error('PulseSnapshotRenderer required');
-  const opts=show||{trend:true,structure:true,pd:true,smc:true,liquidity:true,profile:false,ma:false,dante:false,labels:true};
+  const opts=show||{trend:true,structure:true,pd:true,smc:true,liquidity:true,profile:false,ma:true,dante:false,labels:true};
   const snapshotModel=Builder?.buildSnapshotModel?Builder.buildSnapshotModel({tf:timeframe,candles,structure:analysis,liquidity,smc}):null;
-  renderer.draw(canvas,{symbol,timeframe,candles,analysis,smc,liquidity,ict,show:opts});
+  renderer.draw(canvas,{symbol,timeframe,candles,analysis,smc,liquidity,ict,technical:chartTechnical(technical),show:opts});
   overlayText(canvas.getContext('2d'),summary,canvas.width,canvas.height);
   canvas.dataset.bookAiRendered='1';
   return{version:VERSION,timeframe,snapshotModel,show:opts};
