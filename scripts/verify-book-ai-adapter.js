@@ -7,10 +7,11 @@ const ASOF=Date.parse('2026-09-24T05:00:00.000Z');
 const source=(data,observedAt=ASOF-1000,extra={})=>({data,observedAt,...extra});
 
 assert.equal(A.VERSION,'BOOK_AI_ADAPTER_v1');
-assert.deepEqual(A.ENGINE_NAMES,['scanner','presurge','ict','structure','forexBook','journal','gate','trendline']);
+assert.deepEqual(A.ENGINE_NAMES,['scanner','presurge','ict','causalIct','structure','forexBook','journal','gate','trendline']);
 assert(A.DEFAULT_STALE_AFTER_MS.gate>A.DEFAULT_STALE_AFTER_MS.scanner);
 assert.equal(A.SOURCE_FRESHNESS_POLICY_VERSION,'BOOK_AI_SOURCE_FRESHNESS_v2');
 assert.equal(A.DEFAULT_STALE_AFTER_MS.ict,5*H);
+assert.equal(A.DEFAULT_STALE_AFTER_MS.causalIct,5*H);
 assert.equal(A.DEFAULT_STALE_AFTER_MS.structure,5*H);
 assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
 
@@ -21,6 +22,7 @@ assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
       scanner:source({version:'v3',type:'A',structure:'bullish',paramsHash:'scan-p1'}),
       presurge:source({label:'관찰',blocked:false,score:2}),
       ict:source({version:'ICT_TRAINER_v1',topDown:'bullish'}),
+      causalIct:source({engine_version:'CAUSAL_ICT_R0_1_JS',contract:{pass:true},sequence:{long:{stage:'WAIT_FVG'}}}),
       structure:source({version:'structure-v1',state:'ok'}),
       forexBook:source({version:'4.0.0',available:true}),
       journal:source({version:'LIQUIDITY_EVENT_JOURNAL_v1.1',snapshots:[{id:'s0',symbol:'BTCUSDT',capturedBarTime:ASOF-1000}],events:[],outcomes:[]}),
@@ -35,7 +37,7 @@ assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
   assert.deepEqual(r.inherited.presurge,{label:'관찰',blocked:false,score:2});
   assert.equal(r.engineSources.scanner.status,'AVAILABLE');
   assert.equal(r.engineSources.gate.status,'AVAILABLE');
-  assert.equal(r.coverage.AVAILABLE,8);
+  assert.equal(r.coverage.AVAILABLE,9);
   assert(Object.isFrozen(r));
   input.sources.scanner.data.type='C';
   assert.equal(r.inherited.stage.code,'A','adapter result must be detached from mutable source');
