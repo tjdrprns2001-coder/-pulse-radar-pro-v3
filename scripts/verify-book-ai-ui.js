@@ -72,6 +72,9 @@ assert(app.includes("'/api/presurge'"),'recommendation list must have Spot PRE-S
 assert(app.includes('WATCH_CACHE_KEY'),'recommendation list must cache last healthy candidates');
 assert(app.includes('presurgeFallbackRows'),'spot fallback mapper required');
 assert(app.includes('scannerWatchRows'),'scanner recommendations must load independently');
+assert(app.includes('AI_DEEP_CANDIDATE_LIMIT=30'),'Book AI must deep-check 30 candidates');
+assert(app.includes("mode=deep&limit='+AI_DEEP_CANDIDATE_LIMIT"),'Book AI deep request must use the 30 candidate limit');
+assert(app.includes("marketScope==='spot+futures'"),'Book AI must display spot/futures market scope');
 assert(app.includes('spotWatchRows'),'spot recommendations must load independently');
 assert(app.includes('structureFallbackRows'),'structure fallback required when both scanners fail');
 assert(app.includes('jsonTimeout'),'watchlist requests must have bounded wait time');
