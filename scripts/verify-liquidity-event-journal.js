@@ -69,4 +69,20 @@ assert.equal(store.listEvents().length,new Set(bundle.events.map(e=>e.eventFinge
 
 const changedHash=J.createBundle({symbol:'BTCUSDT',timeframe:'1h',model,trendRetest:{...tl,paramsHash:'ph-new',primary:{...tl.primary,paramsHash:'ph-new'}},now:T0+2*H});
 assert.notEqual(changedHash.snapshot.id,a.id,'paramsHash change must preserve a separate historical snapshot');
-console.log('liquidity event journal v1.1 PASS');
+
+// Trendline telemetry remains snapshot evidence without mutating event identity.
+{
+  const tTl=JSON.parse(JSON.stringify(tl));tTl.primary.transitionPath=['ACTIVE','BROKEN','RETESTING','CONFIRMED'];tTl.primary.telemetry={sameBarWouldConfirm:true,sameBarConfirmed:false,confirmationBarsAfterTouch:1,deadZoneBars:1,comparisonEpsilonRel:1e-10};
+  const x=J.createBundle({symbol:'TELUSDT',timeframe:'1h',model,trendRetest:tTl,now:T0+2*H});
+  assert.deepEqual(x.snapshot.trendline.transitionPath,tTl.primary.transitionPath);assert.equal(x.snapshot.trendline.telemetry.deadZoneBars,1);
+}
+// Later snapshots replay immutable event rows via eventIds even after fingerprint dedupe.
+{
+  const store2=J.createMemoryStore(),first=J.createBundle({symbol:'BTCUSDT',timeframe:'1h',model,trendRetest:tl,now:T0+2*H});
+  J.recordAndResolve({store:store2,snapshot:first.snapshot,events:first.events,referenceCandles:model.candles,outcomeCandles:model.candles,now:T0+2*H});
+  const model2=JSON.parse(JSON.stringify(model));model2.candles.push(c(T0+2*H,101,102,100,101));model2.current=101;
+  const second=J.createBundle({symbol:'BTCUSDT',timeframe:'1h',model:model2,trendRetest:tl,now:T0+3*H});
+  const rr=J.recordAndResolve({store:store2,snapshot:second.snapshot,events:second.events,referenceCandles:model2.candles,outcomeCandles:model2.candles,now:T0+3*H});
+  assert(second.snapshot.eventIds.length>0);assert.equal(rr.current.events.length,second.snapshot.eventIds.length);
+}
+console.log('liquidity event journal v1.1 audit PASS');

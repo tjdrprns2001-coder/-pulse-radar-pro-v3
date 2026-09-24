@@ -97,7 +97,7 @@ function buildSnapshot({symbol,timeframe,model,trendRetest,now=Date.now()}={}){
     target:target==null?null:{type:s.target?.label||'DOL',price:target,side:s.target?.side||null,external:Boolean(s.target?.external),score:n(s.target?.score)},
     invalidation:invalidation==null?null:{price:invalidation},
     range:{low:n(model.range?.low),high:n(model.range?.high),mid:n(model.range?.mid),position:model.summary?.position||model.range?.position||null,positionPct:n(model.summary?.rangePositionPct)},
-    params,trendline:trendRetest?.primary?{state:trendRetest.primary.state,stateLabel:trendRetest.primary.stateLabel,lineId:trendRetest.primary.line?.lineId||null,paramsHash:trendRetest.primary.paramsHash||null,quality:n(trendRetest.primary.quality?.score)}:null,
+    params,trendline:trendRetest?.primary?{state:trendRetest.primary.state,stateLabel:trendRetest.primary.stateLabel,lineId:trendRetest.primary.line?.lineId||null,paramsHash:trendRetest.primary.paramsHash||null,quality:n(trendRetest.primary.quality?.score),transitionPath:clone(trendRetest.primary.transitionPath||[]),telemetry:clone(trendRetest.primary.telemetry||null)}:null,
     eventIds:events.map(x=>x.eventId)
   };
 }
@@ -183,10 +183,10 @@ function recordAndResolve({store,snapshot,events=[],referenceCandles=[],outcomeC
   const candidates=[...snapshotMap.values()].filter(x=>x.symbol===snapshot.symbol&&x.timeframe===snapshot.timeframe);
   for(const s of candidates){const prior=outcomeMap.get(s.id)||newOutcome(s);outcomeMap.set(s.id,resolveOutcome(s,prior,{referenceCandles,outcomeCandles},now))}
   let snapshots=[...snapshotMap.values()].sort((a,b)=>n(b.capturedBarTime,b.capturedAt)-n(a.capturedBarTime,a.capturedAt)).slice(0,Math.max(10,Math.min(1000,Number(maxEntries)||MAX_ENTRIES)));
-  const keep=new Set(snapshots.map(x=>x.id)),eventsOut=[...eventMap.values()].filter(x=>keep.has(x.snapshotId)),outcomes=[...outcomeMap.values()].filter(x=>keep.has(x.snapshotId));
+  const keep=new Set(snapshots.map(x=>x.id)),keepEventIds=new Set(snapshots.flatMap(x=>Array.isArray(x.eventIds)?x.eventIds:[])),eventsOut=[...eventMap.values()].filter(x=>keepEventIds.has(x.eventId)),outcomes=[...outcomeMap.values()].filter(x=>keep.has(x.snapshotId));
   store.write({schemaVersion:1,version:VERSION,snapshots,events:eventsOut,outcomes});
-  const outcomeById=new Map(outcomes.map(x=>[x.snapshotId,x])),recent=snapshots.filter(x=>x.symbol===snapshot.symbol&&x.timeframe===snapshot.timeframe).slice(0,8).map(x=>({...x,outcome:outcomeById.get(x.id)||newOutcome(x),events:eventsOut.filter(e=>e.snapshotId===x.id)}));
-  return{current:recent.find(x=>x.id===snapshot.id)||{...snapshot,outcome:outcomeById.get(snapshot.id)||newOutcome(snapshot),events:eventsOut.filter(e=>e.snapshotId===snapshot.id)},recent,stats:summarize(snapshots.filter(x=>x.symbol===snapshot.symbol&&x.timeframe===snapshot.timeframe),outcomes),allCount:snapshots.length,eventCount:eventsOut.length};
+  const outcomeById=new Map(outcomes.map(x=>[x.snapshotId,x])),eventById=new Map(eventsOut.map(x=>[x.eventId,x])),recent=snapshots.filter(x=>x.symbol===snapshot.symbol&&x.timeframe===snapshot.timeframe).slice(0,8).map(x=>({...x,outcome:outcomeById.get(x.id)||newOutcome(x),events:(x.eventIds||[]).map(id=>eventById.get(id)).filter(Boolean)}));
+  return{current:recent.find(x=>x.id===snapshot.id)||{...snapshot,outcome:outcomeById.get(snapshot.id)||newOutcome(snapshot),events:(snapshot.eventIds||[]).map(id=>eventById.get(id)).filter(Boolean)},recent,stats:summarize(snapshots.filter(x=>x.symbol===snapshot.symbol&&x.timeframe===snapshot.timeframe),outcomes),allCount:snapshots.length,eventCount:eventsOut.length};
 }
 function createBundle({symbol,timeframe,model,trendRetest,now=Date.now()}={}){
   const snapshot=buildSnapshot({symbol,timeframe,model,trendRetest,now}),events=buildEvents({snapshotId:snapshot.id,sequenceId:snapshot.sequenceId,symbol:snapshot.symbol,timeframe:snapshot.timeframe,model,trendRetest});
