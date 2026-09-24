@@ -14,10 +14,11 @@ function defaultService(getStore){
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});
-        performanceRecorder=createSignalPerformanceService({store,resolver:createBinanceResolver({})});
+        const resolver=createBinanceResolver({});
+        performanceRecorder=createSignalPerformanceService({store,resolver});
         alertRecorder=createAlertService({store});
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
-        recommendationHistory=createRecommendationHistoryService({store});
+        recommendationHistory=createRecommendationHistoryService({store,resolver});
       }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
     }
     singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory});
