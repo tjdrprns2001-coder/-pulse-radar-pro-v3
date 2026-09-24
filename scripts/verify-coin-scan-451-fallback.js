@@ -70,14 +70,14 @@ function candles(limit=500){
   const service=createScanService({provider,now:()=>now});
   const summary=await service.run({mode:'summary',limit:10});
   assert.equal(summary.status,'ok');
-  assert.equal(summary.marketSource,'spot-fallback');
-  assert.equal(summary.universe,'Binance USDT spot fallback');
+  assert.equal(summary.marketSource,'spot-only');
+  assert.equal(summary.universe,'Binance USDT 현물+무기한 통합');
   assert.equal(summary.partial,true);
-  assert(summary.sourceWarning&&summary.sourceWarning.includes('Spot fallback'));
+  assert(summary.sourceWarning&&summary.sourceWarning.includes('Futures 데이터가 없어 현물'));
 
   const deep=await service.run({mode:'deep',symbols:['ETHUSDT'],limit:5,precision:true});
   assert.equal(deep.status,'ok','deep scan must survive Futures 451');
-  assert.equal(deep.marketSource,'spot-fallback');
+  assert.equal(deep.marketSource,'spot-only');
   assert.equal(deep.items.length,1);
   assert.notEqual(deep.items[0].dataState,'failed','spot frames should keep deep item usable');
   assert(deep.items[0].samplePattern,'deep analysis should still run on spot frames');
