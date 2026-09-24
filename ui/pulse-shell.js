@@ -25,7 +25,7 @@
     snapshot:{title:'MTF 스냅샷',desc:'다중 시간봉 구조 스냅샷',path:'/snapshot-analysis.html'},
     chartsnapshot:{title:'차트 스냅샷',desc:'복원된 MTF 스냅샷 · Signal Quality v2',path:'/snapshot-analysis-restored.html'},
     performance:{title:'성과 검증',desc:'신호 성과 · Calibration · 품질 검증',path:'/signal-performance.html'},
-    backtest:{title:'백테스트',desc:'과거 구간 전략 검증',path:'/backtest.html'},
+    backtest:{title:'Dante 연구검증',desc:'256 · 밥그릇 · 이평때리기 · 워크포워드 · Paper Trading',path:'/research-backtest.html'},
     historical:{title:'과거 검증',desc:'Historical validation',path:'/historical-validation.html'},
     backfill:{title:'과거 데이터 백필',desc:'과거 OHLCV · BACKTESTED 표본 생성',path:'/historical-backfill.html'},
     risk:{title:'리스크 계산기',desc:'포지션 리스크 계산',path:'/risk-calculator.html'},
