@@ -1,0 +1,585 @@
+{
+  "schema": "pulse-radar-live-pump-batch-v1",
+  "sampledAt": "2026-09-24",
+  "universe": "Binance USDT perpetual crypto contracts",
+  "selection": {
+    "snapshotRule": "24h gain >= 6% and quote volume >= 5M USDT at scan start",
+    "count": 16,
+    "note": "XNY fell below 6% by final refresh but remains included because it qualified at scan start."
+  },
+  "bookRulesApplied": [
+    "confirmed resistance breakout can flip resistance into support",
+    "prefer volume expansion on breakout and contraction/reduced supply on retest",
+    "use higher-timeframe close confirmation rather than wick-only breaks",
+    "increase confidence when multiple support/resistance, trend, MA and liquidity factors overlap"
+  ],
+  "lessons": [
+    "XNY is the cleanest OI+taker simultaneous lead sample in this batch.",
+    "STEEM and BTW are deleveraging/squeeze-style samples where OI fell before ignition.",
+    "NOM and RAYSOL show heavy OI build while taker stayed below 1, useful as leveraged/absorption-type contrast samples.",
+    "TAKE is a late-stage blow-off/retrace control: 24h remains positive but price is about 67% below the 24h high.",
+    "ZRO remains near the 24h high after a high-RVOL breakout and is a cleaner continuation sample than most names in the batch."
+  ],
+  "samples": [
+    {
+      "symbol": "NILUSDT",
+      "snapshot": {
+        "last": 0.13554,
+        "change24hPct": 39.39,
+        "high24h": 0.14299,
+        "drawdownFromHighPct": -5.2,
+        "quoteVolumeM": 413.2
+      },
+      "t0": {
+        "time": "2026-09-23T22:00:00.000Z",
+        "barPct": 16.89,
+        "rvol20": 2.38,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 1.15,
+        "price24hPct": 26.44,
+        "oi6hPct": 7.09,
+        "oi24hPct": 57.89,
+        "taker6h": 1.008,
+        "taker24h": 1.015
+      },
+      "htf": {
+        "d1Rsi": 93.1,
+        "d1Change5Pct": 172.3,
+        "d1Vratio": 9.91,
+        "h4Rsi": 81.6,
+        "h4Change5Pct": 33.7,
+        "h4Vratio": 3.24
+      },
+      "dna": "OI_BUILD_PRICE_EXPANSION",
+      "stage": "EXPANSION_OVERHEATED",
+      "bookPattern": "HTF breakout with extreme volume expansion; no longer a quiet entry sample"
+    },
+    {
+      "symbol": "NOMUSDT",
+      "snapshot": {
+        "last": 0.002386,
+        "change24hPct": 36.97,
+        "high24h": 0.002665,
+        "drawdownFromHighPct": -10.5,
+        "quoteVolumeM": 58
+      },
+      "t0": {
+        "time": "2026-09-24T00:00:00.000Z",
+        "barPct": 29.23,
+        "rvol20": 9.05,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 13.74,
+        "price24hPct": 14,
+        "oi6hPct": 31.2,
+        "oi24hPct": 23.64,
+        "taker6h": 0.883,
+        "taker24h": 0.915
+      },
+      "htf": {
+        "d1Rsi": 70.9,
+        "d1Change5Pct": 19.8,
+        "d1Vratio": 0.99,
+        "h4Rsi": 68.1,
+        "h4Change5Pct": 12.5,
+        "h4Vratio": 8.51
+      },
+      "dna": "OI_BUILD_SELL_SIDE_EXPANSION",
+      "stage": "EXPANSION",
+      "bookPattern": "breakout with abnormal volume, but heavy derivatives build and sell-side taker make it a leverage/absorption sample"
+    },
+    {
+      "symbol": "TAKEUSDT",
+      "snapshot": {
+        "last": 0.07121,
+        "change24hPct": 18.15,
+        "high24h": 0.2147,
+        "drawdownFromHighPct": -66.8,
+        "quoteVolumeM": 671
+      },
+      "t0": {
+        "time": "2026-09-23T07:00:00.000Z",
+        "barPct": 64.2,
+        "rvol20": 35.91,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 70.05,
+        "price24hPct": 75.67,
+        "oi6hPct": 116.94,
+        "oi24hPct": 123.01,
+        "taker6h": 1.115,
+        "taker24h": 1.004
+      },
+      "htf": {
+        "d1Rsi": 84.3,
+        "d1Change5Pct": 77.4,
+        "d1Vratio": 36.05,
+        "h4Rsi": 57.9,
+        "h4Change5Pct": 56.7,
+        "h4Vratio": 339.75
+      },
+      "dna": "BLOWOFF_POST_SPIKE_RETRACE_CONTROL",
+      "stage": "POST_SPIKE_RETRACE",
+      "bookPattern": "late expansion / failed chase control rather than fresh pre-surge"
+    },
+    {
+      "symbol": "SAGAUSDT",
+      "snapshot": {
+        "last": 0.04721,
+        "change24hPct": 17.97,
+        "high24h": 0.05256,
+        "drawdownFromHighPct": -10.2,
+        "quoteVolumeM": 136.7
+      },
+      "t0": {
+        "time": "2026-09-23T12:00:00.000Z",
+        "barPct": 7.12,
+        "rvol20": 3.27,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": -1.64,
+        "price24hPct": 19.93,
+        "oi6hPct": 2.39,
+        "oi24hPct": 22.33,
+        "taker6h": 0.99,
+        "taker24h": 0.978
+      },
+      "htf": {
+        "d1Rsi": 87.7,
+        "d1Change5Pct": 92.1,
+        "d1Vratio": 2.22,
+        "h4Rsi": 68.6,
+        "h4Change5Pct": 19.6,
+        "h4Vratio": 1.12
+      },
+      "dna": "OI_BUILD_RVOL_BREAKOUT",
+      "stage": "EXPANSION",
+      "bookPattern": "quiet 6h price before RVOL breakout, but HTF already extended"
+    },
+    {
+      "symbol": "BTWUSDT",
+      "snapshot": {
+        "last": 0.9903,
+        "change24hPct": 10.07,
+        "high24h": 1.0888,
+        "drawdownFromHighPct": -9,
+        "quoteVolumeM": 103
+      },
+      "t0": {
+        "time": "2026-09-23T05:00:00.000Z",
+        "barPct": 4.87,
+        "rvol20": 2.29,
+        "breakout": false
+      },
+      "pre": {
+        "price6hPct": -1.41,
+        "price24hPct": 10.69,
+        "oi6hPct": -3.55,
+        "oi24hPct": 6.65,
+        "taker6h": 1.062,
+        "taker24h": 1.033
+      },
+      "htf": {
+        "d1Rsi": 74.4,
+        "d1Change5Pct": 64.3,
+        "d1Vratio": 1.22,
+        "h4Rsi": 62.3,
+        "h4Change5Pct": 13.2,
+        "h4Vratio": 0.86
+      },
+      "dna": "DELEVERAGING_SQUEEZE_PRICE_LED",
+      "stage": "EXPANSION",
+      "bookPattern": "price expansion after short-term OI contraction; squeeze-style continuation sample"
+    },
+    {
+      "symbol": "ZROUSDT",
+      "snapshot": {
+        "last": 1.5738,
+        "change24hPct": 10.98,
+        "high24h": 1.5883,
+        "drawdownFromHighPct": -0.9,
+        "quoteVolumeM": 145
+      },
+      "t0": {
+        "time": "2026-09-23T14:00:00.000Z",
+        "barPct": 4.77,
+        "rvol20": 6.03,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 1.97,
+        "price24hPct": 20.17,
+        "oi6hPct": 2.2,
+        "oi24hPct": 28.09,
+        "taker6h": 0.99,
+        "taker24h": 0.959
+      },
+      "htf": {
+        "d1Rsi": 80.3,
+        "d1Change5Pct": 33.9,
+        "d1Vratio": 2.28,
+        "h4Rsi": 81.8,
+        "h4Change5Pct": 5.2,
+        "h4Vratio": 3.01
+      },
+      "dna": "RVOL_BREAKOUT_OI_BUILD",
+      "stage": "CONTINUATION_NEAR_HIGH",
+      "bookPattern": "high-RVOL breakout holding near the 24h high; strong continuation but overbought HTF"
+    },
+    {
+      "symbol": "KMNOUSDT",
+      "snapshot": {
+        "last": 0.03739,
+        "change24hPct": 8.5,
+        "high24h": 0.03814,
+        "drawdownFromHighPct": -2,
+        "quoteVolumeM": 13.5
+      },
+      "t0": {
+        "time": "2026-09-24T01:00:00.000Z",
+        "barPct": 4.58,
+        "rvol20": 1.4,
+        "breakout": false
+      },
+      "pre": {
+        "price6hPct": -0.68,
+        "price24hPct": 3.6,
+        "oi6hPct": 0.18,
+        "oi24hPct": -9.28,
+        "taker6h": 0.967,
+        "taker24h": 1.071
+      },
+      "htf": {
+        "d1Rsi": 82.4,
+        "d1Change5Pct": 25.1,
+        "d1Vratio": 5.19,
+        "h4Rsi": 49.2,
+        "h4Change5Pct": 0.7,
+        "h4Vratio": 0.68
+      },
+      "dna": "HTF_STRONG_LTF_RESET_CONTINUATION",
+      "stage": "REIGNITION",
+      "bookPattern": "HTF strength with 4H momentum reset; not driven by fresh OI build"
+    },
+    {
+      "symbol": "USUSDT",
+      "snapshot": {
+        "last": 0.019499,
+        "change24hPct": 9.33,
+        "high24h": 0.019612,
+        "drawdownFromHighPct": -0.6,
+        "quoteVolumeM": 7.6
+      },
+      "t0": {
+        "time": "2026-09-23T10:00:00.000Z",
+        "barPct": 2.9,
+        "rvol20": 1.98,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 2.08,
+        "price24hPct": 21.79,
+        "oi6hPct": -0.71,
+        "oi24hPct": 19.56,
+        "taker6h": 0.829,
+        "taker24h": 0.893
+      },
+      "htf": {
+        "d1Rsi": 70.9,
+        "d1Change5Pct": 18.3,
+        "d1Vratio": 1.54,
+        "h4Rsi": 68.6,
+        "h4Change5Pct": 4.3,
+        "h4Vratio": 1.9
+      },
+      "dna": "PRICE_LED_LOW_DERIVATIVE_CONFIRMATION",
+      "stage": "CONTINUATION_NEAR_HIGH",
+      "bookPattern": "price/volume-led breakout with weak taker confirmation"
+    },
+    {
+      "symbol": "CAPUSDT",
+      "snapshot": {
+        "last": 0.05041,
+        "change24hPct": 6.98,
+        "high24h": 0.05411,
+        "drawdownFromHighPct": -6.8,
+        "quoteVolumeM": 17.6
+      },
+      "t0": {
+        "time": "2026-09-23T21:00:00.000Z",
+        "barPct": 4.04,
+        "rvol20": 2.26,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 4.66,
+        "price24hPct": 8.47,
+        "oi6hPct": 2.27,
+        "oi24hPct": 6.63,
+        "taker6h": 0.854,
+        "taker24h": 1.088
+      },
+      "htf": {
+        "d1Rsi": 55.1,
+        "d1Change5Pct": -4.6,
+        "d1Vratio": 2.03,
+        "h4Rsi": 86.3,
+        "h4Change5Pct": 12.6,
+        "h4Vratio": 1.32
+      },
+      "dna": "OI_BUILD_SELL_ABSORPTION_BREAKOUT",
+      "stage": "LTF_EXPANSION_HTF_TRANSITION",
+      "bookPattern": "4H breakout while 1D remains only partially aligned; useful transition sample"
+    },
+    {
+      "symbol": "STABLEUSDT",
+      "snapshot": {
+        "last": 0.02683,
+        "change24hPct": 9.2,
+        "high24h": 0.02739,
+        "drawdownFromHighPct": -2,
+        "quoteVolumeM": 6.4
+      },
+      "t0": {
+        "time": "2026-09-23T19:00:00.000Z",
+        "barPct": 3.9,
+        "rvol20": 2.29,
+        "breakout": false
+      },
+      "pre": {
+        "price6hPct": -3.19,
+        "price24hPct": 0.86,
+        "oi6hPct": 3.1,
+        "oi24hPct": 8.07,
+        "taker6h": 0.941,
+        "taker24h": 1.205
+      },
+      "htf": {
+        "d1Rsi": 41.4,
+        "d1Change5Pct": 6.8,
+        "d1Vratio": 1.97,
+        "h4Rsi": 63.7,
+        "h4Change5Pct": 7.5,
+        "h4Vratio": 0.87
+      },
+      "dna": "OI_BUILD_SELL_ABSORPTION_REVERSAL",
+      "stage": "EARLY_HTF_TRANSITION",
+      "bookPattern": "OI built while price was weak, followed by 4H recovery; early transition rather than mature trend"
+    },
+    {
+      "symbol": "LSKUSDT",
+      "snapshot": {
+        "last": 0.34092,
+        "change24hPct": 7.45,
+        "high24h": 0.36996,
+        "drawdownFromHighPct": -7.8,
+        "quoteVolumeM": 132.5
+      },
+      "t0": {
+        "time": "2026-09-23T21:00:00.000Z",
+        "barPct": 4.46,
+        "rvol20": 2.24,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 7.91,
+        "price24hPct": 2.93,
+        "oi6hPct": -3.18,
+        "oi24hPct": -1.61,
+        "taker6h": 0.982,
+        "taker24h": 0.967
+      },
+      "htf": {
+        "d1Rsi": 58.2,
+        "d1Change5Pct": -19.6,
+        "d1Vratio": 0.34,
+        "h4Rsi": 41.5,
+        "h4Change5Pct": 11.1,
+        "h4Vratio": 1.35
+      },
+      "dna": "SQUEEZE_REBUILD_AFTER_HTF_PULLBACK",
+      "stage": "REBUILD",
+      "bookPattern": "4H rebound after deep daily pullback with falling OI; rebuild/squeeze sample"
+    },
+    {
+      "symbol": "RAYSOLUSDT",
+      "snapshot": {
+        "last": 2.0095,
+        "change24hPct": 8.69,
+        "high24h": 2.1278,
+        "drawdownFromHighPct": -5.6,
+        "quoteVolumeM": 112.5
+      },
+      "t0": {
+        "time": "2026-09-23T16:00:00.000Z",
+        "barPct": 4.21,
+        "rvol20": 2.8,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 4.66,
+        "price24hPct": 12.23,
+        "oi6hPct": 36.76,
+        "oi24hPct": 48.65,
+        "taker6h": 0.872,
+        "taker24h": 0.996
+      },
+      "htf": {
+        "d1Rsi": 70.9,
+        "d1Change5Pct": 12.5,
+        "d1Vratio": 0.4,
+        "h4Rsi": 62.3,
+        "h4Change5Pct": 5.6,
+        "h4Vratio": 3.15
+      },
+      "dna": "HEAVY_OI_BUILD_SELL_ABSORPTION",
+      "stage": "EXPANSION_WITH_LEVERAGE",
+      "bookPattern": "large OI build under sell-side taker before breakout; strong but leverage-sensitive"
+    },
+    {
+      "symbol": "ZESTUSDT",
+      "snapshot": {
+        "last": 0.18362,
+        "change24hPct": 8.23,
+        "high24h": 0.19244,
+        "drawdownFromHighPct": -4.6,
+        "quoteVolumeM": 17.2
+      },
+      "t0": {
+        "time": "2026-09-23T09:00:00.000Z",
+        "barPct": 4.62,
+        "rvol20": 2.54,
+        "breakout": false
+      },
+      "pre": {
+        "price6hPct": 5.21,
+        "price24hPct": 23.19,
+        "oi6hPct": 8.11,
+        "oi24hPct": 32,
+        "taker6h": 0.924,
+        "taker24h": 0.941
+      },
+      "htf": {
+        "d1Rsi": 88.2,
+        "d1Change5Pct": 31.8,
+        "d1Vratio": 1.06,
+        "h4Rsi": 81.4,
+        "h4Change5Pct": 9.9,
+        "h4Vratio": 4.85
+      },
+      "dna": "OI_BUILD_PRICE_EXPANSION",
+      "stage": "OVERHEATED_EXPANSION",
+      "bookPattern": "HTF overbought expansion with OI build; late-stage sample"
+    },
+    {
+      "symbol": "XNYUSDT",
+      "snapshot": {
+        "last": 0.006882,
+        "change24hPct": 5.81,
+        "high24h": 0.008251,
+        "drawdownFromHighPct": -16.6,
+        "quoteVolumeM": 13
+      },
+      "t0": {
+        "time": "2026-09-23T12:00:00.000Z",
+        "barPct": 11.53,
+        "rvol20": 42.08,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 3.94,
+        "price24hPct": 4.86,
+        "oi6hPct": 7.13,
+        "oi24hPct": 6.95,
+        "taker6h": 1.427,
+        "taker24h": 1.171
+      },
+      "htf": {
+        "d1Rsi": 63.3,
+        "d1Change5Pct": 17.5,
+        "d1Vratio": 2.15,
+        "h4Rsi": 90.9,
+        "h4Change5Pct": 13.7,
+        "h4Vratio": 9.82
+      },
+      "dna": "OI_TAKER_PRE_SURGE_RVOL_IGNITION",
+      "stage": "POST_IGNITION_PULLBACK",
+      "bookPattern": "cleanest pre-surge lead in batch: OI and taker strengthened before a 42x-RVOL breakout"
+    },
+    {
+      "symbol": "TRIAUSDT",
+      "snapshot": {
+        "last": 0.004431,
+        "change24hPct": 6.64,
+        "high24h": 0.004811,
+        "drawdownFromHighPct": -7.9,
+        "quoteVolumeM": 9.2
+      },
+      "t0": {
+        "time": "2026-09-24T01:00:00.000Z",
+        "barPct": 1.87,
+        "rvol20": 33.14,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": 5.64,
+        "price24hPct": 4.39,
+        "oi6hPct": 6.01,
+        "oi24hPct": 2.89,
+        "taker6h": 1.073,
+        "taker24h": 0.907
+      },
+      "htf": {
+        "d1Rsi": 69.2,
+        "d1Change5Pct": 8.7,
+        "d1Vratio": 0.23,
+        "h4Rsi": 66.5,
+        "h4Change5Pct": 1.2,
+        "h4Vratio": 1.04
+      },
+      "dna": "OI_BUILD_HUGE_RVOL_BREAKOUT",
+      "stage": "EARLY_EXPANSION",
+      "bookPattern": "very large relative volume ignition with moderate OI lead and only partial HTF alignment"
+    },
+    {
+      "symbol": "STEEMUSDT",
+      "snapshot": {
+        "last": 0.06417,
+        "change24hPct": 7.5,
+        "high24h": 0.06449,
+        "drawdownFromHighPct": -0.5,
+        "quoteVolumeM": 11.1
+      },
+      "t0": {
+        "time": "2026-09-24T00:00:00.000Z",
+        "barPct": 8.55,
+        "rvol20": 17.65,
+        "breakout": true
+      },
+      "pre": {
+        "price6hPct": -0.45,
+        "price24hPct": -3.61,
+        "oi6hPct": -7.26,
+        "oi24hPct": -19.12,
+        "taker6h": 1.045,
+        "taker24h": 1.057
+      },
+      "htf": {
+        "d1Rsi": 66.3,
+        "d1Change5Pct": 2.2,
+        "d1Vratio": 0.25,
+        "h4Rsi": 53,
+        "h4Change5Pct": -4.2,
+        "h4Vratio": 1.27
+      },
+      "dna": "DELEVERAGING_SHORT_SQUEEZE_IGNITION",
+      "stage": "FRESH_BREAKOUT_NEAR_HIGH",
+      "bookPattern": "quiet/weak price with falling OI before 17.7x-RVOL breakout; classic deleveraging squeeze sample"
+    }
+  ]
+}
