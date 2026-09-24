@@ -24,6 +24,7 @@ function journalReadOnly(){
   if(!Journal)return null;
   try{const data=Journal.createLocalStorageStore(localStorage).export();if(!(data.snapshots?.length||data.events?.length||data.outcomes?.length))return null;return{data,version:Journal.VERSION}}catch{return null}
 }
+function boundedObservedAt(value,receivedAt){const v=Number(value),r=Number(receivedAt);if(!Number.isFinite(r))return Number.isFinite(v)?v:null;if(!Number.isFinite(v))return r;return Math.min(v,r)}
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
 function closedCandlesForAsOf(rows,analysisAsOf){
   return (Array.isArray(rows)?rows:[]).filter(c=>{
@@ -314,12 +315,12 @@ function render(result,chart){
 async function run(){
   const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error','warn');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
-    const now=Date.now();
+    const requestStartedAt=Date.now();
     const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const raw=await CD.fetchStructure({symbol,interval:'4h',limit:560});if(token!==runSeq)return;
-    const chart=buildChart(raw,'4h',now);
+    const chart=buildChart(raw,'4h',requestStartedAt);
     const scanResult=await scanPromise;if(token!==runSeq)return;
-    const scan=scanResult.data,item=scan?.items?.[0]||null;
+    const scan=scanResult.data,item=scan?.items?.[0]||null,now=Date.now();
     if(!item){
       const reason=scanResult.error||new Error('Scanner deep result 없음');
       last={fusion:null,summary:degradedSummary(symbol,reason),raw,chart,symbol,degraded:true,analysisAsOf:now};renderDegraded(last,reason);
@@ -335,8 +336,8 @@ async function run(){
     const adapter=A.adaptBookAiInput({
       analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,
       sources:{
-        scanner:source(item,item.updatedAt,scan.scannerVersion||'v3'),
-        presurge:source(item.preSurge,item.updatedAt,'PRE_SURGE_v2'),
+        scanner:source(item,boundedObservedAt(item.updatedAt,now),scan.scannerVersion||'v3'),
+        presurge:source(item.preSurge,boundedObservedAt(item.updatedAt,now),'PRE_SURGE_v2'),
         ict:source(chart.ict,closed,chart.ict?.version||'ICT'),
         structure:source(raw,closed,raw.version||'structure'),
         forexBook:source(chart.book,closed,chart.book?.version),
