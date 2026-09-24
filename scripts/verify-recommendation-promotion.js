@@ -25,6 +25,13 @@ r=P.evaluate({item:{...base,tfState:{'1h':{bias:'down'},'15m':{bias:'up'}}},book
 assert.equal(r.state,'CONFIRMED','lower-TF weakness must block final recommendation');
 assert(r.invalidations.some(x=>x.includes('1H/15m 약세')));
 
+
+r=P.evaluate({item:{...base,v3AlignmentPct:40},book});
+assert.equal(r.state,'WATCH','Book confirmation must not bypass weak HTF alignment / Scanner READY core');
+assert.equal(r.confirmed,true,'Book evidence confirmation should still be preserved separately');
+assert(r.reasons.some(x=>x.includes('책 근거 확정')));
+assert(r.missing.some(x=>x.includes('시장 승격용 Scanner READY 조건')));
+
 r=P.evaluate({item:{...base,priceChange24h:15},book});
 assert.equal(r.state,'EXCLUDE','overextended price must hard-block');
 console.log('recommendation promotion engine PASS');
