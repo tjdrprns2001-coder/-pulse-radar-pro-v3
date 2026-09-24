@@ -17,16 +17,17 @@ const rows=[
 ];
 
 const best=Auto.evaluate(rows[0]);
-assert.equal(best.state,'RECOMMEND');
+assert.equal(best.state,'READY','scanner-only recommender must stop at READY');
 assert(best.score>=72);
 assert(best.reasons.some(x=>x.includes('PRE-SURGE')));
 const watch=Auto.evaluate(rows[1]);
-assert.notEqual(watch.state,'RECOMMEND');
+assert(['WATCH','WAIT'].includes(watch.state),'incomplete scanner gates must remain WATCH/WAIT');
 assert(watch.missing.length>0);
 assert.equal(Auto.evaluate(rows[2]).state,'EXCLUDE');
 assert.equal(Auto.evaluate(rows[3]).state,'EXCLUDE');
 
 const out=Auto.summary(rows,5);
-assert.equal(out.recommended[0].symbol,'BESTUSDT');
+assert.equal(out.ready[0].symbol,'BESTUSDT');
+assert.equal(out.recommended.length,0,'server scanner must not emit RECOMMEND without Book AI confirmation');
 assert(out.excluded.some(x=>x.symbol==='RUNUSDT'));
 console.log('auto recommender PASS');
