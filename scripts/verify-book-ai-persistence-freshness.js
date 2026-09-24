@@ -34,7 +34,7 @@ const ChartData=require('../ui/chart/chart-data.js');
     sources:{journal:{data:db,observedAt:t,version:Journal.VERSION}}
   });
   const rr=Rules.evaluate(adapter);
-  const liq=rr.rules.find(x=>x.ruleId==='LIQUIDITY_SWEEP_RECLAIM');
+  const liq=rr.bookSetups.find(x=>x.ruleId==='LIQUIDITY_SWEEP_RECLAIM');
   assert(liq,'liquidity rule missing');
   assert.equal(liq.status,'CONFIRMED','persisted confirmed sweep+reclaim must become CONFIRMED');
   assert(liq.trustedEvidenceEventIds.length>=2,'CONFIRMED must cite trusted persisted events');
