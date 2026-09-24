@@ -98,6 +98,7 @@ function normalizeSampleDna(input={}){
 function normalizeBookSetup(rule={},analysisAsOf){
   object(rule,'bookSetup');
   const status=enumValue(rule.status||'NOT_CONFIRMED',RULE_STATUSES,'bookSetup.status');
+  const evidenceFactIds=uniqueStrings(rule.evidenceFactIds);
   const evidenceEventIds=uniqueStrings(rule.evidenceEventIds);
   const evidenceSnapshotIds=uniqueStrings(rule.evidenceSnapshotIds);
   if(status==='CONFIRMED'&&!evidenceEventIds.length)throw new Error('CONFIRMED book rule requires evidenceEventIds');
@@ -109,6 +110,7 @@ function normalizeBookSetup(rule={},analysisAsOf){
     sourceBookId:text(rule.sourceBookId,'bookSetup.sourceBookId'),
     sourceReference:text(rule.sourceReference,'bookSetup.sourceReference'),
     sequenceId:rule.sequenceId==null?null:String(rule.sequenceId),
+    evidenceFactIds,
     evidenceEventIds,
     evidenceSnapshotIds
   };
@@ -202,6 +204,8 @@ function createBookAnalysisResult(input={}){
     setupState:enumValue(input.setupState||'WATCH',SETUP_STATES,'setupState'),
     htfAlignment:String(input.htfAlignment||'UNKNOWN'),
     bookSetups:(Array.isArray(input.bookSetups)?input.bookSetups:[]).map(x=>normalizeBookSetup(x,analysisAsOf)),
+    evidenceFacts:clone(Array.isArray(input.evidenceFacts)?input.evidenceFacts:[]),
+    evidenceAudit:clone(input.evidenceAudit||{}),
     htf:clone(input.htf||{}),
     ltf:clone(input.ltf||{}),
     trigger:clone(input.trigger||{}),
