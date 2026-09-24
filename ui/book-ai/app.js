@@ -74,30 +74,70 @@ function presurgeFallbackRows(data){
     .slice(0,8)
     .map(x=>({symbol:x.symbol,watchScore:Number(x.score)||0,scanClass:x.state||'SPOT',v2Type:'SPOT PRE-SURGE',v3Tier:'Spot fallback',priceChange24h:Number.isFinite(Number(x.price24))?Number(x.price24):null,reasons:(x.reasons||[]).slice(0,4)}));
 }
+function jsonTimeout(url,ms=8000){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{cache:'no-store',signal:ctrl.signal}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}).finally(()=>clearTimeout(timer));
+}
+async function scannerWatchRows(){
+  if(!WL)throw new Error('Watchlist selector unavailable');
+  const summary=await jsonTimeout('/api/coin-scan?mode=summary&limit=500',5000);
+  const rows=Array.isArray(summary.items)?summary.items:[];
+  const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
+  if(!seed.length)throw new Error('Scanner 후보 없음');
+  const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),7000);
+  const selected=WL.select(deep.items||[],8);
+  if(!selected.length)throw new Error('Scanner 정밀 후보 없음');
+  return selected;
+}
+async function spotWatchRows(){
+  const spot=await jsonTimeout('/api/presurge',10000);
+  const selected=presurgeFallbackRows(spot);
+  if(!selected.length)throw new Error('Spot PRE-SURGE 후보 없음');
+  return selected;
+}
+function structureWatchScore(chart){
+  const t=chart.technical||{},b=danteSignal(t,'bowl224'),g=danteSignal(t,'concrete'),p=Number(t.price),m=Number(t.ma?.[224]);
+  let s=Math.max(Number(b.score)||0,Number(g.score)||0);
+  if(rawBias(chart.raw)==='up')s+=12;else if(rawBias(chart.raw)==='neutral')s+=5;
+  if(Number.isFinite(p)&&Number.isFinite(m)){const d=Math.abs((p/m-1)*100);if(d<=3)s+=12;else if(d<=6)s+=7}
+  if(t?.smc?.mss?.dir==='up')s+=10;
+  return Math.max(0,Math.min(100,Math.round(s)));
+}
+async function structureFallbackRows(){
+  const symbols=['ETHUSDT','SOLUSDT','XRPUSDT','BNBUSDT','DOGEUSDT','ADAUSDT','LINKUSDT','AVAXUSDT','SUIUSDT','ONDOUSDT','JTOUSDT','ZROUSDT'];
+  const settled=await Promise.allSettled(symbols.map(async symbol=>{
+    const raw=await jsonTimeout('/api/structure?symbol='+encodeURIComponent(symbol)+'&interval=4h&limit=320',6000);
+    const chart=buildChart(raw,'4h',Date.now()),score=structureWatchScore(chart),bias=rawBias(raw),b=danteSignal(chart.technical,'bowl224'),g=danteSignal(chart.technical,'concrete');
+    const reasons=[];if(b.matched||b.score)reasons.push('밥그릇 '+(b.score||0)+'점');if(g.matched||g.score)reasons.push('공구리 '+(g.score||0)+'점');if(bias!=='neutral')reasons.push('4H 구조 '+bias);const p=Number(chart.technical?.price),m=Number(chart.technical?.ma?.[224]);if(Number.isFinite(p)&&Number.isFinite(m))reasons.push('EMA224 '+(p>=m?'위':'아래')+' '+Math.abs((p/m-1)*100).toFixed(1)+'%');
+    return{symbol,watchScore:score,scanClass:'STRUCTURE',v2Type:'4H 구조',v3Tier:'Fallback',priceChange24h:null,reasons:reasons.slice(0,4)};
+  }));
+  return settled.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>b.watchScore-a.watchScore).slice(0,8);
+}
 async function refreshWatchlist(){
-  const box=$('watchlist');if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';setWatchMeta('Scanner v3 후보 확인 중…');
-  let scannerError=null;
-  try{
-    if(!WL)throw new Error('Watchlist selector unavailable');
-    const summary=await json('/api/coin-scan?mode=summary&limit=500');
-    const rows=Array.isArray(summary.items)?summary.items:[];
-    const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
-    if(seed.length){
-      const deep=await json('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')));
-      const selected=WL.select(deep.items||[],8);
-      if(selected.length){renderWatchlist(selected);setWatchMeta('Scanner v3 정밀 후보 · '+selected.length+'개','ok');saveWatchCache(selected,'Scanner v3');return selected}
-    }
-    scannerError=new Error('Scanner 후보 없음');
-  }catch(e){scannerError=e}
-  try{
-    const spot=await json('/api/presurge');
-    const selected=presurgeFallbackRows(spot);
-    if(selected.length){renderWatchlist(selected);setWatchMeta('Spot PRE-SURGE 대체 후보 · Futures Scanner 제한','warn');saveWatchCache(selected,'Spot PRE-SURGE');return selected}
-  }catch(_e){}
-  const cached=readWatchCache();
-  if(cached?.rows?.length){renderWatchlist(cached.rows);setWatchMeta('마지막 정상 후보 · '+fmtTime(cached.ts),'warn');return cached.rows}
-  if(box)box.innerHTML='<div class="watchEmpty">추천 후보를 불러오지 못했습니다.</div>';
-  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||'source unavailable'),'warn');
+  const box=$('watchlist'),cached=readWatchCache();
+  if(cached?.rows?.length){renderWatchlist(cached.rows);setWatchMeta('마지막 정상 후보 표시 중 · 새 데이터 갱신','warn')}
+  else if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
+  setWatchMeta(cached?.rows?.length?'마지막 정상 후보 표시 중 · 새 데이터 갱신':'구조 / Spot / Futures 동시 확인 중…',cached?.rows?.length?'warn':'');
+  let rendered=Boolean(cached?.rows?.length),bestRows=cached?.rows||[],spotError=null,scannerError=null,structureError=null;
+  const structurePromise=structureFallbackRows().then(rows=>{
+    if(rows.length&&!rendered){renderWatchlist(rows);setWatchMeta('4H 구조 기반 후보 · Scanner 확인 중','warn');saveWatchCache(rows,'4H structure');rendered=true;bestRows=rows}
+    return rows;
+  }).catch(e=>{structureError=e;return[]});
+  const spotPromise=spotWatchRows().then(rows=>{
+    if(rows.length&&!bestRows.some(x=>x.v3Tier==='PASS')){renderWatchlist(rows);setWatchMeta('Spot PRE-SURGE 후보 · Futures Scanner 확인 중','warn');saveWatchCache(rows,'Spot PRE-SURGE');rendered=true;bestRows=rows}
+    return rows;
+  }).catch(e=>{spotError=e;return[]});
+  const scannerPromise=scannerWatchRows().then(rows=>{
+    if(rows.length){renderWatchlist(rows);setWatchMeta('Scanner v3 정밀 후보 · '+rows.length+'개','ok');saveWatchCache(rows,'Scanner v3');rendered=true;bestRows=rows}
+    return rows;
+  }).catch(e=>{scannerError=e;return[]});
+  const [structureRows,spotRows,scannerRows]=await Promise.all([structurePromise,spotPromise,scannerPromise]);
+  if(scannerRows.length)return scannerRows;
+  if(spotRows.length)return spotRows;
+  if(structureRows.length)return structureRows;
+  if(rendered)return bestRows;
+  if(box)box.innerHTML='<div class="watchEmpty">추천 후보를 불러오지 못했습니다. 새로고침을 눌러 다시 시도하세요.</div>';
+  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||spotError?.message||structureError?.message||'source unavailable'),'warn');
   return[];
 }
 function renderAggregate(symbol,charts={}){
