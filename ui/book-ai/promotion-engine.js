@@ -4,7 +4,7 @@
   if(root)root.PulseRecommendationPromotion=api;
 })(typeof window!=='undefined'?window:globalThis,function(){'use strict';
 
-const VERSION='RECOMMEND_PROMOTION_v1';
+const VERSION='RECOMMEND_PROMOTION_v2';
 const ORDER=Object.freeze({EXCLUDE:-1,WAIT:0,WATCH:1,READY:2,CONFIRMED:3,RECOMMEND:4});
 const LABEL=Object.freeze({EXCLUDE:'제외',WAIT:'대기',WATCH:'관찰',READY:'준비',CONFIRMED:'확정',RECOMMEND:'자동 추천'});
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
@@ -60,9 +60,9 @@ function evaluate({item={},book=null,priorState=null}={}){
   if(g.blocked.length)state='EXCLUDE';
   else if(g.readyCore)state='READY';
   else if(g.passed.length>=3)state='WATCH';
-  if(state!=='EXCLUDE'&&confirmed){state='CONFIRMED';reasons.push('Book AI persisted CONFIRMED');}
-  if(state==='CONFIRMED'&&g.readyCore&&g.finalGate){state='RECOMMEND';reasons.push('최종 파생/거래량 게이트 통과');}
-  if(confirmed&&!g.readyCore)missing.push('Scanner READY 조건');
+  if(state!=='EXCLUDE'&&confirmed&&g.readyCore){state='CONFIRMED';reasons.push('책 근거 확정 + Scanner READY 조건 통과');}
+  else if(state!=='EXCLUDE'&&confirmed&&!g.readyCore){reasons.push('책 근거 확정');missing.push('시장 승격용 Scanner READY 조건');}
+  if(state==='CONFIRMED'&&g.finalGate){state='RECOMMEND';reasons.push('최종 파생/거래량 게이트 통과');}
   if(confirmed&&g.readyCore&&!g.finalGate)missing.push('최종 OI/taker/RVOL/하위TF 게이트');
   const prior=text(priorState).toUpperCase(),transition=prior&&ORDER[prior]!=null&&prior!==state?prior+'→'+state:null;
   return{version:VERSION,state,label:LABEL[state],transition,order:ORDER[state],confirmed,bookScore:bScore,gates:g,reasons:uniq(reasons).slice(0,8),missing:uniq(missing).slice(0,8),invalidations:uniq(invalidations).slice(0,8)};
