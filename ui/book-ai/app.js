@@ -84,7 +84,7 @@ function liquidPrices(chart,current){
 }
 function recentRange(candles,n=28){const c=(candles||[]).slice(-n);if(!c.length)return{high:null,low:null};return{high:Math.max(...c.map(x=>Number(x.high)).filter(Number.isFinite)),low:Math.min(...c.map(x=>Number(x.low)).filter(Number.isFinite))}}
 function overviewModel(result,chart){
-  const f=result.fusion,t=chart.technical||{},current=Number(t.price??chart.candles?.at(-1)?.close),ma224=Number(t.ma?.[224]),levels=liquidPrices(chart,current),range=recentRange(chart.candles);
+  const f=result?.fusion||null,t=chart.technical||{},current=Number(t.price??chart.candles?.at(-1)?.close),ma224=Number(t.ma?.[224]),levels=liquidPrices(chart,current),range=recentRange(chart.candles);
   const above=levels.find(x=>x>current)??range.high,bArr=levels.filter(x=>x<current),below=bArr.length?bArr.at(-1):range.low;
   const bowl=danteSignal(t,'bowl224'),concrete=danteSignal(t,'concrete');
   let trigger='최근 구조 돌파 + 리테스트 확인';
@@ -95,14 +95,14 @@ function overviewModel(result,chart){
   const target=Number.isFinite(above)?'상단 유동성 '+fmtPrice(above):'상단 DOL 확인';
   return{
     current,bowl,concrete,trigger,invalid,target,
-    bias:f.htfAlignment||f.bias?.value||'UNKNOWN',
-    state:[f.setupState,f.stage?.code].filter(Boolean).join(' · '),
-    score:(f.bookEvidence?.normalizedScore??0)+'/100'
+    bias:f?(f.htfAlignment||f.bias?.value||'UNKNOWN'):rawBias(chart.raw),
+    state:f?[f.setupState,f.stage?.code].filter(Boolean).join(' · '):'CHART ONLY · Scanner 제한',
+    score:f?(f.bookEvidence?.normalizedScore??0)+'/100':'N/A'
   };
 }
 function renderOverview(result,chart){
-  const f=result.fusion,m=overviewModel(result,chart);
-  $('oneLine').textContent=[f.symbol,f.setupState,f.bias?.value||'N/A','HTF '+(f.htfAlignment||'UNKNOWN'),'근거 '+m.score].join(' · ');
+  const f=result?.fusion||null,m=overviewModel(result,chart),symbol=f?.symbol||result?.symbol||'UNKNOWN';
+  $('oneLine').textContent=f?[symbol,f.setupState,f.bias?.value||'N/A','HTF '+(f.htfAlignment||'UNKNOWN'),'근거 '+m.score].join(' · '):[symbol,'CHART ONLY',m.bias,'Scanner N/A','Book AI 점수 N/A'].join(' · ');
   $('overviewBias').textContent=m.bias;$('overviewState').textContent=m.state||'-';$('overviewTrigger').textContent=m.trigger;$('overviewInvalid').textContent=m.invalid;$('overviewTarget').textContent=m.target;$('overviewScore').textContent=m.score;
   $('overviewBowl').textContent=(m.bowl.matched?'조건 일치':'관찰')+' · '+(m.bowl.score||0)+'점';
   $('overviewConcrete').textContent=(m.concrete.matched?'조건 일치':'관찰')+' · '+(m.concrete.score||0)+'점';
@@ -145,6 +145,17 @@ async function loadMtfBoard(symbol,chart4h,analysisAsOf,token){
   const jobs=MINI_TFS.map(async tf=>{try{const chart=tf==='4h'?chart4h:buildChart(await CD.fetchStructure({symbol,interval:tf,limit:520}),tf,analysisAsOf);if(token!==runSeq)return;fillMini(cards[tf],chart)}catch(e){if(token===runSeq)failMini(cards[tf],e)}});
   await Promise.allSettled(jobs);
 }
+function shortError(e){const s=String(e?.message||e||'Scanner unavailable');return s.length>120?s.slice(0,117)+'…':s}
+function degradedSummary(symbol,error){const reason=shortError(error);return{symbol,headline:symbol+' · 차트 엔진 정상 · Scanner 판정 N/A',htf:'HTF 차트는 표시되지만 Scanner v3 정렬 판정은 사용할 수 없습니다.',setup:'EMA 112/224/448 · 구조 · 유동성 · ICT/SMC 차트만 표시합니다.',evidence:'Book AI 근거 점수는 계산하지 않습니다.',dataQuality:'Scanner unavailable · '+reason,counterEvidence:'Scanner 복구 전 단계·편향·근거점수는 N/A',nextConfirmation:'Scanner 연결 복구 후 Book AI 분석을 다시 실행하세요.'}}
+function renderDegraded(result,error){
+  const s=result.summary,chart=result.chart,now=result.analysisAsOf||Date.now(),reason=shortError(error);
+  $('setupState').textContent='DATA_LIMITED';$('setupState').className='state-DATA_LIMITED';$('transitionReason').textContent='Scanner 제한 · '+reason;
+  $('stage').textContent='N/A';$('bias').textContent='N/A';$('score').textContent='N/A';$('alignment').textContent='N/A';$('dataQuality').textContent='DEGRADED';$('asOf').textContent='as-of '+fmtTime(now);
+  for(const id of ['factCount','eventCount','sharedCount','sharedRatio'])$(id).textContent='N/A';
+  renderOverview(result,chart);summaryView(s);ruleCards([]);sourceCards({Scanner:{status:'ERROR',version:'v3',reason,observedAt:now},Structure:{status:'AVAILABLE',version:result.raw?.version||'structure',observedAt:lastClosedTime({candles:chart.candles})},ICT:{status:'AVAILABLE',version:chart.ict?.version||'ICT',observedAt:lastClosedTime({candles:chart.candles})},ForexBook:{status:'AVAILABLE',version:chart.book?.version||'book',observedAt:lastClosedTime({candles:chart.candles})}});
+  C.compose({canvas:$('snapshot'),symbol:result.symbol,timeframe:'4h',candles:chart.candles,analysis:result.raw,smc:chart.smc,liquidity:chart.liquidity,ict:chart.ict,technical:chart.technical,summary:s,renderer:SR});
+  $('savePng').disabled=false;
+}
 function render(result,chart){
   const f=result.fusion,s=result.summary,a=f.evidenceAudit||{};
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
@@ -157,12 +168,24 @@ function render(result,chart){
   $('savePng').disabled=false;
 }
 async function run(){
-  const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
+  const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error','warn');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
-    const [scan,raw]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),CD.fetchStructure({symbol,interval:'4h',limit:560})]);
-    if(token!==runSeq)return;const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
-    const now=Date.now(),chart=buildChart(raw,'4h',now),closed=lastClosedTime({candles:chart.candles});
-    const journal=journalReadOnly(),gate=gateReadOnly();
+    const now=Date.now();
+    const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
+    const raw=await CD.fetchStructure({symbol,interval:'4h',limit:560});if(token!==runSeq)return;
+    const chart=buildChart(raw,'4h',now);
+    const scanResult=await scanPromise;if(token!==runSeq)return;
+    const scan=scanResult.data,item=scan?.items?.[0]||null;
+    if(!item){
+      const reason=scanResult.error||new Error('Scanner deep result 없음');
+      last={fusion:null,summary:degradedSummary(symbol,reason),raw,chart,symbol,degraded:true,analysisAsOf:now};renderDegraded(last,reason);
+      $('status').classList.add('warn');$('status').textContent=symbol+' · 차트 완료 · Scanner 제한 · 4TF 확인 중…';
+      await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
+      $('status').textContent=symbol+' · 차트/4TF 완료 · Scanner 제한';
+      try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
+      const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
+    }
+    const closed=lastClosedTime({candles:chart.candles}),journal=journalReadOnly(),gate=gateReadOnly();
     if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
     const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
     const adapter=A.adaptBookAiInput({
@@ -183,7 +206,7 @@ async function run(){
     if(!fusion.resultReady)throw new Error('Scanner stage/bias 불완전 · '+fusion.incompleteReasons.join(', '));
     const summary=S.buildCanonicalSummary(fusion);S.assertCanonicalSummaryGrounded(summary,fusion);
     storage.set(symbol,fusion.setupLifecycle);
-    last={fusion,summary,raw,chart};render(last,chart);
+    last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now};render(last,chart);
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
     $('status').textContent=symbol+' · '+fusion.setupState+' · 완료';
@@ -193,7 +216,7 @@ async function run(){
 }
 function save(){
   if(!last)return;
-  const a=document.createElement('a');a.href=C.pngDataUrl($('snapshot'));a.download=last.fusion.symbol+'-book-ai-4h-overview.png';document.body.append(a);a.click();a.remove();
+  const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI';const a=document.createElement('a');a.href=C.pngDataUrl($('snapshot'));a.download=symbol+'-book-ai-4h-overview.png';document.body.append(a);a.click();a.remove();
 }
 $('run').onclick=run;$('savePng').onclick=save;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
 const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();
