@@ -25,9 +25,9 @@ function engineCards(status){
  return rows.map(r=>'<article><b>'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></article>').join('')
 }
 function presetCards(data){
- const rows=Object.values(data||{});
- if(!rows.length)return'<div class="empty">Dante 프리셋을 불러오지 못했습니다.</div>';
- return rows.map(x=>'<article><b>'+esc(x.label||x.id)+'</b><span>'+esc(x.engine||'-')+'</span><small>'+esc(x.sourceBoundary||'research proxy')+'</small></article>').join('')
+ const rows=Object.values(data||{}),causal={id:'causal-ict-r0.1',label:'Causal ICT R0.1',engine:'CAUSAL_ICT_R0_1_JS',sourceBoundary:'공개 ICT-style causal research proxy · next-open fill'};
+ const all=[...rows,causal];
+ return all.map(x=>'<article><b>'+esc(x.label||x.id)+'</b><span>'+esc(x.engine||'-')+'</span><small>'+esc(x.sourceBoundary||'research proxy')+'</small></article>').join('')
 }
 function reportRows(items){
  if(!items.length)return'<div class="empty">아직 저장된 Dante 연구 리포트가 없습니다.</div>';
