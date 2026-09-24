@@ -195,7 +195,7 @@ function fmtUsd(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';if(n>=1e
     const b=document.createElement('button');b.className='watchItem';b.type='button';b.dataset.symbol=x.symbol;
     const top=document.createElement('div');top.className='wTop';const sym=document.createElement('b');sym.textContent=x.symbol;const score=document.createElement('em');score.textContent='관찰 '+Math.round(Number(x.watchScore)||0);top.append(sym,score);
     const p=document.createElement('p');p.textContent=(x.reasons||[]).join(' · ')||'관찰 후보';
-    const s=document.createElement('small');const market=x.marketScope==='spot+futures'?'현물+선물':x.marketScope==='spot'?'현물':x.marketScope==='futures'?'선물':null;s.textContent=[market,x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(Number(x.priceChange24h))?'24H '+(Number(x.priceChange24h)>=0?'+':'')+Number(x.priceChange24h).toFixed(1)+'%':null].filter(Boolean).join(' · ');
+    const s=document.createElement('small');const market=x.marketScope==='spot+futures'?'현물+선물':x.marketScope==='spot'?'현물':x.marketScope==='futures'?'선물':null,cm=x.crossMarket,cmText=cm?.exchangeCount?('CEX '+cm.exchangeCount+'곳 · 현물 '+cm.spotCount+' / 스왑 '+cm.derivativesCount+(Number.isFinite(Number(cm.maxPriceDispersionPct))?' · 편차 '+Number(cm.maxPriceDispersionPct).toFixed(2)+'%':'')):null;s.textContent=[market,cmText,x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(Number(x.priceChange24h))?'24H '+(Number(x.priceChange24h)>=0?'+':'')+Number(x.priceChange24h).toFixed(1)+'%':null].filter(Boolean).join(' · ');
     b.append(top,p,s);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
   }
 }
