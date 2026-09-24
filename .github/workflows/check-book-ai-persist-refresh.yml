@@ -1,0 +1,25 @@
+name: Book AI persistence freshness stats checks
+on:
+  push:
+    branches: [fix/book-ai-persistence-freshness-stats]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check ui/book-ai/app.js
+      - run: node --check ui/chart/chart-data.js
+      - run: node --check lib/coin-scan/recommendation-history.js
+      - run: node --check lib/signal-performance/store.js
+      - run: node scripts/verify-book-ai-persistence-freshness.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-live-evidence.js
+      - run: node scripts/verify-book-ai-summary.js
+      - run: node scripts/verify-recommendation-history.js
+      - run: node scripts/verify-coin-scan-api.js
