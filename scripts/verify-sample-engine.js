@@ -132,4 +132,16 @@ assert.equal(imxSample.observed?.dna,'IMX_SPOT_FUTURES_LTF_REACCEL');
 assert.equal(imxSample.observed?.stage,'IGNITION_EARLY_REACCEL');
 assert(imxSample.observed?.h1SpotRvol>=1&&imxSample.observed?.oi6hPct>=4,'IMX spot/futures confirmation snapshot must be preserved');
 
+const surgeScan2Ids=['NIL-20260924-SCAN2','NOM-20260924-SCAN2','TAKE-20260924-SCAN2','SAGA-20260924-SCAN2','BTW-20260924-SCAN2','ZRO-20260924-SCAN2','US-20260924-SCAN2','STABLE-20260924-SCAN2','KMNO-20260924-SCAN2','RAYSOL-20260924-SCAN2'];
+for(const id of surgeScan2Ids){
+  const row=library.SAMPLE_LIBRARY.find(x=>x.name===id);
+  assert(row,`surge scan2 sample ${id} must exist`);
+  assert.equal(row.observed?.sampledAt,'2026-09-24');
+  assert(row.observed?.dna,`surge scan2 sample ${id} must preserve DNA label`);
+}
+assert.equal(library.SAMPLE_LIBRARY.find(x=>x.name==='STABLE-20260924-SCAN2').observed?.stage,'FRESH_IGNITION');
+assert.equal(library.SAMPLE_LIBRARY.find(x=>x.name==='TAKE-20260924-SCAN2').observed?.stage,'POST_SURGE_RETRACE');
+assert.equal(library.SAMPLE_LIBRARY.find(x=>x.name==='SAGA-20260924-SCAN2').observed?.dna,'DELEVERAGING_SHORT_COVER_EXPANSION');
+assert.equal(library.SAMPLE_LIBRARY.find(x=>x.name==='RAYSOL-20260924-SCAN2').observed?.dna,'NARRATIVE_DELEVERAGING_SQUEEZE_CONTINUATION');
+
 console.log('sample DNA engine PASS');
