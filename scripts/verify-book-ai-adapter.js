@@ -78,7 +78,7 @@ assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
 assert.throws(()=>A.adaptBookAiInput({
   analysisAsOf:ASOF,symbol:'BTCUSDT',
   sources:{scanner:source({type:'A',structure:'bullish'},ASOF+1)}
-}),/after analysisAsOf/i);
+}),/after analysisAsOf/i,'adapter must remain strict: future source timestamps are forbidden');
 
 {
   const db={
