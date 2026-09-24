@@ -44,6 +44,7 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
   assert(firstWithOutcome,'history list should include evaluated outcomes');
   assert(Number.isFinite(firstWithOutcome.outcome.horizons.h1.returnPct));
   const stats=await svc.stats({state:'RECOMMEND'});
+  assert.equal(stats.cacheWarm,true,'recommendation stats should come from incremental cache');
   assert(stats.horizons.h1.evaluatedCount>=1);
   assert(stats.horizons.h1.positiveRatio>0);
   assert(Number.isFinite(stats.horizons.h1.bestReturnPct));
