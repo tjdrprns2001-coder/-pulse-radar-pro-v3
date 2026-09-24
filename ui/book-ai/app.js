@@ -400,7 +400,7 @@ function degradedSummary(symbol,error){const reason=shortError(error);return{sym
 function renderDegraded(result,error){
   const s=result.summary,chart=result.chart,now=result.analysisAsOf||Date.now(),reason=shortError(error);
   $('setupState').textContent='DATA_LIMITED';$('setupState').className='state-DATA_LIMITED';$('transitionReason').textContent='Scanner 제한 · '+reason;
-  $('stage').textContent='N/A';$('bias').textContent='N/A';$('score').textContent='N/A';$('alignment').textContent='N/A';$('dataQuality').textContent='DEGRADED';$('asOf').textContent='as-of '+fmtTime(now);
+  $('stage').textContent='N/A';$('bias').textContent='N/A';$('score').textContent='N/A';$('alignment').textContent='N/A';$('dataQuality').textContent='DEGRADED';$('asOf').textContent='as-of '+fmtTime(now);$('causalState').textContent='N/A';$('causalLedger').textContent='Scanner 제한';
   for(const id of ['factCount','eventCount','sharedCount','sharedRatio'])$(id).textContent='N/A';
   renderOverview(result,chart);summaryView(s);ruleCards([]);sourceCards({Scanner:{status:'ERROR',version:'v3',reason,observedAt:now},Structure:{status:'AVAILABLE',version:result.raw?.version||'structure',observedAt:lastClosedTime({candles:chart.candles})},ICT:{status:'AVAILABLE',version:chart.ict?.version||'ICT',observedAt:lastClosedTime({candles:chart.candles})},ForexBook:{status:'AVAILABLE',version:chart.book?.version||'book',observedAt:lastClosedTime({candles:chart.candles})}});
   C.compose({canvas:$('snapshot'),symbol:result.symbol,timeframe:'4h',candles:chart.candles,analysis:result.raw,smc:chart.smc,liquidity:chart.liquidity,ict:chart.ict,technical:chart.technical,summary:s,renderer:SR});
@@ -411,6 +411,8 @@ function render(result,chart){
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
   $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
   $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.dataQuality?.state||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
+  const causal=f?.engines?.causalIct||f?.sources?.causalIct||f?.adapter?.sources?.causalIct||null,causalMeta=f?.engineSources?.causalIct||{},stage=causal?.sequence?.long?.stage||'N/A',ledger=causal?.ledger;
+  $('causalState').textContent=causalMeta.status==='AVAILABLE'?stage:causalMeta.status||'N/A';$('causalLedger').textContent=ledger?(ledger.prefixInvariant?'prefix invariant · '+String(ledger.bars||causal?.bars||'-')+' bars':'PREFIX DIVERGENCE'):(causal?.contract?.pass===false?'causal contract fail':'causal ledger 대기');
   $('factCount').textContent=String(a.uniqueFactCount??0)+' · P '+String(a.persistedFactCount??0)+' / L '+String(a.ephemeralFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0)+' · P '+String(a.persistedEventCount??0)+' / L '+String(a.ephemeralEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
   renderOverview(result,chart);summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
   S.assertCanonicalSummaryGrounded(s,f);
@@ -445,6 +447,7 @@ async function run(){
         scanner:source(item,boundedObservedAt(item.updatedAt,now),scan.scannerVersion||'v3'),
         presurge:source(item.preSurge,boundedObservedAt(item.updatedAt,now),'PRE_SURGE_v2'),
         ict:source(chart.ict,closed,chart.ict?.version||'ICT'),
+        causalIct:causalSource(chart,closed,symbol),
         structure:source(raw,closed,raw.version||'structure'),
         forexBook:source(chart.book,closed,chart.book?.version),
         journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},
