@@ -2,14 +2,14 @@
 const fs=require('fs');
 const req=p=>{if(!fs.existsSync(p))throw new Error('missing '+p);return fs.readFileSync(p,'utf8')};
 const html=req('research-backtest.html'),js=req('ui/research-backtest.js'),css=req('ui/research-backtest.css'),perf=req('signal-performance.html');
-for(const s of ['정식 백테스트','TRAIN','VALIDATION','Hit_6H_8pct','Hit_24H_12pct','MFE','MAE','RR','임계값 동결','생존편향','Crypto Data Engine','Dante Crypto Research 프리셋','워크포워드 · 비용 스트레스 리포트','Paper Trading'])if(!html.includes(s)&&!js.includes(s))throw new Error('missing UI copy '+s);
+for(const s of ['정식 백테스트','학습 구간','검증 구간','Hit_6H_8pct','Hit_24H_12pct','MFE','MAE','RR','임계값 동결','생존편향','코인 데이터 엔진','단테 코인 연구 프리셋','워크포워드 · 비용 스트레스 리포트','모의매매 검증'])if(!html.includes(s)&&!js.includes(s))throw new Error('missing UI copy '+s);
 for(const h of ['3시간','6시간','12시간','24시간','3일'])if(!js.includes(h))throw new Error('missing horizon '+h);
 if(!js.includes('/api/research-backtest?action=status'))throw new Error('status API missing');
 if(!js.includes('action=stats'))throw new Error('stats API missing');
 if(!js.includes('action=events'))throw new Error('events API missing');
 for(const a of ['action=presets','action=reports','action=paper-stats','action=paper&limit=50'])if(!js.includes(a))throw new Error('crypto research API missing '+a);
 for(const id of ['engine','dantePresets','researchReports','paperStats','paperTrades'])if(!html.includes('id="'+id+'"'))throw new Error('missing crypto research panel '+id);
-for(const term of ['research proxy','Causal ICT R0.1','CAUSAL_ICT_R0_1_JS','next-open fill','실제 주문을 전송하지 않는 읽기 전용 검증 장부','CAGR','Sharpe','Sortino','Calmar','비용 1×','Buy&Hold','Bootstrap 평균 CI','PBO'])if(!html.includes(term)&&!js.includes(term))throw new Error('missing research boundary '+term);
+for(const term of ['연구용 프록시','인과성 ICT R0.1','CAUSAL_ICT_R0_1_JS','다음 봉 시가 체결','실제 주문을 전송하지 않는 읽기 전용 검증 장부','연환산성장률','샤프','소르티노','칼마','비용 1×','단순보유','부트스트랩 평균 신뢰범위','과최적화확률 근사'])if(!html.includes(term)&&!js.includes(term))throw new Error('missing research boundary '+term);
 if(/RESEARCH_BACKTEST_ADMIN_TOKEN|x-research-admin-token/.test(html+js))throw new Error('admin secret must not be in browser code');
 if(/미래\s*(확률|성공률)|future probability/i.test(html+js))throw new Error('UI must not describe history as future probability');
 if(!/survivorship|생존편향/i.test(js+html))throw new Error('survivorship warning missing');
