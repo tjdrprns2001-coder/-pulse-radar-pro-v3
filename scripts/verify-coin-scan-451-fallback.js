@@ -73,7 +73,7 @@ function candles(limit=500){
   assert.equal(summary.marketSource,'spot-only');
   assert.equal(summary.universe,'Binance USDT 현물+무기한 통합');
   assert.equal(summary.partial,true);
-  assert(summary.sourceWarning&&summary.sourceWarning.includes('Futures 데이터가 없어 현물'));
+  assert(summary.sourceWarning&&summary.sourceWarning.includes('Futures 직접조회가 제한/미확인되어 현물'));
 
   const deep=await service.run({mode:'deep',symbols:['ETHUSDT'],limit:5,precision:true});
   assert.equal(deep.status,'ok','deep scan must survive Futures 451');
