@@ -1,0 +1,20 @@
+name: Split spot futures panels checks
+on:
+  push:
+    branches: [feat/split-spot-futures-panels]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check ui/book-ai/app.js
+      - run: node scripts/verify-market-intelligence.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-book-ai-watchlist.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-v4-1-mobile.js
