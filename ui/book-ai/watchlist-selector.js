@@ -35,7 +35,7 @@ function reasons(x){
   return out.slice(0,4);
 }
 function select(items=[],limit=8){
-  return items.map(x=>({item:x,watchScore:score(x)})).filter(x=>x.watchScore!=null).sort((a,b)=>b.watchScore-a.watchScore||String(a.item.symbol).localeCompare(String(b.item.symbol))).slice(0,limit).map(({item,watchScore})=>({symbol:item.symbol,watchScore,scanClass:key(item),v2Type:item.v2Type||'미완성',v3Tier:item.v3LongTier||'N/A',priceChange24h:n(item.priceChange24h),candidateScore:n(item.candidateScore),reasons:reasons(item)}));
+  return items.map(x=>({item:x,watchScore:score(x)})).filter(x=>x.watchScore!=null).sort((a,b)=>b.watchScore-a.watchScore||String(a.item.symbol).localeCompare(String(b.item.symbol))).slice(0,limit).map(({item,watchScore})=>({symbol:item.symbol,watchScore,scanClass:key(item),v2Type:item.v2Type||'미완성',v3Tier:item.v3LongTier||'N/A',marketScope:item.marketScope||'unknown',spotListed:Boolean(item.spotListed),futuresListed:Boolean(item.futuresListed),priceChange24h:n(item.priceChange24h),candidateScore:n(item.candidateScore),reasons:reasons(item)}));
 }
 return{VERSION,BLOCKED,CLASS_BONUS,V2_BONUS,V3_BONUS,score,reasons,select};
 });
