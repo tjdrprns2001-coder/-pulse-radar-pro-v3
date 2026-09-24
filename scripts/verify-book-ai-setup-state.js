@@ -17,7 +17,7 @@ function rules({confirmed=0,candidates=0,eventBackedCandidates=candidates,facts=
   for(let i=0;i<confirmed;i++)bookSetups.push({ruleId:'C'+i,status:'CONFIRMED',sequenceId:seq,evidenceEventIds:['ec'+i]});
   for(let i=0;i<candidates;i++)bookSetups.push({ruleId:'K'+i,status:'CANDIDATE',sequenceId:seq,evidenceEventIds:i<eventBackedCandidates?['ek'+i]:[]});
   const evidenceFacts=Array.from({length:facts},(_,i)=>({factId:'f'+i,factType:'X',sequenceId:seq}));
-  if(failed)evidenceFacts.push({factId:'ff',factType:'RETEST_FAILED',eventId:'efail',sequenceId:seq});
+  if(failed)evidenceFacts.push({factId:'ff',factType:'RETEST_FAILED',eventId:'efail',sequenceId:seq,provenance:'PERSISTED_JOURNAL',eventStatus:'CONFIRMED'});
   return{bookSetups,evidenceFacts};
 }
 function prev(state,seq='q1'){return{currentState:state,sequenceId:seq,transitionPath:[state]};}
@@ -64,5 +64,12 @@ assert.equal(S.deriveState(rules({candidates:0,facts:0})).state,'NO_SETUP');
   const ad=adapter();ad.sources.journal.latestSequenceId='q2';ad.sources.journal.snapshots=[{id:'s2',sequenceId:'q2'}];
   const r=S.resolveSetupState({adapter:ad,ruleResult:rr,previous:prev('INVALIDATED','q1')});
   assert.equal(r.currentState,'READY');assert(r.transition.newSequence);assert.equal(r.transitionPath[0],'READY');
+}
+{
+  const rr=rules({candidates:1});
+  rr.evidenceFacts.push({factId:'live-fail',factType:'RETEST_FAILED',eventId:'LIVE-efail',sequenceId:'q1',provenance:'LIVE_EPHEMERAL',eventStatus:'CONFIRMED'});
+  const r=S.resolveSetupState({adapter:adapter(),ruleResult:rr,previous:prev('CONFIRMED')});
+  assert.equal(r.currentState,'CONFIRMED','ephemeral failure may not invalidate persisted lifecycle');
+  assert.notEqual(r.transition.reason,'EXPLICIT_INVALIDATION');
 }
 console.log('book ai setup state PASS');
