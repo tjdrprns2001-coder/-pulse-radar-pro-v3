@@ -20,6 +20,7 @@ function call(method,query={},body={},headers={},ctx={}){
   async paperList(){return[{id:'pt1',state:'OPEN'}]},
   async paperStats(){return{total:1,open:1,closed:0}},
   async runDante(body){return{id:'dr1',presetId:body.presetId}},
+  async runCausalIct(body){return{id:'ci1',symbol:body.symbol||'BTCUSDT'}},
   async runWalkForward(body){return{id:'wf1',presetId:body.presetId}},
   async paperOpen(){return{id:'pt1',state:'OPEN'}},
   async paperMark(){return{id:'pt1',state:'OPEN',lastMarkPrice:101}},
@@ -39,6 +40,7 @@ function call(method,query={},body={},headers={},ctx={}){
  r=await call('POST',{action:'run'},{runId:'r1'},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.code,200);assert.equal(r.payload.status,'ok');
  r=await call('POST',{action:'evaluate'},{runId:'r1'},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.code,200);assert.equal(r.payload.data.evaluated,1);
  r=await call('POST',{action:'dante-run'},{presetId:'256'},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.code,200);assert.equal(r.payload.data.id,'dr1');
+ r=await call('POST',{action:'causal-ict-run'},{symbol:'BTCUSDT',timeframe:'4h'},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.code,200);assert.equal(r.payload.data.id,'ci1');
  r=await call('POST',{action:'walk-forward'},{presetId:'256'},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.code,200);assert.equal(r.payload.data.id,'wf1');
  r=await call('POST',{action:'paper-open'},{},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.payload.data.state,'OPEN');
  r=await call('POST',{action:'paper-mark'},{},{'x-research-admin-token':'secret'},{runtime,adminToken:'secret'});assert.equal(r.payload.data.lastMarkPrice,101);
