@@ -7,10 +7,11 @@ const {createSignalPerformanceService}=require('../lib/signal-performance/servic
 const {createAlertService}=require('../lib/signal-performance/alerts.js');
 const {createTransitionSnapshotService}=require('../lib/coin-scan/transition-snapshot-service.js');
 const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
+const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null;
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});marketValidationStore=store;
@@ -19,9 +20,10 @@ function defaultService(getStore){
         alertRecorder=createAlertService({store});
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
         recommendationHistory=createRecommendationHistoryService({store,resolver});
+        marketValidationPerformance=createMarketValidationPerformance({store,resolver});
       }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore,marketValidationPerformance});
   }
   return singleton;
 }
@@ -61,6 +63,11 @@ module.exports=async function handler(req,res,ctx={}){
     if(mode==='validation'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
       const at=Number(q.at)||null;return res.status(200).json(await service.getMarketValidation(symbol,{decisionTimestamp:at,persist:String(q.persist||'1')!=='0'}));
+    }
+    if(mode==='validation-performance'){
+      const action=String(q.action||'stats').toLowerCase();
+      if(action==='evaluate')return res.status(200).json({status:'ok',mode:'validation-performance',action:'evaluate',updatedAt:Date.now(),evaluation:await service.evaluateMarketValidationPerformance()});
+      return res.status(200).json({status:'ok',mode:'validation-performance',action:'stats',updatedAt:Date.now(),stats:await service.getMarketValidationStats()});
     }
     if(mode==='validation-snapshots'){
       const action=String(q.action||'list').toLowerCase();
