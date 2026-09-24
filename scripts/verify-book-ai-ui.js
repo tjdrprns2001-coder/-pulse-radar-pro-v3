@@ -35,6 +35,10 @@ assert(html.includes('id="autoHistory"'),'auto recommendation history required')
 assert(html.includes('id="autoStats"'),'auto recommendation performance dashboard required');
 for(const id of ['statSamples','statH1','statH4','statH24'])assert(html.includes('id="'+id+'"'),'missing auto performance metric '+id);
 assert(html.includes('id="watchMeta"'),'watch source status required');
+for(const id of ['intelMeta','intelCex','intelIndicators','intelDex','intelNews','intelEvents','intelWallets','intelVerify','intelCoverage','intelDetails'])assert(html.includes('id="'+id+'"'),'missing market intelligence UI '+id);
+assert(app.includes('mode=intelligence&symbol='),'Book AI must load detailed market intelligence');
+assert(app.includes('renderMarketIntelligence'),'Book AI market intelligence renderer required');
+assert(app.includes('거래소·DEX·뉴스·이벤트·지갑 데이터를 병렬 확인'),'market intelligence loading state required');
 assert(html.indexOf('id="watchlist"')<html.indexOf('id="aggregateSnapshot"'),'recommendation list must be above charts');
 assert(html.indexOf('id="aggregateSnapshot"')<html.indexOf('id="snapshot"'),'aggregate chart must be above 4H overview');
 assert(html.indexOf('id="snapshot"')<html.indexOf('id="setupState"'),'overview chart must render before compact status metrics');
