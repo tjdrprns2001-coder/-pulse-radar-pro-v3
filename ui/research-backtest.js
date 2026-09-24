@@ -25,7 +25,7 @@ function engineCards(status){
  return rows.map(r=>'<article><b>'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></article>').join('')
 }
 function presetCards(data){
- const rows=Object.values(data||{}),causal={id:'causal-ict-r0.1',label:'Causal ICT R0.1',engine:'CAUSAL_ICT_R0_1_JS',sourceBoundary:'공개 ICT 방식 인과성 연구 프록시 · 다음 봉 시가 체결'};
+ const rows=Object.values(data||{}),causal={id:'causal-ict-r0.1',label:'인과성 ICT R0.1',engine:'CAUSAL_ICT_R0_1_JS',sourceBoundary:'공개 ICT 방식 인과성 연구 프록시 · 다음 봉 시가 체결'};
  const all=[...rows,causal];
  return all.map(x=>'<article><b>'+esc(x.label||x.id)+'</b><span>'+esc(x.engine||'-')+'</span><small>'+esc(x.sourceBoundary||'연구용 프록시')+'</small></article>').join('')
 }
@@ -40,10 +40,10 @@ function reportRows(items){
   }else{
     const s15=r.stress&&r.stress['1.5x']&&r.stress['1.5x'].report,s2=r.stress&&r.stress['2x']&&r.stress['2x'].report;
     line='신호 '+esc(r.signalCount||0)+' · 수익계수 '+num(base&&base.profitFactor)+' · 최대낙폭 '+num(base&&base.maxDrawdownPct)+'%';
-    detail='연환산성장률 '+num(base&&base.cagrPct)+'% · Sharpe '+num(base&&base.sharpe)+' · 소르티노 '+num(base&&base.sortino)+' · 칼마 '+num(base&&base.calmar);
+    detail='연환산성장률 '+num(base&&base.cagrPct)+'% · 샤프 '+num(base&&base.sharpe)+' · 소르티노 '+num(base&&base.sortino)+' · 칼마 '+num(base&&base.calmar);
     detail+='<br>비용 1× '+num(base&&base.meanNetReturnPct)+'% · 1.5× '+num(s15&&s15.meanNetReturnPct)+'% · 2× '+num(s2&&s2.meanNetReturnPct)+'%';
-    detail+='<br>Buy&Hold '+num(bh&&bh.returnPct)+'% · EMA20×60 '+num(ema&&ema.returnPct)+'%';
-    detail+='<br>Bootstrap 평균 CI '+num(ci.low)+'~'+num(ci.high)+'% · Portfolio '+num(r.portfolio&&r.portfolio.totalReturnPct)+'%';
+    detail+='<br>단순보유 '+num(bh&&bh.returnPct)+'% · EMA20×60 '+num(ema&&ema.returnPct)+'%';
+    detail+='<br>부트스트랩 평균 신뢰범위 '+num(ci.low)+'~'+num(ci.high)+'% · 포트폴리오 '+num(r.portfolio&&r.portfolio.totalReturnPct)+'%';
   }
   return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.type)+'</span><small>'+line+'</small><small class="reportDetail">'+detail+'</small><small>'+new Date(Number(x.createdAt)).toLocaleString('ko-KR',{hour12:false})+'</small></article>'
  }).join('')
@@ -56,7 +56,7 @@ function paperRows(items){
  if(!items.length)return'<div class="empty">모의매매 기록이 없습니다.</div>';
  return items.slice(0,30).map(x=>{
   const ret=x.state==='CLOSED'?x.realizedReturnPct:x.unrealizedReturnPct;
-  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.state)+'</span><small>진입가 '+num(x.entryPrice)+' · 현재가 '+num(x.lastMarkPrice)+'</small><small>수익률 '+num(ret)+'%</small></article>'
+  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.state==='OPEN'?'진행 중':x.state==='CLOSED'?'종료':x.state)+'</span><small>진입가 '+num(x.entryPrice)+' · 현재가 '+num(x.lastMarkPrice)+'</small><small>수익률 '+num(ret)+'%</small></article>'
  }).join('')
 }
 async function load(){
