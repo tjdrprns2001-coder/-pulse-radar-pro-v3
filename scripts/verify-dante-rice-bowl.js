@@ -17,7 +17,7 @@ function series(){
   const c=[];
   for(let i=0;i<12;i++)c.push(candle(i,120-i*3,100,3));
   for(let i=12;i<18;i++)c.push(candle(i,87+(i%2)*.4,80,1.5));
-  c.push(candle(18,96,500,2));
+  c.push(candle(18,120,500,2));
   c.push(candle(19,91,120,2));
   c.push(candle(20,94,140,2));
   c.push(candle(21,99,180,2));
