@@ -175,4 +175,14 @@ assert.throws(()=>A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',liveEvi
   provenance:'LIVE_EPHEMERAL',snapshot:{id:'LIVE-s1',symbol:'BTCUSDT',capturedBarTime:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:true},
   events:[{eventId:'LIVE-e1',symbol:'BTCUSDT',confirmedAt:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:false}]
 }}),/CLOSED_ONLY/i);
+{
+  const computedAt=ASOF-500,sourceBarClosedAt=ASOF-(2*H);
+  const r=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{
+    causalIct:{data:{engine_version:'CAUSAL_ICT_R0_1_JS'},observedAt:computedAt,computedAt,sourceBarClosedAt,version:'CAUSAL_ICT_R0_1_JS'}
+  }});
+  assert.equal(r.engineSources.causalIct.status,'AVAILABLE');
+  assert.equal(r.engineSources.causalIct.observedAt,computedAt,'freshness uses computation time');
+  assert.equal(r.engineSources.causalIct.computedAt,computedAt);
+  assert.equal(r.engineSources.causalIct.sourceBarClosedAt,sourceBarClosedAt,'source bar close is retained separately');
+}
 console.log('book ai adapter PASS');
