@@ -45,6 +45,19 @@
   <section class="panel"><div class="panelHead"><h2>주요 유동성</h2><button id="liqMore" class="moreBtn" type="button" hidden></button></div><div id="liquidityList" class="dataList"></div></section>
   <section class="panel"><div class="panelHead"><h2>반응 후보 PD Array</h2><button id="pdMore" class="moreBtn" type="button" hidden></button></div><div id="pdList" class="dataList"></div></section>
 </section>
+<section class="panel journalPanel">
+  <div class="panelHead"><div><h2>이벤트 추적</h2><span class="muted">브라우저 로컬 저장 · 다음 확정봉 open 기준 · 최대 200개</span></div><button id="journalExport" class="moreBtn" type="button">JSON 내보내기</button></div>
+  <div id="journalCurrent" class="journalCurrent"></div>
+  <div id="journalStats" class="journalStats"></div>
+  <div id="journalHorizons" class="journalHorizons"></div>
+  <div id="journalRecent" class="journalRecent"></div>
+</section>
+<section class="panel gatePanel">
+  <div class="panelHead"><div><h2>Sample Readiness Gate</h2><span class="muted">검토 가능성 판정 · 자동 점수 반영 없음</span></div><span id="gateState" class="stateBadge tone-na">대기</span></div>
+  <div id="gateProgress" class="gateProgress"></div>
+  <div id="gateTf" class="gateTf"></div>
+  <div id="gateMeta" class="gateMeta"></div>
+</section>
 
 <details class="panel note"><summary>판정 원칙 · 용어 도움말</summary><div class="noteBody"><p>wick 침투만으로 스윕을 확정하지 않고 종가 Reclaim, MSS/CHoCH, Displacement를 함께 확인합니다. 5m은 참고 전용이며 방향 판정 근거로 승격하지 않습니다.</p><dl><dt>BSL</dt><dd>매수 측 유동성</dd><dt>SSL</dt><dd>매도 측 유동성</dd><dt>DOL</dt><dd>가격이 향할 가능성이 있는 유동성</dd><dt>Reclaim</dt><dd>이탈한 레벨 재회복</dd><dt>Displacement</dt><dd>구조 변화를 동반한 강한 가격 이동</dd><dt>TL B/R</dt><dd>추세선 돌파(B) 후 이동하는 선을 재시험해 역할 전환을 확인(R)</dd></dl></div></details>
 </main>
@@ -53,5 +66,7 @@
 <script src="/ui/chart/liquidity-engine.js"></script>
 <script src="/ui/chart/liquidity-map-engine.js?v=20260924-lq3"></script>
 <script src="/ui/chart/trendline-retest-engine.js?v=20260924-tlr1"></script>
-<script src="/ui/liquidity-snapshot.js?v=20260924-lq3" defer></script>
+<script src="/ui/chart/liquidity-event-journal.js?v=20260924-lqj2"></script>
+<script src="/ui/chart/sample-readiness-gate.js?v=20260924-srg1"></script>
+<script src="/ui/liquidity-snapshot.js?v=20260924-srg1" defer></script>
 </body></html>

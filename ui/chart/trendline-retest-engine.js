@@ -3,7 +3,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseTrendlineRetestEngine=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){'use strict';
 
-const VERSION='TRENDLINE_RETEST_v1';
+const VERSION='TRENDLINE_RETEST_v1.1';
 const DEFAULT_PARAMS=Object.freeze({
   touchToleranceAtr:.15,
   breakBufferAtr:.20,
@@ -14,7 +14,8 @@ const DEFAULT_PARAMS=Object.freeze({
   sameBarConfirmAllowed:true,
   preActivationPenetrationBufferAtr:.20,
   minAbsSlopeAtrPerBar:.003,
-  maxAbsSlopeAtrPerBar:.35
+  maxAbsSlopeAtrPerBar:.35,
+  comparisonEpsilonRel:1e-10
 });
 const finite=v=>Number.isFinite(Number(v));
 const n=(v,d=null)=>finite(v)?Number(v):d;
@@ -51,6 +52,12 @@ function mergeParams(p={}){
   return out;
 }
 function paramsHash(p={}){return 'tlr1-'+fnv1a(stableStringify(mergeParams(p)))}
+function comparisonEpsilon(a,b,P){
+  const scale=Math.max(1,Math.abs(n(a,0)),Math.abs(n(b,0)));
+  return scale*Math.max(0,n(P?.comparisonEpsilonRel,1e-10));
+}
+function greaterThanEps(a,b,P){return Number(a)>Number(b)+comparisonEpsilon(a,b,P)}
+function lessThanEps(a,b,P){return Number(a)<Number(b)-comparisonEpsilon(a,b,P)}
 function linePriceAt(line,index){
   if(line?.scale==='log-price'&&finite(line.interceptLog)&&finite(line.logSlopePerBar))return Math.exp(Number(line.interceptLog)+Number(line.logSlopePerBar)*index);
   if(finite(line?.intercept)&&finite(line?.slope))return Number(line.intercept)+Number(line.slope)*index;
@@ -89,30 +96,30 @@ function directionIsValid(line,side,atrAtConfirm,P){
   return{ok:true,normalized};
 }
 function touchesBand(c,linePrice,tol){return Number(c.low)<=linePrice+tol&&Number(c.high)>=linePrice-tol}
-function closeBeyondOriginalSide(c,linePrice,buffer,side){
-  return side==='resistance'?Number(c.close)>linePrice+buffer:Number(c.close)<linePrice-buffer;
+function closeBeyondOriginalSide(c,linePrice,buffer,side,P){
+  return side==='resistance'?greaterThanEps(c.close,linePrice+buffer,P):lessThanEps(c.close,linePrice-buffer,P);
 }
 function preActivationPenetration({candles,line,side,atrByIndex,confirmedBarIndex,P}){
   const start=Math.max(0,Math.round(n(line?.anchorB?.barIndex,0)));
   for(let i=start;i<=confirmedBarIndex&&i<candles.length;i++){
     const lp=linePriceAt(line,i),atr=n(atrByIndex[i],0);if(!finite(lp)||!(atr>0))continue;
-    if(closeBeyondOriginalSide(candles[i],lp,atr*P.preActivationPenetrationBufferAtr,side))return{barIndex:i,linePrice:lp,close:candles[i].close};
+    if(closeBeyondOriginalSide(candles[i],lp,atr*P.preActivationPenetrationBufferAtr,side,P))return{barIndex:i,linePrice:lp,close:candles[i].close};
   }
   return null;
 }
 function breakDetected(prev,c,prevLine,linePrice,prevAtr,atr,side,P){
-  if(side==='resistance')return Number(prev.close)<=prevLine+prevAtr*P.breakBufferAtr&&Number(c.close)>linePrice+atr*P.breakBufferAtr;
-  return Number(prev.close)>=prevLine-prevAtr*P.breakBufferAtr&&Number(c.close)<linePrice-atr*P.breakBufferAtr;
+  if(side==='resistance')return !greaterThanEps(prev.close,prevLine+prevAtr*P.breakBufferAtr,P)&&greaterThanEps(c.close,linePrice+atr*P.breakBufferAtr,P);
+  return !lessThanEps(prev.close,prevLine-prevAtr*P.breakBufferAtr,P)&&lessThanEps(c.close,linePrice-atr*P.breakBufferAtr,P);
 }
 function failDetected(c,linePrice,frozenAtr,side,P){
-  return side==='resistance'?Number(c.close)<linePrice-frozenAtr*P.breakBufferAtr:Number(c.close)>linePrice+frozenAtr*P.breakBufferAtr;
+  return side==='resistance'?lessThanEps(c.close,linePrice-frozenAtr*P.breakBufferAtr,P):greaterThanEps(c.close,linePrice+frozenAtr*P.breakBufferAtr,P);
 }
 function confirmDetected(c,linePrice,frozenAtr,side,P){
-  return side==='resistance'?Number(c.close)>linePrice+frozenAtr*P.reclaimBufferAtr:Number(c.close)<linePrice-frozenAtr*P.reclaimBufferAtr;
+  return side==='resistance'?greaterThanEps(c.close,linePrice+frozenAtr*P.reclaimBufferAtr,P):lessThanEps(c.close,linePrice-frozenAtr*P.reclaimBufferAtr,P);
 }
 function rejectionDetected(c,linePrice,atr,side,P){
   if(!touchesBand(c,linePrice,atr*P.touchToleranceAtr))return false;
-  return side==='resistance'?Number(c.close)<=linePrice-atr*P.reclaimBufferAtr:Number(c.close)>=linePrice+atr*P.reclaimBufferAtr;
+  return side==='resistance'?!greaterThanEps(c.close,linePrice-atr*P.reclaimBufferAtr,P):!lessThanEps(c.close,linePrice+atr*P.reclaimBufferAtr,P);
 }
 function favorableDistanceAtr(c,linePrice,frozenAtr,side){
   if(!(frozenAtr>0))return null;
@@ -163,8 +170,14 @@ function evaluateLineLifecycle({candles:rawCandles,line,side,params={}}={}){
   const pre=preActivationPenetration({candles,line,side,atrByIndex,confirmedBarIndex,P});
   if(pre)return{ok:false,state:'DISCARDED',stateLabel:stateLabel('DISCARDED'),reason:'PRE_CONFIRMATION_CLOSE_PENETRATION',preActivationPenetration:pre,params:P,paramsHash:hash,line:lineSnapshot(line,side,confirmedBarIndex,hash)};
 
-  const events=[],frozenLine=lineSnapshot(line,side,confirmedBarIndex,hash);
+  const events=[],frozenLine=lineSnapshot(line,side,confirmedBarIndex,hash),transitions=[];
   let state='ACTIVE',breakout=null,retest={firstTouchBarIndex:null,firstTouchTime:null,confirmedBarIndex:null,confirmedTime:null,touchDistanceAtr:null,bounceDistanceAtr:null,sameBarConfirm:false},failedAt=null,expiredAt=null,inTouchEpisode=false,rejectionCount=0;
+  const telemetry={retestTouchObserved:false,sameBarWouldConfirm:false,sameBarConfirmed:false,confirmationBarsAfterTouch:null,retestLatencyBars:null,deadZoneBars:0,failedBeforeRetest:false,noRetestExpired:false,retestExpired:false,terminalBarsAfterBreak:null,comparisonEpsilonRel:P.comparisonEpsilonRel};
+  const transition=(to,barIndex,time,reason)=>{
+    const from=state;if(from===to)return;
+    transitions.push({from,to,barIndex,time,reason});
+    state=to;
+  };
 
   for(let i=Math.max(1,confirmedBarIndex);i<candles.length;i++){
     const c=candles[i],prev=candles[i-1],lp=linePriceAt(line,i),prevLp=linePriceAt(line,i-1),atr=n(atrByIndex[i],0),prevAtr=n(atrByIndex[i-1],atr);
@@ -183,7 +196,7 @@ function evaluateLineLifecycle({candles:rawCandles,line,side,params={}}={}){
       if(i>=confirmedBarIndex&&breakDetected(prev,c,prevLp,lp,prevAtr,atr,side,P)){
         const frozenAtr=atr,dir=breakDirection(side),breakDist=side==='resistance'?(c.close-lp)/frozenAtr:(lp-c.close)/frozenAtr;
         breakout={barIndex:i,time:c.time,close:c.close,linePrice:lp,atr:frozenAtr,frozenAtr,direction:dir,breakDistanceAtr:breakDist,displacementAtr:displacementAtr(c,frozenAtr)};
-        state='BROKEN';inTouchEpisode=false;
+        transition('BROKEN',i,c.time,'BREAK_CLOSE_BUFFER');inTouchEpisode=false;
         events.push({type:'BREAK',barIndex:i,time:c.time,linePrice:lp,close:c.close,direction:dir,frozenAtr,paramsHash:hash});
         continue;
       }
@@ -193,42 +206,54 @@ function evaluateLineLifecycle({candles:rawCandles,line,side,params={}}={}){
     if(state==='BROKEN'||state==='RETESTING'){
       const frozenAtr=breakout.frozenAtr,barsSinceBreak=i-breakout.barIndex;
       if(failDetected(c,lp,frozenAtr,side,P)){
-        state='FAILED';failedAt={barIndex:i,time:c.time,close:c.close,linePrice:lp};
+        telemetry.failedBeforeRetest=retest.firstTouchBarIndex==null;
+        telemetry.terminalBarsAfterBreak=i-breakout.barIndex;
+        transition('FAILED',i,c.time,telemetry.failedBeforeRetest?'FAIL_BUFFER_BEFORE_RETEST':'FAIL_BUFFER_AFTER_RETEST');
+        failedAt={barIndex:i,time:c.time,close:c.close,linePrice:lp};
         events.push({type:'FAILED_RETEST',barIndex:i,time:c.time,linePrice:lp,close:c.close,hadRetest:retest.firstTouchBarIndex!=null});
         break;
       }
 
       if(retest.firstTouchBarIndex==null&&barsSinceBreak>P.retestMaxBars){
-        state='NO_RETEST_EXPIRED';expiredAt={barIndex:i,time:c.time};
+        telemetry.noRetestExpired=true;telemetry.terminalBarsAfterBreak=i-breakout.barIndex;
+        transition('NO_RETEST_EXPIRED',i,c.time,'RETEST_WINDOW_EXPIRED_WITHOUT_TOUCH');expiredAt={barIndex:i,time:c.time};
         events.push({type:'NO_RETEST_EXPIRED',barIndex:i,time:c.time});
         break;
       }
       if(retest.firstTouchBarIndex!=null&&barsSinceBreak>P.retestMaxBars){
-        state='RETEST_EXPIRED';expiredAt={barIndex:i,time:c.time};
+        telemetry.retestExpired=true;telemetry.terminalBarsAfterBreak=i-breakout.barIndex;
+        transition('RETEST_EXPIRED',i,c.time,'RETEST_WINDOW_EXPIRED_AFTER_TOUCH');expiredAt={barIndex:i,time:c.time};
         events.push({type:'RETEST_EXPIRED',barIndex:i,time:c.time});
         break;
       }
 
       if(retest.firstTouchBarIndex==null&&barsSinceBreak>=P.retestMinBars&&touchesBand(c,lp,frozenAtr*P.touchToleranceAtr)){
-        state='RETESTING';
-        const touchDistanceAtr=Math.min(Math.abs(c.low-lp),Math.abs(c.high-lp))/frozenAtr;
+        const touchDistanceAtr=Math.min(Math.abs(c.low-lp),Math.abs(c.high-lp))/frozenAtr,wouldConfirm=confirmDetected(c,lp,frozenAtr,side,P);
+        telemetry.retestTouchObserved=true;telemetry.retestLatencyBars=barsSinceBreak;telemetry.sameBarWouldConfirm=wouldConfirm;
+        transition('RETESTING',i,c.time,'RETEST_TOUCH');
         retest={...retest,firstTouchBarIndex:i,firstTouchTime:c.time,touchDistanceAtr};
-        events.push({type:'RETEST_TOUCH',barIndex:i,time:c.time,linePrice:lp,touchDistanceAtr});
-        if(P.sameBarConfirmAllowed&&confirmDetected(c,lp,frozenAtr,side,P)){
+        events.push({type:'RETEST_TOUCH',barIndex:i,time:c.time,linePrice:lp,touchDistanceAtr,sameBarWouldConfirm:wouldConfirm});
+        if(P.sameBarConfirmAllowed&&wouldConfirm){
           const bounce=favorableDistanceAtr(c,lp,frozenAtr,side);
-          state='CONFIRMED';retest={...retest,confirmedBarIndex:i,confirmedTime:c.time,bounceDistanceAtr:bounce,sameBarConfirm:true};
+          telemetry.sameBarConfirmed=true;telemetry.confirmationBarsAfterTouch=0;telemetry.terminalBarsAfterBreak=i-breakout.barIndex;
+          transition('CONFIRMED',i,c.time,'SAME_BAR_RETEST_CONFIRM');
+          retest={...retest,confirmedBarIndex:i,confirmedTime:c.time,bounceDistanceAtr:bounce,sameBarConfirm:true};
           events.push({type:'RETEST_CONFIRMED',barIndex:i,time:c.time,linePrice:lp,close:c.close,bounceDistanceAtr:bounce,sameBarConfirm:true});
           break;
         }
+        telemetry.deadZoneBars++;
         continue;
       }
 
       if(state==='RETESTING'&&retest.firstTouchBarIndex!=null&&i>retest.firstTouchBarIndex&&confirmDetected(c,lp,frozenAtr,side,P)){
         const bounce=favorableDistanceAtr(c,lp,frozenAtr,side);
-        state='CONFIRMED';retest={...retest,confirmedBarIndex:i,confirmedTime:c.time,bounceDistanceAtr:bounce,sameBarConfirm:false};
+        telemetry.confirmationBarsAfterTouch=i-retest.firstTouchBarIndex;telemetry.terminalBarsAfterBreak=i-breakout.barIndex;
+        transition('CONFIRMED',i,c.time,'POST_TOUCH_RECLAIM_CONFIRM');
+        retest={...retest,confirmedBarIndex:i,confirmedTime:c.time,bounceDistanceAtr:bounce,sameBarConfirm:false};
         events.push({type:'RETEST_CONFIRMED',barIndex:i,time:c.time,linePrice:lp,close:c.close,bounceDistanceAtr:bounce,sameBarConfirm:false});
         break;
       }
+      if(state==='RETESTING'&&retest.firstTouchBarIndex!=null)telemetry.deadZoneBars++;
       // Explicit dead-zone policy: neither confirmed nor failed -> keep current state and keep timeout counting.
     }
   }
@@ -237,7 +262,7 @@ function evaluateLineLifecycle({candles:rawCandles,line,side,params={}}={}){
   const quality=qualityFor({line,breakout,retest,state,P});
   return{
     ok:true,version:VERSION,line:frozenLine,side,type:typeLabel(side),state,stateLabel:stateLabel(state),roleAfterBreak:roleFor(side),breakDirection:breakDirection(side),
-    confirmedBarIndex,normalizedSlope:dirCheck.normalized,rejectionCount,events,breakout,retest,failedAt,expiredAt,current,quality,params:P,paramsHash:hash,
+    confirmedBarIndex,normalizedSlope:dirCheck.normalized,rejectionCount,events,transitions,transitionPath:['ACTIVE',...transitions.map(x=>x.to)],telemetry,breakout,retest,failedAt,expiredAt,current,quality,params:P,paramsHash:hash,
     sameBarConfirmAllowed:P.sameBarConfirmAllowed,
     deadZonePolicy:'BROKEN/RETESTING 유지 + retestMaxBars timeout 계속',
     frozenAtrPolicy:'BROKEN 진입 시 breakout ATR 고정; 이후 touch/reclaim/fail 판정에 동일 frozenATR 사용',
@@ -273,5 +298,5 @@ function analyzeTrendlineRetests({candles=[],trendlines={},timeframe='',params={
     note:'Trendline retest quality is evidence completeness, not win probability.'
   };
 }
-return{VERSION,DEFAULT_PARAMS,normalizeCandles,atrSeries,paramsHash,linePriceAt,mergeParams,evaluateLineLifecycle,analyzeTrendlineRetests,stateLabel,typeLabel};
+return{VERSION,DEFAULT_PARAMS,normalizeCandles,atrSeries,paramsHash,comparisonEpsilon,greaterThanEps,lessThanEps,linePriceAt,mergeParams,evaluateLineLifecycle,analyzeTrendlineRetests,stateLabel,typeLabel};
 });
