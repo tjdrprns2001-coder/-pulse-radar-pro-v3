@@ -9,6 +9,10 @@ const source=(data,observedAt=ASOF-1000,extra={})=>({data,observedAt,...extra});
 assert.equal(A.VERSION,'BOOK_AI_ADAPTER_v1');
 assert.deepEqual(A.ENGINE_NAMES,['scanner','presurge','ict','structure','forexBook','journal','gate','trendline']);
 assert(A.DEFAULT_STALE_AFTER_MS.gate>A.DEFAULT_STALE_AFTER_MS.scanner);
+assert.equal(A.SOURCE_FRESHNESS_POLICY_VERSION,'BOOK_AI_SOURCE_FRESHNESS_v2');
+assert.equal(A.DEFAULT_STALE_AFTER_MS.ict,5*H);
+assert.equal(A.DEFAULT_STALE_AFTER_MS.structure,5*H);
+assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
 
 {
   const input={
@@ -135,5 +139,19 @@ assert.throws(()=>A.adaptBookAiInput({
   assert.equal(r.engineSources.gate.status,'AVAILABLE');
   assert.equal(r.engineSources.gate.reason,null);
   assert.equal(r.engineSources.gate.observedAt,ASOF-H);
+}
+{
+  const within=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{
+    ict:source({version:'ICT_TRAINER_v1'},ASOF-(4.5*H)),
+    structure:source({version:'structure-v1'},ASOF-(4.5*H)),
+    forexBook:source({version:'4.0.0'},ASOF-(4.5*H))
+  }});
+  assert.equal(within.engineSources.ict.status,'AVAILABLE');
+  assert.equal(within.engineSources.structure.status,'AVAILABLE');
+  assert.equal(within.engineSources.forexBook.status,'AVAILABLE');
+  const edge=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{ict:source({version:'ICT_TRAINER_v1'},ASOF-5*H)}});
+  assert.equal(edge.engineSources.ict.status,'AVAILABLE','exact 4H+1H grace boundary stays available');
+  const stale=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{ict:source({version:'ICT_TRAINER_v1'},ASOF-5*H-1)}});
+  assert.equal(stale.engineSources.ict.status,'STALE','4H+1H grace +1ms becomes stale');
 }
 console.log('book ai adapter PASS');
