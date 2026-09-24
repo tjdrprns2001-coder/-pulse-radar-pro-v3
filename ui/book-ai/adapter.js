@@ -8,12 +8,13 @@
 if(!Contract)throw new Error('PulseBookAiContract required');
 
 const VERSION='BOOK_AI_ADAPTER_v1';
-const ENGINE_NAMES=Object.freeze(['scanner','presurge','ict','structure','forexBook','journal','gate','trendline']);
+const ENGINE_NAMES=Object.freeze(['scanner','presurge','ict','causalIct','structure','forexBook','journal','gate','trendline']);
 const SOURCE_FRESHNESS_POLICY_VERSION='BOOK_AI_SOURCE_FRESHNESS_v2';
 const DEFAULT_STALE_AFTER_MS=Object.freeze({
   scanner:30*60*1000,
   presurge:30*60*1000,
   ict:5*60*60*1000,
+  causalIct:5*60*60*1000,
   structure:5*60*60*1000,
   forexBook:5*60*60*1000,
   journal:6*60*60*1000,
