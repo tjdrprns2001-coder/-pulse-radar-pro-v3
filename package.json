@@ -101,11 +101,15 @@
     "test:dante-rice-bowl": "node scripts/verify-dante-rice-bowl.js",
     "test:dante-gongguri": "node scripts/verify-dante-gongguri.js",
     "test:dante-ema-strike": "node scripts/verify-dante-ema-strike.js",
-    "test:dante-guards": "npm run test:dante-contract && npm run test:dante-rice-bowl && npm run test:dante-gongguri && npm run test:dante-ema-strike && npm run test:dante-256 && npm run test:dante-625 && npm run test:dante-high-heel && npm run test:dante-backtest",
+    "test:dante-guards": "npm run test:dante-contract && npm run test:dante-rice-bowl && npm run test:dante-gongguri && npm run test:dante-ema-strike && npm run test:dante-256 && npm run test:dante-625 && npm run test:dante-high-heel && npm run test:dante-backtest && npm run test:dante-historical && npm run test:dante-walk-forward && npm run test:dante-sensitivity && npm run test:dante-api",
     "test:dante-256": "node scripts/verify-dante-256.js",
     "test:dante-625": "node scripts/verify-dante-625.js",
     "test:dante-high-heel": "node scripts/verify-dante-high-heel.js",
-    "test:dante-backtest": "node scripts/verify-dante-backtest.js"
+    "test:dante-backtest": "node scripts/verify-dante-backtest.js",
+    "test:dante-historical": "node scripts/verify-dante-historical.js",
+    "test:dante-walk-forward": "node scripts/verify-dante-walk-forward.js",
+    "test:dante-sensitivity": "node scripts/verify-dante-sensitivity.js",
+    "test:dante-api": "node scripts/verify-dante-api.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
