@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/book-ai/book-ai.css?v=20260925-validation1"><title>PulseRadar V5 · 책 기반 AI 분석</title></head><body><main class="app">
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/book-ai/book-ai.css?v=20260925-validation2"><title>PulseRadar V5 · 책 기반 AI 분석</title></head><body><main class="app">
 <header class="hero"><div><span class="eyebrow">책 기반 AI 분석 · 결정론적</span><h1>책 기반 AI 분석</h1><p>스캐너 v3 · ICT/SMC · 외환 책 데이터 · 이벤트 원장/검증 게이트 근거를 합성합니다. 점수는 승률이 아니라 근거 완성도입니다.</p></div><span id="status" class="badge">대기</span></header>
 <section class="toolbar"><input id="symbol" value="BTCUSDT" aria-label="종목"><button id="run" class="primary">책 기반 AI 분석</button><button id="savePng" disabled>요약 PNG</button></section>
 
@@ -49,8 +49,16 @@
   <div class="validationTop">
     <article><span>판정 시각</span><b id="validationDecision">-</b></article>
     <article><span>증거 분포</span><b id="validationCounts">-</b></article>
+    <article><span>체결성</span><b id="validationExecution">-</b><small id="validationExecutionSub">spread · depth · slippage</small></article>
+    <article><span>저장 계층</span><b id="validationLayers">-</b><small>raw → normalized → snapshot</small></article>
     <article><span>스냅샷</span><b id="validationSnapshot">-</b></article>
     <article><span>재현성</span><b id="validationReplay">미검증</b><button id="replayValidation" class="miniBtn" type="button" disabled>재현 검증</button></article>
+  </div>
+  <div class="validationPerf">
+    <article><span>VALIDATED 24H</span><b id="validationPerf24">-</b><small id="validationPerf24Sub">표본 대기</small></article>
+    <article><span>Validation Lift 24H</span><b id="validationLift24">-</b><small id="validationLift24Sub">표본 대기</small></article>
+    <article><span>False Rejection 24H</span><b id="validationFalse24">-</b><small id="validationFalse24Sub">표본 대기</small></article>
+    <article><span>검증 표본</span><b id="validationSamples">-</b><small>상태별 outcome 누적</small></article>
   </div>
   <div class="validationColumns">
     <div><h3>Gate 상태</h3><div id="validationGates" class="validationGates"><div class="watchEmpty">검증 실행 후 표시됩니다.</div></div></div>
@@ -103,4 +111,4 @@
 </details>
 </main>
 <script src="/ui/chart/chart-data.js?v=20260925-fresh1"></script><script src="/ui/chart/causal-ict-engine.js?v=20260925-causal1"></script><script src="/ui/chart/causal-ict-ledger.js?v=20260925-causal1"></script><script src="/ui/chart/smc-engine.js"></script><script src="/ui/chart/session-profile.js?v=20260921-v5"></script><script src="/ui/chart/liquidity-engine.js"></script><script src="/ui/chart/liquidity-map-engine.js?v=20260924-live1"></script><script src="/ui/chart/trendline-retest-engine.js?v=20260924-live1"></script><script src="/ui/ict-trainer/engine.js?v=20260921-ict1"></script><script src="/ui/forex-book/forex-book-engine.js?v=20260922-book4"></script><script src="/ui/chart/liquidity-event-journal.js?v=20260924-j11"></script><script src="/ui/chart/sample-readiness-gate.js?v=20260924-g1"></script><script src="/ui/trader/analysis-engine.js?v=20260921-v5"></script>
-<script src="/ui/book-ai/contract.js?v=20260924-live1"></script><script src="/ui/book-ai/promotion-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/mtf-composer.js?v=20260925-mtf2"></script><script src="/ui/book-ai/watchlist-selector.js?v=20260925-watch1"></script><script src="/ui/book-ai/live-evidence.js?v=20260924-live1"></script><script src="/ui/book-ai/adapter.js?v=20260925-fresh2"></script><script src="/ui/book-ai/rule-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/setup-state.js?v=20260924-ui1"></script><script src="/ui/book-ai/fusion-engine.js?v=20260924-ui1"></script><script src="/ui/book-ai/summary-template.js?v=20260924-ui1"></script><script src="/lib/analysis/snapshot-builder.js?v=20260924-ui1"></script><script src="/ui/trader/snapshot-renderer.js?v=20260921-accuracy1"></script><script src="/ui/book-ai/snapshot-composer.js?v=20260924-ui2"></script><script src="/ui/book-ai/storage.js?v=20260924-ui1"></script><script src="/ui/book-ai/app.js?v=20260925-validation1"></script></body></html>
+<script src="/ui/book-ai/contract.js?v=20260924-live1"></script><script src="/ui/book-ai/promotion-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/mtf-composer.js?v=20260925-mtf2"></script><script src="/ui/book-ai/watchlist-selector.js?v=20260925-watch1"></script><script src="/ui/book-ai/live-evidence.js?v=20260924-live1"></script><script src="/ui/book-ai/adapter.js?v=20260925-fresh2"></script><script src="/ui/book-ai/rule-engine.js?v=20260925-causal1"></script><script src="/ui/book-ai/setup-state.js?v=20260924-ui1"></script><script src="/ui/book-ai/fusion-engine.js?v=20260924-ui1"></script><script src="/ui/book-ai/summary-template.js?v=20260924-ui1"></script><script src="/lib/analysis/snapshot-builder.js?v=20260924-ui1"></script><script src="/ui/trader/snapshot-renderer.js?v=20260921-accuracy1"></script><script src="/ui/book-ai/snapshot-composer.js?v=20260924-ui2"></script><script src="/ui/book-ai/storage.js?v=20260924-ui1"></script><script src="/ui/book-ai/app.js?v=20260925-validation2"></script></body></html>
