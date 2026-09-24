@@ -58,7 +58,7 @@ assert.equal(R.validTransition('FAILED_BREAKOUT','PHASE_3_BREAKOUT'),true);
 }
 {
   const closes=[10,9,8,7,6,5,4,3,2,1],ema=[null,null,null,null,null,null,null,4,4,4];
-  assert.equal(R.priorConsecutiveBelow(closes,ema,10),2);
+  assert.equal(R.priorConsecutiveBelow(closes,ema,10),3);
 }
 {
   const piv=[
