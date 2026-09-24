@@ -1,7 +1,7 @@
 const cache={ts:0,data:null};
 const BASE='https://api.binance.com';
 const HEADERS={accept:'application/json','user-agent':'PulseRadar-Pro-v3'};
-const CFG={stage1Limit:60,deepLimit:10,minQuoteVolumeUsd:250000,maxAbs24hForPresurge:10,hotExclusion24h:15,volume15Trigger:3,buyRatioTrigger:.60};
+const CFG={stage1Limit:90,deepLimit:30,minQuoteVolumeUsd:250000,maxAbs24hForPresurge:10,hotExclusion24h:15,volume15Trigger:3,buyRatioTrigger:.60};
 async function getJson(path,ms=6500){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(BASE+path,{headers:HEADERS,signal:c.signal});if(!r.ok)throw new Error(`binance ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
 function median(a){const v=a.filter(Number.isFinite).slice().sort((x,y)=>x-y);if(!v.length)return 0;const m=Math.floor(v.length/2);return v.length%2?v[m]:(v[m-1]+v[m])/2}
