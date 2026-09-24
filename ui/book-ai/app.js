@@ -189,6 +189,56 @@ async function refreshAutoStats(){
   }catch(e){const meta=$('autoStatsMeta');if(meta)meta.textContent='성과 조회 제한';return null}
 }
 function fmtUsd(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';if(n>=1e9)return'USD '+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'USD '+(n/1e6).toFixed(2)+'M';if(n>=1e3)return'USD '+(n/1e3).toFixed(1)+'K';return'USD '+n.toFixed(0)}
+const VALIDATION_KO={VALIDATED:'검증됨',CONFLICTED:'충돌',STALE:'오래됨',INSUFFICIENT_DATA:'데이터 부족',INVALIDATED:'무효화'};
+const STANCE_KO={supportive:'지지',neutral:'중립',contradictory:'반박',missing:'누락',stale:'오래됨'};
+function renderValidationLoading(symbol){
+  if(!$('validationStatus'))return;
+  $('validationStatus').className='validationStatus';$('validationStatus').textContent='검증 중';
+  $('validationMeta').textContent=(symbol||'코인')+' · decision timestamp 기준 검증 중…';
+  $('validationDecision').textContent='-';$('validationCounts').textContent='-';$('validationSnapshot').textContent='-';$('validationReplay').textContent='미검증';
+  $('replayValidation').disabled=true;$('replayValidation').dataset.snapshotId='';
+  $('validationGates').innerHTML='<div class="watchEmpty">신선도·교차검증·시간성 gate 확인 중…</div>';
+  $('validationEvidence').innerHTML='<div class="watchEmpty">증거 원장 생성 중…</div>';
+}
+function renderValidation(payload,error=null){
+  if(!$('validationStatus'))return;
+  if(error||!payload?.validation){
+    $('validationStatus').className='validationStatus INVALIDATED';$('validationStatus').textContent='검증 제한';
+    $('validationMeta').textContent=String(error?.message||payload?.error||'시장검증 데이터를 불러오지 못했습니다.');
+    return;
+  }
+  const v=payload.validation,status=String(v.validationStatus||'INSUFFICIENT_DATA'),counts=v.counts||{};
+  $('validationStatus').className='validationStatus '+status;$('validationStatus').textContent=VALIDATION_KO[status]||status;
+  $('validationMeta').textContent=[payload.symbol,'MARKET_VALIDATION_v1',v.reasonCodes?.length?'사유 '+v.reasonCodes.join(' · '):'gate 통과'].filter(Boolean).join(' · ');
+  $('validationDecision').textContent=fmtTime(v.decisionTimestamp);
+  $('validationCounts').textContent='지지 '+(counts.supportive||0)+' · 중립 '+(counts.neutral||0)+' · 반박 '+(counts.contradictory||0)+' · 누락 '+(counts.missing||0)+' · 오래됨 '+(counts.stale||0);
+  $('validationSnapshot').textContent=(v.snapshotId||'-')+(v.canonicalHash?' · '+String(v.canonicalHash).slice(0,12):'');
+  $('validationReplay').textContent=payload.persisted?'저장됨 · 재현 대기':'저장 미확인';
+  $('replayValidation').disabled=!v.snapshotId;$('replayValidation').dataset.snapshotId=v.snapshotId||'';
+  const gates=$('validationGates');gates.innerHTML='';
+  for(const g of v.gates||[]){
+    const d=document.createElement('div');d.className='validationGate '+(g.pass===true?'pass':g.pass===false?'fail':'na');
+    const b=document.createElement('b');b.textContent=g.label||g.id;const s=document.createElement('span');s.textContent=g.pass===true?'통과':g.pass===false?('실패 · '+(g.failure||'-')):(g.failure==='NOT_EVALUATED'?'평가 보류 · '+(g.note||'데이터 없음'):'평가 보류');
+    d.append(b,s);gates.append(d);
+  }
+  if(!gates.children.length)gates.innerHTML='<div class="watchEmpty">Gate 결과 없음</div>';
+  const evbox=$('validationEvidence');evbox.innerHTML='';
+  for(const x of v.evidence||[]){
+    const d=document.createElement('div');d.className='validationEv '+String(x.stance||'neutral');
+    const top=document.createElement('div');top.className='evTop';const b=document.createElement('b');b.textContent=x.id;const st=document.createElement('span');st.className='stance';st.textContent=STANCE_KO[x.stance]||x.stance||'-';top.append(b,st);
+    const sm=document.createElement('small');sm.textContent=x.reason+(x.sources?.length?' · '+x.sources.join(', '):'');d.append(top,sm);evbox.append(d);
+  }
+  if(!evbox.children.length)evbox.innerHTML='<div class="watchEmpty">증거 원장 없음</div>';
+}
+async function replayValidation(){
+  const btn=$('replayValidation'),id=btn?.dataset?.snapshotId;if(!id)return;
+  btn.disabled=true;$('validationReplay').textContent='재현 검증 중…';
+  try{
+    const data=await jsonTimeout('/api/coin-scan?mode=validation-snapshots&action=replay&id='+encodeURIComponent(id),12000),r=data.replay||{};
+    $('validationReplay').textContent=r.reproducible?'재현 일치':'재현 불일치';
+    $('validationReplay').className=r.reproducible?'ok':'error';
+  }catch(e){$('validationReplay').textContent='재현 실패';$('validationReplay').className='error'}finally{btn.disabled=false}
+}
 function renderIntelLoading(symbol){
   if($('spotMeta'))$('spotMeta').textContent=(symbol||'코인')+' · 현물 데이터 확인 중…';
   if($('futuresMeta'))$('futuresMeta').textContent=(symbol||'코인')+' · 선물 데이터 확인 중…';
@@ -510,7 +560,8 @@ function render(result,chart){
 async function run(){
   const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error','warn');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
-    const requestStartedAt=Date.now();renderIntelLoading(symbol);
+    const requestStartedAt=Date.now();renderIntelLoading(symbol);renderValidationLoading(symbol);
+    const validationPromise=jsonTimeout('/api/coin-scan?mode=validation&symbol='+encodeURIComponent(symbol)+'&at='+requestStartedAt,30000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const intelPromise=jsonTimeout('/api/coin-scan?mode=intelligence&symbol='+encodeURIComponent(symbol),22000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:requestStartedAt});if(token!==runSeq)return;
@@ -524,6 +575,7 @@ async function run(){
       await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
       $('status').textContent=symbol+' · 차트/4TF 완료 · 스캐너 제한';
       const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
+      const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
@@ -555,6 +607,7 @@ async function run(){
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
     const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error,item);
+    const validationResult=await validationPromise;if(token!==runSeq)return;renderValidation(validationResult.data,validationResult.error);
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
@@ -564,7 +617,7 @@ function save(){
   if(!last)return;
   const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI',agg=$('aggregateSnapshot'),useAgg=agg?.dataset?.bookAiMtfRendered==='1';const a=document.createElement('a');a.href=useAgg?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=symbol+(useAgg?'-book-ai-mtf.png':'-book-ai-4h-overview.png');document.body.append(a);a.click();a.remove();
 }
-$('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+$('run').onclick=run;$('savePng').onclick=save;$('replayValidation').onclick=replayValidation;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
 const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();refreshAutoHistory();refreshAutoStats();
 let autoRefreshTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshWatchlist()},300000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(readAutoCache()?.ts||0)>300000)refreshWatchlist()});
