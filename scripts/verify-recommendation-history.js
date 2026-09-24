@@ -46,5 +46,10 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
   const stats=await svc.stats({state:'RECOMMEND'});
   assert(stats.horizons.h1.evaluatedCount>=1);
   assert(stats.horizons.h1.positiveRatio>0);
+  assert(Number.isFinite(stats.horizons.h1.bestReturnPct));
+  assert(Number.isFinite(stats.horizons.h1.worstReturnPct));
+  assert(['표본 부족','참고용','통계 사용 가능'].includes(stats.horizons.h1.sampleState));
+  assert(stats.byScanClass&&stats.byScanClass['ACCUMULATION-PRE']);
+  assert(stats.byV2Type&&stats.byV2Type['A-pre']);
   console.log('recommendation history PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
