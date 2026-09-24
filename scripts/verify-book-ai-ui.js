@@ -69,7 +69,11 @@ assert(app.includes('requestStartedAt=Date.now()'),'Book AI must distinguish req
 assert(app.includes("item=scan?.items?.[0]||null,now=Date.now()"),'analysisAsOf must finalize after Scanner response arrives');
 assert(app.includes('boundedObservedAt(item.updatedAt,now)'),'Scanner observedAt must be bounded by local receipt time');
 assert(app.includes("last.fusion?.symbol"),'PNG export must work without scanner fusion');
-assert(!app.includes('Journal.recordAndResolve'),'Book AI live evidence must never persist ephemeral bundle');
+assert(app.includes("confirmed=(bundle.events||[]).filter(x=>x?.status==='CONFIRMED')"),'Book AI persistence must be gated by confirmed events');
+assert(app.includes('Journal.recordAndResolve'),'confirmed canonical evidence must persist to Journal');
+assert(app.includes('Gate.evaluateGate'),'persisted Journal evidence must update Sample Readiness Gate');
+assert(app.includes('fetchStructureFresh'),'Book AI must retry stale structure data');
+assert(app.includes('cacheBust:analysisAsOf'),'stale retry must bypass short CDN cache');
 assert(composer.includes("renderer.draw(canvas"));
 assert(composer.includes("Builder.buildSnapshotModel"));
 assert(composer.includes('[112,224,448]'),'overview chart must retain only Dante EMA 112/224/448');
