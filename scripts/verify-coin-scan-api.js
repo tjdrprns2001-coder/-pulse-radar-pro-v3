@@ -75,12 +75,15 @@ const provider={
   let recommendationHistoryCalls=0;
   const recommendationHistory={
     async observe(bundle,context){recommendationHistoryCalls++;assert(bundle&&Array.isArray(bundle.recommended));assert(context&&context.marketSource);return{observed:2,recorded:1,duplicates:0,skipped:1,errors:[]}},
+    async evaluateDue(){return{attempted:1,evaluated:1,unavailable:0,pending:0,errors:[]}},
+    async stats(){return{sampleCount:3,horizons:{h1:{evaluatedCount:2,positiveRatio:.5,meanReturnPct:1.2}}}},
     async list(){return[{id:'AAA:RECOMMEND:NEW:1',symbol:'AAAUSDT',state:'RECOMMEND',label:'자동 추천',score:81,capturedAt:222222,direction:'NEW'}]}
   };
   const recService=createScanService({provider,now:()=>222222,recommendationHistory});
   const recDeep=await recService.run({mode:'deep',symbols:['C0USDT'],limit:1});
   assert.equal(recommendationHistoryCalls,1,'deep scan must record automatic recommendation history once');
   assert(recDeep.autoRecommendationRecording&&recDeep.autoRecommendationRecording.recorded===1);
+  assert(recDeep.autoRecommendationEvaluation&&recDeep.autoRecommendationEvaluation.evaluated===1,'deep scan should evaluate due recommendation outcomes');
 
   const cat=out.items[0]?.category;
   if(cat){const f=await service.run({mode:'summary',category:cat,limit:10});assert(f.items.every(x=>x.category===cat))}
@@ -111,6 +114,12 @@ const provider={
   code=0;body=null;headers={};
   await handler({query:{mode:'recommendation-history',limit:'5'}},res,{service:recService});
   assert.equal(code,200);assert.equal(body.mode,'recommendation-history');assert.equal(body.items[0].symbol,'AAAUSDT');assert(String(headers['Cache-Control']).includes('no-store'));
+  code=0;body=null;headers={};
+  await handler({query:{mode:'recommendation-history',action:'stats'}},res,{service:recService});
+  assert.equal(code,200);assert.equal(body.action,'stats');assert.equal(body.stats.sampleCount,3);
+  code=0;body=null;headers={};
+  await handler({query:{mode:'recommendation-history',action:'evaluate'}},res,{service:recService});
+  assert.equal(code,200);assert.equal(body.action,'evaluate');assert.equal(body.evaluation.evaluated,1);
 
   console.log('coin scan api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
