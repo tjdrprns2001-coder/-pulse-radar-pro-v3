@@ -49,6 +49,21 @@ assert.equal(r.validationStatus,'INVALIDATED');
 assert(r.reasonCodes.includes('LOOKAHEAD_RISK'));
 assert(r.dataQuality.lookaheadEvidence.includes('catalyst.news'));
 
+
+const blockedFutures=V.validate(input({
+ item:{marketScope:'spot',futuresListed:false,oi4hChangePct:null,fundingRate:null,trueTakerRatio:null},
+ intelligence:{binanceFuturesStatus:'blocked',cex:{exchangeCount:4,spotCount:1,derivativesCount:3,maxPriceDispersionPct:.2,spotFuturesBasisPct:.1,sources:[
+  {name:'binance',marketType:'spot',price:100},
+  {name:'okx',marketType:'swap',price:100.1},
+  {name:'gate',marketType:'swap',price:100.05},
+  {name:'bitget',marketType:'swap',price:100.08}
+ ]}}
+}));
+const crossDeriv=blockedFutures.evidence.find(x=>x.id==='cross.derivatives');
+assert.equal(crossDeriv.stance,'supportive','external derivative venues must validate even when Binance Futures direct access is blocked');
+assert(!crossDeriv.reason.includes('미상장'),'blocked Binance Futures lookup must never be mislabeled as delisting');
+assert(blockedFutures.evidence.find(x=>x.id==='derivatives.crowding').reason.includes('직접 데이터 부족'));
+
 const crowd=V.validate(input({item:{oi4hChangePct:8,fundingRate:.05,trueTakerRatio:1.8}}));
 const crowdEv=crowd.evidence.find(x=>x.id==='derivatives.crowding');
 assert.equal(crowdEv.stance,'contradictory');
