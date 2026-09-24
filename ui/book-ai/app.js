@@ -18,7 +18,7 @@ function gateReadOnly(){
 }
 function journalReadOnly(){
   if(!Journal)return null;
-  try{const data=Journal.createLocalStorageStore(localStorage).export();return{data,version:Journal.VERSION}}catch{return null}
+  try{const data=Journal.createLocalStorageStore(localStorage).export();if(!(data.snapshots?.length||data.events?.length||data.outcomes?.length))return null;return{data,version:Journal.VERSION}}catch{return null}
 }
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
 function buildChart(raw,tf='4h'){
