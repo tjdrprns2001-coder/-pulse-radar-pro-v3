@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine;
-const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
+const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,LM=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine;
+const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 let last=null;
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
@@ -23,13 +23,30 @@ function journalReadOnly(){
   try{const data=Journal.createLocalStorageStore(localStorage).export();if(!(data.snapshots?.length||data.events?.length||data.outcomes?.length))return null;return{data,version:Journal.VERSION}}catch{return null}
 }
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
-function buildChart(raw,tf='4h'){
-  const candles=raw.candles||[];
-  const smc=SE.analyzeSmcV2({candles,canonicalSwings:raw.canonicalSwings||[],canonicalEvents:raw.events||[],htf:{bias:null}});
-  const liquidity=LE.analyzeLiquidity({candles,timeframe:tf,pivots:smc.canonicalSwings||raw.canonicalSwings||[],equalLevels:smc.equalLevels||[],sweeps:smc.sweeps||[],displacement:smc.displacements||[],mss:smc.mss||[],fvgs:smc.fvgs||[],orderBlocks:smc.orderBlocks||[]});
+function closedCandlesForAsOf(rows,analysisAsOf){
+  return (Array.isArray(rows)?rows:[]).filter(c=>{
+    if(!c||c.partial===true||c.isClosed===false||c.confirmed===false)return false;
+    const t=Number(c.closeTime??c.closedAt);
+    return !Number.isFinite(t)||t<=analysisAsOf;
+  });
+}
+function rawBias(raw){
+  const last=Array.isArray(raw?.events)?raw.events.at(-1):null;if(last?.dir)return last.dir;
+  const v=String(raw?.bias?.label||raw?.bias||'').toLowerCase();
+  if(v.includes('up')||v.includes('bull')||v.includes('상승'))return'up';
+  if(v.includes('down')||v.includes('bear')||v.includes('하락'))return'down';
+  return'neutral';
+}
+function buildChart(raw,tf='4h',analysisAsOf=Date.now()){
+  if(!LM||!TRE)throw new Error('LiquidityMap/TrendlineRetest engine unavailable');
+  const sourceCandles=closedCandlesForAsOf(raw.candles||[],analysisAsOf);
+  const model=LM.buildLiquidityMap({candles:sourceCandles,canonicalSwings:raw.canonicalSwings||[],canonicalEvents:raw.events||[],timeframe:tf,htfBias:rawBias(raw)});
+  if(!model?.ok)throw new Error(model?.error||'Liquidity Map 생성 실패');
+  const candles=model.candles,smc=model.smc,liquidity=model.liquidity;
+  const trendRetest=TRE.analyzeTrendlineRetests({candles:sourceCandles,trendlines:raw.trendlines||{},timeframe:tf});
   const ict=ICT.analyzeTimeframe({candles,smc,liquidity,tf});
   const book=BF.analyze({candles,smc,liquidity,ictContext:ict});
-  return{candles,smc,liquidity,ict,book};
+  return{candles,smc,liquidity,ict,book,model,trendRetest};
 }
 function sourceCards(engineSources){
   const box=$('sources');box.innerHTML='';
@@ -46,7 +63,7 @@ function ruleCards(rows){
     const d=document.createElement('div');d.className='rule';
     const b=document.createElement('b');b.textContent=RULE_LABEL[x.ruleId]||x.ruleId;
     const st=document.createElement('span');st.className='status state-'+(x.status==='CONFIRMED'?'CONFIRMED':x.status==='CANDIDATE'?'WATCH':'NO_SETUP');st.textContent=x.status;
-    const p=document.createElement('p');p.textContent='facts '+(x.evidenceFactIds?.length||0)+' · events '+(x.evidenceEventIds?.length||0)+(x.sequenceId?' · '+x.sequenceId:'');
+    const p=document.createElement('p');p.textContent='facts '+(x.evidenceFactIds?.length||0)+' · persisted '+(x.trustedEvidenceEventIds?.length||0)+' · live '+(x.ephemeralEvidenceEventIds?.length||0)+(x.sequenceId?' · '+x.sequenceId:'');
     d.append(b,st,p);box.append(d);
   }
 }
@@ -61,7 +78,7 @@ function render(result,chart){
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
   $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
   $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.dataQuality?.state||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
-  $('factCount').textContent=String(a.uniqueFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
+  $('factCount').textContent=String(a.uniqueFactCount??0)+' · P '+String(a.persistedFactCount??0)+' / L '+String(a.ephemeralFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0)+' · P '+String(a.persistedEventCount??0)+' / L '+String(a.ephemeralEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
   summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
   S.assertCanonicalSummaryGrounded(s,f);
   C.compose({canvas:$('snapshot'),symbol:f.symbol,timeframe:'4h',candles:chart.candles,analysis:result.raw,smc:chart.smc,liquidity:chart.liquidity,ict:chart.ict,summary:s,renderer:SR});
@@ -72,10 +89,12 @@ async function run(){
   try{
     const [scan,raw]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),CD.fetchStructure({symbol,interval:'4h',limit:560})]);
     const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
-    const chart=buildChart(raw,'4h'),now=Date.now(),closed=lastClosedTime(raw);
+    const now=Date.now(),chart=buildChart(raw,'4h',now),closed=lastClosedTime({candles:chart.candles});
     const journal=journalReadOnly(),gate=gateReadOnly();
+    if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
+    const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
     const adapter=A.adaptBookAiInput({
-      analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',
+      analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,
       sources:{
         scanner:source(item,item.updatedAt,scan.scannerVersion||'v3'),
         presurge:source(item.preSurge,item.updatedAt,'PRE_SURGE_v2'),
@@ -84,7 +103,7 @@ async function run(){
         forexBook:source(chart.book,closed,chart.book?.version),
         journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},
         gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
-        trendline:source(raw.trendlineComparison||raw.trendlines||null,closed,raw.trendlineVersion||null)
+        trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
       }
     });
     const rules=R.evaluate(adapter),storage=Store.create(localStorage),previous=storage.get(symbol)?.lifecycle||null;

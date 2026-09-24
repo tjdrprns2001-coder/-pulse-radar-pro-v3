@@ -57,25 +57,39 @@ function latestSequence(adapter){return adapter?.sources?.journal?.latestSequenc
 function buildEventFacts(adapter){
   const analysisAsOf=num(adapter?.analysisAsOf);
   if(analysisAsOf==null)throw new Error('adapter.analysisAsOf required');
-  const out=[];
-  for(const e of adapter?.sources?.journal?.events||[]){
+  const out=[],seenFingerprints=new Set();
+  const persisted=(adapter?.sources?.journal?.events||[]).map(e=>({...e,provenance:'PERSISTED_JOURNAL'}));
+  const ephemeral=(adapter?.liveEvidence?.events||[]).map(e=>({...e,provenance:'LIVE_EPHEMERAL'}));
+  for(const e of [...persisted,...ephemeral]){
     const factType=EVENT_FACT_MAP[String(e?.eventType||'')];
     if(!factType)continue;
     const confirmedAt=ms(e.confirmedAt??e.candleTime);
     if(confirmedAt!=null&&confirmedAt>analysisAsOf)throw new Error('evidence event after analysisAsOf');
     const eventId=txt(e.eventId);if(!eventId)continue;
+    const provenance=e.provenance==='LIVE_EPHEMERAL'?'LIVE_EPHEMERAL':'PERSISTED_JOURNAL';
+    if(provenance==='LIVE_EPHEMERAL'&&!eventId.startsWith('LIVE-'))throw new Error('LIVE_EPHEMERAL eventId must use LIVE- namespace');
+    if(provenance==='LIVE_EPHEMERAL'&&e.closedOnly!==true)throw new Error('LIVE_EPHEMERAL evidence must be CLOSED_ONLY');
+    const fingerprint=txt(e.eventFingerprint)||null;
+    if(fingerprint&&seenFingerprints.has(fingerprint))continue;
+    if(fingerprint)seenFingerprints.add(fingerprint);
     out.push({
-      factId:factIdFor({factType,eventId,eventVersion:e.eventVersion??null,paramsHash:e.paramsHash??null}),
+      factId:factIdFor({factType,eventId,eventVersion:e.eventVersion??null,paramsHash:e.paramsHash??null,provenance}),
       factVersion:FACT_VERSION,factType,sourceKind:'EVENT',
       sourceEngine:e.sourceEngine||adapter?.engineSources?.journal?.version||'JOURNAL',
       sourceVersion:e.eventVersion??adapter?.engineSources?.journal?.version??null,
       eventId,snapshotId:e.snapshotId||null,sequenceId:e.sequenceId||null,timeframe:e.timeframe||null,
       confirmedAt,price:num(e.price),linePrice:num(e.linePrice),paramsHash:e.paramsHash||null,
+      provenance,eventStatus:String(e.status||'UNKNOWN'),eventFingerprint:fingerprint,closedOnly:e.closedOnly===true||provenance==='PERSISTED_JOURNAL',
       attributes:{eventType:e.eventType,status:e.status||null,direction:e.direction||null,candleIndex:num(e.candleIndex),atrFrozen:num(e.atrFrozen)}
     });
   }
   return out;
 }
+function isTrustedConfirmedEventFact(f){
+  return Boolean(f?.eventId&&f?.provenance==='PERSISTED_JOURNAL'&&f?.eventStatus==='CONFIRMED');
+}
+function persistedEventBacked(facts=[]){return facts.filter(x=>x?.eventId&&x?.provenance==='PERSISTED_JOURNAL')}
+function trustedEventBacked(facts=[]){return facts.filter(isTrustedConfirmedEventFact)}
 function pushSynthetic(out,adapter,{factType,sourceEngine,sourceVersion,timeframe=null,value=null,observedAt=null,attributes={}}){
   const t=ms(observedAt??adapter?.engineSources?.[sourceEngine]?.observedAt??adapter?.analysisAsOf);
   if(t!=null&&t>adapter.analysisAsOf)throw new Error('synthetic fact after analysisAsOf');
@@ -131,38 +145,49 @@ function buildEvidenceFacts(adapter){
 function byType(facts){const m=new Map();for(const f of facts){if(!m.has(f.factType))m.set(f.factType,[]);m.get(f.factType).push(f)}return m}
 function eventBacked(facts=[]){return facts.filter(x=>x?.eventId)}
 function makeRule(ruleId,status,facts,adapter){
-  const dedup=dedupeFacts(facts),eventIds=uniq(eventBacked(dedup).map(x=>x.eventId)),snapshotIds=uniq(eventBacked(dedup).map(x=>x.snapshotId)),sequenceIds=uniq(eventBacked(dedup).map(x=>x.sequenceId));
-  if(status==='CONFIRMED'&&!eventIds.length)throw new Error('CONFIRMED rule requires event-backed evidence: '+ruleId);
-  if(status==='CONFIRMED'&&!sequenceIds.length)throw new Error('CONFIRMED rule requires sequenceId: '+ruleId);
+  const dedup=dedupeFacts(facts),allEvents=eventBacked(dedup),trusted=trustedEventBacked(dedup),ephemeral=allEvents.filter(x=>x.provenance==='LIVE_EPHEMERAL');
+  const eventIds=uniq(allEvents.map(x=>x.eventId)),trustedEvidenceEventIds=uniq(trusted.map(x=>x.eventId)),ephemeralEvidenceEventIds=uniq(ephemeral.map(x=>x.eventId)),snapshotIds=uniq(allEvents.map(x=>x.snapshotId)),sequenceIds=uniq(allEvents.map(x=>x.sequenceId));
+  if(status==='CONFIRMED'&&!trustedEvidenceEventIds.length)throw new Error('CONFIRMED rule requires trusted persisted evidence: '+ruleId);
   return{
     ruleId,ruleVersion:RULE_VERSION,status,paramsHash:paramsHashFor(ruleId),sourceBookId:SOURCE_BOOK_ID,sourceReference:RULE_SOURCE_REF[ruleId],
-    sequenceId:sequenceIds[0]||latestSequence(adapter),evidenceFactIds:dedup.map(x=>x.factId),evidenceEventIds:eventIds,evidenceSnapshotIds:snapshotIds,
+    sequenceId:sequenceIds[0]||latestSequence(adapter),evidenceFactIds:dedup.map(x=>x.factId),evidenceEventIds:eventIds,trustedEvidenceEventIds,ephemeralEvidenceEventIds,evidenceSnapshotIds:snapshotIds,
     evidenceConfirmedAt:dedup.map(x=>x.confirmedAt).filter(Number.isFinite).sort((a,b)=>b-a)[0]??null
   };
 }
 function evaluateRules(adapter,facts){
-  const m=byType(facts),get=t=>m.get(t)||[];
+  const m=byType(facts),get=t=>m.get(t)||[],trusted=t=>trustedEventBacked(get(t));
   const breakFacts=[...get('TRENDLINE_BREAK'),...get('STRUCTURE_BREAK_EXPLICIT')],touch=get('RETEST_TOUCH'),confirm=get('RETEST_CONFIRMED'),reclaim=get('RECLAIM'),sweep=get('LIQUIDITY_SWEEP'),contraction=get('VOLUME_CONTRACTION'),ignition=get('RVOL_15M_IGNITION'),maCompression=get('MA_COMPRESSION'),maTransition=get('MA_ALIGNMENT_TRANSITION');
+  const trustedBreak=trusted('TRENDLINE_BREAK'),trustedConfirm=trusted('RETEST_CONFIRMED'),trustedReclaim=trusted('RECLAIM'),trustedSweep=trusted('LIQUIDITY_SWEEP'),persistedTouch=persistedEventBacked(touch);
   const rows=[];
-  rows.push(makeRule('BREAKOUT_RETEST',breakFacts.length&&confirm.length?'CONFIRMED':breakFacts.length?'CANDIDATE':'NOT_CONFIRMED',[...breakFacts,...touch,...confirm],adapter));
+  rows.push(makeRule('BREAKOUT_RETEST',trustedBreak.length&&trustedConfirm.length?'CONFIRMED':breakFacts.length||confirm.length?'CANDIDATE':'NOT_CONFIRMED',[...breakFacts,...touch,...confirm],adapter));
   const flipEvidence=[...breakFacts,...reclaim,...confirm];
-  rows.push(makeRule('SUPPORT_RESISTANCE_FLIP',breakFacts.length&&(reclaim.length||confirm.length)&&eventBacked(flipEvidence).length>=2?'CONFIRMED':breakFacts.length?'CANDIDATE':'NOT_CONFIRMED',flipEvidence,adapter));
-  rows.push(makeRule('TRENDLINE_REACTION',touch.length&&confirm.length?'CONFIRMED':touch.length?'CANDIDATE':'NOT_CONFIRMED',[...touch,...confirm],adapter));
-  rows.push(makeRule('LIQUIDITY_SWEEP_RECLAIM',sweep.length&&reclaim.length?'CONFIRMED':sweep.length?'CANDIDATE':'NOT_CONFIRMED',[...sweep,...reclaim],adapter));
+  rows.push(makeRule('SUPPORT_RESISTANCE_FLIP',trustedBreak.length&&(trustedReclaim.length||trustedConfirm.length)?'CONFIRMED':flipEvidence.length?'CANDIDATE':'NOT_CONFIRMED',flipEvidence,adapter));
+  rows.push(makeRule('TRENDLINE_REACTION',persistedTouch.length&&trustedConfirm.length?'CONFIRMED':touch.length||confirm.length?'CANDIDATE':'NOT_CONFIRMED',[...touch,...confirm],adapter));
+  rows.push(makeRule('LIQUIDITY_SWEEP_RECLAIM',trustedSweep.length&&trustedReclaim.length?'CONFIRMED':sweep.length||reclaim.length?'CANDIDATE':'NOT_CONFIRMED',[...sweep,...reclaim],adapter));
   const volEvidence=[...contraction,...breakFacts,...ignition];
-  rows.push(makeRule('VOLUME_CONTRACTION_BREAK',contraction.length&&breakFacts.length&&ignition.length&&eventBacked(volEvidence).length?'CONFIRMED':volEvidence.length?'CANDIDATE':'NOT_CONFIRMED',volEvidence,adapter));
+  rows.push(makeRule('VOLUME_CONTRACTION_BREAK',contraction.length&&ignition.length&&trustedBreak.length?'CONFIRMED':volEvidence.length?'CANDIDATE':'NOT_CONFIRMED',volEvidence,adapter));
   rows.push(makeRule('MOVING_AVERAGE_COMPRESSION',maCompression.length?'CANDIDATE':'NOT_CONFIRMED',[...maCompression,...maTransition],adapter));
   return rows.sort((a,b)=>a.ruleId.localeCompare(b.ruleId));
 }
 function assertRuleEvidenceIntegrity({rules=[],facts=[],analysisAsOf}={}){
-  const factMap=new Map(facts.map(x=>[x.factId,x])),eventIds=new Set(facts.map(x=>x.eventId).filter(Boolean));
+  const factMap=new Map(facts.map(x=>[x.factId,x])),eventMap=new Map(facts.filter(x=>x.eventId).map(x=>[x.eventId,x]));
   for(const r of rules){
     const ids=uniq(r.evidenceFactIds);
     if(ids.length!==(r.evidenceFactIds||[]).length)throw new Error('duplicate evidenceFactIds in rule '+r.ruleId);
     for(const id of ids)if(!factMap.has(id))throw new Error('unknown evidenceFactId '+id+' in '+r.ruleId);
+    for(const id of r.evidenceEventIds||[])if(!eventMap.has(id))throw new Error('unknown eventId '+id+' in '+r.ruleId);
+    for(const id of r.trustedEvidenceEventIds||[]){
+      const f=eventMap.get(id);
+      if(!f)throw new Error('unknown trusted eventId '+id+' in '+r.ruleId);
+      if(!isTrustedConfirmedEventFact(f))throw new Error('trusted event is not persisted confirmed: '+id);
+    }
+    for(const id of r.ephemeralEvidenceEventIds||[]){
+      const f=eventMap.get(id);
+      if(!f)throw new Error('unknown ephemeral eventId '+id+' in '+r.ruleId);
+      if(f.provenance!=='LIVE_EPHEMERAL')throw new Error('ephemeral event provenance mismatch: '+id);
+    }
     if(r.status==='CONFIRMED'){
-      if(!r.evidenceEventIds?.length)throw new Error('CONFIRMED rule missing evidenceEventIds: '+r.ruleId);
-      for(const id of r.evidenceEventIds)if(!eventIds.has(id))throw new Error('unknown eventId '+id+' in '+r.ruleId);
+      if(!r.trustedEvidenceEventIds?.length)throw new Error('CONFIRMED rule missing trustedEvidenceEventIds: '+r.ruleId);
       if(!r.sequenceId)throw new Error('CONFIRMED rule missing sequenceId: '+r.ruleId);
     }
     for(const id of ids){const f=factMap.get(id);if(f?.confirmedAt!=null&&f.confirmedAt>analysisAsOf)throw new Error('rule evidence after analysisAsOf')}
@@ -170,7 +195,8 @@ function assertRuleEvidenceIntegrity({rules=[],facts=[],analysisAsOf}={}){
   return true;
 }
 function scoreComponents(facts=[]){
-  const m=byType(facts),used={},pick=t=>(m.get(t)||[]).map(x=>x.factId);
+  const scoreEligible=facts.filter(x=>x?.provenance!=='LIVE_EPHEMERAL');
+  const m=byType(scoreEligible),used={},pick=t=>(m.get(t)||[]).map(x=>x.factId);
   const add=(key,points,types)=>{const ids=uniq(types.flatMap(pick));if(!ids.length)return 0;used[key]=uniq([...(used[key]||[]),...ids]);return points};
   let bookStructure=0;bookStructure+=add('bookStructure',8,['TRENDLINE_BREAK','STRUCTURE_BREAK_EXPLICIT']);bookStructure+=add('bookStructure',5,['RETEST_TOUCH']);bookStructure+=add('bookStructure',7,['RETEST_CONFIRMED']);bookStructure+=add('bookStructure',5,['RECLAIM']);bookStructure=Math.min(25,bookStructure);
   let htfAlignment=0;htfAlignment+=add('htfAlignment',14,['HTF_LONG_PASS']);htfAlignment+=add('htfAlignment',4,['HTF_CORE_UP']);htfAlignment+=add('htfAlignment',2,['HTF_ALIGNMENT_STRONG']);htfAlignment=Math.min(20,htfAlignment);
@@ -178,16 +204,17 @@ function scoreComponents(facts=[]){
   let volumeRvol=0;volumeRvol+=add('volumeRvol',4,['RVOL_1H_ACTIVE']);volumeRvol+=add('volumeRvol',8,['RVOL_15M_IGNITION']);volumeRvol=Math.min(12,volumeRvol);
   let derivatives=0;derivatives+=add('derivatives',5,['OI_BUILD']);derivatives+=add('derivatives',5,['TAKER_CONFIRM']);derivatives=Math.min(10,derivatives);
   let retestReclaim=0;retestReclaim+=add('retestReclaim',2,['RETEST_TOUCH']);retestReclaim+=add('retestReclaim',3,['RETEST_CONFIRMED']);retestReclaim+=add('retestReclaim',3,['RECLAIM']);retestReclaim=Math.min(8,retestReclaim);
-  return{bookEvidence:Contract.computeEvidenceScore({bookStructure,htfAlignment,liquiditySmc,volumeRvol,derivatives,retestReclaim}),componentUsage:Object.fromEntries(Object.entries(used).map(([k,v])=>[k,uniq(v).sort()]))};
+  return{bookEvidence:Contract.computeEvidenceScore({bookStructure,htfAlignment,liquiditySmc,volumeRvol,derivatives,retestReclaim}),componentUsage:Object.fromEntries(Object.entries(used).map(([k,v])=>[k,uniq(v).sort()])),scorePolicy:{version:'BOOK_EVIDENCE_LIVE_GUARD_v1',liveEphemeralContribution:0}};
 }
 function buildEvidenceAudit({facts=[],rules=[],componentUsage={}}={}){
   const factMap=new Map(facts.map(x=>[x.factId,x])),usage={};let totalRuleFactReferences=0,totalComponentFactReferences=0;
   for(const r of rules)for(const fid of uniq(r.evidenceFactIds)){const f=factMap.get(fid);if(!f)continue;totalRuleFactReferences++;if(!f.eventId)continue;usage[f.eventId]=usage[f.eventId]||{rules:[],components:[],factIds:[]};usage[f.eventId].rules.push(r.ruleId);usage[f.eventId].factIds.push(fid)}
   for(const [component,ids] of Object.entries(componentUsage))for(const fid of uniq(ids)){const f=factMap.get(fid);if(!f)continue;totalComponentFactReferences++;if(!f.eventId)continue;usage[f.eventId]=usage[f.eventId]||{rules:[],components:[],factIds:[]};usage[f.eventId].components.push(component);usage[f.eventId].factIds.push(fid)}
   for(const x of Object.values(usage)){x.rules=uniq(x.rules).sort();x.components=uniq(x.components).sort();x.factIds=uniq(x.factIds).sort()}
+  const persistedFacts=facts.filter(x=>x.provenance==='PERSISTED_JOURNAL'),ephemeralFacts=facts.filter(x=>x.provenance==='LIVE_EPHEMERAL');
   const uniqueEventIds=uniq(facts.map(x=>x.eventId)).sort(),sharedEventIds=Object.entries(usage).filter(([,x])=>x.rules.length>1||x.components.length>1).map(([id])=>id).sort(),totalEventRuleReferences=Object.values(usage).reduce((s,x)=>s+x.rules.length,0);
   const sharedEvidenceRatio=totalEventRuleReferences?Number(Math.max(0,(totalEventRuleReferences-uniqueEventIds.length)/totalEventRuleReferences).toFixed(4)):0;
-  return{uniqueFactCount:facts.length,uniqueEventCount:uniqueEventIds.length,uniqueEventIds,totalRuleFactReferences,totalComponentFactReferences,totalEventRuleReferences,sharedEventIds,sharedEvidenceRatio,usage};
+  return{uniqueFactCount:facts.length,uniqueEventCount:uniqueEventIds.length,uniqueEventIds,persistedFactCount:persistedFacts.length,ephemeralFactCount:ephemeralFacts.length,persistedEventCount:uniq(persistedFacts.map(x=>x.eventId)).length,ephemeralEventCount:uniq(ephemeralFacts.map(x=>x.eventId)).length,trustedConfirmedEventCount:uniq(persistedFacts.filter(isTrustedConfirmedEventFact).map(x=>x.eventId)).length,totalRuleFactReferences,totalComponentFactReferences,totalEventRuleReferences,sharedEventIds,sharedEvidenceRatio,usage};
 }
 function evaluate(adapter){
   if(!adapter||adapter.adapterVersion==null)throw new Error('Book AI adapter result required');
@@ -197,5 +224,5 @@ function evaluate(adapter){
   const scored=scoreComponents(facts),evidenceAudit=buildEvidenceAudit({facts,rules,componentUsage:scored.componentUsage});
   return Contract.deepFreeze({version:VERSION,factVersion:FACT_VERSION,ruleVersion:RULE_VERSION,analysisAsOf:adapter.analysisAsOf,symbol:adapter.symbol,evidenceFacts:facts,bookSetups:rules,bookEvidence:scored.bookEvidence,componentUsage:scored.componentUsage,evidenceAudit});
 }
-return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,buildScannerFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
+return{VERSION,FACT_VERSION,RULE_VERSION,SOURCE_BOOK_ID,SOURCE_ENGINE,RULE_IDS,EVENT_FACT_MAP,RULE_SOURCE_REF,stableStringify,fnv1a,factIdFor,paramsHashFor,buildEventFacts,isTrustedConfirmedEventFact,eventBacked,persistedEventBacked,trustedEventBacked,buildScannerFacts,buildExplicitStructureFacts,dedupeFacts,buildEvidenceFacts,evaluateRules,assertRuleEvidenceIntegrity,scoreComponents,buildEvidenceAudit,evaluate};
 });

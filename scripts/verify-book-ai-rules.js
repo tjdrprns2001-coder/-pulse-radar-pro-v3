@@ -41,6 +41,9 @@ function baseAdapter(){
   assert.equal(r.bookEvidence.rankingContribution,0);
   assert.deepEqual(Object.keys(r.bookEvidence.components).sort(),Contract.COMPONENT_KEYS.slice().sort());
   assert.equal(r.evidenceAudit.uniqueEventCount,7);
+  assert.equal(r.evidenceAudit.persistedEventCount,7);
+  assert.equal(r.evidenceAudit.ephemeralEventCount,0);
+  assert.equal(r.evidenceAudit.trustedConfirmedEventCount,7);
   assert(r.evidenceAudit.sharedEventIds.includes('e-reclaim'));
   assert.equal(r.bookSetups.find(x=>x.ruleId==='LIQUIDITY_SWEEP_RECLAIM').status,'CONFIRMED');
   assert.equal(r.bookSetups.find(x=>x.ruleId==='TRENDLINE_REACTION').status,'CONFIRMED');
@@ -66,7 +69,7 @@ function baseAdapter(){
   assert.equal(score.components.liquiditySmc,7,'one repeated event cannot max component');
 }
 {
-  const facts=Rule.buildEvidenceFacts(baseAdapter()),bad=[{ruleId:'BAD',status:'CONFIRMED',sequenceId:'q1',evidenceFactIds:[facts[0].factId],evidenceEventIds:['missing-event']}];
+  const facts=Rule.buildEvidenceFacts(baseAdapter()),bad=[{ruleId:'BAD',status:'CONFIRMED',sequenceId:'q1',evidenceFactIds:[facts[0].factId],evidenceEventIds:['missing-event'],trustedEvidenceEventIds:['missing-event']}];
   assert.throws(()=>Rule.assertRuleEvidenceIntegrity({rules:bad,facts,analysisAsOf:ASOF}),/unknown eventId/i);
 }
 {
@@ -88,5 +91,57 @@ function baseAdapter(){
   const r=Rule.evaluate(baseAdapter());
   assert.deepEqual(Contract.computeEvidenceScore(r.bookEvidence.components),r.bookEvidence);
   for(const x of r.bookSetups)assert.doesNotThrow(()=>Contract.normalizeBookSetup(x,ASOF));
+}
+{
+  const a=baseAdapter();
+  a.sources.journal.events=[];
+  a.liveEvidence={events:[
+    {eventId:'LIVE-e-break',eventType:'TL_BREAK',eventVersion:1,snapshotId:'LIVE-s1',sequenceId:'q-live',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-5000,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-break'},
+    {eventId:'LIVE-e-touch',eventType:'TL_RETEST_TOUCH',eventVersion:1,snapshotId:'LIVE-s1',sequenceId:'q-live',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-4000,status:'DETECTED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-touch'},
+    {eventId:'LIVE-e-confirm',eventType:'TL_RETEST_CONFIRMED',eventVersion:1,snapshotId:'LIVE-s1',sequenceId:'q-live',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-3000,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-confirm'},
+    {eventId:'LIVE-e-sweep',eventType:'LIQ_SWEEP',eventVersion:1,snapshotId:'LIVE-s1',sequenceId:'q-live',symbol:'BTCUSDT',timeframe:'15m',confirmedAt:ASOF-2500,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-sweep'},
+    {eventId:'LIVE-e-reclaim',eventType:'RECLAIM',eventVersion:1,snapshotId:'LIVE-s1',sequenceId:'q-live',symbol:'BTCUSDT',timeframe:'15m',confirmedAt:ASOF-2000,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-reclaim'}
+  ]};
+  const r=Rule.evaluate(a);
+  assert.equal(r.bookSetups.find(x=>x.ruleId==='BREAKOUT_RETEST').status,'CANDIDATE','ephemeral confirmed-looking events may not confirm rule');
+  assert.equal(r.bookSetups.find(x=>x.ruleId==='LIQUIDITY_SWEEP_RECLAIM').status,'CANDIDATE','ephemeral sweep/reclaim may not confirm rule');
+  assert.equal(r.bookSetups.some(x=>x.status==='CONFIRMED'),false);
+  assert.equal(r.evidenceAudit.ephemeralEventCount,5);
+  assert.equal(r.evidenceAudit.persistedEventCount,0);
+  assert.equal(r.evidenceAudit.trustedConfirmedEventCount,0);
+  const withoutLive=baseAdapter();withoutLive.sources.journal.events=[];
+  const baseline=Rule.evaluate(withoutLive);
+  assert.deepEqual(r.bookEvidence,baseline.bookEvidence,'LIVE_EPHEMERAL may change CANDIDATE facts but must not inflate Book Evidence v1 score');
+}
+{
+  const a=baseAdapter();
+  const touch=a.sources.journal.events.find(x=>x.eventId==='e-touch');touch.status='DETECTED';
+  const r=Rule.evaluate(a);
+  const fact=r.evidenceFacts.find(x=>x.eventId==='e-touch');
+  assert.equal(Rule.isTrustedConfirmedEventFact(fact),false,'persisted DETECTED touch is not trusted-confirmed');
+  assert.equal(r.bookSetups.find(x=>x.ruleId==='TRENDLINE_REACTION').status,'CONFIRMED','persisted RETEST_CONFIRMED remains decisive while touch is only detected');
+}
+{
+  const a=baseAdapter();
+  const persisted=a.sources.journal.events.find(x=>x.eventId==='e-sweep');
+  persisted.eventFingerprint='same-fp';
+  a.liveEvidence={events:[{...persisted,eventId:'LIVE-duplicate',snapshotId:'LIVE-s1',provenance:'LIVE_EPHEMERAL',closedOnly:true}]};
+  const facts=Rule.buildEvidenceFacts(a).filter(x=>x.eventFingerprint==='same-fp');
+  assert.equal(facts.length,1,'persisted event must win fingerprint dedupe over live duplicate');
+  assert.equal(facts[0].provenance,'PERSISTED_JOURNAL');
+}
+{
+  const a=baseAdapter();
+  a.sources.journal.events=a.sources.journal.events.filter(x=>x.eventId!=='e-touch');
+  a.liveEvidence={events:[{eventId:'LIVE-e-touch',eventType:'TL_RETEST_TOUCH',snapshotId:'LIVE-s',sequenceId:'q1',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-3500,status:'DETECTED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-live-touch'}]};
+  const r=Rule.evaluate(a);
+  assert.equal(r.bookSetups.find(x=>x.ruleId==='TRENDLINE_REACTION').status,'CANDIDATE','live touch cannot complete persisted confirmation chain');
+}
+{
+  const a=baseAdapter(),base=Rule.evaluate(a);
+  a.liveEvidence={events:[{eventId:'LIVE-extra-mss',eventType:'MSS',snapshotId:'LIVE-s',sequenceId:'q1',symbol:'BTCUSDT',timeframe:'4h',confirmedAt:ASOF-1000,status:'CONFIRMED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-extra-mss'}]};
+  const live=Rule.evaluate(a);
+  assert.deepEqual(live.bookEvidence,base.bookEvidence,'adding live-only event must not change evidence score');
+  assert.equal(live.evidenceAudit.ephemeralEventCount,1);
 }
 console.log('book ai rule engine PASS');

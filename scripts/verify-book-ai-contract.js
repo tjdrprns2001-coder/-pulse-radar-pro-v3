@@ -33,6 +33,8 @@ function valid(overrides={}){
       sourceReference:'technical-support-resistance',
       sequenceId:'seq-1',
       evidenceEventIds:['evt-1'],
+      trustedEvidenceEventIds:['evt-1'],
+      ephemeralEvidenceEventIds:[],
       evidenceSnapshotIds:['snap-1'],
       evidenceConfirmedAt:980
     }],
@@ -87,6 +89,9 @@ assert.throws(()=>C.createBookAnalysisResult(valid({generatedAt:999})),/generate
 assert.throws(()=>C.createBookAnalysisResult(valid({bookSetups:[{
   ruleId:'BREAKOUT_RETEST',ruleVersion:1,status:'CONFIRMED',paramsHash:'p',sourceBookId:'b',sourceReference:'r',sequenceId:'seq-1',evidenceEventIds:[]
 }]})),/evidenceEventIds/i);
+assert.throws(()=>C.createBookAnalysisResult(valid({bookSetups:[{
+  ruleId:'BREAKOUT_RETEST',ruleVersion:1,status:'CONFIRMED',paramsHash:'p',sourceBookId:'b',sourceReference:'r',sequenceId:'seq-1',evidenceEventIds:['live-1'],ephemeralEvidenceEventIds:['live-1'],trustedEvidenceEventIds:[]
+}]})),/trustedEvidenceEventIds/i);
 {
   const candidate=valid({bookSetups:[{
     ruleId:'MA_COMPRESSION',ruleVersion:1,status:'CANDIDATE',paramsHash:'p',sourceBookId:'b',sourceReference:'r',sequenceId:null,evidenceEventIds:[]

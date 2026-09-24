@@ -9,6 +9,10 @@ const source=(data,observedAt=ASOF-1000,extra={})=>({data,observedAt,...extra});
 assert.equal(A.VERSION,'BOOK_AI_ADAPTER_v1');
 assert.deepEqual(A.ENGINE_NAMES,['scanner','presurge','ict','structure','forexBook','journal','gate','trendline']);
 assert(A.DEFAULT_STALE_AFTER_MS.gate>A.DEFAULT_STALE_AFTER_MS.scanner);
+assert.equal(A.SOURCE_FRESHNESS_POLICY_VERSION,'BOOK_AI_SOURCE_FRESHNESS_v2');
+assert.equal(A.DEFAULT_STALE_AFTER_MS.ict,5*H);
+assert.equal(A.DEFAULT_STALE_AFTER_MS.structure,5*H);
+assert.equal(A.DEFAULT_STALE_AFTER_MS.forexBook,5*H);
 
 {
   const input={
@@ -98,6 +102,7 @@ assert.throws(()=>A.adaptBookAiInput({
   const r=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{journal:{data:db}}});
   assert.deepEqual(r.sources.journal.snapshots.map(x=>x.id),['s-old']);
   assert.deepEqual(r.sources.journal.events.map(x=>x.eventId),['e-old']);
+  assert.equal(r.sources.journal.events[0].provenance,'PERSISTED_JOURNAL');
   assert.equal(r.sources.journal.snapshots[0].eventIds.length,1);
   assert.equal(r.sources.journal.outcomes.length,1);
   assert.equal(r.sources.journal.outcomes[0].status,'PENDING_REFERENCE');
@@ -136,4 +141,36 @@ assert.throws(()=>A.adaptBookAiInput({
   assert.equal(r.engineSources.gate.reason,null);
   assert.equal(r.engineSources.gate.observedAt,ASOF-H);
 }
+{
+  const within=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{
+    ict:source({version:'ICT_TRAINER_v1'},ASOF-(4.5*H)),
+    structure:source({version:'structure-v1'},ASOF-(4.5*H)),
+    forexBook:source({version:'4.0.0'},ASOF-(4.5*H))
+  }});
+  assert.equal(within.engineSources.ict.status,'AVAILABLE');
+  assert.equal(within.engineSources.structure.status,'AVAILABLE');
+  assert.equal(within.engineSources.forexBook.status,'AVAILABLE');
+  const edge=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{ict:source({version:'ICT_TRAINER_v1'},ASOF-5*H)}});
+  assert.equal(edge.engineSources.ict.status,'AVAILABLE','exact 4H+1H grace boundary stays available');
+  const stale=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',sources:{ict:source({version:'ICT_TRAINER_v1'},ASOF-5*H-1)}});
+  assert.equal(stale.engineSources.ict.status,'STALE','4H+1H grace +1ms becomes stale');
+}
+{
+  const live={
+    version:'BOOK_AI_LIVE_EVIDENCE_v1',provenance:'LIVE_EPHEMERAL',observedAt:ASOF-1000,
+    snapshot:{id:'LIVE-s1',symbol:'BTCUSDT',timeframe:'4h',capturedBarTime:ASOF-1000,provenance:'LIVE_EPHEMERAL',closedOnly:true},
+    events:[{eventId:'LIVE-e1',eventType:'MSS',symbol:'BTCUSDT',timeframe:'4h',confirmedAt:ASOF-1000,provenance:'LIVE_EPHEMERAL',closedOnly:true,status:'CONFIRMED'}]
+  };
+  const r=A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',liveEvidence:live});
+  assert.equal(r.liveEvidence.provenance,'LIVE_EPHEMERAL');
+  assert.equal(r.liveEvidence.events[0].eventId,'LIVE-e1');
+}
+assert.throws(()=>A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',liveEvidence:{
+  provenance:'LIVE_EPHEMERAL',snapshot:{id:'LIVE-s1',symbol:'BTCUSDT',capturedBarTime:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:true},
+  events:[{eventId:'e1',symbol:'BTCUSDT',confirmedAt:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:true}]
+}}),/LIVE- namespace/i);
+assert.throws(()=>A.adaptBookAiInput({analysisAsOf:ASOF,symbol:'BTCUSDT',liveEvidence:{
+  provenance:'LIVE_EPHEMERAL',snapshot:{id:'LIVE-s1',symbol:'BTCUSDT',capturedBarTime:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:true},
+  events:[{eventId:'LIVE-e1',symbol:'BTCUSDT',confirmedAt:ASOF-1,provenance:'LIVE_EPHEMERAL',closedOnly:false}]
+}}),/CLOSED_ONLY/i);
 console.log('book ai adapter PASS');

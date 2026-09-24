@@ -28,7 +28,7 @@ function sourceDegradation(adapter={}){
 }
 function explicitLifecycleSignals(ruleResult={},adapter={},sequenceId=null){
   const facts=ruleResult.evidenceFacts||[];
-  const invalidationFacts=facts.filter(x=>x.factType==='RETEST_FAILED'&&(!sequenceId||!x.sequenceId||x.sequenceId===sequenceId));
+  const invalidationFacts=facts.filter(x=>x.factType==='RETEST_FAILED'&&x.provenance==='PERSISTED_JOURNAL'&&x.eventStatus==='CONFIRMED'&&(!sequenceId||!x.sequenceId||x.sequenceId===sequenceId));
   const outcomes=(adapter?.sources?.journal?.outcomes||[]).filter(x=>!sequenceId||!x.sequenceId||x.sequenceId===sequenceId);
   const invalidationOutcomes=outcomes.filter(x=>x.status==='INVALIDATED_BEFORE_REACH');
   const expiredOutcomes=outcomes.filter(x=>x.status==='EXPIRED');

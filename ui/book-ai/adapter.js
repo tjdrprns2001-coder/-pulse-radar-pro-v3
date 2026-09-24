@@ -9,13 +9,13 @@ if(!Contract)throw new Error('PulseBookAiContract required');
 
 const VERSION='BOOK_AI_ADAPTER_v1';
 const ENGINE_NAMES=Object.freeze(['scanner','presurge','ict','structure','forexBook','journal','gate','trendline']);
-const SOURCE_FRESHNESS_POLICY_VERSION='BOOK_AI_SOURCE_FRESHNESS_v1';
+const SOURCE_FRESHNESS_POLICY_VERSION='BOOK_AI_SOURCE_FRESHNESS_v2';
 const DEFAULT_STALE_AFTER_MS=Object.freeze({
   scanner:30*60*1000,
   presurge:30*60*1000,
-  ict:90*60*1000,
-  structure:90*60*1000,
-  forexBook:90*60*1000,
+  ict:5*60*60*1000,
+  structure:5*60*60*1000,
+  forexBook:5*60*60*1000,
   journal:6*60*60*1000,
   gate:24*60*60*1000,
   trendline:6*60*60*1000
@@ -80,7 +80,7 @@ function sanitizeJournal(data,symbol,analysisAsOf){
     if(sym&&text(x?.symbol).toUpperCase()!==sym)return false;
     const t=ms(x?.confirmedAt??x?.candleTime);
     return (t==null||t<=analysisAsOf)&&(!x?.snapshotId||snapshotIds.has(x.snapshotId));
-  }).map(clone);
+  }).map(x=>({...clone(x),provenance:'PERSISTED_JOURNAL'}));
   const eventIds=new Set(events.map(x=>x.eventId).filter(Boolean));
   const outcomes=(Array.isArray(db.outcomes)?db.outcomes:[]).filter(x=>{
     if(x?.snapshotId&&!snapshotIds.has(x.snapshotId))return false;
@@ -105,6 +105,38 @@ function sanitizeSourceData(name,data,{symbol,analysisAsOf}){
   if(data==null)return null;
   if(name==='journal')return sanitizeJournal(data,symbol,analysisAsOf);
   return clone(data);
+}
+
+function normalizeLiveEvidence(input,{analysisAsOf,symbol}){
+  if(input==null)return null;
+  if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('liveEvidence must be object');
+  if(input.provenance!=='LIVE_EPHEMERAL')throw new Error('liveEvidence provenance must be LIVE_EPHEMERAL');
+  const snapshot=input.snapshot&&typeof input.snapshot==='object'?clone(input.snapshot):null;
+  const events=Array.isArray(input.events)?input.events.map(clone):[];
+  if(snapshot){
+    if(!String(snapshot.id||'').startsWith('LIVE-'))throw new Error('live snapshot id must use LIVE- namespace');
+    if(snapshot.provenance!=='LIVE_EPHEMERAL'||snapshot.closedOnly!==true)throw new Error('live snapshot must be CLOSED_ONLY LIVE_EPHEMERAL');
+    if(symbol&&text(snapshot.symbol).toUpperCase()!==symbol)throw new Error('live snapshot symbol mismatch');
+    const t=ms(snapshot.capturedBarTime??snapshot.capturedAt);
+    if(t!=null&&t>analysisAsOf)throw new Error('live snapshot after analysisAsOf');
+  }
+  for(const e of events){
+    if(!String(e.eventId||'').startsWith('LIVE-'))throw new Error('live eventId must use LIVE- namespace');
+    if(e.provenance!=='LIVE_EPHEMERAL')throw new Error('live event provenance mismatch');
+    if(e.closedOnly!==true)throw new Error('live event must be CLOSED_ONLY');
+    if(symbol&&text(e.symbol).toUpperCase()!==symbol)throw new Error('live event symbol mismatch');
+    const t=ms(e.confirmedAt??e.candleTime);
+    if(t!=null&&t>analysisAsOf)throw new Error('live event after analysisAsOf');
+  }
+  const observedAt=input.observedAt==null?null:ms(input.observedAt);
+  if(observedAt!=null&&observedAt>analysisAsOf)throw new Error('liveEvidence observed after analysisAsOf');
+  return{
+    version:input.version==null?null:String(input.version),
+    provenance:'LIVE_EPHEMERAL',
+    observedAt,
+    snapshot,
+    events
+  };
 }
 
 function normalizeSource(name,source,{analysisAsOf,symbol,policy}){
@@ -204,6 +236,7 @@ function adaptBookAiInput(input={}){
   if(!symbol)throw new Error('symbol required');
   const policy={...DEFAULT_STALE_AFTER_MS,...(input.freshnessPolicy||{})};
   const sourceRows={},engineSources={};
+  const liveEvidence=normalizeLiveEvidence(input.liveEvidence,{analysisAsOf,symbol});
   const provided=input.sources&&typeof input.sources==='object'?input.sources:{};
   for(const name of ENGINE_NAMES){
     const normalized=normalizeSource(name,provided[name],{analysisAsOf,symbol,policy});
@@ -225,6 +258,7 @@ function adaptBookAiInput(input={}){
     engineSources,
     sources:Object.fromEntries(ENGINE_NAMES.map(name=>[name,sourceRows[name].data])),
     inherited,
+    liveEvidence,
     coverage:coverage(engineSources)
   };
   return Contract.deepFreeze(result);
@@ -232,6 +266,6 @@ function adaptBookAiInput(input={}){
 
 return{
   VERSION,ENGINE_NAMES,SOURCE_FRESHNESS_POLICY_VERSION,DEFAULT_STALE_AFTER_MS,
-  inferObservedAt,sanitizeJournal,normalizeSource,inheritedFacts,coverage,adaptBookAiInput
+  inferObservedAt,sanitizeJournal,normalizeLiveEvidence,normalizeSource,inheritedFacts,coverage,adaptBookAiInput
 };
 });
