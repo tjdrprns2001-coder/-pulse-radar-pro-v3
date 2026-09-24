@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,LM=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine;
-const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
+const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 let last=null;
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
@@ -48,6 +48,39 @@ function buildChart(raw,tf='4h',analysisAsOf=Date.now()){
   const book=BF.analyze({candles,smc,liquidity,ictContext:ict});
   return{candles,smc,liquidity,ict,book,model,trendRetest};
 }
+function renderWatchlist(rows=[]){
+  const box=$('watchlist');if(!box)return;box.innerHTML='';
+  if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
+  for(const x of rows){
+    const b=document.createElement('button');b.className='watchItem';b.type='button';b.dataset.symbol=x.symbol;
+    const top=document.createElement('div');top.className='wTop';
+    const sym=document.createElement('b');sym.textContent=x.symbol;
+    const score=document.createElement('em');score.textContent='관찰 '+Math.round(x.watchScore);
+    top.append(sym,score);
+    const p=document.createElement('p');p.textContent=(x.reasons||[]).join(' · ')||'Scanner 관찰 후보';
+    const s=document.createElement('small');s.textContent=[x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(x.priceChange24h)?'24H '+(x.priceChange24h>=0?'+':'')+x.priceChange24h.toFixed(1)+'%':null].filter(Boolean).join(' · ');
+    b.append(top,p,s);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
+  }
+}
+async function refreshWatchlist(){
+  const box=$('watchlist');if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
+  try{
+    if(!WL)throw new Error('Watchlist selector unavailable');
+    const summary=await json('/api/coin-scan?mode=summary&limit=500');
+    const rows=Array.isArray(summary.items)?summary.items:[];
+    const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
+    if(!seed.length){renderWatchlist([]);return[]}
+    const deep=await json('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')));
+    const selected=WL.select(deep.items||[],8);renderWatchlist(selected);return selected;
+  }catch(e){if(box)box.innerHTML='<div class="watchEmpty">후보 로드 실패 · '+String(e?.message||e)+'</div>';return[]}
+}
+function renderAggregate(symbol,charts,raws){
+  if(!MTF)return;
+  const panels={};
+  for(const tf of ['1d','4h','1h','15m']){const ch=charts[tf];if(!ch)continue;panels[tf]={...ch,analysis:raws[tf],state:rawBias(raws[tf]).toUpperCase(),bias:rawBias(raws[tf])}}
+  const r=MTF.compose({canvas:$('aggregateSnapshot'),panels,renderer:SR,symbol});
+  $('mtfStatus').textContent=r.panelCount+'/4 TF';
+}
 function sourceCards(engineSources){
   const box=$('sources');box.innerHTML='';
   for(const [name,x] of Object.entries(engineSources||{})){
@@ -73,7 +106,7 @@ function summaryView(s){
     const d=document.createElement('div');d.className='summaryLine';const strong=document.createElement('strong');strong.textContent=k+' · ';d.append(strong,document.createTextNode(v));box.append(d);
   }
 }
-function render(result,chart){
+function render(result,chart,charts=null,raws=null){
   const f=result.fusion,s=result.summary,a=f.evidenceAudit||{};
   $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
   $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
@@ -82,14 +115,18 @@ function render(result,chart){
   summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
   S.assertCanonicalSummaryGrounded(s,f);
   C.compose({canvas:$('snapshot'),symbol:f.symbol,timeframe:'4h',candles:chart.candles,analysis:result.raw,smc:chart.smc,liquidity:chart.liquidity,ict:chart.ict,summary:s,renderer:SR});
+  if(charts&&raws)renderAggregate(f.symbol,charts,raws);
   $('savePng').disabled=false;
 }
 async function run(){
   const symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
-    const [scan,raw]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),CD.fetchStructure({symbol,interval:'4h',limit:560})]);
+    const now=Date.now(),tfList=['1d','4h','1h','15m'];
+    const [scan,...rawList]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),...tfList.map(tf=>CD.fetchStructure({symbol,interval:tf,limit:560}))]);
     const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
-    const now=Date.now(),chart=buildChart(raw,'4h',now),closed=lastClosedTime({candles:chart.candles});
+    const raws=Object.fromEntries(tfList.map((tf,i)=>[tf,rawList[i]])),charts={};
+    for(const tf of tfList)charts[tf]=buildChart(raws[tf],tf,now);
+    const raw=raws['4h'],chart=charts['4h'],closed=lastClosedTime({candles:chart.candles});
     const journal=journalReadOnly(),gate=gateReadOnly();
     if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
     const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
@@ -111,7 +148,7 @@ async function run(){
     if(!fusion.resultReady)throw new Error('Scanner stage/bias 불완전 · '+fusion.incompleteReasons.join(', '));
     const summary=S.buildCanonicalSummary(fusion);S.assertCanonicalSummaryGrounded(summary,fusion);
     storage.set(symbol,fusion.setupLifecycle);
-    last={fusion,summary,raw,chart};render(last,chart);
+    last={fusion,summary,raw,chart,charts,raws};render(last,chart,charts,raws);
     $('status').textContent=symbol+' · '+fusion.setupState+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
@@ -119,8 +156,8 @@ async function run(){
 }
 function save(){
   if(!last)return;
-  const a=document.createElement('a');a.href=C.pngDataUrl($('snapshot'));a.download=last.fusion.symbol+'-book-ai-4h.png';document.body.append(a);a.click();a.remove();
+  const a=document.createElement('a');const agg=$('aggregateSnapshot');a.href=agg?.dataset?.bookAiMtfRendered==='1'?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=last.fusion.symbol+'-book-ai-mtf.png';document.body.append(a);a.click();a.remove();
 }
-$('run').onclick=run;$('savePng').onclick=save;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();
+$('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();
 })();
