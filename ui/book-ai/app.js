@@ -307,7 +307,7 @@ function sourceCards(engineSources){
   for(const [name,x] of Object.entries(engineSources||{})){
     const d=document.createElement('div');d.className='source '+x.status;
     const b=document.createElement('b');b.textContent=name+' · '+x.status;
-    const p=document.createElement('p');p.textContent=[x.version||'version N/A',x.reason||'',x.observedAt?'관측 '+fmtTime(x.observedAt):'관측시각 N/A'].filter(Boolean).join(' · ');
+    const timing=x.computedAt?['계산 '+fmtTime(x.computedAt),x.sourceBarClosedAt?'기준봉 '+fmtTime(x.sourceBarClosedAt):null].filter(Boolean).join(' · '):(x.observedAt?'관측 '+fmtTime(x.observedAt):'관측시각 N/A');const p=document.createElement('p');p.textContent=[x.version||'version N/A',x.reason||'',timing].filter(Boolean).join(' · ');
     d.append(b,p);box.append(d);
   }
 }
