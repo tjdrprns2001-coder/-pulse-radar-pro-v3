@@ -6,7 +6,7 @@ const ALL_TF=[...new Set([...PRIMARY_TF,...EXTRA_TF])];
 const LABEL={'1w':'1W','3d':'3D','1d':'1D','12h':'12H','4h':'4H','1h':'1H','15m':'15m','5m':'5m'};
 const HTF={'1w':'1w','3d':'1w','1d':'1w','12h':'1d','4h':'1d','1h':'4h','15m':'1h','5m':'15m'};
 const $=id=>document.getElementById(id);
-let currentTf='1h',model=null,raw=null,htfRaw=null,trendRetest=null,journalStore=null,journalState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
+let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
 
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function finite(v){return Number.isFinite(Number(v))}
@@ -99,22 +99,23 @@ function renderCards(){
   renderLiquidityList();renderPdList();
 }
 
-function outcomeKo(v){return v==='DOL_REACHED'?'DOL 도달':v==='INVALIDATED'?'무효화':v==='BOTH_SAME_BAR'?'동일봉 충돌':v==='UNAVAILABLE'?'데이터 부족':'추적 중'}
-function outcomeTone(v){return v==='DOL_REACHED'?'confirm':v==='INVALIDATED'?'risk':v==='BOTH_SAME_BAR'?'wait':'info'}
+function outcomeKo(v){return v==='REACHED'?'DOL 도달':v==='INVALIDATED_BEFORE_REACH'?'무효화 선행':v==='AMBIGUOUS'?'동일봉 충돌':v==='EXPIRED'?'시간 만료':v==='NO_SIGNAL'?'NO SIGNAL':v==='PENDING_REFERENCE'?'기준봉 대기':'추적 중'}
+function outcomeTone(v){return v==='REACHED'?'confirm':v==='INVALIDATED_BEFORE_REACH'?'risk':v==='AMBIGUOUS'?'wait':v==='EXPIRED'||v==='NO_SIGNAL'?'na':'info'}
 function shortId(id){const s=String(id||'');return s.length>14?s.slice(-12):s}
 function renderJournal(){
   if(!journalState){$('journalCurrent').innerHTML='<div class="dataRow"><div class="dataMain"><b>저장 준비</b></div><div class="dataValue">로컬 저장소 사용 가능 시 자동 기록</div></div>';$('journalStats').innerHTML='';$('journalRecent').innerHTML='';return}
-  const c=journalState.current,o=c.outcome||{},events=(c.events||[]).map(x=>x.type).join(' → ')||'BASELINE';
-  $('journalCurrent').innerHTML='<div class="journalHero '+outcomeTone(o.status)+'"><div><span>현재 Snapshot</span><b>'+escapeHtml(shortId(c.id))+' · '+escapeHtml(outcomeKo(o.status))+'</b></div><div><span>MFE / MAE</span><b>'+escapeHtml(fmt(o.mfePct,2))+'% / -'+escapeHtml(fmt(o.maePct,2))+'%</b></div><div><span>이벤트 체인</span><b>'+escapeHtml(events)+'</b></div></div>';
-  const s=journalState.stats||{};$('journalStats').innerHTML='<span>전체 '+(s.total||0)+'</span><span class="ok">DOL '+(s.dolReached||0)+'</span><span class="bad">무효 '+(s.invalidated||0)+'</span><span class="wait">동일봉 '+(s.ambiguous||0)+'</span><span>추적 '+(s.open||0)+'</span>';
-  $('journalRecent').innerHTML=(journalState.recent||[]).slice(0,4).map(x=>'<div class="journalRow"><div><b>'+escapeHtml(shortId(x.id))+'</b><span>'+escapeHtml(x.stage||'N/A')+' · '+escapeHtml((x.events||[]).map(e=>e.type).slice(-3).join(' → ')||'BASELINE')+'</span></div><div class="journalOutcome '+outcomeTone(x.outcome?.status)+'">'+escapeHtml(outcomeKo(x.outcome?.status))+'<small>MFE '+escapeHtml(fmt(x.outcome?.mfePct,2))+'% · MAE -'+escapeHtml(fmt(x.outcome?.maePct,2))+'%</small></div></div>').join('');
+  const c=journalState.current,o=c.outcome||{},events=(c.events||[]).map(x=>x.eventType).join(' → ')||'NO EVENT',path=o.path||{};
+  $('journalCurrent').innerHTML='<div class="journalHero '+outcomeTone(o.status)+'"><div><span>현재 Snapshot</span><b>'+escapeHtml(shortId(c.id))+' · '+escapeHtml(outcomeKo(o.status))+'</b></div><div><span>Reference / MFE·MAE</span><b>'+(finite(o.referencePrice)?escapeHtml(price(o.referencePrice))+' · ':'')+escapeHtml(fmt(path.mfePct,2))+'% / -'+escapeHtml(fmt(path.maePct,2))+'%</b></div><div><span>독립 이벤트 · Sequence '+escapeHtml(shortId(c.sequenceId))+'</span><b>'+escapeHtml(events)+'</b></div></div>';
+  const s=journalState.stats||{};$('journalStats').innerHTML='<span>전체 '+(s.total||0)+'</span><span class="ok">DOL '+(s.reached||0)+'</span><span class="bad">무효 '+(s.invalidated||0)+'</span><span class="wait">동일봉 '+(s.ambiguous||0)+'</span><span>만료 '+(s.expired||0)+'</span><span>대기 '+(s.pending||0)+'</span>';
+  $('journalHorizons').innerHTML=['h4','h12','h24','h48'].map(k=>{const h=o.horizons?.[k]||{},done=h.status==='FINALIZED';return '<div class="horizonCell '+(done?'done':'pending')+'"><span>'+k.toUpperCase()+'</span><b>'+(done?escapeHtml(h.result||'EXPIRED'):'PENDING')+'</b><small>MFE '+escapeHtml(fmt(h.mfePct,2))+'% · MAE -'+escapeHtml(fmt(h.maePct,2))+'%</small></div>'}).join('');
+  $('journalRecent').innerHTML=(journalState.recent||[]).slice(0,4).map(x=>'<div class="journalRow"><div><b>'+escapeHtml(shortId(x.id))+'</b><span>'+escapeHtml(x.stage||'N/A')+' · '+escapeHtml((x.events||[]).map(e=>e.eventType).slice(-3).join(' → ')||'NO EVENT')+'</span></div><div class="journalOutcome '+outcomeTone(x.outcome?.status)+'">'+escapeHtml(outcomeKo(x.outcome?.status))+'<small>MFE '+escapeHtml(fmt(x.outcome?.path?.mfePct,2))+'% · MAE -'+escapeHtml(fmt(x.outcome?.path?.maePct,2))+'%</small></div></div>').join('');
 }
 function updateJournal(symbol){
   if(!JOURNAL||!journalStore||!model?.ok)return;
-  try{const snapshot=JOURNAL.buildSnapshot({symbol,timeframe:currentTf,model,trendRetest});journalState=JOURNAL.recordAndResolve({store:journalStore,snapshot,candles:raw?.candles||[]});renderJournal()}catch(e){journalState=null;$('journalCurrent').innerHTML='<div class="dataRow warn"><div class="dataMain"><b>이벤트 저장 실패</b></div><div class="dataValue">'+escapeHtml(e.message||String(e))+'</div></div>'}
+  try{const bundle=JOURNAL.createBundle({symbol,timeframe:currentTf,model,trendRetest});journalState=JOURNAL.recordAndResolve({store:journalStore,snapshot:bundle.snapshot,events:bundle.events,referenceCandles:raw?.candles||[],outcomeCandles:outcomeRaw?.candles||raw?.candles||[]});renderJournal()}catch(e){journalState=null;$('journalCurrent').innerHTML='<div class="dataRow warn"><div class="dataMain"><b>이벤트 저장 실패</b></div><div class="dataValue">'+escapeHtml(e.message||String(e))+'</div></div>'}
 }
 function exportJournal(){
-  if(!journalStore)return;const rows=journalStore.list(),blob=new Blob([JSON.stringify({version:JOURNAL?.VERSION||'unknown',exportedAt:Date.now(),rows},null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='pulseradar-liquidity-journal-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)
+  if(!journalStore)return;const data=journalStore.export(),blob=new Blob([JSON.stringify({version:JOURNAL?.VERSION||'unknown',exportedAt:Date.now(),...data},null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='pulseradar-liquidity-journal-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)
 }
 
 function roundedRect(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
@@ -140,10 +141,11 @@ function draw(){
   for(let i=0;i<c.length;i++){const k=c[i],up=k.close>=k.open,col=up?'#35d69a':'#ff6577',px=x(i);line(ctx,px,y(k.high),px,y(k.low),col,1.4);ctx.fillStyle=col;const yo=y(k.open),yc=y(k.close);ctx.fillRect(px-bw/2,Math.min(yo,yc),bw,Math.max(2,Math.abs(yo-yc)))}
   ctx.textAlign='center';ctx.fillStyle='#647c92';ctx.font='11px system-ui';for(let i=0;i<=5;i++){const idx=Math.min(c.length-1,Math.round((c.length-1)*i/5)),px=x(idx);ctx.fillText(timeText(c[idx]?.time),px,H-B+25)}
   ctx.textAlign='left';
-  if(layer('pd'))for(const z of model.pdArrays.slice(0,5)){const top=Math.min(y(z.high),y(z.low)),bottom=Math.max(y(z.high),y(z.low)),hh=Math.max(3,bottom-top),col=String(z.dir).includes('down')?'#ff6577':z.kind==='BREAKER'?'#a58cff':'#35d69a';ctx.save();ctx.globalAlpha=.1;ctx.fillStyle=col;ctx.fillRect(L+plotW*.38,top,plotW*.62,hh);ctx.globalAlpha=.65;ctx.strokeStyle=col;ctx.strokeRect(L+plotW*.38,top,plotW*.62,hh);ctx.restore();tag(ctx,z.kind,L+plotW*.39,top+4,{stroke:col,color:col,font:'bold 13px system-ui'});clickTargets.push({kind:'pd',top:top-8,bottom:bottom+8,data:z})}
+  const compactChart=cv.clientWidth>0&&cv.clientWidth<720;
+  if(layer('pd'))for(const z of model.pdArrays.slice(0,compactChart?3:5)){const top=Math.min(y(z.high),y(z.low)),bottom=Math.max(y(z.high),y(z.low)),hh=Math.max(3,bottom-top),col=String(z.dir).includes('down')?'#ff6577':z.kind==='BREAKER'?'#a58cff':'#35d69a';ctx.save();ctx.globalAlpha=.1;ctx.fillStyle=col;ctx.fillRect(L+plotW*.38,top,plotW*.62,hh);ctx.globalAlpha=.65;ctx.strokeStyle=col;ctx.strokeRect(L+plotW*.38,top,plotW*.62,hh);ctx.restore();tag(ctx,z.kind,L+plotW*.39,top+4,{stroke:col,color:col,font:'bold 13px system-ui'});clickTargets.push({kind:'pd',top:top-8,bottom:bottom+8,data:z})}
   if(finite(model.range?.mid)){line(ctx,L,y(model.range.mid),plotRight,y(model.range.mid),'#52697c',1,[3,6]);tag(ctx,'EQ 50%',L+8,y(model.range.mid)-30,{stroke:'#52697c',color:'#90a5b8',font:'bold 12px system-ui'})}
   const labels=[];
-  if(layer('liquidity'))for(const q of model.levels.slice(0,8)){const py=y(q.price),col=q.side==='buy'?'#6aa8ff':'#f5c96b',dash=q.external?[9,5]:[4,6],cluster=nz(q.clusterCount,1),label=q.label+(cluster>1?'×'+cluster:'');line(ctx,L,py,plotRight,py,col,q.external?2:1.2,dash);labels.push({text:label+(q.external?' EXT':'')+' '+price(q.price)+' · '+fmt(q.score,0),y:py,color:col,priority:q.score});clickTargets.push({kind:'level',y:py,data:q})}
+  if(layer('liquidity'))for(const q of model.levels.slice(0,compactChart?5:8)){const py=y(q.price),col=q.side==='buy'?'#6aa8ff':'#f5c96b',dash=q.external?[9,5]:[4,6],cluster=nz(q.clusterCount,1),label=q.label+(cluster>1?'×'+cluster:'');line(ctx,L,py,plotRight,py,col,q.external?2:1.2,dash);labels.push({text:label+(q.external?' EXT':'')+' '+price(q.price)+' · '+fmt(q.score,0),y:py,color:col,priority:q.score});clickTargets.push({kind:'level',y:py,data:q})}
   if(layer('structure')){
     const sw=model.scenario?.sweep?.last;if(sw&&finite(sw.level??sw.price)){const py=y(sw.level??sw.price),idx=Math.max(0,Math.min(c.length-1,(Number(sw.index??sw.sweepIndex??c.length-1)-offset))),px=x(idx);ctx.fillStyle=model.scenario.sweep.confirmed?'#35d69a':'#f5c96b';ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();tag(ctx,model.scenario.sweep.confirmed?'SWEEP + RECLAIM':'SWEEP 확인대기',Math.min(px+10,plotRight-200),Math.max(T,py-42),{stroke:ctx.fillStyle,color:ctx.fillStyle,font:'bold 13px system-ui'});clickTargets.push({kind:'sweep',y:py,data:model.scenario.sweep})}
     for(const m of (model.smc?.mss||[]).slice(-2)){if(!finite(m.level))continue;const py=y(m.level),col=String(m.dir).includes('down')?'#ff6577':'#35d69a';line(ctx,L,py,plotRight,py,col,1,[8,8]);tag(ctx,'MSS '+String(m.dir||'').toUpperCase(),L+12,py-31,{stroke:col,color:col,font:'bold 12px system-ui'})}
@@ -191,8 +193,8 @@ async function run(){
   if(!M){$('status').textContent='엔진 로드 실패';setTone($('status'),'tone-risk');return}
   const token=++seq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').textContent='분석 중';setTone($('status'),'tone-info');$('levelDetail').hidden=true;
   try{
-    const htf=HTF[currentTf],[a,b]=await Promise.all([structure(symbol,currentTf),htf===currentTf?Promise.resolve(null):structure(symbol,htf)]);
-    if(token!==seq)return;raw=a;htfRaw=b||a;const hb=htfBias(htfRaw);
+    const htf=HTF[currentTf],outcomeTf=(['5m','15m','1h'].includes(currentTf)?currentTf:'1h'),[a,b,o]=await Promise.all([structure(symbol,currentTf),htf===currentTf?Promise.resolve(null):structure(symbol,htf),outcomeTf===currentTf?Promise.resolve(null):structure(symbol,outcomeTf)]);
+    if(token!==seq)return;raw=a;htfRaw=b||a;outcomeRaw=o||a;const hb=htfBias(htfRaw);
     model=M.buildLiquidityMap({candles:raw.candles,canonicalSwings:raw.canonicalSwings,canonicalEvents:raw.events,timeframe:currentTf,htfBias:hb});
     if(!model.ok)throw new Error(model.error||'유동성 분석 실패');
     trendRetest=TRE?.analyzeTrendlineRetests({candles:raw.candles,trendlines:raw.trendlines||{},timeframe:currentTf})||null;
