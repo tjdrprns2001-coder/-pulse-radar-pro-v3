@@ -472,7 +472,8 @@ function render(result,chart){
 async function run(){
   const token=++runSeq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error','warn');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
-    const requestStartedAt=Date.now();
+    const requestStartedAt=Date.now();renderIntelLoading(symbol);
+    const intelPromise=jsonTimeout('/api/coin-scan?mode=intelligence&symbol='+encodeURIComponent(symbol),22000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:requestStartedAt});if(token!==runSeq)return;
     const chart=buildChart(raw,'4h',requestStartedAt);
@@ -484,6 +485,7 @@ async function run(){
       $('status').classList.add('warn');$('status').textContent=symbol+' · 차트 완료 · 스캐너 제한 · 4TF 확인 중…';
       await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
       $('status').textContent=symbol+' · 차트/4TF 완료 · 스캐너 제한';
+      const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error);
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
@@ -514,6 +516,7 @@ async function run(){
     last={fusion,summary,raw,chart,symbol,degraded:false,analysisAsOf:now,promotion:bookPromotion,causal:adapter.sources.causalIct};render(last,chart);
     $('status').textContent=symbol+' · 차트 완료 · 4TF 확인 중…';
     await loadMtfBoard(symbol,chart,now,token);if(token!==runSeq)return;
+    const intelResult=await intelPromise;if(token!==runSeq)return;renderMarketIntelligence(intelResult.data,intelResult.error);
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
