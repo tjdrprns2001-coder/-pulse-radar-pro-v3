@@ -1,8 +1,10 @@
 const assert=require('assert');
 const {createTtlCache}=require('../lib/coin-scan/cache.js');
-const {DEFAULT_BASES,createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+const {DEFAULT_BASES,DEFAULT_FUTURES_BASES,createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 
 assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-data-only host should be preferred for serverless deployments');
+assert.equal(DEFAULT_FUTURES_BASES[0],'https://fapi.binance.com','primary futures host should remain canonical');
+assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list should be present');
 
 (async()=>{
   let now=1000;
@@ -30,6 +32,13 @@ assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-d
     return{ok:false,status:404,json:async()=>({})};
   };
   const crossOiProvider={getProfile:async()=>({available:true,breadth:1,positiveBreadth:1,strongBreadth:1,leaderExchange:'bybit',leaderChangePct:3.5,aggregateChangePct:3.5,samples:32,exchanges:{bybit:{available:true,changePct:3.5,samples:32}}})};
+  const fallbackCalls=[];
+  const fallbackFetch=async url=>{fallbackCalls.push(url);const u=new URL(url);if(u.host==='fapi-a.test')return{ok:false,status:451,json:async()=>({})};if(u.pathname.endsWith('/exchangeInfo'))return{ok:true,json:async()=>({symbols:[]})};return{ok:true,json:async()=>([])};};
+  const fallbackProvider=createBinanceProvider({fetchImpl:fallbackFetch,cache:createTtlCache({now:()=>now}),futuresBases:['https://fapi-a.test','https://fapi-b.test'],crossOiProvider:{getProfile:async()=>({})}});
+  await fallbackProvider.getUniverse();
+  assert(fallbackCalls[0].startsWith('https://fapi-a.test'),'first futures base should be tried first');
+  assert(fallbackCalls[1].startsWith('https://fapi-b.test'),'451 should fall through to next futures base');
+
   const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2,cache:createTtlCache({now:()=>now}),bases:['https://api.binance.test'],futuresBase:'https://fapi.binance.test',crossOiProvider});
   const a=await p.getUniverse();
   const b=await p.getUniverse();
