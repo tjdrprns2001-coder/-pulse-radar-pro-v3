@@ -1,0 +1,24 @@
+name: Dual market AI 30 checks
+on:
+  push:
+    branches: [feat/dual-market-ai-30]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check lib/coin-scan/binance-provider.js
+      - run: node --check lib/coin-scan/scan-service.js
+      - run: node --check ui/book-ai/app.js
+      - run: node --check api/presurge.js
+      - run: node scripts/verify-dual-market-ai30.js
+      - run: node scripts/verify-coin-scan-api.js
+      - run: node scripts/verify-coin-scan-451-fallback.js
+      - run: node scripts/verify-auto-recommender.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-v3-scanner.js
+      - run: node scripts/verify-recommendation-promotion.js
