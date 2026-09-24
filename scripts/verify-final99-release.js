@@ -23,7 +23,7 @@ assert(promo.includes('시장 승격용 Scanner READY 조건'),'book evidence an
 assert(app.includes("x.validationGate?.status"),'Book AI recommendation cards must render validation gate status');
 assert(app.includes("vg==='INVALIDATED'"),'Book AI must visibly handle invalidated recommendations');
 assert(html.includes('promotion-engine.js?v=20260925-final99'),'promotion cache bust required');
-assert(html.includes('app.js?v=20260925-final99'),'Book AI app cache bust required');
+assert(html.includes('app.js?v=20260925-compact99'),'Book AI app cache bust required');
 assert(html.includes('MARKET_VALIDATION_v2'),'validation v2 must be visible in UI');
 
 console.log('FINAL99 release contract PASS');
