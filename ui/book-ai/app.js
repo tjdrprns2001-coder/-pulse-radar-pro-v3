@@ -118,8 +118,12 @@ function applyPromotionCache(bundle={}){
   if(!Promotion)return bundle;
   const cache=readPromotionCache(),maxAge=6*3600000,rows=allPromotionRows(bundle).map(x=>{
     const b=cache[x.symbol],book=b&&Date.now()-Number(b.updatedAt||0)<=maxAge?{confirmed:b.confirmed,status:b.confirmed?'CONFIRMED':null,score:b.bookScore}:null;
-    const p=Promotion.evaluate({item:x.item||{},book,priorState:x.state});
-    return{...x,state:p.state,label:p.label,promotion:p,reasons:uniqText([...(x.reasons||[]),...(p.reasons||[])]).slice(0,8),missing:uniqText(p.missing||[]).slice(0,8),invalidations:uniqText([...(x.invalidations||[]),...(p.invalidations||[])]).slice(0,8)};
+    const p=Promotion.evaluate({item:x.item||{},book,priorState:x.state}),vg=x.validationGate||null;
+    const rank={RECOMMEND:0,CONFIRMED:1,READY:2,WATCH:3,WAIT:4,EXCLUDE:5};let state=p.state;
+    if(vg?.status==='INVALIDATED')state='EXCLUDE';
+    else if(['CONFLICTED','INSUFFICIENT_DATA','STALE'].includes(vg?.status)&&((rank[state]??99)<rank.WATCH))state='WATCH';
+    const label=state==='RECOMMEND'?'추천':state==='CONFIRMED'?'확정':state==='READY'?'준비':state==='WATCH'?'관찰':state==='WAIT'?'대기':'제외';
+    return{...x,state,label,promotion:p,reasons:uniqText([...(x.reasons||[]),...(p.reasons||[])]).slice(0,8),missing:uniqText([...(x.missing||[]),...(p.missing||[])]).slice(0,8),invalidations:uniqText([...(x.invalidations||[]),...(p.invalidations||[])]).slice(0,8)};
   });
   return groupPromotionRows(rows);
 }
@@ -136,10 +140,10 @@ function renderAutoRecommendations(bundle={},source='스캐너 v3'){
   for(const x of rows){
     const b=document.createElement('button');b.type='button';b.className='autoItem auto-'+String(x.state||'WATCH');b.dataset.symbol=x.symbol;
     const top=document.createElement('div');top.className='autoTop';
-    const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';const scope=x.item?.marketScope==='spot+futures'?'현물+선물':x.item?.marketScope==='spot'?'현물':x.item?.marketScope==='futures'?'선물':'';tag.textContent=[x.label||'관찰',scope].filter(Boolean).join(' · ');left.append(sym,tag);
+    const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';const scope=x.item?.marketScope==='spot+futures'?'현물+선물':x.item?.marketScope==='spot'?'현물':x.item?.marketScope==='futures'?'선물':'';const vg=x.validationGate?.status,vgKo=vg==='VALIDATED'?'검증':vg==='CONFLICTED'?'충돌':vg==='INSUFFICIENT_DATA'?'검증부족':vg==='INVALIDATED'?'무효':' ';tag.textContent=[x.label||'관찰',scope,vgKo.trim()?('시장 '+vgKo):null].filter(Boolean).join(' · ');left.append(sym,tag);
     const score=document.createElement('em');score.textContent=Math.round(Number(x.score)||0)+'점';top.append(left,score);
     const p=document.createElement('p');p.textContent=(x.reasons||[]).slice(0,4).join(' · ')||'승격 조건 계산';
-    const m=document.createElement('small');m.textContent=(x.missing||[]).length?'다음 관문 · '+x.missing.slice(0,3).join(' · '):'핵심 관문 통과';
+    const m=document.createElement('small');m.textContent=(x.invalidations||[]).length?'위험 · '+x.invalidations.slice(0,2).join(' · '):(x.missing||[]).length?'다음 관문 · '+x.missing.slice(0,3).join(' · '):'핵심 관문 통과';
     b.append(top,p,m);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
   }
   setAutoMeta(source+' · '+recommended.length+' 추천 / '+confirmed.length+' 확정 / '+ready.length+' 준비 / '+watch.length+' 관찰',recommended.length?'ok':confirmed.length||ready.length?'warn':'');
