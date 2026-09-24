@@ -88,12 +88,14 @@
     "test:liquidity-event-journal": "node scripts/verify-liquidity-event-journal.js",
     "test:sample-readiness-gate": "node scripts/verify-sample-readiness-gate.js",
     "test:book-ai-contract": "node scripts/verify-book-ai-contract.js",
-    "test:book-ai-guards": "npm run test:book-ai-contract && npm run test:book-ai-adapter && npm run test:book-ai-rules && npm run test:book-ai-setup-state && npm run test:book-ai-fusion && npm run test:book-ai-summary",
+    "test:book-ai-guards": "npm run test:book-ai-contract && npm run test:book-ai-adapter && npm run test:book-ai-rules && npm run test:book-ai-setup-state && npm run test:book-ai-fusion && npm run test:book-ai-summary && npm run test:book-ai-storage && npm run test:book-ai-ui",
     "test:book-ai-adapter": "node scripts/verify-book-ai-adapter.js",
     "test:book-ai-rules": "node scripts/verify-book-ai-rules.js",
     "test:book-ai-setup-state": "node scripts/verify-book-ai-setup-state.js",
     "test:book-ai-fusion": "node scripts/verify-book-ai-fusion.js",
-    "test:book-ai-summary": "node scripts/verify-book-ai-summary.js"
+    "test:book-ai-summary": "node scripts/verify-book-ai-summary.js",
+    "test:book-ai-storage": "node scripts/verify-book-ai-storage.js",
+    "test:book-ai-ui": "node scripts/verify-book-ai-ui.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
