@@ -1,0 +1,27 @@
+name: Causal freshness scanner pack checks
+on:
+  push:
+    branches: [fix/causal-freshness-scanner-pack]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check ui/book-ai/adapter.js
+      - run: node --check ui/book-ai/app.js
+      - run: node --check lib/coin-scan/v3-scan-engine.js
+      - run: node --check ui/coin-scan.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-book-ai-persistence-freshness.js
+      - run: node scripts/verify-causal-ict-r01.js
+      - run: node scripts/verify-causal-ict-integration.js
+      - run: node scripts/verify-v3-scanner.js
+      - run: node scripts/verify-coin-scan-ui.js
+      - run: node scripts/verify-coin-scan-api.js
+      - run: node scripts/verify-recommendation-promotion.js
