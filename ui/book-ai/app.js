@@ -117,23 +117,27 @@ async function refreshWatchlist(){
   const box=$('watchlist'),cached=readWatchCache();
   if(cached?.rows?.length){renderWatchlist(cached.rows);setWatchMeta('마지막 정상 후보 표시 중 · 새 데이터 갱신','warn')}
   else if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
-  setWatchMeta(cached?.rows?.length?'마지막 정상 후보 표시 중 · 새 데이터 갱신':'Spot / Futures 후보 동시 확인 중…',cached?.rows?.length?'warn':'');
-  let rendered=Boolean(cached?.rows?.length),spotError=null,scannerError=null;
+  setWatchMeta(cached?.rows?.length?'마지막 정상 후보 표시 중 · 새 데이터 갱신':'구조 / Spot / Futures 동시 확인 중…',cached?.rows?.length?'warn':'');
+  let rendered=Boolean(cached?.rows?.length),bestRows=cached?.rows||[],spotError=null,scannerError=null,structureError=null;
+  const structurePromise=structureFallbackRows().then(rows=>{
+    if(rows.length&&!rendered){renderWatchlist(rows);setWatchMeta('4H 구조 기반 후보 · Scanner 확인 중','warn');saveWatchCache(rows,'4H structure');rendered=true;bestRows=rows}
+    return rows;
+  }).catch(e=>{structureError=e;return[]});
   const spotPromise=spotWatchRows().then(rows=>{
-    if(rows.length&&!rendered){renderWatchlist(rows);setWatchMeta('Spot PRE-SURGE 후보 · '+rows.length+'개','warn');saveWatchCache(rows,'Spot PRE-SURGE');rendered=true}
+    if(rows.length&&!bestRows.some(x=>x.v3Tier==='PASS')){renderWatchlist(rows);setWatchMeta('Spot PRE-SURGE 후보 · Futures Scanner 확인 중','warn');saveWatchCache(rows,'Spot PRE-SURGE');rendered=true;bestRows=rows}
     return rows;
   }).catch(e=>{spotError=e;return[]});
   const scannerPromise=scannerWatchRows().then(rows=>{
-    if(rows.length){renderWatchlist(rows);setWatchMeta('Scanner v3 정밀 후보 · '+rows.length+'개','ok');saveWatchCache(rows,'Scanner v3');rendered=true}
+    if(rows.length){renderWatchlist(rows);setWatchMeta('Scanner v3 정밀 후보 · '+rows.length+'개','ok');saveWatchCache(rows,'Scanner v3');rendered=true;bestRows=rows}
     return rows;
   }).catch(e=>{scannerError=e;return[]});
-  const [spotRows,scannerRows]=await Promise.all([spotPromise,scannerPromise]);
-  if(scannerRows.length)return scannerRows;if(spotRows.length)return spotRows;
-  if(rendered)return cached?.rows||[];
-  const structureRows=await structureFallbackRows().catch(()=>[]);
-  if(structureRows.length){renderWatchlist(structureRows);setWatchMeta('4H 구조 기반 대체 후보 · 실시간 Scanner 제한','warn');saveWatchCache(structureRows,'4H structure');return structureRows}
+  const [structureRows,spotRows,scannerRows]=await Promise.all([structurePromise,spotPromise,scannerPromise]);
+  if(scannerRows.length)return scannerRows;
+  if(spotRows.length)return spotRows;
+  if(structureRows.length)return structureRows;
+  if(rendered)return bestRows;
   if(box)box.innerHTML='<div class="watchEmpty">추천 후보를 불러오지 못했습니다. 새로고침을 눌러 다시 시도하세요.</div>';
-  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||spotError?.message||'source unavailable'),'warn');
+  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||spotError?.message||structureError?.message||'source unavailable'),'warn');
   return[];
 }
 function renderAggregate(symbol,charts={}){
