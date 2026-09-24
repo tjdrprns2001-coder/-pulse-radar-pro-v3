@@ -32,6 +32,7 @@ function base(){
   assert.equal(r.stage.code,'A');
   assert.equal(r.setupState,'READY');
   assert.equal(r.htfAlignment,'ALIGNED');
+  assert.equal(r.dataQuality.state,'FRESH');
   assert.equal(r.sampleDna.scoreContribution,0);
   assert.equal(r.rankingContribution,0);
   assert.deepEqual(r.presurge,{label:'관찰'});
@@ -56,5 +57,13 @@ function base(){
   const r=F.fuse({...x,previousLifecycle:previous});
   assert.equal(r.setupState,'CONFIRMED');
   assert.equal(r.setupLifecycle.transition.reason,'CONFIRMED_STICKY_SAME_SEQUENCE');
+}
+{
+  const x=base();
+  x.adapter.engineSources.ict={status:'STALE',reason:'AGE_EXCEEDED'};
+  const r=F.fuse(x);
+  assert.equal(r.setupLifecycle.dataState,'FRESH','setup hold state still reflects critical sources only');
+  assert.equal(r.dataQuality.state,'DEGRADED','overall quality must include non-critical stale engines');
+  assert.deepEqual(r.dataQuality.degradedSources,['ict']);
 }
 console.log('book ai fusion PASS');
