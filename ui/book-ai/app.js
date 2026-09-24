@@ -66,7 +66,7 @@ function render(result,chart){
   $('savePng').disabled=false;
 }
 async function run(){
-  const symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
+  const symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').classList.remove('error');$('status').textContent='분석 중…';$('run').disabled=true;$('savePng').disabled=true;
   try{
     const [scan,raw]=await Promise.all([json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)),CD.fetchStructure({symbol,interval:'4h',limit:560})]);
     const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
