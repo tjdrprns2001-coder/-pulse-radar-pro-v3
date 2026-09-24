@@ -229,7 +229,7 @@ function renderValidation(payload,error=null){
   }
   const v=payload.validation,status=String(v.validationStatus||'INSUFFICIENT_DATA'),counts=v.counts||{};
   $('validationStatus').className='validationStatus '+status;$('validationStatus').textContent=VALIDATION_KO[status]||status;
-  $('validationMeta').textContent=[payload.symbol,'MARKET_VALIDATION_v1',v.reasonCodes?.length?'사유 '+v.reasonCodes.join(' · '):'gate 통과'].filter(Boolean).join(' · ');
+  $('validationMeta').textContent=[payload.symbol,'MARKET_VALIDATION_v2',v.reasonCodes?.length?'사유 '+v.reasonCodes.join(' · '):'gate 통과'].filter(Boolean).join(' · ');
   $('validationDecision').textContent=fmtTime(v.decisionTimestamp);
   $('validationCounts').textContent='지지 '+(counts.supportive||0)+' · 중립 '+(counts.neutral||0)+' · 반박 '+(counts.contradictory||0)+' · 누락 '+(counts.missing||0)+' · 오래됨 '+(counts.stale||0);
   const ex=(v.evidence||[]).find(x=>x.id==='execution.liquidity'),worst=ex?.value?.worst;
