@@ -17,6 +17,9 @@
     },
     "api/market-flow.js": {
       "maxDuration": 20
+    },
+    "api/dante-backtest.js": {
+      "maxDuration": 20
     }
   },
   "redirects": [
