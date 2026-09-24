@@ -1,6 +1,6 @@
 # DANTE_RULESET_v1 — Deterministic Specification
 
-Status: **SPEC FROZEN CANDIDATE**
+Status: **SPEC FROZEN CANDIDATE — aligned to uploaded 2026-09-24 implementation/validation blueprint**
 Scope: specification only. No production ranking, no scanner-stage mutation, no live trading execution.
 Mode: **SHADOW_ONLY**
 Ranking contribution: **0**
@@ -110,11 +110,14 @@ Illustrative defaults are research defaults, not claims of an official proprieta
 
 ```js
 DANTE_RULESET_v1 = {
+  sourceProfile: "REPORT_PROXY_2026_09_24",
   ema: {
     fast: 112,
     pivot: 224,
     long: 448
   },
+  emaSeed: { method: "SMA_FIXED", seedBars: 224 },
+  pivot: { left: 3, right: 3 },
 
   dump: {
     lookbackBars: 120,
@@ -128,7 +131,9 @@ DANTE_RULESET_v1 = {
     preferredDurationRatioMin: 1.5,
     preferredDurationRatioMax: 2.0,
     maxRangeAtr: 8.0,
-    maxEma224SlopeAbsAtrPerBar: 0.05
+    maxEma224SlopeAbsAtrPerBar: 0.05,
+    requireLongerThanDecline: true,
+    minConfirmedPivotCount: 3
   },
 
   breakout: {
@@ -136,14 +141,16 @@ DANTE_RULESET_v1 = {
     breakoutBufferAtr: 0.20,
     minRvol: 1.5,
     ignitionRvol: 3.0,
-    requireConfirmedClose: true
+    requireConfirmedClose: true,
+    minPriorClosesBelowPivot: 80
   },
 
   retest: {
+    variant: "RETEST_5D_RECLAIM",
     toleranceAtr: 0.30,
     reclaimBufferAtr: 0.10,
     minHoldBars: 1,
-    maxRetestBars: 20
+    maxRetestBars: 5
   },
 
   expansion: {
@@ -267,6 +274,9 @@ Operational meaning: confirmed close above the relevant long-term trigger.
 
 ### Required evidence
 - prior PHASE_2_ACCUMULATION
+- report-aligned proxy: at least 80 prior completed closes below EMA224 before the breakout candidate
+- base duration > decline duration
+- at least 3 delayed-confirmation swing pivots using the frozen pivot algorithm
 - confirmed candle close above trigger + `breakoutBufferAtr`
 - no partial candle
 - breakout RVOL >= configured minimum
@@ -560,14 +570,18 @@ Profit-taking belongs to a separate execution/backtest layer.
 These remain specified for later implementation.
 
 ### 256
-Must define:
-- exact 5/20/60 ordering
-- required prior ordering
-- transition/cross timing
-- long-MA context
+Report-aligned research proxy:
+- `EMA5[t-1] <= EMA20[t-1]`
+- `EMA5[t] > EMA20[t]`
+- `close[t] > EMA20[t]`
+- `EMA60[t] > close[t]`
+- `(EMA60[t] - close[t]) / ATR20` must be inside a pre-registered maximum band
+- exact ATR band is a research parameter, not an original fixed threshold
 - no ambiguous same-bar lookahead
 
-### 625
+### 625 — auxiliary, outside uploaded report core
+This module remains SHADOW_ONLY and must not be described as source-aligned to the uploaded blueprint.
+
 Must define:
 - prior-day return
 - gap definition
@@ -577,7 +591,9 @@ Must define:
 
 625 is market/session-specific and must not be applied unchanged to 24/7 crypto.
 
-### High Heel
+### High Heel — auxiliary, outside uploaded report core
+This module remains SHADOW_ONLY and must not be described as source-aligned to the uploaded blueprint.
+
 Must define:
 - dump magnitude
 - V-reversal window
@@ -793,3 +809,27 @@ The following are frozen unless a new version is created:
 - EMA224 proximity alone is not phase-3 confirmation
 - FAILED and RESET are distinct lifecycle concepts
 - transition history is preserved
+
+
+---
+
+## 28. Source classification introduced after blueprint review
+
+Every future Dante rule must declare one of:
+
+- `REPORT_ALIGNED`: directly supported by the uploaded blueprint's extracted public-rule interpretation.
+- `REPORT_PROXY`: a deterministic parameterization introduced by the blueprint for reproducibility.
+- `AUXILIARY_OUTSIDE_REPORT_CORE`: retained research logic that is not part of the blueprint's recommended initial core.
+
+Current v1 classification:
+
+```text
+Rice Bowl lifecycle       REPORT_PROXY
+256 lead candidate        REPORT_PROXY
+EMA Strike                REPORT_PROXY
+Gongguri                  REPORT_PROXY / generic horizontal evidence
+625                        AUXILIARY_OUTSIDE_REPORT_CORE
+High Heel                  AUXILIARY_OUTSIDE_REPORT_CORE
+```
+
+The report-aligned first implementation priority is Rice Bowl / 224EMA breakout and 256 scanning. Auxiliary modules must never gain ranking contribution merely by coexisting in the codebase.
