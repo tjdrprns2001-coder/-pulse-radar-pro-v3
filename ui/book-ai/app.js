@@ -51,28 +51,54 @@ function buildChart(raw,tf='4h',analysisAsOf=Date.now()){
   const technical=TA?.summarize?TA.summarize({candles,analysis:raw,smc,liquidity,timeframe:tf}):null;
   return{raw,candles,smc,liquidity,ict,book,model,trendRetest,technical};
 }
+const WATCH_CACHE_KEY='book-ai-watchlist-v2';
+function setWatchMeta(text,state=''){const el=$('watchMeta');if(!el)return;el.textContent=text;el.className='muted '+state}
+function saveWatchCache(rows,source){try{localStorage.setItem(WATCH_CACHE_KEY,JSON.stringify({ts:Date.now(),rows,source}))}catch{}}
+function readWatchCache(){try{const x=JSON.parse(localStorage.getItem(WATCH_CACHE_KEY)||'null');return x&&Array.isArray(x.rows)?x:null}catch{return null}}
 function renderWatchlist(rows=[]){
   const box=$('watchlist');if(!box)return;box.innerHTML='';
   if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
   for(const x of rows){
     const b=document.createElement('button');b.className='watchItem';b.type='button';b.dataset.symbol=x.symbol;
-    const top=document.createElement('div');top.className='wTop';const sym=document.createElement('b');sym.textContent=x.symbol;const score=document.createElement('em');score.textContent='관찰 '+Math.round(x.watchScore);top.append(sym,score);
-    const p=document.createElement('p');p.textContent=(x.reasons||[]).join(' · ')||'Scanner 관찰 후보';
-    const s=document.createElement('small');s.textContent=[x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(x.priceChange24h)?'24H '+(x.priceChange24h>=0?'+':'')+x.priceChange24h.toFixed(1)+'%':null].filter(Boolean).join(' · ');
+    const top=document.createElement('div');top.className='wTop';const sym=document.createElement('b');sym.textContent=x.symbol;const score=document.createElement('em');score.textContent='관찰 '+Math.round(Number(x.watchScore)||0);top.append(sym,score);
+    const p=document.createElement('p');p.textContent=(x.reasons||[]).join(' · ')||'관찰 후보';
+    const s=document.createElement('small');s.textContent=[x.scanClass,x.v2Type,x.v3Tier,Number.isFinite(Number(x.priceChange24h))?'24H '+(Number(x.priceChange24h)>=0?'+':'')+Number(x.priceChange24h).toFixed(1)+'%':null].filter(Boolean).join(' · ');
     b.append(top,p,s);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
   }
 }
+function presurgeFallbackRows(data){
+  const rank={IGNITION:4,PRE_SURGE:3,WATCH:2,NORMAL:1,COOLDOWN:0};
+  return (Array.isArray(data?.rows)?data.rows:[])
+    .filter(x=>['IGNITION','PRE_SURGE','WATCH'].includes(String(x.state||'')))
+    .sort((a,b)=>(rank[b.state]||0)-(rank[a.state]||0)||(Number(b.score)||0)-(Number(a.score)||0))
+    .slice(0,8)
+    .map(x=>({symbol:x.symbol,watchScore:Number(x.score)||0,scanClass:x.state||'SPOT',v2Type:'SPOT PRE-SURGE',v3Tier:'Spot fallback',priceChange24h:Number.isFinite(Number(x.price24))?Number(x.price24):null,reasons:(x.reasons||[]).slice(0,4)}));
+}
 async function refreshWatchlist(){
-  const box=$('watchlist');if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
+  const box=$('watchlist');if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';setWatchMeta('Scanner v3 후보 확인 중…');
+  let scannerError=null;
   try{
     if(!WL)throw new Error('Watchlist selector unavailable');
     const summary=await json('/api/coin-scan?mode=summary&limit=500');
     const rows=Array.isArray(summary.items)?summary.items:[];
     const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
-    if(!seed.length){renderWatchlist([]);return[]}
-    const deep=await json('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')));
-    const selected=WL.select(deep.items||[],8);renderWatchlist(selected);return selected;
-  }catch(e){if(box)box.innerHTML='<div class="watchEmpty">후보 로드 실패 · '+String(e?.message||e)+'</div>';return[]}
+    if(seed.length){
+      const deep=await json('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')));
+      const selected=WL.select(deep.items||[],8);
+      if(selected.length){renderWatchlist(selected);setWatchMeta('Scanner v3 정밀 후보 · '+selected.length+'개','ok');saveWatchCache(selected,'Scanner v3');return selected}
+    }
+    scannerError=new Error('Scanner 후보 없음');
+  }catch(e){scannerError=e}
+  try{
+    const spot=await json('/api/presurge');
+    const selected=presurgeFallbackRows(spot);
+    if(selected.length){renderWatchlist(selected);setWatchMeta('Spot PRE-SURGE 대체 후보 · Futures Scanner 제한','warn');saveWatchCache(selected,'Spot PRE-SURGE');return selected}
+  }catch(_e){}
+  const cached=readWatchCache();
+  if(cached?.rows?.length){renderWatchlist(cached.rows);setWatchMeta('마지막 정상 후보 · '+fmtTime(cached.ts),'warn');return cached.rows}
+  if(box)box.innerHTML='<div class="watchEmpty">추천 후보를 불러오지 못했습니다.</div>';
+  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||'source unavailable'),'warn');
+  return[];
 }
 function renderAggregate(symbol,charts={}){
   if(!MTF||!$('aggregateSnapshot'))return null;
