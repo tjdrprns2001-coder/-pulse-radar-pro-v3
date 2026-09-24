@@ -30,7 +30,7 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
   assert.equal(rows[0].direction,'CONFIRMED→RECOMMEND');
   assert.equal(rows[0].previousState,'CONFIRMED');
   assert.equal(rows[0].price,10);
-  assert.equal(rows[0].marketSource,'spot-fallback');
+  assert.equal(rows[0].marketSource,'book-ai-client');
 
   now+=120_000;
   const up={...promoted,score:88};
