@@ -10,6 +10,7 @@ function k(i,{vol=10,price=100+i,closeTime=null}={}){
 }
 
 assert.equal(V3.VERSION,'v3');
+assert.equal(typeof V3.causalSequencePack,'function');
 assert.equal(V3.PARAM_SET,'v3_longtrend_taker_0.8_1.2');
 assert.deepEqual(V3.MA_PERIODS,[14,28,57,92,268,378]);
 
@@ -66,6 +67,13 @@ assert.ok(ma.divergence.priceEma14&&Object.hasOwn(ma.divergence.priceEma14,'chan
 assert.equal(V3.effectiveType({rawType:'A'},{classificationAllowed:false,precision:{enabled:false}}),'미완성');
 assert.equal(V3.effectiveType({rawType:'A'},{classificationAllowed:true,precision:{enabled:true,htfDiscount:false}}),'A-pre');
 assert.equal(V3.effectiveType({rawType:'A+B'},{classificationAllowed:true,precision:{enabled:true,htfDiscount:false}}),'A+B');
+
+const causalFrames={'4h':Array.from({length:90},(_,i)=>k(i,{price:100+Math.sin(i/5)*3+i*.03,vol:20+i%5})),'1h':Array.from({length:90},(_,i)=>k(i,{price:100+Math.sin(i/4)*2+i*.02,vol:15+i%7}))};
+const causalPack=V3.causalSequencePack(causalFrames);
+assert.equal(causalPack.version,'CAUSAL_ICT_R0_1_JS');
+assert.equal(causalPack.available,true);
+assert.equal(causalPack.contractPass,true);
+assert(causalPack.timeframes['4h']&&causalPack.timeframes['1h']);
 
 const fakeV3={classificationAllowed:true,invalidation:false,longTerm:{filter:pass},oiPath:{state:'BUILD',pattern:'+/+/+'},taker:{latest:1.31,state:'IMPROVE'},rvol:{main1h:{value:1.8,state:'PRE-SPARK'},ignition15m:{value:3.4,state:'IGNITION'}},nearestPd:{kind:'FVG',dir:'up',distancePct:-.8}};
 assert.equal(V3.stageFor('A-pre',fakeV3),'🟢 A-pre');
