@@ -5,7 +5,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,3 +17,13 @@ jobs:
       - run: node --check lib/coin-scan/v3-scan-engine.js
       - run: node --check ui/book-ai/app.js
       - run: node scripts/verify-causal-ict-r01.js
+      - run: node scripts/verify-causal-ict-integration.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-recommendation-promotion.js
+      - run: node scripts/verify-v3-scanner.js
+      - run: node scripts/verify-research-api.js
+      - run: node scripts/verify-research-ui.js
+      - run: node scripts/verify-dante-crypto-research.js
+      - run: node scripts/verify-research-backtest-v2.js
