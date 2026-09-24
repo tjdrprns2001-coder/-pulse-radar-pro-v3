@@ -4,6 +4,11 @@ const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidity
 const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer,Promotion=window.PulseRecommendationPromotion,Causal=window.PulseCausalIctEngine,CausalLedger=window.PulseCausalIctLedger;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
+const KO_STATUS={AVAILABLE:'정상',MISSING:'누락',STALE:'오래됨',ERROR:'오류',CONFIRMED:'확정',CANDIDATE:'후보',NOT_CONFIRMED:'미확정',READY:'준비',WATCH:'관찰',WAIT:'대기',RECOMMEND:'자동 추천',EXCLUDE:'제외',EXCLUDED:'제외'};
+const KO_STAGE={WAIT_RECLAIM:'재회복 대기',WAIT_MSS:'MSS 확인 대기',WAIT_FVG:'FVG 확인 대기',WAIT_REVISIT:'FVG 재방문 대기',REVISIT:'재방문 확인',INTENT:'진입 의도 확인',FILLED:'가상 체결 완료',INSUFFICIENT_BARS:'봉 부족',NO_SETUP:'조건 없음',PARTIAL:'부분 정렬',MIXED:'혼조'};
+function koStatus(v){return KO_STATUS[String(v||'').toUpperCase()]||v||'-'}
+function koStage(v){return KO_STAGE[String(v||'').toUpperCase()]||v||'-'}
+
 let last=null,runSeq=0;
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function fmtTime(ms){return Number.isFinite(Number(ms))?new Date(Number(ms)).toLocaleString('ko-KR',{hour12:false}):'-'}
@@ -306,7 +311,7 @@ function sourceCards(engineSources){
   const box=$('sources');box.innerHTML='';
   for(const [name,x] of Object.entries(engineSources||{})){
     const d=document.createElement('div');d.className='source '+x.status;
-    const b=document.createElement('b');b.textContent=name+' · '+x.status;
+    const b=document.createElement('b');b.textContent=name+' · '+koStatus(x.status);
     const timing=x.computedAt?['계산 '+fmtTime(x.computedAt),x.sourceBarClosedAt?'기준봉 '+fmtTime(x.sourceBarClosedAt):null].filter(Boolean).join(' · '):(x.observedAt?'관측 '+fmtTime(x.observedAt):'관측시각 N/A');const p=document.createElement('p');p.textContent=[x.version||'version N/A',x.reason||'',timing].filter(Boolean).join(' · ');
     d.append(b,p);box.append(d);
   }
@@ -316,7 +321,7 @@ function ruleCards(rows){
   for(const x of rows||[]){
     const d=document.createElement('div');d.className='rule';
     const b=document.createElement('b');b.textContent=RULE_LABEL[x.ruleId]||x.ruleId;
-    const st=document.createElement('span');st.className='status state-'+(x.status==='CONFIRMED'?'CONFIRMED':x.status==='CANDIDATE'?'WATCH':'NO_SETUP');st.textContent=x.status;
+    const st=document.createElement('span');st.className='status state-'+(x.status==='CONFIRMED'?'CONFIRMED':x.status==='CANDIDATE'?'WATCH':'NO_SETUP');st.textContent=koStatus(x.status);
     const p=document.createElement('p');p.textContent='facts '+(x.evidenceFactIds?.length||0)+' · persisted '+(x.trustedEvidenceEventIds?.length||0)+' · live '+(x.ephemeralEvidenceEventIds?.length||0)+(x.sequenceId?' · '+x.sequenceId:'');
     d.append(b,st,p);box.append(d);
   }
@@ -409,11 +414,11 @@ function renderDegraded(result,error){
 }
 function render(result,chart){
   const f=result.fusion,s=result.summary,a=f.evidenceAudit||{};
-  $('setupState').textContent=f.setupState;$('setupState').className='state-'+f.setupState;
-  $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=f.stage?.code||'N/A';$('bias').textContent=f.bias?.value||'N/A';
+  $('setupState').textContent=koStatus(f.setupState);$('setupState').className='state-'+f.setupState;
+  $('transitionReason').textContent=f.setupLifecycle?.transition?.reason||'-';$('stage').textContent=koStage(f.stage?.code||'N/A');$('bias').textContent=f.bias?.value||'N/A';
   $('score').textContent=(f.bookEvidence?.normalizedScore??0)+'/100';$('alignment').textContent=f.htfAlignment||'UNKNOWN';$('dataQuality').textContent=f.dataQuality?.state||'-';$('asOf').textContent='as-of '+fmtTime(f.analysisAsOf);
   const causal=result?.causal||null,causalMeta=f?.engineSources?.causalIct||{},stage=causal?.sequence?.long?.stage||'N/A',ledger=causal?.ledger;
-  $('causalState').textContent=causalMeta.status==='AVAILABLE'?stage:causalMeta.status||'N/A';$('causalLedger').textContent=ledger?(ledger.prefixInvariant?'prefix invariant · '+String(ledger.bars||causal?.bars||'-')+' bars':'PREFIX DIVERGENCE'):(causal?.contract?.pass===false?'causal contract fail':'causal ledger 대기');
+  $('causalState').textContent=causalMeta.status==='AVAILABLE'?koStage(stage):koStatus(causalMeta.status||'N/A');$('causalLedger').textContent=ledger?(ledger.prefixInvariant?'과거 이벤트 불변 · '+String(ledger.bars||causal?.bars||'-')+'봉':'과거 이벤트 변경 감지'):(causal?.contract?.pass===false?'인과성 규칙 위반':'인과성 원장 대기');
   $('factCount').textContent=String(a.uniqueFactCount??0)+' · P '+String(a.persistedFactCount??0)+' / L '+String(a.ephemeralFactCount??0);$('eventCount').textContent=String(a.uniqueEventCount??0)+' · P '+String(a.persistedEventCount??0)+' / L '+String(a.ephemeralEventCount??0);$('sharedCount').textContent=String(a.sharedEventIds?.length??0);$('sharedRatio').textContent=Number.isFinite(Number(a.sharedEvidenceRatio))?(Number(a.sharedEvidenceRatio)*100).toFixed(1)+'%':'-';
   renderOverview(result,chart);summaryView(s);ruleCards(f.bookSetups);sourceCards(f.engineSources);
   S.assertCanonicalSummaryGrounded(s,f);
