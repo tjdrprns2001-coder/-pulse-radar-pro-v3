@@ -15,4 +15,5 @@ jobs:
       - run: node --check lib/research-backtest-v2/runtime.js
       - run: node --check lib/research-backtest-v2/universe.js
       - run: node scripts/verify-crypto-data-engine.js
+      - run: node scripts/verify-dante-crypto-research.js
       - run: node scripts/verify-research-backtest-v2.js
