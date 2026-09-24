@@ -39,6 +39,12 @@ for(const id of ['spotMeta','spotCex','spotPrice','spotVolume','spotDex','spotDe
 assert(html.includes('현물 시장 패널'),'spot market panel required');
 assert(html.includes('선물 시장 패널'),'futures market panel required');
 assert(html.includes('공통 시장 정보'),'shared intelligence panel required');
+for(const id of ['validationMeta','validationStatus','validationDecision','validationCounts','validationSnapshot','validationReplay','replayValidation','validationGates','validationEvidence'])assert(html.includes('id="'+id+'"'),'missing market validation UI '+id);
+assert(html.includes('MARKET_VALIDATION_v1'),'market validation version must be visible');
+assert(app.includes('mode=validation&symbol='),'Book AI must request independent market validation');
+assert(app.includes('mode=validation-snapshots&action=replay'),'Book AI must support deterministic validation replay');
+assert(app.includes('renderValidation'),'market validation renderer required');
+assert(app.includes('supportive')&&app.includes('contradictory')&&app.includes('missing')&&app.includes('stale'),'evidence ledger stance rendering required');
 assert(app.includes('mode=intelligence&symbol='),'Book AI must load detailed market intelligence');
 assert(app.includes('renderMarketIntelligence'),'Book AI market intelligence renderer required');
 assert(app.includes("sources.filter(s=>s.marketType==='spot')"),'spot panel must filter spot-only sources');
