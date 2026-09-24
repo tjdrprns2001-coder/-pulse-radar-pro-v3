@@ -100,8 +100,11 @@ function normalizeBookSetup(rule={},analysisAsOf){
   const status=enumValue(rule.status||'NOT_CONFIRMED',RULE_STATUSES,'bookSetup.status');
   const evidenceFactIds=uniqueStrings(rule.evidenceFactIds);
   const evidenceEventIds=uniqueStrings(rule.evidenceEventIds);
+  const trustedEvidenceEventIds=uniqueStrings(rule.trustedEvidenceEventIds);
+  const ephemeralEvidenceEventIds=uniqueStrings(rule.ephemeralEvidenceEventIds);
   const evidenceSnapshotIds=uniqueStrings(rule.evidenceSnapshotIds);
   if(status==='CONFIRMED'&&!evidenceEventIds.length)throw new Error('CONFIRMED book rule requires evidenceEventIds');
+  if(status==='CONFIRMED'&&!trustedEvidenceEventIds.length)throw new Error('CONFIRMED book rule requires trustedEvidenceEventIds');
   const out={
     ruleId:text(rule.ruleId,'bookSetup.ruleId'),
     ruleVersion:number(rule.ruleVersion,'bookSetup.ruleVersion'),
@@ -112,6 +115,8 @@ function normalizeBookSetup(rule={},analysisAsOf){
     sequenceId:rule.sequenceId==null?null:String(rule.sequenceId),
     evidenceFactIds,
     evidenceEventIds,
+    trustedEvidenceEventIds,
+    ephemeralEvidenceEventIds,
     evidenceSnapshotIds
   };
   if(status==='CONFIRMED'&&!out.sequenceId)throw new Error('CONFIRMED book rule requires sequenceId');
