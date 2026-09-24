@@ -34,8 +34,12 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':mode==='event-snapshots'?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',mode==='deep'?'s-maxage=30, stale-while-revalidate=90':(mode==='event-snapshots'||mode==='recommendation-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
+    if(mode==='recommendation-history'){
+      const rows=await service.listRecommendationHistory({symbol:q.symbol||null,state:q.state||null,limit});
+      return res.status(200).json({status:'ok',mode:'recommendation-history',updatedAt:Date.now(),items:rows});
+    }
     if(mode==='event-snapshots'){
       const action=String(q.action||'list').toLowerCase();
       if(action==='get'||action==='export'){
