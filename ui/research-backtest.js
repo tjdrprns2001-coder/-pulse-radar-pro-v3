@@ -32,11 +32,20 @@ function presetCards(data){
 function reportRows(items){
  if(!items.length)return'<div class="empty">아직 저장된 Dante 연구 리포트가 없습니다.</div>';
  return items.slice(0,20).map(x=>{
-  const r=x.result||{},base=r.stress&&r.stress['1x']&&r.stress['1x'].report,walk=r.summary;
-  const line=x.type==='walk-forward'
-    ?('fold '+esc(walk&&walk.foldCount||0)+' · PF '+num(walk&&walk.meanProfitFactor))
-    :('신호 '+esc(r.signalCount||0)+' · PF '+num(base&&base.profitFactor)+' · MDD '+num(base&&base.maxDrawdownPct)+'%');
-  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.type)+'</span><small>'+line+'</small><small>'+new Date(Number(x.createdAt)).toLocaleString('ko-KR',{hour12:false})+'</small></article>'
+  const r=x.result||{},base=r.stress&&r.stress['1x']&&r.stress['1x'].report,walk=r.summary,rob=r.robustness||{},ci=rob.bootstrapMeanReturnPct||{},bh=r.baselines&&r.baselines.buyHold,ema=r.baselines&&r.baselines.ema20x60;
+  let line='',detail='';
+  if(x.type==='walk-forward'){
+    line='fold '+esc(walk&&walk.foldCount||0)+' · PF '+num(walk&&walk.meanProfitFactor)+' · 평균 '+num(walk&&walk.meanNetReturnPct)+'%';
+    detail='PBO '+num(rob.pboApprox,3)+' · Fold CI '+num(rob.walkForwardFoldMeanCI&&rob.walkForwardFoldMeanCI.low)+'~'+num(rob.walkForwardFoldMeanCI&&rob.walkForwardFoldMeanCI.high)+'%';
+  }else{
+    const s15=r.stress&&r.stress['1.5x']&&r.stress['1.5x'].report,s2=r.stress&&r.stress['2x']&&r.stress['2x'].report;
+    line='신호 '+esc(r.signalCount||0)+' · PF '+num(base&&base.profitFactor)+' · MDD '+num(base&&base.maxDrawdownPct)+'%';
+    detail='CAGR '+num(base&&base.cagrPct)+'% · Sharpe '+num(base&&base.sharpe)+' · Sortino '+num(base&&base.sortino)+' · Calmar '+num(base&&base.calmar);
+    detail+='<br>비용 1× '+num(base&&base.meanNetReturnPct)+'% · 1.5× '+num(s15&&s15.meanNetReturnPct)+'% · 2× '+num(s2&&s2.meanNetReturnPct)+'%';
+    detail+='<br>Buy&Hold '+num(bh&&bh.returnPct)+'% · EMA20×60 '+num(ema&&ema.returnPct)+'%';
+    detail+='<br>Bootstrap 평균 CI '+num(ci.low)+'~'+num(ci.high)+'% · Portfolio '+num(r.portfolio&&r.portfolio.totalReturnPct)+'%';
+  }
+  return '<article><b>'+esc(x.symbol)+' · '+esc(x.presetId)+'</b><span>'+esc(x.type)+'</span><small>'+line+'</small><small class="reportDetail">'+detail+'</small><small>'+new Date(Number(x.createdAt)).toLocaleString('ko-KR',{hour12:false})+'</small></article>'
  }).join('')
 }
 function paperStatCards(s){
