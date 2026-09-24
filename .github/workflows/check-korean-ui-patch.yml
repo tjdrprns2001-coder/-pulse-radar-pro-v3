@@ -1,0 +1,26 @@
+name: Korean UI patch checks
+on:
+  push:
+    branches: [feat/korean-ui-patch-20260925]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check ui/book-ai/app.js
+      - run: node --check ui/coin-scan.js
+      - run: node --check ui/liquidity-snapshot.js
+      - run: node --check ui/research-backtest.js
+      - run: node scripts/verify-book-ai-ui.js
+      - run: node scripts/verify-book-ai-adapter.js
+      - run: node scripts/verify-book-ai-rules.js
+      - run: node scripts/verify-coin-scan-ui.js
+      - run: node scripts/verify-v3-scanner.js
+      - run: node scripts/verify-liquidity-snapshot.js
+      - run: node scripts/verify-research-ui.js
+      - run: node scripts/verify-research-api.js
+      - run: node scripts/verify-v4-1-mobile.js
