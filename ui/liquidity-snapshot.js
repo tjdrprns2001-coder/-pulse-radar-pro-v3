@@ -1,12 +1,12 @@
 (()=>{'use strict';
-const M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,JOURNAL=window.PulseLiquidityEventJournal;
+const M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,JOURNAL=window.PulseLiquidityEventJournal,GATE=window.PulseSampleReadinessGate;
 const PRIMARY_TF=M?.TF_ORDER||['1w','1d','4h','1h','15m'];
 const EXTRA_TF=M?.EXTRA_TF_ORDER||['3d','12h','5m'];
 const ALL_TF=[...new Set([...PRIMARY_TF,...EXTRA_TF])];
 const LABEL={'1w':'1W','3d':'3D','1d':'1D','12h':'12H','4h':'4H','1h':'1H','15m':'15m','5m':'5m'};
 const HTF={'1w':'1w','3d':'1w','1d':'1w','12h':'1d','4h':'1d','1h':'4h','15m':'1h','5m':'15m'};
 const $=id=>document.getElementById(id);
-let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
+let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,gateStore=null,gateState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
 
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function finite(v){return Number.isFinite(Number(v))}
@@ -111,9 +111,25 @@ function renderJournal(){
   const tt=c.trendline?.telemetry;if(tt){$('journalStats').innerHTML+='<span>TL same-bar 후보 '+(tt.sameBarWouldConfirm?'✓':'-')+'</span><span>dead-zone '+escapeHtml(String(tt.deadZoneBars??0))+'봉</span><span>확인 +'+escapeHtml(String(tt.confirmationBarsAfterTouch??'-'))+'봉</span>'}
   $('journalRecent').innerHTML=(journalState.recent||[]).slice(0,4).map(x=>'<div class="journalRow"><div><b>'+escapeHtml(shortId(x.id))+'</b><span>'+escapeHtml(x.stage||'N/A')+' · '+escapeHtml((x.events||[]).map(e=>e.eventType).slice(-3).join(' → ')||'NO EVENT')+'</span></div><div class="journalOutcome '+outcomeTone(x.outcome?.status)+'">'+escapeHtml(outcomeKo(x.outcome?.status))+'<small>MFE '+escapeHtml(fmt(x.outcome?.path?.mfePct,2))+'% · MAE -'+escapeHtml(fmt(x.outcome?.path?.maePct,2))+'%</small></div></div>').join('');
 }
+function gateKo(v){return({INSUFFICIENT:'표본 부족',OBSERVING:'관찰 중',REVIEWABLE_INITIAL:'초기 검토점 동결',VALIDATING:'검증 표본 수집',INSUFFICIENT_VALIDATION:'검증 TF 부족',REVIEWABLE_VALIDATED:'검토 가능 · 재현됨',REVIEWABLE_UNSTABLE:'검토 가능 · 불안정',PARAMS_CHANGED:'Gate 파라미터 변경'}[v]||v||'대기')}
+function gateTone(v){return v==='REVIEWABLE_VALIDATED'?'tone-confirm':v==='REVIEWABLE_UNSTABLE'||v==='PARAMS_CHANGED'?'tone-risk':v==='REVIEWABLE_INITIAL'||v==='VALIDATING'||v==='INSUFFICIENT_VALIDATION'?'tone-wait':'tone-na'}
+function renderGate(){
+  const badge=$('gateState');if(!badge)return;
+  if(!gateState){badge.textContent='대기';setTone(badge,'tone-na');$('gateProgress').innerHTML='<div class="gateCell"><span>Eligible retest</span><b>0 / 200</b></div>';$('gateTf').innerHTML='';$('gateMeta').textContent='H24 finalized TL_RETEST_TOUCH만 readiness 표본으로 집계';return}
+  badge.textContent=gateKo(gateState.state);setTone(badge,gateTone(gateState.state));
+  const p=gateState.progress||{},r=gateState.round,disc=r?.discovery,val=r?.validation,days=finite(p.observationDays)?fmt(p.observationDays,2):'0';
+  $('gateProgress').innerHTML='<div class="gateCell"><span>Eligible retest</span><b>'+escapeHtml(String(p.eligibleN||0))+' / 200</b></div><div class="gateCell"><span>관찰 경과</span><b>'+escapeHtml(days)+'일 / 14일</b></div><div class="gateCell"><span>Compact archive</span><b>'+escapeHtml(String(p.archiveN||0))+' · pending '+escapeHtml(String(p.pendingArchived||0))+'</b></div><div class="gateCell"><span>Validation</span><b>'+(val?escapeHtml(String(val.eligibleN))+' / 50':escapeHtml(String(r?.validationProgress?.eligibleN||0))+' / 50')+'</b></div>';
+  const dTf=disc?.eligibleTf||[],vTf=val?.eligibleTf||r?.validationProgress?.eligibleTf||[],roundTf=val?.roundEligibleTf||r?.validationProgress?.roundEligibleTf||[];
+  $('gateTf').innerHTML='<span>Discovery TF '+escapeHtml(dTf.join(', ')||'-')+'</span><span>Validation TF '+escapeHtml(vTf.join(', ')||'-')+'</span><span>Round 교집합 '+escapeHtml(roundTf.join(', ')||'-')+'</span>';
+  const issues=r?.decision?.stability?.issues||[];$('gateMeta').textContent=(r?.roundId?('Round '+shortId(r.roundId)+' · '):'')+'gate '+shortId(gateState.gateParamsHash)+(issues.length?' · '+issues.join(', '):'')+' · VALIDATED여도 자동 활성화 없음';
+}
+function updateGate(){
+  if(!GATE||!gateStore||!journalStore)return;
+  try{gateState=GATE.evaluateGate({journalDb:journalStore.export(),store:gateStore});renderGate()}catch(e){gateState=null;const badge=$('gateState');if(badge){badge.textContent='Gate 오류';setTone(badge,'tone-risk')}}
+}
 function updateJournal(symbol){
   if(!JOURNAL||!journalStore||!model?.ok)return;
-  try{const bundle=JOURNAL.createBundle({symbol,timeframe:currentTf,model,trendRetest});journalState=JOURNAL.recordAndResolve({store:journalStore,snapshot:bundle.snapshot,events:bundle.events,referenceCandles:raw?.candles||[],outcomeCandles:outcomeRaw?.candles||raw?.candles||[]});renderJournal()}catch(e){journalState=null;$('journalCurrent').innerHTML='<div class="dataRow warn"><div class="dataMain"><b>이벤트 저장 실패</b></div><div class="dataValue">'+escapeHtml(e.message||String(e))+'</div></div>'}
+  try{const bundle=JOURNAL.createBundle({symbol,timeframe:currentTf,model,trendRetest});journalState=JOURNAL.recordAndResolve({store:journalStore,snapshot:bundle.snapshot,events:bundle.events,referenceCandles:raw?.candles||[],outcomeCandles:outcomeRaw?.candles||raw?.candles||[]});renderJournal();updateGate()}catch(e){journalState=null;$('journalCurrent').innerHTML='<div class="dataRow warn"><div class="dataMain"><b>이벤트 저장 실패</b></div><div class="dataValue">'+escapeHtml(e.message||String(e))+'</div></div>'}
 }
 function exportJournal(){
   if(!journalStore)return;const data=journalStore.export(),blob=new Blob([JSON.stringify({version:JOURNAL?.VERSION||'unknown',exportedAt:Date.now(),...data},null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='pulseradar-liquidity-journal-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)
@@ -207,7 +223,8 @@ async function run(){
 function init(){
   const q=new URLSearchParams(location.search),symbol=clean(q.get('symbol')||'BTCUSDT'),tf=String(q.get('tf')||'1h');$('symbol').value=symbol;if(ALL_TF.includes(tf))currentTf=tf;addTfButtons();
   try{if(JOURNAL&&window.localStorage)journalStore=JOURNAL.createLocalStorageStore(window.localStorage)}catch{journalStore=null}
-  $('journalExport').onclick=exportJournal;
+  try{if(GATE&&window.localStorage)gateStore=GATE.createLocalStorageStore(window.localStorage)}catch{gateStore=null}
+  renderGate();$('journalExport').onclick=exportJournal;
   $('run').onclick=run;$('savePng').onclick=savePng;$('expandChart').onclick=toggleFullscreen;$('snapshot').onclick=inspectCanvas;$('snapshot').ondblclick=toggleFullscreen;
   $('symbol').onkeydown=e=>{if(e.key==='Enter')run()};document.querySelectorAll('[data-layer]').forEach(x=>x.onchange=draw);
   $('liqMore').onclick=()=>{showAllLiquidity=!showAllLiquidity;renderLiquidityList()};$('pdMore').onclick=()=>{showAllPd=!showAllPd;renderPdList()};
