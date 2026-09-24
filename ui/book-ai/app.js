@@ -55,6 +55,30 @@ const WATCH_CACHE_KEY='book-ai-watchlist-v2';
 function setWatchMeta(text,state=''){const el=$('watchMeta');if(!el)return;el.textContent=text;el.className='muted '+state}
 function saveWatchCache(rows,source){try{localStorage.setItem(WATCH_CACHE_KEY,JSON.stringify({ts:Date.now(),rows,source}))}catch{}}
 function readWatchCache(){try{const x=JSON.parse(localStorage.getItem(WATCH_CACHE_KEY)||'null');return x&&Array.isArray(x.rows)?x:null}catch{return null}}
+const AUTO_CACHE_KEY='book-ai-auto-recommend-v1';
+function setAutoMeta(text,state=''){const el=$('autoMeta');if(!el)return;el.textContent=text;el.className='muted '+state}
+function saveAutoCache(bundle,source){try{localStorage.setItem(AUTO_CACHE_KEY,JSON.stringify({ts:Date.now(),bundle,source}))}catch{}}
+function readAutoCache(){try{return JSON.parse(localStorage.getItem(AUTO_CACHE_KEY)||'null')}catch{return null}}
+function renderAutoRecommendations(bundle={},source='Scanner v3'){
+  const box=$('autoRecommendations');if(!box)return;box.innerHTML='';
+  const recommended=Array.isArray(bundle.recommended)?bundle.recommended:[],watch=Array.isArray(bundle.watch)?bundle.watch:[];
+  const rows=[...recommended,...watch].slice(0,5);
+  if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 자동 추천 조건을 충족한 종목이 없습니다.</div>';setAutoMeta(source+' · 추천 조건 대기','warn');return}
+  for(const x of rows){
+    const b=document.createElement('button');b.type='button';b.className='autoItem auto-'+String(x.state||'WATCH');b.dataset.symbol=x.symbol;
+    const top=document.createElement('div');top.className='autoTop';
+    const left=document.createElement('div');const sym=document.createElement('b');sym.textContent=x.symbol;const tag=document.createElement('span');tag.className='autoTag';tag.textContent=x.label||'관찰';left.append(sym,tag);
+    const score=document.createElement('em');score.textContent=Math.round(Number(x.score)||0)+'점';top.append(left,score);
+    const p=document.createElement('p');p.textContent=(x.reasons||[]).slice(0,4).join(' · ')||'조건 적합도 계산';
+    const m=document.createElement('small');m.textContent=(x.missing||[]).length?'다음 확인 · '+x.missing.slice(0,3).join(' · '):'핵심 조건 확인';
+    b.append(top,p,m);b.onclick=()=>{$('symbol').value=x.symbol;run()};box.append(b);
+  }
+  setAutoMeta(source+' · '+recommended.length+' 추천 / '+watch.length+' 관찰',recommended.length?'ok':'warn');
+}
+function renderStructureAuto(rows=[]){
+  const watch=(rows||[]).slice(0,5).map(x=>({symbol:x.symbol,score:x.watchScore||0,state:'WATCH',label:'구조 관찰',reasons:x.reasons||[],missing:['Scanner v3','OI/taker 확인'],invalidations:[]}));
+  renderAutoRecommendations({recommended:[],watch},'4H 구조 fallback');
+}
 function renderWatchlist(rows=[]){
   const box=$('watchlist');if(!box)return;box.innerHTML='';
   if(!rows.length){box.innerHTML='<div class="watchEmpty">현재 조건에 맞는 관찰 후보가 없습니다.</div>';return}
@@ -84,7 +108,8 @@ async function scannerWatchRows(){
   const rows=Array.isArray(summary.items)?summary.items:[];
   const seed=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0)).slice(0,12).map(x=>x.symbol);
   if(!seed.length)throw new Error('Scanner 후보 없음');
-  const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),7000);
+  const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit=12&precision=1&symbols='+encodeURIComponent(seed.join(',')),12000);
+  if(deep.autoRecommendations){renderAutoRecommendations(deep.autoRecommendations,deep.marketSource==='spot-fallback'?'Scanner v3 · Spot fallback':'Scanner v3');saveAutoCache(deep.autoRecommendations,deep.marketSource||'scanner')}
   const selected=WL.select(deep.items||[],8);
   if(!selected.length)throw new Error('Scanner 정밀 후보 없음');
   return selected;
@@ -114,13 +139,14 @@ async function structureFallbackRows(){
   return settled.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>b.watchScore-a.watchScore).slice(0,8);
 }
 async function refreshWatchlist(){
-  const box=$('watchlist'),cached=readWatchCache();
+  const box=$('watchlist'),cached=readWatchCache(),autoCached=readAutoCache();
+  if(autoCached?.bundle){renderAutoRecommendations(autoCached.bundle,'마지막 자동 추천');setAutoMeta('마지막 자동 추천 표시 중 · 새 데이터 갱신','warn')}else if($('autoRecommendations'))$('autoRecommendations').innerHTML='<div class="watchEmpty">자동 추천 계산 중…</div>';
   if(cached?.rows?.length){renderWatchlist(cached.rows);setWatchMeta('마지막 정상 후보 표시 중 · 새 데이터 갱신','warn')}
   else if(box)box.innerHTML='<div class="watchEmpty">후보 스캔 중…</div>';
   setWatchMeta(cached?.rows?.length?'마지막 정상 후보 표시 중 · 새 데이터 갱신':'구조 / Spot / Futures 동시 확인 중…',cached?.rows?.length?'warn':'');
   let rendered=Boolean(cached?.rows?.length),bestRows=cached?.rows||[],spotError=null,scannerError=null,structureError=null;
   const structurePromise=structureFallbackRows().then(rows=>{
-    if(rows.length&&!rendered){renderWatchlist(rows);setWatchMeta('4H 구조 기반 후보 · Scanner 확인 중','warn');saveWatchCache(rows,'4H structure');rendered=true;bestRows=rows}
+    if(rows.length&&!rendered){renderWatchlist(rows);renderStructureAuto(rows);setWatchMeta('4H 구조 기반 후보 · Scanner 확인 중','warn');saveWatchCache(rows,'4H structure');rendered=true;bestRows=rows}
     return rows;
   }).catch(e=>{structureError=e;return[]});
   const spotPromise=spotWatchRows().then(rows=>{
@@ -316,4 +342,6 @@ function save(){
 }
 $('run').onclick=run;$('savePng').onclick=save;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
 const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();
+let autoRefreshTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshWatchlist()},300000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(readAutoCache()?.ts||0)>300000)refreshWatchlist()});
 })();
