@@ -39,11 +39,17 @@ function rows(n=700){
 
  const bt=B.runPresetBacktest({rows:rs,presetId:'256',costAssumptions:{feeBps:10,spreadBps:2,slippageBps:5},costMultipliers:[1,1.5,2]});
  assert(bt.stress['1x']&&bt.stress['1.5x']&&bt.stress['2x']);
+ assert(bt.baselines&&bt.baselines.buyHold&&bt.baselines.ema20x60);
+ assert(bt.regimes&&Object.prototype.hasOwnProperty.call(bt.regimes,'bull'));
+ assert(bt.robustness&&bt.robustness.bootstrapMeanReturnPct);
+ assert(bt.portfolio&&Object.prototype.hasOwnProperty.call(bt.portfolio,'acceptedCount'));
  assert.equal(bt.executionPolicy,'NEXT_ELIGIBLE_BAR');
  assert.equal(bt.lookaheadSafe,true);
 
  const wf=B.walkForward({rows:rs,presetId:'256',paramGrid:{emaDistanceAtrMax:[1.5,2.5]},trainBars:300,validationBars:120,stepBars:120});
  assert(wf.summary.foldCount>=1);
+ assert(wf.robustness&&Object.prototype.hasOwnProperty.call(wf.robustness,'pboApprox'));
+ assert(wf.folds.every(x=>Array.isArray(x.trainVariants)));
  assert.equal(wf.summary.lookaheadSafe,true);
 
  const store=createMemoryResearchStore(),paper=createPaperTradingService({store,now:()=>999999});
