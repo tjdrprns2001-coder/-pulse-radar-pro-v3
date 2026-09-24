@@ -9,7 +9,7 @@ function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]
 function fmtTime(ms){return Number.isFinite(Number(ms))?new Date(Number(ms)).toLocaleString('ko-KR',{hour12:false}):'-'}
 function fmtPrice(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';const d=n>=100?2:n>=1?4:n>=.01?5:8;return n.toLocaleString('en-US',{maximumFractionDigits:d})}
 async function json(url){const r=await fetch(url,{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}
-function lastClosedTime(raw){const c=raw?.candles||[],x=c.at(-1);return Number(x?.closeTime??x?.closedAt??x?.time??raw?.lastClosedCloseTime)||null}
+function lastClosedTime(raw){const c=raw?.candles||[],x=c.at(-1);return Number(raw?.lastClosedCloseTime??raw?.lastClosedTime??x?.closeTime??x?.closedAt??x?.time)||null}
 function gateReadOnly(){
   if(!Gate)return null;
   try{
@@ -26,11 +26,12 @@ function journalReadOnly(){
 }
 function boundedObservedAt(value,receivedAt){const v=Number(value),r=Number(receivedAt);if(!Number.isFinite(r))return Number.isFinite(v)?v:null;if(!Number.isFinite(v))return r;return Math.min(v,r)}
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
-function causalSource(chart,observedAt,symbol){
+function derivedSource(data,computedAt,sourceBarClosedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:computedAt||null,computedAt:computedAt||null,sourceBarClosedAt:sourceBarClosedAt||null,version:version||data.version||null}}
+function causalSource(chart,computedAt,sourceBarClosedAt,symbol){
   if(!Causal||!chart?.candles?.length)return{data:null,reason:'CAUSAL_ICT_UNAVAILABLE'};
   const result=Causal.run(chart.candles),contract=Causal.validateCausalContracts(result);let ledger=null;
-  if(CausalLedger&&symbol){try{const store=CausalLedger.createLocalStorageStore(localStorage);ledger=CausalLedger.record({store,symbol,timeframe:'4h',result:{...result,contract},now:Date.now()})}catch(_e){}}
-  return source({...result,observedAt,contract,ledger},observedAt,result.engine_version||Causal.VERSION);
+  if(CausalLedger&&symbol){try{const store=CausalLedger.createLocalStorageStore(localStorage);ledger=CausalLedger.record({store,symbol,timeframe:'4h',result:{...result,contract},now:computedAt||Date.now()})}catch(_e){}}
+  return derivedSource({...result,contract,ledger},computedAt,sourceBarClosedAt,result.engine_version||Causal.VERSION);
 }
 const TF_MS=Object.freeze({'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000});
 function freshnessLimit(tf){const base=TF_MS[String(tf||'').toLowerCase()]||3600000;return Math.max(30*60*1000,base+30*60*1000)}
@@ -205,15 +206,15 @@ function jsonTimeout(url,ms=8000,opts={}){
 }
 async function verifyPromotionRow(row,marketSource='Scanner v3'){
   if(!Promotion||!row?.item||!A||!R||!Live)return row;
-  const symbol=row.symbol,started=Date.now(),raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:started}),chart=buildChart(raw,'4h',started),now=Date.now(),closed=lastClosedTime({candles:chart.candles});
+  const symbol=row.symbol,started=Date.now(),raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:started}),chart=buildChart(raw,'4h',started),now=Date.now(),closed=lastClosedTime(raw);
   const persisted=persistConfirmedEvidence({symbol,chart,now}),journal=persisted.journal||journalReadOnly(),gate=persisted.gate||gateReadOnly();
   const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
   const adapter=A.adaptBookAiInput({analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,sources:{
     scanner:source(row.item,boundedObservedAt(row.item.updatedAt,now),'v3'),
     presurge:source(row.item.preSurge,boundedObservedAt(row.item.updatedAt,now),'PRE_SURGE_v2'),
-    ict:source(chart.ict,closed,chart.ict?.version||'ICT'),causalIct:causalSource(chart,closed,symbol),structure:source(raw,closed,raw.version||'structure'),
-    forexBook:source(chart.book,closed,chart.book?.version),journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
-    trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
+    ict:derivedSource(chart.ict,now,closed,chart.ict?.version||'ICT'),causalIct:causalSource(chart,now,closed,symbol),structure:derivedSource(raw,now,closed,raw.version||'structure'),
+    forexBook:derivedSource(chart.book,now,closed,chart.book?.version),journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
+    trendline:derivedSource(chart.trendRetest,now,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
   }});
   const rules=R.evaluate(adapter),book=cacheConfirmedBook(symbol,rules),p=Promotion.evaluate({item:row.item,book:rules,priorState:row.state});
   const next={...row,state:p.state,label:p.label,promotion:p,reasons:uniqText([...(row.reasons||[]),...(p.reasons||[])]).slice(0,8),missing:p.missing||[],invalidations:uniqText([...(row.invalidations||[]),...(p.invalidations||[])]).slice(0,8)};
@@ -402,7 +403,7 @@ function renderDegraded(result,error){
   $('setupState').textContent='DATA_LIMITED';$('setupState').className='state-DATA_LIMITED';$('transitionReason').textContent='Scanner 제한 · '+reason;
   $('stage').textContent='N/A';$('bias').textContent='N/A';$('score').textContent='N/A';$('alignment').textContent='N/A';$('dataQuality').textContent='DEGRADED';$('asOf').textContent='as-of '+fmtTime(now);$('causalState').textContent='N/A';$('causalLedger').textContent='Scanner 제한';
   for(const id of ['factCount','eventCount','sharedCount','sharedRatio'])$(id).textContent='N/A';
-  renderOverview(result,chart);summaryView(s);ruleCards([]);sourceCards({Scanner:{status:'ERROR',version:'v3',reason,observedAt:now},Structure:{status:'AVAILABLE',version:result.raw?.version||'structure',observedAt:lastClosedTime({candles:chart.candles})},ICT:{status:'AVAILABLE',version:chart.ict?.version||'ICT',observedAt:lastClosedTime({candles:chart.candles})},ForexBook:{status:'AVAILABLE',version:chart.book?.version||'book',observedAt:lastClosedTime({candles:chart.candles})}});
+  renderOverview(result,chart);summaryView(s);ruleCards([]);sourceCards({Scanner:{status:'ERROR',version:'v3',reason,observedAt:now},Structure:{status:'AVAILABLE',version:result.raw?.version||'structure',observedAt:lastClosedTime(result.raw)},ICT:{status:'AVAILABLE',version:chart.ict?.version||'ICT',observedAt:lastClosedTime(result.raw)},ForexBook:{status:'AVAILABLE',version:chart.book?.version||'book',observedAt:lastClosedTime(result.raw)}});
   C.compose({canvas:$('snapshot'),symbol:result.symbol,timeframe:'4h',candles:chart.candles,analysis:result.raw,smc:chart.smc,liquidity:chart.liquidity,ict:chart.ict,technical:chart.technical,summary:s,renderer:SR});
   $('savePng').disabled=false;
 }
@@ -437,7 +438,7 @@ async function run(){
       try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
       const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);return;
     }
-    const closed=lastClosedTime({candles:chart.candles});
+    const closed=lastClosedTime(raw);
     const persisted=persistConfirmedEvidence({symbol,chart,now}),journal=persisted.journal||journalReadOnly(),gate=persisted.gate||gateReadOnly();
     if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
     const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
@@ -446,10 +447,10 @@ async function run(){
       sources:{
         scanner:source(item,boundedObservedAt(item.updatedAt,now),scan.scannerVersion||'v3'),
         presurge:source(item.preSurge,boundedObservedAt(item.updatedAt,now),'PRE_SURGE_v2'),
-        ict:source(chart.ict,closed,chart.ict?.version||'ICT'),
-        causalIct:causalSource(chart,closed,symbol),
-        structure:source(raw,closed,raw.version||'structure'),
-        forexBook:source(chart.book,closed,chart.book?.version),
+        ict:derivedSource(chart.ict,now,closed,chart.ict?.version||'ICT'),
+        causalIct:causalSource(chart,now,closed,symbol),
+        structure:derivedSource(raw,now,closed,raw.version||'structure'),
+        forexBook:derivedSource(chart.book,now,closed,chart.book?.version),
         journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},
         gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
         trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
