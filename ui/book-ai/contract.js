@@ -26,6 +26,7 @@ const SETUP_STATES=Object.freeze(['WATCH','READY','CONFIRMED','INVALIDATED','NO_
 const RULE_STATUSES=Object.freeze(['CONFIRMED','CANDIDATE','NOT_CONFIRMED','INVALIDATED','N/A']);
 const SAMPLE_DNA_MODES=Object.freeze(['SHADOW_ONLY']);
 const SAMPLE_DNA_STATUSES=Object.freeze(['NOT_EVALUATED','SHADOW_READY','SHADOW_INSUFFICIENT']);
+const ENGINE_SOURCE_STATUSES=Object.freeze(['AVAILABLE','MISSING','STALE','ERROR']);
 
 function finite(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))}
 function number(v,name){if(!finite(v))throw new Error(name+' must be finite');return Number(v)}
@@ -152,6 +153,31 @@ function normalizeStage(input){
   };
 }
 
+function normalizeEngineSources(input={},analysisAsOf){
+  object(input,'engineSources');
+  const out={};
+  for(const [name,raw] of Object.entries(input)){
+    object(raw,'engineSources.'+name);
+    const status=enumValue(raw.status,ENGINE_SOURCE_STATUSES,'engineSources.'+name+'.status');
+    const observedAt=raw.observedAt==null?null:number(raw.observedAt,'engineSources.'+name+'.observedAt');
+    const staleAfterMs=raw.staleAfterMs==null?null:number(raw.staleAfterMs,'engineSources.'+name+'.staleAfterMs');
+    if(observedAt!=null&&observedAt>analysisAsOf)throw new Error('engine source observed after analysisAsOf: '+name);
+    if(staleAfterMs!=null&&staleAfterMs<0)throw new Error('engine source staleAfterMs must be >= 0: '+name);
+    const ageMs=observedAt==null?null:Math.max(0,analysisAsOf-observedAt);
+    if(raw.ageMs!=null&&Number(raw.ageMs)!==ageMs)throw new Error('engine source ageMs mismatch: '+name);
+    out[name]={
+      status,
+      version:raw.version==null?null:String(raw.version),
+      observedAt,
+      staleAfterMs,
+      ageMs,
+      reason:raw.reason==null?null:String(raw.reason),
+      dataAvailable:raw.dataAvailable===true
+    };
+  }
+  return out;
+}
+
 function createBookAnalysisResult(input={}){
   object(input,'BookAnalysisResult');
   const analysisAsOf=number(input.analysisAsOf,'analysisAsOf');
@@ -170,6 +196,7 @@ function createBookAnalysisResult(input={}){
     generatedAt,
     dataPolicy:normalizeDataPolicy(input.dataPolicy||{},analysisAsOf),
     engines:clone(input.engines||{}),
+    engineSources:normalizeEngineSources(input.engineSources||{},analysisAsOf),
     bias:normalizeInheritedFact(input.bias,'bias'),
     stage:normalizeStage(input.stage),
     setupState:enumValue(input.setupState||'WATCH',SETUP_STATES,'setupState'),
@@ -237,9 +264,9 @@ function assertPresurgeReadOnly(sourcePresurge,resultPresurge){
 return{
   SCHEMA_VERSION,ANALYSIS_VERSION,BOOK_EVIDENCE_VERSION,SCORE_TYPE,
   BOOK_STORAGE_PREFIX,LEGACY_STORAGE_PREFIX,COMPONENT_MAX,COMPONENT_KEYS,RAW_MAX,
-  SETUP_STATES,RULE_STATUSES,SAMPLE_DNA_MODES,SAMPLE_DNA_STATUSES,
+  SETUP_STATES,RULE_STATUSES,SAMPLE_DNA_MODES,SAMPLE_DNA_STATUSES,ENGINE_SOURCE_STATUSES,
   finite,deepFreeze,computeEvidenceScore,normalizeBookEvidence,normalizeSampleDna,
-  normalizeBookSetup,normalizeDataPolicy,createBookAnalysisResult,validateBookAnalysisResult,
+  normalizeBookSetup,normalizeDataPolicy,normalizeEngineSources,createBookAnalysisResult,validateBookAnalysisResult,
   assertInheritedFactsUnchanged,assertEvidenceWithinAnalysisAsOf,assertBookStorageKey,assertPresurgeReadOnly
 };
 });
