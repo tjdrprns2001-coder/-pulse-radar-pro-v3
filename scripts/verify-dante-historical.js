@@ -17,5 +17,15 @@ function k(open,price){return[open,String(price),String(price+2),String(price-2)
   assert.equal(r.complete,true);
   assert.equal(r.rows[0].partial,false);
   assert.throws(()=>H.normalizeKline([1,2]),/invalid Binance kline/);
-  console.log('dante historical data PASS');
+  {
+  let futuresCalls=0,spotCalls=0;
+  const futuresProvider={async getKlinesAt(){futuresCalls++;throw new Error('futures blocked')}};
+  const fakeFetch=async()=>{spotCalls++;return{ok:true,async json(){return[k(start,100),k(start+day,101)]}}};
+  const p=H.createResilientDailyProvider({futuresProvider,fetchImpl:fakeFetch,spotBases:['https://spot.test']});
+  assert.equal(p.maxRows,1000);
+  const rows=await p.getKlinesAt('BTCUSDT','1d',{endTime:end,rows:1000});
+  assert.equal(rows.length,2);assert.equal(futuresCalls,1);assert.equal(spotCalls,1);
+  const info=p.getSourceInfo();assert.equal(info.fallbackUsed,true);assert(info.sources.includes('BINANCE_SPOT_FALLBACK'));assert(info.errors[0].includes('futures blocked'));
+}
+console.log('dante historical data PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
