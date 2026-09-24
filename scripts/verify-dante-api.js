@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('assert');
-const handler=require('../api/dante-backtest.js');
+const handler=require('../handlers/dante-backtest.js');
 function call(query,ctx){return new Promise(resolve=>{let code=200,payload;const res={setHeader(){},status(n){code=n;return this},json(v){payload=v;resolve({code,payload});return v}};handler({method:'GET',query},res,ctx)})}
 (async()=>{
   let args=null;
