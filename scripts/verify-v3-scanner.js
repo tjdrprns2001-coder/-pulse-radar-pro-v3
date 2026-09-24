@@ -75,6 +75,15 @@ assert.equal(causalPack.available,true);
 assert.equal(causalPack.contractPass,true);
 assert(causalPack.timeframes['4h']&&causalPack.timeframes['1h']);
 
+const evalCausal=V3.evaluate({frames:causalFrames,v2Profile:{},precisionMode:false});
+assert.equal(evalCausal.causalIct.available,true,'causal replay must run on every deep v3 evaluation, not only precision mode');
+assert.equal(evalCausal.precision.enabled,false);
+const shortPack=V3.causalSequencePack({'4h':causalFrames['4h'].slice(0,20),'1h':[]});
+assert.equal(shortPack.available,false);
+assert.equal(shortPack.reason,'INSUFFICIENT_BARS');
+assert.equal(shortPack.timeframes['4h'].bars,20);
+assert.equal(shortPack.timeframes['4h'].minimumBars,40);
+
 const fakeV3={classificationAllowed:true,invalidation:false,longTerm:{filter:pass},oiPath:{state:'BUILD',pattern:'+/+/+'},taker:{latest:1.31,state:'IMPROVE'},rvol:{main1h:{value:1.8,state:'PRE-SPARK'},ignition15m:{value:3.4,state:'IGNITION'}},nearestPd:{kind:'FVG',dir:'up',distancePct:-.8}};
 assert.equal(V3.stageFor('A-pre',fakeV3),'🟢 A-pre');
 assert.equal(V3.stageFor('A',fakeV3),'🟡 A');
