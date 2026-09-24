@@ -6,7 +6,8 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
 (async()=>{
   let now=1_800_000_000_000;
   const store=createMemoryStore();
-  const svc=createRecommendationHistoryService({store,now:()=>now,cooldownMs:30*60*1000,scoreDelta:8});
+  const resolver={async resolve(symbol,targetTs,nowTs){if(nowTs<targetTs)return{status:'pending',targetTs};const hours=Math.round((targetTs-1_800_000_000_000)/3600000);const price=hours<=1?11:hours<=4?12:13;return{status:'evaluated',targetTs,marketTs:targetTs,price}}};
+  const svc=createRecommendationHistoryService({store,resolver,now:()=>now,cooldownMs:30*60*1000,scoreDelta:8,maxEvaluationsPerRun:10});
   const base={symbol:'AAAUSDT',state:'WATCH',label:'관찰',score:61,reasons:['구조 양호'],missing:['taker'],invalidations:[],item:{lastPrice:10,scanClass:{key:'ACCUMULATION-PRE'},v2Type:'A-pre',v3LongTier:'SOFT_FAIL'}};
   let r=await svc.observe({recommended:[],watch:[base],wait:[],excluded:[]},{updatedAt:now,marketSource:'spot-fallback',derivativesSource:'cross-exchange-oi'});
   assert.equal(r.recorded,1,'first recommendation event must persist');
@@ -34,5 +35,16 @@ const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendat
   const tiny={...up,score:90};
   r=await svc.observe({recommended:[tiny],watch:[],wait:[],excluded:[]},{updatedAt:now});
   assert.equal(r.recorded,0,'small score move inside cooldown must be suppressed');
+
+  now=1_800_000_000_000+25*3600000;
+  const ev=await svc.evaluateDue();
+  assert(ev.evaluated>=3,'due horizons should be evaluated');
+  rows=await svc.list({symbol:'AAAUSDT',limit:10,includeOutcomes:true});
+  const firstWithOutcome=rows.find(x=>x.outcome&&x.outcome.horizons?.h1?.status==='evaluated');
+  assert(firstWithOutcome,'history list should include evaluated outcomes');
+  assert(Number.isFinite(firstWithOutcome.outcome.horizons.h1.returnPct));
+  const stats=await svc.stats({state:'RECOMMEND'});
+  assert(stats.horizons.h1.evaluatedCount>=1);
+  assert(stats.horizons.h1.positiveRatio>0);
   console.log('recommendation history PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
