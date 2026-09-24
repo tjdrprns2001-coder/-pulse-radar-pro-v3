@@ -83,7 +83,8 @@ async function run(){
     const item=scan.items?.[0];if(!item)throw new Error('Scanner deep result 없음');
     const chart=buildChart(raw,'4h'),now=Date.now(),closed=lastClosedTime({candles:chart.candles});
     const journal=journalReadOnly(),gate=gateReadOnly();
-    const liveEvidence=Live?.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now})||null;
+    if(!Live)throw new Error('Book AI LiveEvidence engine unavailable');
+    const liveEvidence=Live.createLiveEvidence({journal:Journal,symbol,timeframe:'4h',model:chart.model,trendRetest:chart.trendRetest,now,analysisAsOf:now});
     const adapter=A.adaptBookAiInput({
       analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,
       sources:{
