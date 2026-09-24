@@ -119,4 +119,17 @@ assert(Array.isArray(v4Analysis.negativeSimilarity));
 const tLike=library.compareSampleLibrary({archetype:'A+B',maClusterKey:'TIGHT',volumeStage:'IGNITION',flowType:'DIRECT_BUILD',htfTransition:'HTF_ALIGNED'},5);
 assert(tLike.some(x=>x.name==='T'||x.name==='CTSI'||x.name==='ZIL'),'new MA-volume samples should participate in similarity');
 
+const soonSample=library.SAMPLE_LIBRARY.find(x=>x.name==='SOON');
+assert(soonSample,'SOON sample must be stored in sample library');
+assert.equal(soonSample.observed?.dna,'SOON_RESET_LTF_TAKER_OI_BUILD');
+assert.equal(soonSample.observed?.stage,'IGNITION_WAIT');
+assert.equal(soonSample.observed?.spotAvailability,'NO_BINANCE_SPOT');
+assert(soonSample.observed?.taker15m>=2.6&&soonSample.observed?.oi6hPct>0,'SOON observed flow snapshot must be preserved');
+
+const imxSample=library.SAMPLE_LIBRARY.find(x=>x.name==='IMX');
+assert(imxSample,'IMX sample must be stored in sample library');
+assert.equal(imxSample.observed?.dna,'IMX_SPOT_FUTURES_LTF_REACCEL');
+assert.equal(imxSample.observed?.stage,'IGNITION_EARLY_REACCEL');
+assert(imxSample.observed?.h1SpotRvol>=1&&imxSample.observed?.oi6hPct>=4,'IMX spot/futures confirmation snapshot must be preserved');
+
 console.log('sample DNA engine PASS');
