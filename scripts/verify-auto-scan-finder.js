@@ -1,0 +1,15 @@
+const fs=require('fs');
+const html=fs.readFileSync('coin-scan.html','utf8');
+const js=fs.readFileSync('ui/coin-scan.js','utf8');
+const css=fs.readFileSync('ui/coin-scan.css','utf8');
+const must=(ok,msg)=>{if(!ok)throw new Error(msg)};
+must(html.includes('id="finderResults"'),'finder results mount missing');
+must(html.includes('id="finderPreset"'),'finder preset missing');
+must(html.includes('value="derivatives"'),'derivatives preset missing');
+must(js.includes('function finderPass('),'finder filter missing');
+must(js.includes('function finderScore('),'finder score missing');
+must(js.includes("preset==='retest'"),'retest preset logic missing');
+must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
+must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
+must(css.includes('.finderResults'),'finder responsive styling missing');
+console.log('auto-scan-finder verification passed');
