@@ -46,7 +46,7 @@ assert(app.includes("sources.filter(s=>s.marketType!=='spot')"),'futures panel m
 assert(app.includes("$('futuresOi')"),'OI must render in futures panel');
 assert(app.includes("$('futuresFlow')"),'taker/funding must render in futures panel');
 assert(app.includes("$('spotDex')"),'DEX must render in spot panel');
-assert(app.includes('거래소·DEX·뉴스·이벤트·지갑 데이터를 병렬 확인'),'market intelligence loading state required');
+for(const s of ['현물 거래소·DEX 데이터를 확인하고 있습니다.','선물·스왑·파생지표를 확인하고 있습니다.','뉴스·이벤트·지갑·계약 검증 데이터를 확인하고 있습니다.'])assert(app.includes(s),'split market intelligence loading state required: '+s);
 assert(html.indexOf('id="watchlist"')<html.indexOf('id="aggregateSnapshot"'),'recommendation list must be above charts');
 assert(html.indexOf('id="aggregateSnapshot"')<html.indexOf('id="snapshot"'),'aggregate chart must be above 4H overview');
 assert(html.indexOf('id="snapshot"')<html.indexOf('id="setupState"'),'overview chart must render before compact status metrics');
