@@ -25,7 +25,7 @@ assert(js.includes('momentumSignals'),'momentum data must be rendered');
 assert(js.includes('samplePattern'),'sample DNA data must be rendered');
 assert(js.includes('sampleDNA'),'sample DNA badge required');
 assert(js.includes('marketBreadth'),'market breadth summary required');
-for(const s of ['스윕','기간 15m','유사도','잠복 메모리','MEMORY_KEY'])assert(js.includes(s),`enhanced sample UI missing ${s}`);
+for(const s of ['스윕','기간 15분','유사도','잠복 메모리','MEMORY_KEY'])assert(js.includes(s),`enhanced sample UI missing ${s}`);
 for(const s of ['RSI','MACD','Stoch RSI','KDJ','보조지표 혼조'])assert(js.includes(s),`momentum UI missing ${s}`);
 assert(css.includes('.tradeSignal'),'trade signal layout style required');
 assert(css.includes('.signalBadge'),'trade signal badge style required');
