@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "setupId": "CB-PUBLIC-ICT-R0.1",
+  "jsEngine": "CAUSAL_ICT_R0_1_JS",
+  "pythonReference": {
+    "fixture": "demo_ohlcv.csv",
+    "bars": 24,
+    "events": 44,
+    "zones": 5,
+    "intents": 0,
+    "trades": 0,
+    "status": "parity_reference_only"
+  },
+  "invariants": [
+    "pivot_known_only_after_right_window",
+    "fvg_created_only_after_third_bar_close",
+    "future_append_does_not_mutate_known_prefix",
+    "fill_bar_is_after_signal_bar",
+    "same_close_fill_forbidden",
+    "intrabar_stop_first"
+  ],
+  "pineParity": {
+    "status": "manual_required",
+    "reason": "TradingView Pine compiler/emulator unavailable in repository CI"
+  },
+  "marketValidation": {
+    "status": "not_implied_by_fixture",
+    "requires": [
+      "production_ohlcv",
+      "venue_costs",
+      "locked_oos",
+      "walk_forward",
+      "quote_or_depth_for_microstructure_claims"
+    ]
+  }
+}
