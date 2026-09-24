@@ -127,4 +127,11 @@ function baseAdapter(){
   assert.equal(facts.length,1,'persisted event must win fingerprint dedupe over live duplicate');
   assert.equal(facts[0].provenance,'PERSISTED_JOURNAL');
 }
+{
+  const a=baseAdapter();
+  a.sources.journal.events=a.sources.journal.events.filter(x=>x.eventId!=='e-touch');
+  a.liveEvidence={events:[{eventId:'LIVE-e-touch',eventType:'TL_RETEST_TOUCH',snapshotId:'LIVE-s',sequenceId:'q1',symbol:'BTCUSDT',timeframe:'1h',confirmedAt:ASOF-3500,status:'DETECTED',provenance:'LIVE_EPHEMERAL',closedOnly:true,eventFingerprint:'fp-live-touch'}]};
+  const r=Rule.evaluate(a);
+  assert.equal(r.bookSetups.find(x=>x.ruleId==='TRENDLINE_REACTION').status,'CANDIDATE','live touch cannot complete persisted confirmation chain');
+}
 console.log('book ai rule engine PASS');
