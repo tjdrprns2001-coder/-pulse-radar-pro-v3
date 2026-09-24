@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const CD=window.PulseChartData,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,LM=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,ICT=window.PulseIctTrainerEngine,BF=window.PulseForexBookEngine,TA=window.PulseTraderAnalysis;
-const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer,Promotion=window.PulseRecommendationPromotion,Causal=window.PulseCausalIctEngine;
+const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadinessGate,Live=window.PulseBookAiLiveEvidence,A=window.PulseBookAiAdapter,R=window.PulseBookAiRuleEngine,F=window.PulseBookAiFusionEngine,S=window.PulseBookAiSummaryTemplate,C=window.PulseBookAiSnapshotComposer,MTF=window.PulseBookAiMtfComposer,WL=window.PulseBookAiWatchlistSelector,Store=window.PulseBookAiStorage,SR=window.PulseSnapshotRenderer,Promotion=window.PulseRecommendationPromotion,Causal=window.PulseCausalIctEngine,CausalLedger=window.PulseCausalIctLedger;
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
 let last=null,runSeq=0;
@@ -26,10 +26,11 @@ function journalReadOnly(){
 }
 function boundedObservedAt(value,receivedAt){const v=Number(value),r=Number(receivedAt);if(!Number.isFinite(r))return Number.isFinite(v)?v:null;if(!Number.isFinite(v))return r;return Math.min(v,r)}
 function source(data,observedAt,version){return data==null?{data:null,reason:'NOT_AVAILABLE'}:{data,observedAt:observedAt||null,version:version||data.version||null}}
-function causalSource(chart,observedAt){
+function causalSource(chart,observedAt,symbol){
   if(!Causal||!chart?.candles?.length)return{data:null,reason:'CAUSAL_ICT_UNAVAILABLE'};
-  const result=Causal.run(chart.candles),contract=Causal.validateCausalContracts(result);
-  return source({...result,observedAt,contract},observedAt,result.engine_version||Causal.VERSION);
+  const result=Causal.run(chart.candles),contract=Causal.validateCausalContracts(result);let ledger=null;
+  if(CausalLedger&&symbol){try{const store=CausalLedger.createLocalStorageStore(localStorage);ledger=CausalLedger.record({store,symbol,timeframe:'4h',result:{...result,contract},now:Date.now()})}catch(_e){}}
+  return source({...result,observedAt,contract,ledger},observedAt,result.engine_version||Causal.VERSION);
 }
 const TF_MS=Object.freeze({'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000});
 function freshnessLimit(tf){const base=TF_MS[String(tf||'').toLowerCase()]||3600000;return Math.max(30*60*1000,base+30*60*1000)}
@@ -210,7 +211,7 @@ async function verifyPromotionRow(row,marketSource='Scanner v3'){
   const adapter=A.adaptBookAiInput({analysisAsOf:now,symbol,exchange:'BINANCE',marketType:'perpetual',liveEvidence,sources:{
     scanner:source(row.item,boundedObservedAt(row.item.updatedAt,now),'v3'),
     presurge:source(row.item.preSurge,boundedObservedAt(row.item.updatedAt,now),'PRE_SURGE_v2'),
-    ict:source(chart.ict,closed,chart.ict?.version||'ICT'),causalIct:causalSource(chart,closed),structure:source(raw,closed,raw.version||'structure'),
+    ict:source(chart.ict,closed,chart.ict?.version||'ICT'),causalIct:causalSource(chart,closed,symbol),structure:source(raw,closed,raw.version||'structure'),
     forexBook:source(chart.book,closed,chart.book?.version),journal:journal||{data:null,reason:'LOCAL_JOURNAL_EMPTY'},gate:gate||{data:null,reason:'LOCAL_GATE_EMPTY'},
     trendline:source(chart.trendRetest,closed,chart.trendRetest?.version||raw.trendlineVersion||null)
   }});
