@@ -68,6 +68,7 @@ function buildEventFacts(adapter){
     const eventId=txt(e.eventId);if(!eventId)continue;
     const provenance=e.provenance==='LIVE_EPHEMERAL'?'LIVE_EPHEMERAL':'PERSISTED_JOURNAL';
     if(provenance==='LIVE_EPHEMERAL'&&!eventId.startsWith('LIVE-'))throw new Error('LIVE_EPHEMERAL eventId must use LIVE- namespace');
+    if(provenance==='LIVE_EPHEMERAL'&&e.closedOnly!==true)throw new Error('LIVE_EPHEMERAL evidence must be CLOSED_ONLY');
     const fingerprint=txt(e.eventFingerprint)||null;
     if(fingerprint&&seenFingerprints.has(fingerprint))continue;
     if(fingerprint)seenFingerprints.add(fingerprint);
