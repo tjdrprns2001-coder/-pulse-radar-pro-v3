@@ -113,7 +113,8 @@
     "test:book-ai-watchlist": "node scripts/verify-book-ai-watchlist.js",
     "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js",
     "test:recommendation-validation-gate": "node scripts/verify-recommendation-validation-gate.js",
-    "test:final99": "node scripts/verify-final99-release.js"
+    "test:final99": "node scripts/verify-final99-release.js",
+    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
