@@ -30,3 +30,5 @@ html[data-shell="1"] .scanTop{justify-content:flex-end;margin-bottom:6px}
 .finderClassStats span{font-size:9px;padding:4px 7px;border:1px solid #294a64;border-radius:999px;background:#081722;color:#b7cbe0}
 .finderResultsWrap{min-width:0}
 .finderItem .finderTags span:first-child{font-weight:850;color:#9fd2ff}
+
+.sourceWarning{margin:5px 0 8px;padding:8px 10px;border:1px solid #7a5b24;border-radius:9px;background:#241b0c;color:#f1c66d;font-size:10px;line-height:1.45}.sourceWarning[hidden]{display:none}.classMore{display:block;margin:10px auto 0;min-width:170px}.scanBtn:disabled{opacity:.55;cursor:not-allowed}
