@@ -42,6 +42,16 @@ async function runEvm(){
   while(true){
     try{
       const wm=await store.getWatermark('evm',entity),head=await collector.head();
+      const lookback=Math.max(2,Number(env.EVM_REORG_LOOKBACK||24)),startCheck=Math.max(0,head-lookback);
+      for(let n=startCheck;n<=head;n++){
+        const cmp=await collector.compareBlock(n);if(!cmp.primaryHash)continue;
+        const prior=await store.getLatestChainBlock(env.EVM_CHAIN_ID||'1',n);
+        if(prior&&String(prior.block_hash).toLowerCase()!==String(cmp.primaryHash).toLowerCase()){
+          await store.appendChainBlock({chain_id:env.EVM_CHAIN_ID||'1',block_number:n,block_hash:cmp.primaryHash,parent_hash:cmp.block?.parentHash,status:'CANONICAL',replaced_hash:prior.block_hash});
+          const affected=await store.listRawByBlock(env.EVM_CHAIN_ID||'1',n);
+          for(const old of affected)await runtime.ingest({source_name:'evm-reorg-reconciler',source_kind:'evm_reorg',entity_key:old.entity_key,source_time:Date.now(),received_time:Date.now(),available_time:Date.now(),provider_event_id:old.event_id+':'+cmp.primaryHash,correction_of:old.event_id,payload:{original_event_id:old.event_id,chain_id:String(env.EVM_CHAIN_ID||'1'),block_number:n,old_block_hash:prior.block_hash,new_block_hash:cmp.primaryHash,finality_status:'REORGED'}});
+        }else if(!prior)await store.appendChainBlock({chain_id:env.EVM_CHAIN_ID||'1',block_number:n,block_hash:cmp.primaryHash,parent_hash:cmp.block?.parentHash,status:cmp.conflicted?'CONFLICTED':'CANONICAL'});
+      }
       let from=wm?.metadata?.last_processed_block!=null?Number(wm.metadata.last_processed_block)+1:Math.max(0,head-2);
       const to=Math.min(head,from+Number(env.EVM_MAX_BLOCK_BATCH||50)-1);
       if(from<=to){
