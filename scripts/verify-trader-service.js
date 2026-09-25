@@ -17,11 +17,21 @@ const provider={
   const service=createTraderService({provider,now:()=>NOW});
   const summary=await service.summary();
   assert.equal(summary.universeCount,5);
-  assert.deepEqual(summary.candidates.map(x=>x.symbol),['TESTUSDT']);
+  assert.equal(summary.fullUniverseScan,true);
+  assert.equal(summary.deepLimit,5);
+  assert.deepEqual(new Set(summary.candidates.map(x=>x.symbol)),new Set(symbols),'every tradable USDT perpetual must be queued for 6TF scanning');
   assert.equal(summary.regime.state,'SUPPORTIVE');
-  assert.equal(summary.excludedCount,4);
+  assert.equal(summary.eligibleCount,3);
+  assert.equal(summary.excludedCount,2);
+  assert.equal(summary.excluded.EXTENDED,1);
+  assert.equal(summary.excluded.ILLIQUID,1);
   const light=await service.light(['TESTUSDT']);assert.equal(light.items[0].symbol,'TESTUSDT');assert(light.items[0].eligible);
   const deep=await service.deep('TESTUSDT');assert.equal(deep.item.state,'CONFIRMED');
+  const batch=await service.deepBatch(['TESTUSDT','LATEUSDT']);
+  assert.equal(batch.items.length,2);assert.equal(batch.errors.length,0);
+  assert.equal(batch.items.find(x=>x.symbol==='TESTUSDT').state,'CONFIRMED');
+  assert.equal(batch.items.find(x=>x.symbol==='LATEUSDT').state,'EXCLUDED');
+  await assert.rejects(()=>service.deepBatch(['TESTUSDT','LATEUSDT','THINUSDT','BTCUSDT','ETHUSDT']),/four/);
   await assert.rejects(()=>service.deep('NOTLISTEDUSDT'),/universe/);
   await assert.rejects(()=>service.light(['TESTUSDT','BTCUSDT','ETHUSDT','LATEUSDT','THINUSDT']),/four/);
   const late=await service.deep('LATEUSDT');assert.equal(late.item.state,'EXCLUDED');
@@ -35,6 +45,8 @@ const provider={
   async function call(query){let code=200,body;const headers={};await handler({query},{setHeader:(k,v)=>headers[k]=v,status(n){code=n;return this},json(v){body=v;return v}},{traderService:service,service:{run:async()=>({legacy:true})}});return{code,body,headers}}
   const api=await call({mode:'trader-deep',symbol:'TESTUSDT'});
   assert.equal(api.body.item?.state,'CONFIRMED','trader route must use independent engine');
+  const batchApi=await call({mode:'trader-batch',symbols:'TESTUSDT,LATEUSDT'});
+  assert.equal(batchApi.body.items?.length,2,'batched trader route must preserve all requested symbols');
   assert.equal(api.headers['Cache-Control'],'no-store, max-age=0');
   assert.equal((await call({mode:'trader-deep',symbol:'BOGUSUSDT'})).code,400);
   assert.equal((await call({mode:'summary'})).body.legacy,true,'legacy endpoint unchanged');
