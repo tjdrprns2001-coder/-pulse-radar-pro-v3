@@ -251,25 +251,37 @@ async function runVercelSelectorFallback(list){
 async function runSelectorScanner(){
   const interval=Math.max(60000,Number(env.SELECTOR_SCAN_INTERVAL_MS||900000));
   const timeoutMs=Math.max(15000,Number(env.SELECTOR_SCAN_TIMEOUT_MS||45000));
+  const preferRemote=String(env.SELECTOR_REMOTE_FIRST||'1')!=='0';
   await new Promise(r=>setTimeout(r,Number(env.SELECTOR_SCAN_START_DELAY_MS||12000)));
   while(true){
     const list=symbols();
-    const preIds=await recordSelectorFallback(list,'websocket baseline before deep scan');
-    health.selector={status:'BASELINE',updatedAt:Date.now(),symbols:list,fallbackSnapshots:preIds.length};
+    let remoteError=null,localError=null;
+    if(preferRemote){
+      try{
+        const remote=await runVercelSelectorFallback(list);
+        health.selector={status:'REMOTE_PRIMARY',updatedAt:Date.now(),symbols:list,wholeMarket:remote.wholeMarket||null,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null};
+        await new Promise(r=>setTimeout(r,interval));
+        continue;
+      }catch(e){remoteError=e}
+    }
     try{
       const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('selector deep scan timeout')),timeoutMs));
       const result=await Promise.race([selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true}),timeout]);
-      health.selector={status:'FRESH',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null};
+      health.selector={status:'LOCAL_FALLBACK',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null,remoteError:remoteError?String(remoteError?.message||remoteError):null};
     }catch(e){
-      try{
-        const remote=await runVercelSelectorFallback(list);
-        health.selector={status:'REMOTE_FALLBACK',updatedAt:Date.now(),symbols:list,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null,localError:String(e?.message||e)};
-      }catch(remoteError){
-        const fallbackIds=await recordSelectorFallback(list,(e?.message||e)+' | vercel fallback: '+String(remoteError?.message||remoteError));
-        health.selector={status:'PARTIAL',updatedAt:Date.now(),symbols:list,fallbackSnapshots:fallbackIds.length,error:String(e?.message||e),remoteError:String(remoteError?.message||remoteError)};
-        health.errors.push({source:'selector',at:Date.now(),error:String(e?.message||e)});
-        health.errors.push({source:'selector-vercel-fallback',at:Date.now(),error:String(remoteError?.message||remoteError)});
+      localError=e;
+      if(!preferRemote){
+        try{
+          const remote=await runVercelSelectorFallback(list);
+          health.selector={status:'REMOTE_FALLBACK',updatedAt:Date.now(),symbols:list,wholeMarket:remote.wholeMarket||null,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null,localError:String(e?.message||e)};
+          await new Promise(r=>setTimeout(r,interval));
+          continue;
+        }catch(re){remoteError=re}
       }
+      const fallbackIds=await recordSelectorFallback(list,[remoteError,localError].filter(Boolean).map(x=>String(x?.message||x)).join(' | '));
+      health.selector={status:'PARTIAL',updatedAt:Date.now(),symbols:list,fallbackSnapshots:fallbackIds.length,error:localError?String(localError?.message||localError):null,remoteError:remoteError?String(remoteError?.message||remoteError):null};
+      if(localError)health.errors.push({source:'selector',at:Date.now(),error:String(localError?.message||localError)});
+      if(remoteError)health.errors.push({source:'selector-vercel-fallback',at:Date.now(),error:String(remoteError?.message||remoteError)});
     }
     await new Promise(r=>setTimeout(r,interval));
   }
