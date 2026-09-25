@@ -53,7 +53,8 @@ const bundle=Screening.bundle([good,crowded,thin,risky]);
 assert.equal(bundle.candidates.length,1);
 assert.equal(bundle.riskFiltered.length,1);
 assert.equal(bundle.insufficientData.length,1);
-assert.equal(bundle.rejected.length,1);
+assert.equal(bundle.eventRisk.length,1);
+assert.equal(bundle.rejected.length,0);
 assert.equal(bundle.all.length,4);
 
 console.log('candidate-screening-engine selector-r0.2 verification passed');
