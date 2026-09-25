@@ -7,6 +7,7 @@ const {createRpcClient,createEvmCollector}=require('../lib/coin-scan/evm-rpc-col
 const {createBinanceWsMultiplexer}=require('../lib/coin-scan/binance-ws-multiplexer.js');
 const {createPostgresRuntimeStore}=require('../lib/coin-scan/postgres-runtime-store.js');
 const {createRuntimeWorker}=require('../lib/coin-scan/runtime-worker.js');
+const {normalizeAlchemy}=require('../lib/coin-scan/alchemy-webhook.js');
 
 const {Pool}=pg;
 const env=process.env;
@@ -86,6 +87,18 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
     if(req.url==='/ready'){const ok=!['DEGRADED','CONFLICTED'].includes(health.evm.status)&&health.binance.state!=='RESYNC_REQUIRED';res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
+    if(req.url==='/webhook/alchemy'&&req.method==='POST'){
+      let raw='';for await(const chunk of req)raw+=chunk;
+      const parsed=normalizeAlchemy(raw,{signatureHeader:req.headers['x-alchemy-signature'],signingKey:env.ALCHEMY_WEBHOOK_SIGNING_KEY,receivedAt:Date.now()});
+      if(!parsed.ok){
+        if(parsed.dlq)await runtime.journal.deadLetter('alchemy:'+Date.now(),parsed.error);
+        res.writeHead(parsed.status,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:parsed.error}));
+      }
+      const event=await runtime.ingest(parsed.event);
+      await runtime.journal.enqueue('RPC_VERIFY',event.event_id,'webhook finality verification required');
+      if(store?.enqueue)await store.enqueue({queue_name:'rpc_verify',event_id:event.event_id,idempotency_key:'rpc_verify:'+event.event_id,payload:event,next_attempt_at:Date.now()});
+      res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'accepted',eventId:event.event_id,finality:'RPC_PENDING'}));
+    }
     res.writeHead(404);res.end('not found');
   }).listen(port,'0.0.0.0');
 }
