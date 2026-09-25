@@ -56,6 +56,11 @@ const provider={
   const recorder={async recordItems(items){recorderCalls++;assert(items.length>0);throw new Error('blob down')}};
   const isolated=createScanService({provider,now:()=>222222,performanceRecorder:recorder});
   const isolatedDeep=await isolated.run({mode:'deep',symbols:['C0USDT'],limit:1});
+  const readOnlyRecorder={calls:0,async recordItems(){this.calls++;return{recorded:1,errors:[]}}};
+  const readOnlyService=createScanService({provider,now:()=>222222,performanceRecorder:readOnlyRecorder});
+  const readOnlyDeep=await readOnlyService.run({mode:'deep',symbols:['C0USDT'],limit:1,persistObservations:false});
+  assert.equal(readOnlyDeep.persistObservations,false);assert.equal(readOnlyRecorder.calls,0,'read-only UI deep scan must not record performance/ledger side effects');
+
   assert.equal(isolatedDeep.status,'ok','recorder failure must not fail scan');
   assert.equal(recorderCalls,1,'deep scan should invoke performance recorder once');
   assert(Number.isFinite(isolatedDeep.items[0]?.lastPrice),'deep item must expose finite lastPrice for immutable snapshot');
