@@ -32,6 +32,18 @@ function defaultService(getStore){
   }
   return singleton;
 }
+async function fetchSelectorOverlay(limit=100){
+  const base=String(process.env.SELECTOR_RUNTIME_URL||'https://pulseradar-selector-runtime.onrender.com').replace(/\/$/,'');
+  if(!base)return null;
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),3500);
+  try{
+    const r=await fetch(base+'/selector-latest?limit='+Math.max(1,Math.min(200,Number(limit)||100)),{signal:ctrl.signal,headers:{accept:'application/json'}});
+    if(!r.ok)return null;
+    const body=await r.json().catch(()=>null);
+    if(!body||body.status!=='ok')return null;
+    return body;
+  }catch(_e){return null}finally{clearTimeout(timer)}
+}
 module.exports=async function handler(req,res,ctx={}){
   const service=ctx.service||defaultService(ctx.getStore);
   const q=req&&req.query||{};
@@ -203,7 +215,23 @@ if(mode==='recommendation-history'){
         candidateSymbols:result.candidateSymbols||[]
       });
     }
-    return res.status(200).json(await service.run({mode,category,sector,limit,symbols,precision}));
+    const result=await service.run({mode,category,sector,limit,symbols,precision});
+    const localFutures=Number(result?.universeMeta?.futuresCount||result?.marketCoverage?.futures||0);
+    const needsOverlay=!ctx.service&&localFutures===0&&['summary','deep','precision'].includes(String(mode).toLowerCase());
+    if(needsOverlay){
+      const overlay=await fetchSelectorOverlay(Math.max(40,Math.min(100,limit)));
+      if(overlay){
+        result.selectorOverlay={
+          source:'render-postgres',
+          updatedAt:overlay.updatedAt||Date.now(),
+          wholeMarket:overlay.wholeMarket||null,
+          screening:overlay.screening||null,
+          items:Array.isArray(overlay.items)?overlay.items:[]
+        };
+        result.sourceWarning=[result.sourceWarning,'Render Selector overlay attached for futures/derivatives context.'].filter(Boolean).join(' ');
+      }
+    }
+    return res.status(200).json(result);
   }
   catch(e){return res.status(Number(e&&e.statusCode)||502).json({status:'error',updatedAt:Date.now(),error:String(e&&e.message||e),scanCount:0,deepScanCount:0,partial:true,dataHealth:{live:0,delayed:0,blocked:0,errors:1},categories:{},candidateSymbols:[],items:[]})}
 };
