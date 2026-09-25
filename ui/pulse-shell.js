@@ -26,6 +26,7 @@
     snapshot:{title:'MTF 스냅샷',desc:'다중 시간봉 구조 스냅샷',path:'/snapshot-analysis.html'},
     chartsnapshot:{title:'차트 스냅샷',desc:'스냅샷 센터 · 품질/서사',path:'/snapshot-hub.html',mode:'quality'},
     performance:{title:'성과 검증',desc:'신호 성과 · Calibration · 품질 검증',path:'/signal-performance.html'},
+    preignitionoos:{title:'점화전 OOS 검증',desc:'60·70·80 점수대 · 6H/24H 실제 성과 · 탈락군 대조',path:'/preignition-oos.html'},
     backtest:{title:'Dante 연구검증',desc:'256 · 밥그릇 · 이평때리기 · 워크포워드 · Paper Trading',path:'/research-backtest.html'},
     historical:{title:'과거 검증',desc:'Historical validation',path:'/historical-validation.html'},
     backfill:{title:'과거 데이터 백필',desc:'과거 OHLCV · BACKTESTED 표본 생성',path:'/historical-backfill.html'},
@@ -37,7 +38,7 @@
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
     report:'analysis',analysis:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
-    performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
+    performance:'more',preignitionoos:'scan',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
   const $=id=>document.getElementById(id),frame=$('frame'),loading=$('loading'),side=$('side'),shade=$('shade'),presets=window.PulsePresets,dataState=window.PulseDataState;
   let current='home',universeCounts={core:null,extended:null};
@@ -67,7 +68,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','assistantscan','preignitionoos','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='bookai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';

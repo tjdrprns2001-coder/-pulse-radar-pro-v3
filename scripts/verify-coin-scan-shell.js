@@ -4,6 +4,8 @@ const js=fs.readFileSync('ui/pulse-shell.js','utf8');
 assert(html.includes('data-view="autoscan"'),'autoscan navigation required');
 assert(html.includes('자동스캔 검색기'),'Korean autoscan finder label required');
 assert(js.includes("autoscan")&&js.includes('/coin-scan.html'),'autoscan route required');
+assert(html.includes('data-view="preignitionoos"')&&html.includes('점화전 OOS 검증'),'OOS validation navigation required');
+assert(js.includes("preignitionoos:{title:'점화전 OOS 검증'")&&js.includes("path:'/preignition-oos.html'"),'OOS validation route required');
 assert(js.includes("scanner")&&js.includes('/index.html'),'legacy scanner route must remain');
 assert(js.includes("radar")&&js.includes('/radar.html'),'radar route must remain');
 console.log('coin scan shell PASS');

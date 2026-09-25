@@ -1,0 +1,56 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>점화전 OOS 검증 · PulseRadar Pro</title>
+<link rel="stylesheet" href="/ui/preignition-oos.css?v=20260925-oos1">
+<script src="/ui/preignition-oos.js?v=20260925-oos1" defer></script>
+</head><body>
+<main class="oosApp">
+  <header class="hero">
+    <div><div class="eyebrow">PRE-IGNITION · LIVE OOS</div><h1>점화전 점수 실전 검증</h1><p>60 / 70 / 80 점수대를 실제 시점 그대로 저장하고 6H·24H 뒤 성과를 비교합니다. 운영 컷오프는 자동 변경하지 않습니다.</p></div>
+    <div class="heroActions"><button id="refresh" class="btn primary">새로고침</button><button id="evaluate" class="btn">만기 평가</button></div>
+  </header>
+
+  <section class="toolbar" aria-label="검증 범위">
+    <div class="rangeTabs" id="rangeTabs">
+      <button data-range="24h">24시간</button><button data-range="3d" class="active">3일</button><button data-range="7d">7일</button><button data-range="all">전체</button>
+    </div>
+    <span id="status" class="status">데이터 확인 중…</span>
+  </section>
+
+  <section class="summaryGrid" aria-label="OOS 요약">
+    <article class="metric"><span>시점 스냅샷</span><b id="sampleCount">—</b><small id="sampleNote">표본 대기</small></article>
+    <article class="metric"><span>6H 평가 완료</span><b id="eval6">—</b><small>모든 점수대 합계</small></article>
+    <article class="metric"><span>24H 평가 완료</span><b id="eval24">—</b><small>모든 점수대 합계</small></article>
+    <article class="metric"><span>검증 상태</span><b id="maturity">—</b><small id="updatedAt">업데이트 대기</small></article>
+  </section>
+
+  <section class="panel">
+    <div class="panelHead"><div><h2>60 · 70 · 80 컷오프 비교</h2><p>6H는 +8%, 24H는 +12% 이상을 ‘점화 적중’으로 계산합니다.</p></div><span class="shadowBadge">SHADOW ONLY</span></div>
+    <div class="thresholdGrid" id="thresholdGrid"></div>
+  </section>
+
+  <section class="twoCol">
+    <article class="panel">
+      <div class="panelHead"><div><h2>점수 구간 분포</h2><p>탈락군까지 함께 저장해 생존자 편향을 줄입니다.</p></div></div>
+      <div id="bucketGrid" class="bucketGrid"></div>
+    </article>
+    <article class="panel">
+      <div class="panelHead"><div><h2>판정 가이드</h2><p>표본 수가 적을 때는 적중률보다 분포 안정성을 먼저 봅니다.</p></div></div>
+      <div class="guide">
+        <div><b>60+</b><span>포착 우선 · 초기 후보를 넓게 남김</span></div>
+        <div><b>70+</b><span>정밀 후보 · 오탐 감소 여부 확인</span></div>
+        <div><b>80+</b><span>엄격 확인 · 지나치게 늦어지는지 검증</span></div>
+        <div><b>REJECTED</b><span>과진행·무효화·위험군 대조군</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panelHead"><div><h2>최근 시점 스냅샷</h2><p>저장된 당시 값은 이후 결과가 나와도 덮어쓰지 않습니다.</p></div><span id="recentCount" class="muted"></span></div>
+    <div class="tableWrap"><table><thead><tr><th>시각</th><th>종목</th><th>구간</th><th>점수</th><th>24H 당시</th><th>OI 4H</th><th>taker</th><th>6H 결과</th><th>24H 결과</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+    <div id="empty" class="empty" hidden>아직 라이브 OOS 표본이 없습니다. Production 배포 후 시간당 수집이 시작되면 여기에 자동으로 쌓입니다.</div>
+  </section>
+
+  <footer>연구용 검증 화면 · 과거 급등 샘플 재현이 아니라 실제 저장 시점 이후의 6H/24H 결과만 평가</footer>
+</main>
+</body></html>
