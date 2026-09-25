@@ -1,0 +1,46 @@
+name: Setup Validation Campaign
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Historical window in days"
+        required: false
+        default: "28"
+      symbols:
+        description: "Comma-separated symbols"
+        required: false
+        default: "BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT,LINKUSDT,SUIUSDT,ONDOUSDT,FETUSDT,PEPEUSDT,BONKUSDT,WIFUSDT"
+      timeframe:
+        description: "Signal timeframe"
+        required: false
+        default: "15m"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Run setup validation campaign
+        run: >
+          npm run research:setup-campaign --
+          --days=${{ inputs.days }}
+          --symbols=${{ inputs.symbols }}
+          --tf=${{ inputs.timeframe }}
+          --out=artifacts/setup-validation-campaign
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-validation-campaign
+          path: artifacts/setup-validation-campaign
+          if-no-files-found: error
+          retention-days: 30
