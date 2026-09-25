@@ -3,7 +3,7 @@ const {createPostgresRuntimeStore}=require('../lib/coin-scan/postgres-runtime-st
 
 (async()=>{
   const calls=[];
-  async function query(sql,params){calls.push({sql,params});if(/SELECT \* FROM raw_events WHERE event_id/.test(sql))return{rows:[{event_id:params[0]}]};if(/FROM source_watermarks/.test(sql))return{rows:[{source_name:params[0],entity_key:params[1]}]};if(/RETURNING q\.\*/.test(sql))return{rows:[{job_id:1,queue_name:params[0],attempts:1}]};return{rows:[]}}
+  async function query(sql,params){calls.push({sql,params});const q=String(sql);if(q.includes('SELECT * FROM raw_events WHERE event_id'))return{rows:[{event_id:params[0]}]};if(q.includes('FROM source_watermarks WHERE'))return{rows:[{source_name:params[0],entity_key:params[1]}]};if(q.includes('RETURNING q.*'))return{rows:[{job_id:1,queue_name:params[0],attempts:1}]};return{rows:[]}}
   const s=createPostgresRuntimeStore({query});
   await s.appendRaw({event_id:'e1',source_name:'x',source_kind:'news',entity_key:'BTC',source_time:1,received_time:2,available_time:3,sequence_no:null,provider_event_id:'p',idempotency_key:'i',payload_hash:'h',schema_version:'v1',delivery_attempt:1,payload:{a:1},ingest_status:'RECEIVED',duplicate_of:null,correction_of:null});
   assert((await s.getRaw('e1')).event_id==='e1');
