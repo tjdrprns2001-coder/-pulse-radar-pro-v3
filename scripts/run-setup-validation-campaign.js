@@ -22,12 +22,13 @@ function parseSymbols(v){
 function ensureDir(p){fs.mkdirSync(p,{recursive:true})}
 function writeJson(p,v){fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n','utf8')}
 
+let OUT_DIR=null;
 (async()=>{
   const endTime=parseTime(arg('end'),Date.now());
   const days=Math.max(7,Math.min(90,Number(arg('days','28'))||28));
   const requestedStart=parseTime(arg('start'),endTime-days*86400000);
   const symbols=parseSymbols(arg('symbols'));
-  const outDir=path.resolve(arg('out','artifacts/setup-validation-campaign'));
+  const outDir=path.resolve(arg('out','artifacts/setup-validation-campaign')); OUT_DIR=outDir;
   const signalTimeframe=String(arg('tf','15m')).toLowerCase();
   const minimumUsableSymbols=Math.max(1,Number(arg('min-symbols','4'))||4);
 
@@ -71,6 +72,18 @@ function writeJson(p,v){fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n','utf8')
   };
   process.stdout.write(JSON.stringify(summary,null,2)+'\n');
 })().catch(e=>{
+  try{
+    if(OUT_DIR){
+      ensureDir(OUT_DIR);
+      writeJson(path.join(OUT_DIR,'failure.json'),{
+        failedAt:new Date().toISOString(),
+        error:String(e?.message||e),
+        stack:String(e?.stack||''),
+        diagnostics:e?.diagnostics||null
+      });
+    }
+  }catch(_){}
   console.error(e&&e.stack||e);
+  if(e?.diagnostics)console.error(JSON.stringify(e.diagnostics,null,2));
   process.exit(1);
 });
