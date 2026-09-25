@@ -20,6 +20,8 @@ must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the re
 must(js.includes('DEEP_WORKERS=2')&&js.includes('Promise.all(Array.from({length:Math.min(DEEP_WORKERS'),'deep enrichment must use bounded parallel chunk workers');
 must(js.includes('SESSION_WRITE_THROTTLE_MS=1200')&&js.includes('saveScanSession(false)')&&js.includes('saveScanSession(true)'),'scan session serialization throttle missing');
 must(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'progressive scanner DOM cap missing');
+must(js.includes('state.items=sortItems(decorateDormancy(state.items))'),'deep enrichment must defer full sorting/dormancy finalization until workers complete');
+must(js.includes('setTimeout(render,100)'),'symbol search rendering must be debounced');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 

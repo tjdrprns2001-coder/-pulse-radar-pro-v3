@@ -25,6 +25,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/ticker/24hr'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastPrice:'1',quoteVolume:'1000',priceChangePercent:'2'}]};
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
     if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>[{sumOpenInterest:'100'},{sumOpenInterest:'103'}]};
+    if(u.pathname.endsWith('/takerlongshortRatio'))return{ok:true,json:async()=>Array.from({length:32},(_,i)=>({timestamp:i,buyVol:String(120+i),sellVol:'100',buySellRatio:String((120+i)/100)}))};
     if(u.pathname.endsWith('/klines')){
       const sym=u.searchParams.get('symbol')||'UNKNOWN',n=(klineActive.get(sym)||0)+1;klineActive.set(sym,n);klineMax.set(sym,Math.max(klineMax.get(sym)||0,n));
       await new Promise(r=>setTimeout(r,3));klineActive.set(sym,Math.max(0,(klineActive.get(sym)||1)-1));
@@ -48,11 +49,18 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(calls.filter(x=>x.includes('exchangeInfo')).length,1,'exchangeInfo should cache');
   const ticks=await p.getTickers();assert.equal(ticks.length,1);
   const k=await p.getKlines('XLMUSDT','1h',120);assert.equal(k.length,1);
+  const taker15Before=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
   const ctx=await p.getDerivativesContext('XLMUSDT');
+  const taker15After=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
+  assert.equal(taker15After-taker15Before,1,'legacy and v2 15m taker profiles should share one upstream request');
   assert(Math.abs(ctx.fundingPct-.01)<1e-12,'funding percent should be preserved');
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
+  const coalesceBefore=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
+  await Promise.all([p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120)]);
+  const coalesceAfter=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
+  assert.equal(coalesceAfter-coalesceBefore,1,'identical concurrent kline requests must coalesce');
   const batch=await p.scanDeepCandidates(['XLMUSDT','BADUSDT'],['1h','15m']);
   assert(batch.results.XLMUSDT,'successful symbol preserved');
   assert.equal(p.intervalConcurrency,2,'deep interval concurrency default must remain bounded at two');
