@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('assert');
-const {createCryptoResearchDataEngine}=require('../lib/research-backtest-v2/crypto-data-engine.js');
+const {createCryptoResearchDataEngine,DEFAULT_SPOT_BASES}=require('../lib/research-backtest-v2/crypto-data-engine.js');
 
 const H=3600000,Q=900000,START=Date.UTC(2026,0,1);
 const oi=[];for(let i=0;i<40;i++)oi.push({symbol:'AAAUSDT',sumOpenInterest:String(1000+i*10),sumOpenInterestValue:String(100000+i*1000),timestamp:START+i*H});
@@ -25,6 +25,8 @@ const fetchImpl=async url=>{
   }else if(p.endsWith('/exchangeInfo'))data={symbols:[]};
   return{ok:true,status:200,json:async()=>data};
 };
+
+assert.equal(DEFAULT_SPOT_BASES[0],'https://data-api.binance.vision');
 
 (async()=>{
   const engine=createCryptoResearchDataEngine({fetchImpl,marketType:'perpetual'});
