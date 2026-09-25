@@ -6,13 +6,14 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
 const {createSignalPerformanceService}=require('../lib/signal-performance/service.js');
 const {createAlertService}=require('../lib/signal-performance/alerts.js');
 const {createTransitionSnapshotService}=require('../lib/coin-scan/transition-snapshot-service.js');
+const {createSetupStateTracker}=require('../lib/coin-scan/setup-state-tracker.js');
 const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
 const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null;
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});marketValidationStore=store;
@@ -20,12 +21,13 @@ function defaultService(getStore){
         performanceRecorder=createSignalPerformanceService({store,resolver});
         alertRecorder=createAlertService({store});
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
+        setupStateTracker=createSetupStateTracker({store});
         recommendationHistory=createRecommendationHistoryService({store,resolver});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
         selectorLedger=createSelectorLedgerService({store,resolver});
       }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
   }
   return singleton;
 }
@@ -158,6 +160,15 @@ if(mode==='recommendation-history'){
       }
       const rows=await service.listRecommendationHistory({symbol:q.symbol||null,state:q.state||null,limit});
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'list',updatedAt:Date.now(),items:rows});
+    }
+    if(mode==='setup-history'){
+      const action=String(q.action||'evidence').toLowerCase();
+      if(action==='state'){
+        const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
+        return res.status(200).json({status:'ok',mode:'setup-history',action:'state',updatedAt:Date.now(),states:await service.getSetupStates(symbol)});
+      }
+      const rows=await service.listSetupEvidence({symbol:q.symbol||null,setupType:q.setupType||null,limit});
+      return res.status(200).json({status:'ok',mode:'setup-history',action:'evidence',updatedAt:Date.now(),items:rows});
     }
     if(mode==='event-snapshots'){
       const action=String(q.action||'list').toLowerCase();
