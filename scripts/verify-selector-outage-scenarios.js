@@ -1,0 +1,13 @@
+const assert=require('assert');
+const R=require('../lib/coin-scan/source-resilience.js');
+const Screening=require('../lib/coin-scan/candidate-screening-engine.js');
+const now=Date.now();
+const row={symbol:'XUSDT',state:'READY',validationGate:{status:'VALIDATED',crowding:{crowded:false}},item:{symbol:'XUSDT',dataState:'live',updatedAt:now,v3AlignmentPct:85,v3LongTier:'PASS',v3:{causalIct:{primaryTf:'4h',longStage:'INTENT'}},scanClass:{key:'PRE-SURGE'},quoteVolume24h:200000000,oi4hChangePct:2,trueTakerRatio:1.2,fundingRate:.01}};
+const execution={futures:{available:true,spreadBps:2,depthUsd:{bid10bps:200000,ask10bps:200000},slippage:{buy:[{notional:10000,slippageBps:3}],sell:[{notional:10000,slippageBps:3}]}}};
+const base={cex:{exchangeCount:3,maxPriceDispersionPct:.1},coverage:{cex:true,indicators:true,news:true,scheduledEvents:true,wallets:true,execution:true},news:{items:[]},events:{items:[],newsDerived:[]}};
+const newsLag=Screening.screen(row,{execution,intelligence:{...base,sourceHealth:{status:'DEGRADED',sources:[{name:'news',status:'DEGRADED'}]}},decisionTime:now});assert.equal(newsLag.classification,'WATCHLIST');
+const conflict=Screening.screen(row,{execution,intelligence:{...base,sourceHealth:{status:'CONFLICTED'}},decisionTime:now});assert.equal(conflict.classification,'CONFLICTED');
+assert.equal(R.sequenceGuard({lastSequence:100,nextSequence:103}).status,'RESYNC_REQUIRED');
+assert.equal(R.calendarHealth({lastObservedAt:now-25*3600000,decisionTime:now}).status,'STALE');
+assert.equal(R.onchainFinalityGate({finality_status:'REORGED'}).usable,false);
+console.log('selector outage scenarios PASS');
