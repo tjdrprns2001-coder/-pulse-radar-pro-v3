@@ -27,7 +27,7 @@ must(schema.properties.evidence_context.properties.version.const==='EVIDENCE_CON
 const ledgerHtml=fs.readFileSync('selector-ledger.html','utf8');
 const ledgerJs=fs.readFileSync('ui/selector-ledger.js','utf8');
 const scheduled=fs.readFileSync('netlify/functions/selector-scheduled-scan.mjs','utf8');
-must(ledgerHtml.includes('Selector 검증 원장 · r0.1~r0.3'),'selector ledger dashboard missing');
+must(ledgerHtml.includes('Selector 검증 원장 · r0.1~r0.4'),'selector ledger dashboard missing');
 must(ledgerJs.includes("action=replay"),'selector replay UI missing');
 must(ledgerJs.includes('selector-history'),'selector history UI API missing');
 must(scheduled.includes("schedule:'5 * * * *'"),'hourly selector collector schedule missing');
@@ -35,3 +35,11 @@ must(scheduled.includes('SELECTOR_MVP_SYMBOLS'),'selector MVP universe override 
 
 must(ledgerHtml.includes('loadEvidence'),'selector evidence ledger control missing');
 must(ledgerJs.includes("action=evidence"),'selector evidence API UI missing');
+
+must(ledgerHtml.includes('loadAblation'),'selector OOS control missing');
+must(ledgerJs.includes("action=ablation"),'selector OOS API UI missing');
+const runtime=fs.readFileSync('workers/selector-runtime.mjs','utf8');
+must(runtime.includes('wss://stream.binance.com:9443/stream'),'spot multiplex runtime missing');
+must(runtime.includes('wss://fstream.binance.com/stream'),'futures multiplex runtime missing');
+must(runtime.includes("/webhook/alchemy"),'signed webhook runtime route missing');
+must(fs.readFileSync('db/selector-runtime-r04.sql','utf8').includes('CREATE TABLE IF NOT EXISTS raw_events'),'postgres raw event schema missing');

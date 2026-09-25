@@ -62,6 +62,16 @@ module.exports=async function handler(req,res,ctx={}){
       const recording=await service.recordRecommendationPromotion(row,{updatedAt:Date.now(),marketSource:String(body.marketSource||'book-ai-client'),derivativesSource:body.derivativesSource?String(body.derivativesSource):null});
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
     }
+    if(mode==='runtime-health'){
+      const base=String(process.env.SELECTOR_RUNTIME_URL||'').replace(/\/$/,'');
+      if(!base)return res.status(200).json({status:'ok',mode:'runtime-health',configured:false,runtime:null});
+      const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),3000);
+      try{
+        const r=await fetch(base+'/health',{signal:ctrl.signal,headers:{accept:'application/json'}});
+        const body=await r.json().catch(()=>({}));return res.status(r.ok?200:503).json({status:r.ok?'ok':'degraded',mode:'runtime-health',configured:true,runtime:body});
+      }catch(e){return res.status(503).json({status:'degraded',mode:'runtime-health',configured:true,error:String(e?.message||e),runtime:null})}
+      finally{clearTimeout(timer)}
+    }
     if(mode==='validation'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
       const at=Number(q.at)||null;return res.status(200).json(await service.getMarketValidation(symbol,{decisionTimestamp:at,persist:String(q.persist||'1')!=='0'}));
@@ -98,6 +108,15 @@ module.exports=async function handler(req,res,ctx={}){
       if(action==='transitions'){
         const rows=await service.listSelectorTransitions({symbol:q.symbol||null,limit});
         return res.status(200).json({status:'ok',mode:'selector-history',action:'transitions',updatedAt:Date.now(),items:rows});
+      }
+      if(action==='ablation'){
+        const report=await service.getSelectorAblation({
+          horizon:String(q.horizon||'h24'),
+          feeBps:Number(q.feeBps)||0,
+          slippageBps:Number(q.slippageBps)||0,
+          fundingBps:Number(q.fundingBps)||0
+        });
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'ablation',updatedAt:Date.now(),report});
       }
       if(action==='stats'){
         const lockedOosStart=Number(q.lockedOosStart)||null;

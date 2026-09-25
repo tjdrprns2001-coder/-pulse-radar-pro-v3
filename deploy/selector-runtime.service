@@ -1,0 +1,17 @@
+[Unit]
+Description=PulseRadar Selector Runtime r0.4
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pulseradar
+EnvironmentFile=/etc/pulseradar-selector.env
+ExecStart=/usr/bin/node workers/selector-runtime.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

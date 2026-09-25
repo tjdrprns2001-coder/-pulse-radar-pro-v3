@@ -8,6 +8,7 @@ const handler=require('../api/coin-scan.js');
     async listSelectorEvidence(){return[{evidenceId:'E1',kind:'NEWS_CLUSTER',symbol:'BTCUSDT'}]},
     async replaySelectorSnapshot(id){return id==='S1'?{snapshotId:'S1',invariant:{pass:true}}:null},
     async getSelectorStats(){return{version:'SELECTOR_STATS_v1',overall:{sampleCount:1},lockedOos:{configured:false}}},
+    async getSelectorAblation(){return{version:'SELECTOR_ABLATION_r0.4',datasetCount:25,report:{locked:true}}},
     async exportSelectorCsv(){return'snapshot_id,symbol\nS1,BTCUSDT'}
   };
   async function call(query){
@@ -21,6 +22,7 @@ const handler=require('../api/coin-scan.js');
   r=await call({mode:'selector-history',action:'evidence'});assert.equal(r.body.items[0].evidenceId,'E1');
   r=await call({mode:'selector-history',action:'replay',id:'S1'});assert.equal(r.body.replay.invariant.pass,true);
   r=await call({mode:'selector-history',action:'stats'});assert.equal(r.body.stats.overall.sampleCount,1);
+  r=await call({mode:'selector-history',action:'ablation',horizon:'h24',feeBps:'4',slippageBps:'6',fundingBps:'1'});assert.equal(r.body.report.version,'SELECTOR_ABLATION_r0.4');assert.equal(r.body.report.report.locked,true);
   r=await call({mode:'selector-history',action:'export',format:'csv'});assert.equal(r.raw,'snapshot_id,symbol\nS1,BTCUSDT');assert(String(r.headers['Content-Type']).includes('text/csv'));
   r=await call({mode:'selector-history',action:'replay',id:'MISSING'});assert.equal(r.code,404);
   console.log('selector history api PASS');

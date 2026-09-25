@@ -1,0 +1,56 @@
+version: selector-runtime-r0.4
+read_only: true
+sources:
+  binance_spot_ws:
+    multiplex: true
+    sequence_resync: true
+    rest_snapshot: /api/v3/depth
+  binance_futures_ws:
+    multiplex: true
+    sequence_resync: true
+    rest_snapshot: /fapi/v1/depth
+  evm:
+    primary_rpc_required: true
+    secondary_rpc_recommended: true
+    default_confirmations: 12
+    default_finality_blocks: 64
+    reorg_lookback_blocks: 24
+  webhook:
+    provider: alchemy
+    signature: hmac_sha256
+    initial_status: RPC_PENDING
+storage:
+  postgres:
+    raw_events_append_only: true
+    watermarks: true
+    retry_queue: true
+    backfill_queue: true
+    dlq: true
+    address_labels_versioned: true
+    feature_versions: true
+    correction_links: true
+research:
+  models:
+    A: exchange_only
+    B: exchange_plus_onchain
+    C: exchange_plus_news_calendar
+    D: exchange_plus_onchain_news_calendar
+  split:
+    train_pct: 50
+    validation_pct: 25
+    locked_oos_pct: 25
+  metrics:
+    - expectancy
+    - hit_rate
+    - maximum_drawdown
+    - worst_consecutive_losses
+    - candidate_coverage
+    - false_rejection_rate
+    - source_outage_behavior
+  cost_model:
+    required_for_operational_approval: true
+security:
+  private_keys: false
+  order_endpoints: false
+  wallet_signing: false
+  token_transfer: false
