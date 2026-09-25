@@ -4,6 +4,7 @@ const cfg=req('netlify.toml');
 const radar=req('netlify/functions/radar.js');
 const legacy=req('netlify/functions/api-index.js');
 const coinScan=req('netlify/functions/coin-scan.mjs');
+const coinScanRunBg=req('netlify/functions/coin-scan-run-background.mjs');
 const coinScanApi=req('api/coin-scan.js');
 const v2Names=['signal-performance','signal-calibration','signal-alerts','signal-health','signal-backfill','research-backtest'];
 const v2=Object.fromEntries(v2Names.map(name=>[name,req(`netlify/functions/${name}.mjs`)]));
@@ -26,6 +27,7 @@ for(const [name,src] of [['coin-scan',coinScan],...Object.entries(v2)]){
 }
 for(const name of v2Names){const expected=name==='research-backtest'?`api/${name}.js`:`handlers/${name}.js`;if(!v2[name].includes(expected))throw new Error('shared '+name+' handler not reused')}
 if(!/api\/coin-scan\.js/.test(coinScan))throw new Error('shared coin scan handler not reused');
+if(!/api\/coin-scan\.js/.test(coinScanRunBg)||!/@netlify\/blobs/.test(coinScanRunBg)||!/mode:'scan-run'/.test(coinScanRunBg)||!/action:'execute'/.test(coinScanRunBg))throw new Error('background scan-run function contract missing');
 if(!/method:req\.method\|\|'GET'/.test(coinScan)||!/body\}/.test(coinScan)||!/req\.text\(\)/.test(coinScan))throw new Error('coin scan Netlify wrapper must forward method and body');
 if(!/ctx\.getStore/.test(coinScanApi))throw new Error('coin scan API must pass injected getStore into auxiliary recorders');
 if(!/queryStringParameters/.test(radar)||!/statusCode/.test(radar)||!/headers/.test(radar))throw new Error('legacy radar adapter contract missing');
