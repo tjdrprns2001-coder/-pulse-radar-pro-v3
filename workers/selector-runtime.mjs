@@ -218,9 +218,11 @@ async function runSelectorScanner(){
   }
 }
 
+function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,OPTIONS','access-control-allow-headers':'content-type','cache-control':'no-store'}}
 function server(){
   const port=Number(env.PORT||8787);
   return http.createServer(async(req,res)=>{
+    if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
     if(req.url==='/ready'){const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
     if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}
@@ -251,7 +253,7 @@ function server(){
             }
             payload={status:'ok',mode:'selector-history',action:'list',items:(rows.rows||[]).map(x=>x.payload)};
           }
-          res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
+          res.writeHead(200,{'content-type':'application/json',...corsHeaders()});return res.end(JSON.stringify(payload));
         }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
       }
     }
