@@ -8,6 +8,9 @@ const {createBinanceWsMultiplexer}=require('../lib/coin-scan/binance-ws-multiple
 const {createPostgresRuntimeStore}=require('../lib/coin-scan/postgres-runtime-store.js');
 const {createRuntimeWorker}=require('../lib/coin-scan/runtime-worker.js');
 const {normalizeAlchemy}=require('../lib/coin-scan/alchemy-webhook.js');
+const {createVerifiedNewsProvider}=require('../lib/coin-scan/verified-news-provider.js');
+const {createMacroCalendarProvider}=require('../lib/coin-scan/macro-calendar-provider.js');
+const {createTtlCache}=require('../lib/coin-scan/cache.js');
 
 const {Pool}=pg;
 const env=process.env;
@@ -18,7 +21,7 @@ const pool=new Pool({connectionString:DB_URL,max:Number(env.PG_POOL_MAX||5),ssl:
 const query=(sql,params=[])=>pool.query(sql,params);
 const store=createPostgresRuntimeStore({query});
 const runtime=createRuntimeWorker({store});
-const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},queues:{status:'INIT'},errors:[]};
+const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},errors:[]};
 let evmCollector=null;
 
 async function migrate(){
@@ -128,6 +131,35 @@ async function runQueues(){
     await new Promise(r=>setTimeout(r,Number(env.QUEUE_POLL_MS||5000)));
   }
 }
+async function runEvidencePollers(){
+  const cache=createTtlCache({now:()=>Date.now()}),newsProvider=createVerifiedNewsProvider({fetchImpl:fetch,env,now:()=>Date.now(),cache}),calendarProvider=createMacroCalendarProvider({fetchImpl:fetch,cache,now:()=>Date.now()});
+  let lastNews=0,lastCalendar=0;
+  while(true){
+    const now=Date.now();
+    if(now-lastNews>=Number(env.NEWS_POLL_MS||300000)){
+      let degraded=false,count=0;
+      for(const symbol of symbols()){
+        try{
+          const result=await newsProvider.get(symbol);if(result.status==='DEGRADED')degraded=true;
+          for(const x of result.items||[]){
+            await runtime.ingest({source_name:x.source||result.provider||'news',source_kind:'news',entity_key:symbol,source_time:x.publishedAt,received_time:x.retrievedAt||now,available_time:now,canonical_url:x.url||'',content_hash:x.content_hash||null,headline:x.title||'',provider_event_id:x.id||null,payload:{...x,symbol}});
+            count++;
+          }
+        }catch(e){degraded=true;health.errors.push({source:'news',at:now,error:String(e?.message||e)})}
+      }
+      lastNews=now;health.news={status:degraded?'DEGRADED':'FRESH',eventCount:count,updatedAt:now};
+      await runtime.updateWatermark('news','global',{status:health.news.status,last_sequence:null,last_source_time:now,last_received_time:now,last_available_time:now,gap_count:0,metadata:{eventCount:count}});
+    }
+    if(now-lastCalendar>=Number(env.CALENDAR_POLL_MS||21600000)){
+      try{
+        const result=await calendarProvider.get();for(const x of result.items||[])await runtime.ingest({source_name:x.source_name||result.provider||'calendar',source_kind:'calendar',entity_key:x.jurisdiction||'US',source_time:x.scheduled_at,received_time:x.observed_at||now,available_time:now,release_id:x.event_id,scheduled_at:x.scheduled_at,revision:x.revision??0,provider_event_id:x.event_id,payload:x});
+        lastCalendar=now;health.calendar={status:result.available?'FRESH':'DEGRADED',eventCount:(result.items||[]).length,updatedAt:now};
+        await runtime.updateWatermark('macro-calendar','US',{status:health.calendar.status,last_sequence:null,last_source_time:now,last_received_time:now,last_available_time:now,gap_count:0,metadata:{sources:result.sourceVersions||[]}});
+      }catch(e){health.calendar={status:'DEGRADED',error:String(e?.message||e),updatedAt:now}}
+    }
+    await new Promise(r=>setTimeout(r,5000));
+  }
+}
 function server(){
   const port=Number(env.PORT||8787);
   return http.createServer(async(req,res)=>{
@@ -153,4 +185,5 @@ server();
 runEvm();
 runBinance();
 runQueues();
+runEvidencePollers();
 process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
