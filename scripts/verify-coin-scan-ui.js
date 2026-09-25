@@ -15,6 +15,7 @@ assert(js.includes('state.autoRefreshMinutes*60000'),'opt-in refresh cadence req
 for(const s of ['AbortController','state.deepLoading','sessionStorage','SCAN_SESSION_FRESH_MS','visibilitychange','cache:\'default\''])assert(js.includes(s),`scan lifecycle protection missing ${s}`);
 for(const s of ['SCAN_PERSIST_KEY','compactItem','compactV3','localStorage.setItem(SCAN_PERSIST_KEY','saveScanSession(true)','readStoredSnapshot'])assert(js.includes(s),`scan persistence protection missing ${s}`);
 for(const s of ['CLASS_PAGE_SIZE=12','evidenceText','data_gaps','conflicted','fresh=1&run=','sourceWarning','persist=0','futuresListed'])assert(js.includes(s)||html.includes(s),`scanner audit protection missing ${s}`);
+for(const s of ['RE-ENTRY','PATTERN-SETUP','strategyCycle','strategyMarkup','재상승 준비','패턴 셋업'])assert(js.includes(s)||html.includes(s),`multi-strategy UI missing ${s}`);
 assert(!js.includes("if(!restored)refresh(false)"),'first-load auto scan must stay disabled');
 assert(!js.includes("precisionBtn.textContent=state.precision?'정밀검사 ON':'정밀검사';refresh(true)"),'precision toggle must not restart whole scan');
 assert(css.includes('.classMore'),'bounded result paging style missing');
@@ -39,7 +40,7 @@ assert(css.includes('.tradeSignal'),'trade signal layout style required');
 assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
-assert(/\/ui\/coin-scan\.js\?v=20260925-audit2/.test(html),'official v3 scanner UI must use current cache-bust');
+assert(/\/ui\/coin-scan\.js\?v=20260925-strategy1/.test(html),'official v3 scanner UI must use current cache-bust');
 for(const s of ['v3Markup','marketCrossMarkup','글로벌 시장 교차검증','CEX ','스왑/선물','최대 가격편차','장기 1W','정렬','테이커 매수/매도','상대거래량 1H','5분 참고','이평 배열 1H','인과성 ICT','봉 부족','인과성 규칙','근접 PD구간','정밀검사'])assert(js.includes(s)||html.includes(s),`official v3 flow UI missing ${s}`);
 assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
 assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');
