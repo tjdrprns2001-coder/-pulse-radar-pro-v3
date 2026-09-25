@@ -2,14 +2,16 @@
 const assert=require('assert');
 const Gate=require('../lib/coin-scan/setup-execution-gate.js');
 
-function kline(i,{o=100,h=101,l=99,c=100,v=100,q=10000,closeTime=null}={}){
-  const ct=closeTime??(i+1)*60000;
-  return[i*60000,String(o),String(h),String(l),String(c),String(v),ct,String(q)];
+function kline(i,{o=100,h=101,l=99,c=100,v=100,q=10000,openTime=null,closeTime=null}={}){
+  const ot=openTime??i*60000,ct=closeTime??(i+1)*60000;
+  return[ot,String(o),String(h),String(l),String(c),String(v),ct,String(q)];
 }
 
+const NOW=30*3600000;
 const execGood={
-  spot:{available:true,spreadBps:4,depthUsd:{bid10bps:50000,ask10bps:60000},slippage:{buy:[{notional:10000,slippageBps:8}],sell:[{notional:10000,slippageBps:7}]}},
-  futures:{available:true,spreadBps:5,depthUsd:{bid10bps:40000,ask10bps:45000},slippage:{buy:[{notional:10000,slippageBps:9}],sell:[{notional:10000,slippageBps:9}]}}
+  updatedAt:NOW,
+  spot:{available:true,observedAt:NOW,spreadBps:4,depthUsd:{bid10bps:50000,ask10bps:60000},slippage:{buy:[{notional:10000,slippageBps:8}],sell:[{notional:10000,slippageBps:7}]}},
+  futures:{available:true,observedAt:NOW,spreadBps:5,depthUsd:{bid10bps:40000,ask10bps:45000},slippage:{buy:[{notional:10000,slippageBps:9}],sell:[{notional:10000,slippageBps:9}]}}
 };
 let ex=Gate.executionMetrics(execGood);
 assert.equal(ex.hardReject,false);
@@ -36,11 +38,14 @@ assert(r.netR>1.5&&r.netR<2);
 const frames={'5m':[],'15m':[],'1h':[]};
 for(let i=0;i<30;i++){
   const c=95+i*0.2;
-  frames['5m'].push(kline(i,{o:c-.1,h:c+.5,l:c-.5,c,q:12000,closeTime:(i+1)*300000}));
-  frames['15m'].push(kline(i,{o:c-.2,h:c+.8,l:c-.8,c,q:18000,closeTime:(i+1)*900000}));
-  frames['1h'].push(kline(i,{o:c-.3,h:c+3,l:c-1,c,q:30000,closeTime:(i+1)*3600000}));
+  frames['5m'].push(kline(i,{o:c-.1,h:c+.5,l:c-.5,c,q:12000,openTime:i*300000,closeTime:(i+1)*300000}));
+  frames['15m'].push(kline(i,{o:c-.2,h:c+.8,l:c-.8,c,q:18000,openTime:i*900000,closeTime:(i+1)*900000}));
+  frames['1h'].push(kline(i,{o:c-.3,h:c+3,l:c-1,c,q:30000,openTime:i*3600000,closeTime:(i+1)*3600000}));
 }
-const now=30*3600000;
+const now=NOW;
+const freshSpot=[];
+for(let i=0;i<21;i++)freshSpot.push(kline(i,{q:10000+(i%3)*100,openTime:(i+8)*900000,closeTime:(i+9)*900000}));
+freshSpot.push(kline(21,{q:50000,openTime:29*900000,closeTime:30*900000}));
 const item={
   symbol:'TESTUSDT',updatedAt:now,fundingRate:.01,oi4hChangePct:1,priceChange1h:1,
   setupFeatures:{
@@ -48,18 +53,29 @@ const item={
     breakout:{futuresVolumeConfirmed:true,closeAboveResistance:true,breakoutBodyConfirmed:true,closeBackBelowResistance:false,evidence:{breakout:{retestLow:99}}}
   }
 };
-Gate.apply({item,frames,execution:execGood,spot15m:spot,eventRisk:null,sequenceGap:false,feeBps:4});
+Gate.apply({item,frames,execution:execGood,spot15m:freshSpot,intelligence:{updatedAt:now},eventRisk:null,sequenceGap:null,feeBps:4});
 assert.equal(item.setupExecution.execution.hardReject,false);
+assert.equal(item.setupExecution.freshness.stale,false);
+assert.equal(item.setupExecution.freshness.sequenceGap,false);
 assert.equal(item.setupFeatures.bottom.executionPass,true);
 assert.equal(item.setupFeatures.breakout.spotVolumeConfirmed,true);
 
+const gapped=frames['5m'].map(x=>x.slice());
+gapped.splice(20,1);
+const fg=Gate.freshnessGate({frames:{...frames,'5m':gapped},execution:execGood,intelligence:{updatedAt:now},now});
+assert.equal(fg.sequenceGap,true);
+
+const stale=Gate.freshnessGate({frames,execution:{...execGood,updatedAt:now-10*60000,spot:{...execGood.spot,observedAt:now-10*60000},futures:{...execGood.futures,observedAt:now-10*60000}},intelligence:{updatedAt:now},now});
+assert.equal(stale.stale,true);
+assert(stale.staleReasons.includes('execution_stale'));
+
 const fake={...item,setupFeatures:{bottom:{...item.setupFeatures.bottom},breakout:{...item.setupFeatures.breakout,closeAboveResistance:true,breakoutBodyConfirmed:false}}};
-Gate.apply({item:fake,frames,execution:execGood,spot15m:spot,eventRisk:null,sequenceGap:false,feeBps:4});
+Gate.apply({item:fake,frames,execution:execGood,spot15m:freshSpot,eventRisk:null,sequenceGap:false,feeBps:4});
 assert.equal(fake.setupExecution.fakeBreakout,true);
 assert.equal(fake.setupFeatures.breakout.hardReject,true);
 
 const knife={...item,priceChange1h:-2,oi4hChangePct:3,setupFeatures:{bottom:{evidence:{bottomStruct:{sweepLow:98}},sweepLowCloseBreak:false,zoneCloseBreak:false,mssConfirmed:false},breakout:{...item.setupFeatures.breakout}}};
-Gate.apply({item:knife,frames,execution:execGood,spot15m:spot,eventRisk:null,sequenceGap:false,feeBps:4});
+Gate.apply({item:knife,frames,execution:execGood,spot15m:freshSpot,eventRisk:null,sequenceGap:false,feeBps:4});
 assert.equal(knife.setupExecution.fallingKnife,true);
 assert.equal(knife.setupFeatures.bottom.hardReject,true);
 
