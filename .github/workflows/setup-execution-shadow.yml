@@ -1,14 +1,6 @@
 name: Setup Execution Shadow
 
 on:
-  push:
-    branches:
-      - research/setup-feature-rejection-audit
-    paths:
-      - 'scripts/run-setup-execution-shadow.js'
-      - '.github/workflows/setup-execution-shadow.yml'
-      - 'lib/coin-scan/setup-execution-gate.js'
-      - 'lib/coin-scan/binance-provider.js'
   workflow_dispatch:
 
 permissions:
