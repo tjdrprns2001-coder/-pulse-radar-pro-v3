@@ -7,6 +7,7 @@ const {createRpcClient,createEvmCollector}=require('../lib/coin-scan/evm-rpc-col
 const {createBinanceWsMultiplexer}=require('../lib/coin-scan/binance-ws-multiplexer.js');
 const {createPostgresRuntimeStore}=require('../lib/coin-scan/postgres-runtime-store.js');
 const {createRuntimeWorker}=require('../lib/coin-scan/runtime-worker.js');
+const {createMemoryRawEventJournal}=require('../lib/coin-scan/raw-event-journal.js');
 const {normalizeAlchemy}=require('../lib/coin-scan/alchemy-webhook.js');
 const {createVerifiedNewsProvider}=require('../lib/coin-scan/verified-news-provider.js');
 const {createMacroCalendarProvider}=require('../lib/coin-scan/macro-calendar-provider.js');
@@ -25,7 +26,7 @@ if(!DB_URL)throw new Error('DATABASE_URL required');
 const pool=new Pool({connectionString:DB_URL,max:Number(env.PG_POOL_MAX||5),ssl:env.PG_SSL==='0'?false:{rejectUnauthorized:false}});
 const query=(sql,params=[])=>pool.query(sql,params);
 const store=createPostgresRuntimeStore({query});
-const runtime=createRuntimeWorker({store});
+const runtime=createRuntimeWorker({store,journal:createMemoryRawEventJournal({maxEvents:Number(env.RUNTIME_JOURNAL_MAX_EVENTS||500),maxQueue:200,maxDlq:200})});
 const selectorStore=createPostgresSelectorStore({query});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
