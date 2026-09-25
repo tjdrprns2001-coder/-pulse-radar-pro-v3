@@ -25,8 +25,9 @@ function defaultService(getStore){
         recommendationHistory=createRecommendationHistoryService({store,resolver});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
         selectorLedger=createSelectorLedgerService({store,resolver});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;setupStateTracker=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
+    if(!setupStateTracker)setupStateTracker=createSetupStateTracker({});
     singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
   }
   return singleton;
