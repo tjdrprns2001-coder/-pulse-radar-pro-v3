@@ -13,10 +13,13 @@ must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
 must(js.includes("setInterval(()=>{if(document.visibilityState==='visible')refresh(false)},60000)"),'60s visible-only autoscan cadence missing');
 must(js.includes("if((state.loading||state.deepLoading)&&!force)return"),'overlapping scan guard missing');
 must(js.includes('saveScanSession')&&js.includes('restoreScanSession'),'scan session restore missing');
-must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v2'"),'scan session cache version must invalidate stale v1 state');
+must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v3'"),'scan session cache version must invalidate stale scanner state');
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
+must(js.includes('DEEP_WORKERS=2')&&js.includes('Promise.all(Array.from({length:Math.min(DEEP_WORKERS'),'deep enrichment must use bounded parallel chunk workers');
+must(js.includes('SESSION_WRITE_THROTTLE_MS=1200')&&js.includes('saveScanSession(false)')&&js.includes('saveScanSession(true)'),'scan session serialization throttle missing');
+must(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'progressive scanner DOM cap missing');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 

@@ -15,7 +15,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(cache.get('x'),null);
 
   const calls=[];
-  let active=0,maxActive=0;
+  let active=0,maxActive=0;const klineActive=new Map(),klineMax=new Map();
   const fetchImpl=async url=>{
     calls.push(url);active++;maxActive=Math.max(maxActive,active);
     await new Promise(r=>setTimeout(r,2));
@@ -26,7 +26,9 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
     if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>[{sumOpenInterest:'100'},{sumOpenInterest:'103'}]};
     if(u.pathname.endsWith('/klines')){
-      if(u.searchParams.get('symbol')==='BADUSDT')return{ok:false,status:502,json:async()=>({})};
+      const sym=u.searchParams.get('symbol')||'UNKNOWN',n=(klineActive.get(sym)||0)+1;klineActive.set(sym,n);klineMax.set(sym,Math.max(klineMax.get(sym)||0,n));
+      await new Promise(r=>setTimeout(r,3));klineActive.set(sym,Math.max(0,(klineActive.get(sym)||1)-1));
+      if(sym==='BADUSDT')return{ok:false,status:502,json:async()=>({})};
       return{ok:true,json:async()=>[[0,'1','1','1','1','10',1,'10',1,'5','5',0]]};
     }
     return{ok:false,status:404,json:async()=>({})};
@@ -53,6 +55,9 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
   const batch=await p.scanDeepCandidates(['XLMUSDT','BADUSDT'],['1h','15m']);
   assert(batch.results.XLMUSDT,'successful symbol preserved');
+  assert.equal(p.intervalConcurrency,2,'deep interval concurrency default must remain bounded at two');
+  assert((klineMax.get('XLMUSDT')||0)>=2,'deep timeframe klines should fetch in parallel');
+  assert((klineMax.get('XLMUSDT')||0)<=2,'per-symbol timeframe concurrency must stay bounded');
   await p.scanDeepCandidates(['XLMUSDT'],['5m']);
   assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must fetch 300 bars for 24H RVOL memory');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
