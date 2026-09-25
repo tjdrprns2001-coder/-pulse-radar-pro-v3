@@ -1,15 +1,6 @@
 name: Setup Research Final Verify
 
 on:
-  push:
-    branches:
-      - research/setup-feature-rejection-audit
-    paths:
-      - 'lib/coin-scan/setup-execution-gate.js'
-      - 'lib/coin-scan/binance-provider.js'
-      - 'lib/research-backtest-v2/setup-*.js'
-      - 'scripts/verify-setup-*.js'
-      - '.github/workflows/setup-research-final-verify.yml'
   workflow_dispatch:
 
 permissions:
