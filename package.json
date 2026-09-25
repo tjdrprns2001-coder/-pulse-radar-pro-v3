@@ -114,11 +114,13 @@
     "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js",
     "test:recommendation-validation-gate": "node scripts/verify-recommendation-validation-gate.js",
     "test:final99": "node scripts/verify-final99-release.js",
-    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:selector-ledger && npm run test:source-sequence && npm run test:selector-api",
+    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:evidence-context-r02 && npm run test:macro-calendar && npm run test:selector-ledger && npm run test:source-sequence && npm run test:selector-api",
     "test:candidate-screening": "node scripts/verify-candidate-screening-engine.js",
     "test:selector-ledger": "node scripts/verify-selector-ledger.js",
     "test:source-sequence": "node scripts/verify-source-sequence-guard.js",
-    "test:selector-api": "node scripts/verify-selector-api.js"
+    "test:selector-api": "node scripts/verify-selector-api.js",
+    "test:evidence-context-r02": "node scripts/verify-evidence-context-r02.js",
+    "test:macro-calendar": "node scripts/verify-macro-calendar-provider.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
