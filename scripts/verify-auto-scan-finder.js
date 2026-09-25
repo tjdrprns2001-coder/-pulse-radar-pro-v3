@@ -14,19 +14,20 @@ must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 
-const selector=fs.readFileSync('config/selector_r0_2.yaml','utf8');
-const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.2.schema.json','utf8'));
-must(selector.includes('version: selector-r0.2'),'selector spec version missing');
+const selector=fs.readFileSync('config/selector_r0_3.yaml','utf8');
+const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.3.schema.json','utf8'));
+must(selector.includes('version: selector-r0.3'),'selector spec version missing');
 must(selector.includes('maximum_cross_venue_deviation_bps: 35'),'cross venue hard limit missing');
 must(selector.includes('catalyst_context: 0.05'),'candidate threshold missing');
 must(schema.properties.classification.enum.includes('CANDIDATE'),'selector snapshot classification contract missing');
 must(schema.properties.classification.enum.includes('RISK_FILTERED'),'risk-filtered contract missing');
-must(schema.properties.evidence_context.properties.version.const==='EVIDENCE_CONTEXT_r0.2','evidence context contract missing');
+must(schema.properties.classification.enum.includes('CONFLICTED'),'conflicted contract missing');
+must(schema.properties.evidence_context.properties.version.const==='EVIDENCE_CONTEXT_r0.3','evidence context contract missing');
 
 const ledgerHtml=fs.readFileSync('selector-ledger.html','utf8');
 const ledgerJs=fs.readFileSync('ui/selector-ledger.js','utf8');
 const scheduled=fs.readFileSync('netlify/functions/selector-scheduled-scan.mjs','utf8');
-must(ledgerHtml.includes('Selector 검증 원장 · r0.1/r0.2'),'selector ledger dashboard missing');
+must(ledgerHtml.includes('Selector 검증 원장 · r0.1~r0.3'),'selector ledger dashboard missing');
 must(ledgerJs.includes("action=replay"),'selector replay UI missing');
 must(ledgerJs.includes('selector-history'),'selector history UI API missing');
 must(scheduled.includes("schedule:'5 * * * *'"),'hourly selector collector schedule missing');

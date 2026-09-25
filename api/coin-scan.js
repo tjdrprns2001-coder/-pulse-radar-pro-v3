@@ -107,10 +107,10 @@ module.exports=async function handler(req,res,ctx={}){
         const format=String(q.format||'json').toLowerCase();
         if(format==='csv'){
           const csv=await service.exportSelectorCsv({symbol:q.symbol||null,classification:q.classification||null,limit});
-          res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="selector-r0.1.csv"');return res.status(200).send(csv);
+          res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="selector-r0.3.csv"');return res.status(200).send(csv);
         }
         const rows=await service.listSelectorHistory({symbol:q.symbol||null,classification:q.classification||null,limit});
-        res.setHeader('Content-Disposition','attachment; filename="selector-r0.1.json"');return res.status(200).json({status:'ok',specVersion:'selector-r0.1',items:rows});
+        res.setHeader('Content-Disposition','attachment; filename="selector-r0.3.json"');return res.status(200).json({status:'ok',specVersion:'selector-r0.3',items:rows});
       }
       const rows=await service.listSelectorHistory({symbol:q.symbol||null,classification:q.classification||null,limit});
       return res.status(200).json({status:'ok',mode:'selector-history',action:'list',updatedAt:Date.now(),items:rows});

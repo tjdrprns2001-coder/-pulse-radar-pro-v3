@@ -20,11 +20,12 @@ const intelligence={
   dex:{available:true},walletVerification:{verifiedAttributions:2,tokenContractVerified:true},
   news:{available:true,items:[]},events:{available:true,items:[],newsDerived:[]}
 };
-const good=Screening.screen(goodRow,{execution,intelligence,decisionTime:now,dataCutoff:now});
+const goodIntel={...intelligence,sourceHealth:{status:'FRESH',blocking:false}};
+const good=Screening.screen(goodRow,{execution,intelligence:goodIntel,decisionTime:now,dataCutoff:now});
 assert.equal(good.classification,'CANDIDATE');
 assert(good.scores.final_score>=75);
-assert.equal(good.spec_version,'selector-r0.2');
-assert.equal(good.evidence_context.version,'EVIDENCE_CONTEXT_r0.2');
+assert.equal(good.spec_version,'selector-r0.3');
+assert.equal(good.evidence_context.version,'EVIDENCE_CONTEXT_r0.3');
 assert(Object.prototype.hasOwnProperty.call(good.scores,'catalyst_context'));
 assert(good.snapshot_id&&good.input_hash);
 assert.equal(good.decision_time,new Date(now).toISOString());
@@ -46,15 +47,23 @@ assert.equal(thin.classification,'INSUFFICIENT_DATA');
 assert(thin.data_gaps.length>0);
 
 const crowdedRow={...goodRow,validationGate:{status:'VALIDATED',crowding:{crowded:true}}};
-const crowded=Screening.screen(crowdedRow,{execution,intelligence,decisionTime:now,dataCutoff:now});
+const crowded=Screening.screen(crowdedRow,{execution,intelligence:goodIntel,decisionTime:now,dataCutoff:now});
 assert.equal(crowded.classification,'RISK_FILTERED');
 
-const bundle=Screening.bundle([good,crowded,thin,risky]);
+const conflicted=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,sourceHealth:{status:'CONFLICTED',blocking:true}},decisionTime:now,dataCutoff:now});
+assert.equal(conflicted.classification,'CONFLICTED');
+const stale=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,sourceHealth:{status:'STALE',blocking:true}},decisionTime:now,dataCutoff:now});
+assert.equal(stale.classification,'INSUFFICIENT_DATA');
+const degraded=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,sourceHealth:{status:'DEGRADED',blocking:false}},decisionTime:now,dataCutoff:now});
+assert.equal(degraded.classification,'WATCHLIST');
+
+const bundle=Screening.bundle([good,crowded,thin,risky,conflicted]);
 assert.equal(bundle.candidates.length,1);
 assert.equal(bundle.riskFiltered.length,1);
 assert.equal(bundle.insufficientData.length,1);
 assert.equal(bundle.eventRisk.length,1);
 assert.equal(bundle.rejected.length,0);
-assert.equal(bundle.all.length,4);
+assert.equal(bundle.conflicted.length,1);
+assert.equal(bundle.all.length,5);
 
-console.log('candidate-screening-engine selector-r0.2 verification passed');
+console.log('candidate-screening-engine selector-r0.3 verification passed');

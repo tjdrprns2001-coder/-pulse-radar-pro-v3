@@ -1,0 +1,63 @@
+version: selector-r0.3
+clock:
+  timezone: UTC
+  decision_on: confirmed_bar_close
+  preserve_source_time: true
+  preserve_received_time: true
+  preserve_available_time: true
+universe:
+  quote_assets: [USDT, USD, USDC]
+  minimum_active_venues: 2
+hard_filters:
+  minimum_data_completeness: 0.95
+  maximum_cross_venue_deviation_bps: 35
+  maximum_spread_bps: 25
+  maximum_estimated_slippage_bps: 50
+  stale_blocks_candidate: true
+  unknown_core_source_blocks_candidate: true
+  conflicted_source_classification: CONFLICTED
+latency_budgets_ms:
+  trade: [2000, 5000, 15000]
+  bid_ask: [2000, 5000, 15000]
+  order_book: [5000, 15000, 30000]
+  ohlcv_1m: [15000, 60000, 180000]
+  ohlcv_5m: [30000, 120000, 300000]
+  funding_oi: [60000, 180000, 600000]
+  official_announcement: [300000, 900000, 3600000]
+  project_rss: [900000, 1800000, 7200000]
+  macro_calendar: [21600000, 86400000, 172800000]
+resilience:
+  circuit_breaker:
+    consecutive_failures: 5
+    window_seconds: 60
+    failure_rate: 0.50
+    open_seconds: 30
+  retry:
+    exponential_seconds: [1, 2, 4, 8]
+    cap_seconds: 30
+    honor_retry_after: true
+  websocket:
+    gap_requires_resync: true
+    stale_orderbook_features_during_resync: true
+  onchain:
+    directional_evidence_requires_final: true
+    confirmed_is_auxiliary_only: true
+    reorg_append_only: true
+  news:
+    require_retrieved_at_lte_decision_time: true
+    corrections_append_only: true
+  calendar:
+    stale_after_hours: 24
+    missing_actual_after_schedule: RELEASE_PENDING
+weights:
+  market_quality: 0.20
+  ict_setup: 0.25
+  execution_quality: 0.20
+  derivatives_context: 0.10
+  onchain_context: 0.10
+  catalyst_context: 0.05
+  data_quality: 0.10
+read_only:
+  order_endpoints: false
+  wallet_signing: false
+  asset_transfer: false

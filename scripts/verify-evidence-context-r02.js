@@ -23,6 +23,9 @@ const onchain=E.normalizeOnchain([
  {event_id:'future',block_timestamp:T+1000,observed_at:T+1000,finality_status:'FINAL'}
 ],T);
 assert.equal(onchain.length,2);
+const confirmedOnly=E.onchainContext({items:[{event_id:'c',finality_status:'CONFIRMED'}],unlockPct7d:0,walletLabelConfidence:1});
+assert.equal(confirmedOnly.usable_event_ids.length,0,'CONFIRMED must be auxiliary only');
+assert.equal(confirmedOnly.auxiliary_event_ids.length,1);
 const oc=E.onchainContext({items:onchain,unlockPct7d:6,walletLabelConfidence:.3});
 assert.equal(oc.finality_status,'UNFINALIZED');
 assert(oc.risk_penalty>=25,'unlock + unfinalized penalties expected');
@@ -40,6 +43,6 @@ assert.equal(cat.hard_event_risk,true);
 assert.equal(cat.high_impact_event,true);
 
 const ctx=E.buildEvidenceContext({intelligence:{news:{items:news},macroCalendar:{provider:'official-fixture',items:cal}},decisionTime:T});
-assert.equal(ctx.version,'EVIDENCE_CONTEXT_r0.2');
+assert.equal(ctx.version,'EVIDENCE_CONTEXT_r0.3');
 assert(ctx.source_event_ids.length>0);
-console.log('evidence context r0.2 PASS');
+console.log('evidence context r0.3 PASS');
