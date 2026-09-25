@@ -63,7 +63,7 @@ for(const p of ['rsi','macd','stoch','kdj','obv'])assert(chart.includes('data-pa
 for(const s of ['PulseIctPlugin','PulseVolumeProfilePlugin','PulseMovingAveragePlugin','buildIctContext','analyzeSmcV2','analyzeLiquidity'])assert(chartJs.includes(s),'chart V5 logic missing '+s);
 
 for(const tf of ['1w','3d','1d','12h','4h','1h','15m','5m'])assert(snapJs.includes("'"+tf+"'"),'MTF snapshot missing '+tf);
-assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
+assert(snap.includes('canvas id="snapshot"')&&snap.includes('현재 PNG')&&snap.includes('8TF PNG · 2×4')&&snap.includes('이벤트 JSON'),'snapshot render/export missing');
 for(const id of ['compareToggle','compareSection','compareEvent','compareGrid','compareOld','compareNow','compareTableCard','compareTable'])assert(snap.includes('id="'+id+'"'),'snapshot compare UI missing '+id);
 for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
 assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
@@ -79,7 +79,9 @@ assert(snapJs.includes("row('DOL 상태'")&&snapJs.includes("row('MMXM 정렬'")
 assert(!snapJs.includes("className='miniSummary'")&&!snapJs.includes("className='miniMeta'"),'8TF mini cards must be chart-only below the TF header');
 assert(!/function miniCard[\s\S]{0,1200}ruleSummary\(/.test(snapJs),'8TF mini cards must not render descriptive summaries');
 assert(!snapJs.includes("cv.dataset.labels='0'"),'live 8TF mini charts must keep overlay labels visible');
-assert(/async function saveAll[\s\S]{0,1800}renderCanvas\(temp,tf,data,\{labels:false\}\)/.test(snapJs),'8TF PNG export must hide overlay label badges');
+assert(/async function saveAll[\s\S]{0,3200}renderCanvas\(temp,tf,data,\{labels:false\}\)/.test(snapJs),'8TF PNG export must hide overlay label badges');
+assert(snapJs.includes('function exportBoardLayout(){return{cols:2,rows:4')&&snapJs.includes("8TF PNG 완료 · 2×4 보드"),'8TF export must use compact 2x4 board layout');
+assert(snapJs.includes("matchMedia?.('(max-width:620px)')")&&snapJs.includes('{w:720,h:405}'),'mobile 8TF mini canvas memory cap missing');
 assert(snapJs.includes('opts.labels=labels'),'snapshot renderer bridge must pass label visibility explicitly');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('safe-area-inset-bottom')&&read('ui/trader/mtf-snapshot-pro.css').includes('snapshotIdRow'),'mobile Safari safe-area or snapshot ID wrapping missing');
 assert(read('ui/trader/mtf-snapshot-pro.css').includes('.compareGrid')&&read('ui/trader/mtf-snapshot-pro.css').includes('.compareRow'),'snapshot comparison responsive styles missing');
@@ -114,13 +116,23 @@ assert(snapshotRenderer.includes('layoutLabels')&&snapshotRenderer.includes('ded
 assert(snapshotRenderer.includes('zoneStartX'),'PD zones must start from their originating candle');
 assert(snapshotRenderer.includes("category:'structure'")&&snapshotRenderer.includes("text:'MSS '")&&snapshotRenderer.includes("text:'CISD '"),'MSS/CISD labels must participate in collision layout');
 assert(snapshotRenderer.includes('show.labels!==false')&&snapshotRenderer.includes('enabled:show.labels!==false'),'snapshot renderer must preserve zones/lines while allowing badge text suppression');
-assert(snapshotRenderer.includes('limitOverlayLabels'),'mobile snapshot label cap missing');
+assert(snapshotRenderer.includes('limitOverlayLabels')&&snapshotRenderer.includes('selectOverlayLabels')&&snapshotRenderer.includes('overlayLabelBudget'),'mobile snapshot label cap missing');
 const capped=snapshotRendererApi.limitOverlayLabels([
   {text:'ERL High',priority:96,order:0},{text:'EQH/BSL',priority:88,order:1},{text:'EQL/SSL',priority:88,order:2},
   {text:'OB',priority:78,order:3},{text:'Rejection',priority:70,order:4},{text:'FVG',priority:62,order:5},{text:'Old High',priority:42,order:6}
 ],6);
 assert.equal(capped.length,6,'mobile snapshot labels must cap at six');
 assert(!capped.some(x=>x.text==='Old High'),'mobile cap must drop lowest-priority label first');
+const balanced=snapshotRendererApi.selectOverlayLabels([
+  {text:'MSS UP',category:'structure',priority:95,order:0,optional:false},
+  {text:'CISD UP',category:'structure',priority:92,order:1,optional:false},
+  {text:'BOS UP',category:'structure',priority:60,order:2,optional:true},
+  {text:'ERL High',category:'liquidity',priority:96,order:3},
+  {text:'EQL/SSL',category:'liquidity',priority:88,order:4},
+  {text:'FVG',category:'pd',priority:62,order:5}
+],{max:5,perCategory:2});
+assert.equal(balanced.length,5,'mobile label selector must respect total budget');
+assert(balanced.filter(x=>x.category==='structure').length<=2,'optional structure labels must not crowd mobile snapshot');
 const clustered=snapshotRendererApi.layoutLabels([
   {text:'ERL High',x:900,y:100,width:86,height:20,priority:96},
   {text:'Old High',x:900,y:102,width:82,height:20,priority:42,optional:true},
