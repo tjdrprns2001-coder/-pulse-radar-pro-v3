@@ -3,6 +3,8 @@ import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
 const handler=require('../../api/coin-scan.js');
 
+export const config={background:true};
+
 function bridgeResponse(){
   let statusCode=200,payload=null;const headers={};
   return{
