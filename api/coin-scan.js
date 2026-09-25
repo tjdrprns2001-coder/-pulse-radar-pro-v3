@@ -95,6 +95,18 @@ module.exports=async function handler(req,res,ctx={}){
       return res.status(200).json(await service.getMarketIntelligence(symbol));
     }
         if(mode==='selector-history'){
+      // selector-history-proxy: Render Postgres is the canonical ledger when available.
+      const runtimeBase=String(process.env.SELECTOR_RUNTIME_URL||'https://pulseradar-selector-runtime.onrender.com').replace(/\/$/,'');
+      if(runtimeBase){
+        const params=new URLSearchParams();
+        for(const [k,v] of Object.entries(q||{}))if(v!=null&&k!=='mode')params.set(k,String(v));
+        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),5000);
+        try{
+          const rr=await fetch(runtimeBase+'/selector-history?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
+          if(rr.ok){const body=await rr.json();return res.status(200).json(body)}
+        }catch(_e){}finally{clearTimeout(timer)}
+      }
+
       const action=String(q.action||'list').toLowerCase();
       if(action==='replay'){
         const id=String(q.id||'').trim();if(!id)return res.status(400).json({status:'error',error:'id required'});
