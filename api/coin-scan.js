@@ -100,7 +100,7 @@ module.exports=async function handler(req,res,ctx={}){
         if(mode==='selector-history'){
       // selector-history-proxy: Render Postgres is the canonical ledger when available.
       const runtimeBase=String(process.env.SELECTOR_RUNTIME_URL||'https://pulseradar-selector-runtime.onrender.com').replace(/\/$/,'');
-      if(runtimeBase){
+      if(!ctx.service&&runtimeBase){
         const params=new URLSearchParams();
         for(const [k,v] of Object.entries(q||{}))if(v!=null&&k!=='mode')params.set(k,String(v));
         const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
