@@ -18,13 +18,14 @@ test('restored snapshot mirrors child symbol into shell header',()=>{
   assert.match(src,/addEventListener\(['\"]input['\"]/);
 });
 
-test('mobile snapshot label guard is installed',()=>{
+test('mobile snapshot labels use direct renderer without global canvas monkey patch',()=>{
   const html=read('snapshot-analysis-restored.html');
-  const guard=read('ui/snapshot/snapshot-mobile-label-guard.js');
-  assert.match(html,/snapshot-mobile-label-guard\.js/);
-  assert.match(guard,/snapshotChart/);
-  assert.match(guard,/Target/);
-  assert.match(guard,/BOS/);
+  const src=read('ui/snapshot/snapshot-analysis.js');
+  assert.doesNotMatch(html,/snapshot-mobile-label-guard\.js/);
+  assert.equal(fs.existsSync(path.join(__dirname,'..','ui/snapshot/snapshot-mobile-label-guard.js')),false);
+  assert.match(src,/visibleAnnotations/);
+  assert.match(src,/labelYs/);
+  assert.match(src,/targetLabels/);
 });
 
 test('narrative never labels raw pattern score as confidence',()=>{
