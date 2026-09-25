@@ -1,0 +1,39 @@
+version: selector-r0.1
+clock:
+  timezone: UTC
+  decision_on: confirmed_bar_close
+  max_crypto_intraday_age_seconds: 300
+universe:
+  quote_assets: [USDT, USD, USDC]
+  minimum_active_venues: 2
+  excluded_market_types: [margin]
+hard_filters:
+  minimum_data_completeness: 0.95
+  maximum_cross_venue_deviation_bps: 35
+  maximum_spread_bps: 25
+  maximum_estimated_slippage_bps: 50
+  security_status: [verified, unknown]
+  reject_if_unfinalized_onchain_event: true
+reference_notional_usd: 10000
+weights:
+  market_quality: 0.25
+  ict_setup: 0.25
+  execution_quality: 0.20
+  derivatives_context: 0.10
+  onchain_context: 0.10
+  data_quality: 0.10
+penalties:
+  funding_percentile_95: 10
+  funding_percentile_99: 20
+  unlock_within_7d_pct_supply_5: 15
+  high_impact_event_within_24h: 15
+  venue_conflict: 20
+classification:
+  candidate_min_final_score: 75
+  candidate_min_ict_score: 60
+  watchlist_min_final_score: 55
+  watchlist_min_ict_score: 40
+read_only:
+  order_endpoints: false
+  wallet_signing: false
+  asset_transfer: false
