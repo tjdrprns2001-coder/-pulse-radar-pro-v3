@@ -1,14 +1,6 @@
 name: Setup Validation Campaign
 
 on:
-  push:
-    branches:
-      - research/setup-feature-rejection-audit
-    paths:
-      - 'lib/research-backtest-v2/**'
-      - 'lib/coin-scan/**'
-      - 'scripts/run-setup-validation-campaign.js'
-      - '.github/workflows/setup-validation-campaign.yml'
   workflow_dispatch:
     inputs:
       days:
@@ -38,22 +30,12 @@ jobs:
           node-version: "24"
       - run: npm install --no-audit --no-fund
       - name: Run setup validation campaign
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            npm run research:setup-campaign -- \
-              --start=2026-09-05T00:00:00Z \
-              --end=2026-09-15T00:00:00Z \
-              --symbols=${{ inputs.symbols || 'BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT,LINKUSDT,SUIUSDT,ONDOUSDT,FETUSDT,PEPEUSDT,BONKUSDT,WIFUSDT' }} \
-              --tf=${{ inputs.timeframe || '15m' }} \
-              --out=artifacts/setup-validation-campaign
-          else
-            npm run research:setup-campaign -- \
-              --days=${{ inputs.days || '28' }} \
-              --symbols=${{ inputs.symbols || 'BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT,LINKUSDT,SUIUSDT,ONDOUSDT,FETUSDT,PEPEUSDT,BONKUSDT,WIFUSDT' }} \
-              --tf=${{ inputs.timeframe || '15m' }} \
-              --out=artifacts/setup-validation-campaign
-          fi
+        run: >
+          npm run research:setup-campaign --
+          --days=${{ inputs.days }}
+          --symbols=${{ inputs.symbols }}
+          --tf=${{ inputs.timeframe }}
+          --out=artifacts/setup-validation-campaign
       - name: Upload validation artifacts
         if: always()
         uses: actions/upload-artifact@v4
