@@ -168,16 +168,50 @@ async function runEvidencePollers(){
     await new Promise(r=>setTimeout(r,5000));
   }
 }
+function streamFresh(market,symbol){
+  const key=String(symbol||'').toLowerCase()+'@depth@100ms';
+  const guards=Array.isArray(health?.[market]?.guards)?health[market].guards:[];
+  const g=guards.find(x=>String(x.source||'').toLowerCase()===key);
+  return Boolean(g?.fresh&&g?.status==='OK');
+}
+async function recordSelectorFallback(list,reason){
+  const now=Date.now(),bucket=Math.floor(now/300000)*300000,rows=[];
+  for(const symbol of list){
+    const spotFresh=streamFresh('binanceSpot',symbol),futuresFresh=streamFresh('binanceFutures',symbol);
+    const both=spotFresh&&futuresFresh;
+    const snapshot={
+      spec_version:'selector-runtime-ws-v1',
+      snapshot_id:['runtime-ws',symbol,bucket].join(':'),
+      decision_time:new Date(now).toISOString(),
+      data_cutoff:new Date(now).toISOString(),
+      symbol,
+      instrument_id:'binance:'+symbol+':perpetual',
+      timeframe:'realtime',
+      classification:'INSUFFICIENT_DATA',
+      rank:null,
+      scores:{final_score:0,market_quality:null,ict_setup:null,execution_quality:null,derivatives_context:null,onchain_context:null,data_quality:both?80:(spotFresh||futuresFresh?55:20)},
+      evidence_context:{runtime:{spotFresh,futuresFresh,reason:String(reason||'deep scan pending')}},
+      evidence:[{type:'RUNTIME_FALLBACK',value:both?'spot+futures websocket fresh':'partial websocket coverage'}],
+      input_hash:['runtime-ws',symbol,bucket,spotFresh?'s1':'s0',futuresFresh?'f1':'f0'].join(':')
+    };
+    const raw={schemaVersion:'SELECTOR_RAW_INPUT_RUNTIME_WS_v1',snapshotId:snapshot.snapshot_id,symbol,capturedAt:now,health:{spotFresh,futuresFresh},reason:String(reason||'deep scan pending')};
+    try{await selectorStore.putSelectorSnapshot(snapshot.snapshot_id,snapshot);await selectorStore.putSelectorRaw(snapshot.snapshot_id,raw);rows.push(snapshot.snapshot_id)}catch(e){health.errors.push({source:'selector-fallback',at:Date.now(),error:String(e?.message||e)})}
+  }
+  return rows;
+}
 async function runSelectorScanner(){
   const interval=Math.max(60000,Number(env.SELECTOR_SCAN_INTERVAL_MS||900000));
+  const timeoutMs=Math.max(15000,Number(env.SELECTOR_SCAN_TIMEOUT_MS||45000));
   await new Promise(r=>setTimeout(r,Number(env.SELECTOR_SCAN_START_DELAY_MS||12000)));
   while(true){
+    const list=symbols();
     try{
-      const list=symbols();
-      const result=await selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true});
+      const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('selector deep scan timeout')),timeoutMs));
+      const result=await Promise.race([selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true}),timeout]);
       health.selector={status:'FRESH',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null};
     }catch(e){
-      health.selector={status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};
+      const fallbackIds=await recordSelectorFallback(list,e?.message||e);
+      health.selector={status:'PARTIAL',updatedAt:Date.now(),symbols:list,fallbackSnapshots:fallbackIds.length,error:String(e?.message||e)};
       health.errors.push({source:'selector',at:Date.now(),error:String(e?.message||e)});
     }
     await new Promise(r=>setTimeout(r,interval));
