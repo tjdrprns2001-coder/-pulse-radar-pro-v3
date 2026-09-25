@@ -1,0 +1,40 @@
+version: selector-r0.2
+clock:
+  timezone: UTC
+  decision_on: confirmed_bar_close
+  max_crypto_intraday_age_seconds: 300
+universe:
+  quote_assets: [USDT, USD, USDC]
+  minimum_active_venues: 2
+hard_filters:
+  minimum_data_completeness: 0.95
+  maximum_cross_venue_deviation_bps: 35
+  maximum_spread_bps: 25
+  maximum_estimated_slippage_bps: 50
+  reject_security_events: true
+reference_notional_usd: 10000
+weights:
+  market_quality: 0.20
+  ict_setup: 0.25
+  execution_quality: 0.20
+  derivatives_context: 0.10
+  onchain_context: 0.10
+  catalyst_context: 0.05
+  data_quality: 0.10
+risk:
+  unlock_within_7d_pct_supply_5_penalty: 15
+  high_impact_macro_within_1h_penalty: 10
+  unfinalized_onchain_penalty: 10
+  low_wallet_label_confidence_excludes_directional_evidence: true
+  unverified_news_score_weight: 0
+point_in_time:
+  require_published_at_lte_decision_time: true
+  require_observed_at_lte_decision_time: true
+  require_block_timestamp_lte_decision_time: true
+  require_feature_available_at_lte_decision_time: true
+  retracted_news_excluded: true
+  reorg_events_append_only: true
+read_only:
+  order_endpoints: false
+  wallet_signing: false
+  asset_transfer: false
