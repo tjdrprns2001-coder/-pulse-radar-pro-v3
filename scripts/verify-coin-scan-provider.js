@@ -62,3 +62,5 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert(maxActive<=2,'concurrency must be bounded');
   console.log('coin scan provider PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
+
+assert.equal(typeof provider.scanLightCandidates,'function','light prescan provider required');
