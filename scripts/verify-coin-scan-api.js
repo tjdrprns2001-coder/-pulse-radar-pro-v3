@@ -106,6 +106,10 @@ const provider={
   assert.equal(code,200);assert.equal(body.status,'ok');assert.equal(body.deepScanCount,2);assert(String(headers['Cache-Control']).includes('stale-while-revalidate'));
 
   code=0;body=null;headers={};
+  await handler({query:{mode:'summary',limit:'5',fresh:'1',run:'scan-test-1'}},res,{service});
+  assert.equal(code,200);assert.equal(body.scanRunId,'scan-test-1');assert.equal(headers['Cache-Control'],'no-store, max-age=0','manual fresh scan must bypass response cache');
+
+  code=0;body=null;headers={};
   await handler({query:{mode:'event-snapshots',action:'get',eventId:'EV-A'}},res,{service:transitionService});
   assert.equal(code,200);assert.equal(body.bundle.eventId,'EV-A');assert(String(headers['Cache-Control']).includes('no-store'));
   code=0;body=null;headers={};
