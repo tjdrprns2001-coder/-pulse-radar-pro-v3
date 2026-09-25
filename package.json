@@ -92,7 +92,7 @@
     "test:coin-intel-ui": "node scripts/verify-coin-intel-ui.js",
     "test:v4-renewal": "node scripts/verify-v4-renewal.js",
     "test:v4-1-mobile": "node scripts/verify-v4-1-mobile.js",
-    "test:v5-trader": "node scripts/verify-v5-trader-workspace.js",
+    "test:v5-trader": "node scripts/verify-snapshot-shared-cache.js && node scripts/verify-v5-trader-workspace.js",
     "test:transition-snapshots": "node scripts/verify-transition-snapshot-archive.js",
     "test:simple-trading-book": "node scripts/verify-simple-trading-book.js",
     "test:forex-book": "node scripts/verify-forex-book.js",
