@@ -179,14 +179,14 @@ async function runEvidencePollers(){
 }
 function streamFresh(market,symbol){
   const h=health?.[market]||{};
-  if(market==='binanceSpot'){
-    const age=h.lastMessageAt!=null?Date.now()-Number(h.lastMessageAt):Infinity;
-    return h.state==='LIVE'&&!h.silent&&age<30000;
-  }
+  const age=h.lastMessageAt!=null?Date.now()-Number(h.lastMessageAt):Infinity;
+  const transportFresh=(h.state==='LIVE'||h.state==='RESYNC_REQUIRED')&&!h.silent&&age<30000;
+  if(market==='binanceSpot')return transportFresh;
   const key=String(symbol||'').toLowerCase()+'@depth@100ms';
   const guards=Array.isArray(h.guards)?h.guards:[];
   const g=guards.find(x=>String(x.source||'').toLowerCase()===key);
-  return Boolean(g?.fresh&&g?.status==='OK');
+  const sequenceFresh=Boolean(g?.fresh&&g?.status==='OK');
+  return transportFresh||sequenceFresh;
 }
 async function recordSelectorFallback(list,reason){
   const now=Date.now(),bucket=Math.floor(now/300000)*300000,rows=[];
