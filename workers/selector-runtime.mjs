@@ -239,8 +239,18 @@ function server(){
           else if(action==='replay'){const id=String(u.searchParams.get('id')||'');payload={status:'ok',mode:'selector-history',action,replay:await selectorLedger.replay(id)}}
           else {
             const classification=u.searchParams.get('classification')||null;
-            const clauses=[],vals=[];let n=1;
-            if(symbol){clauses.push('symbol=
+            let rows;
+            if(symbol&&classification){
+              rows=await query('SELECT payload FROM selector_snapshots WHERE symbol=$1 AND classification=$2 ORDER BY decision_time DESC LIMIT $3',[String(symbol).toUpperCase(),String(classification).toUpperCase(),limit]);
+            }else if(symbol){
+              rows=await query('SELECT payload FROM selector_snapshots WHERE symbol=$1 ORDER BY decision_time DESC LIMIT $2',[String(symbol).toUpperCase(),limit]);
+            }else if(classification){
+              rows=await query('SELECT payload FROM selector_snapshots WHERE classification=$1 ORDER BY decision_time DESC LIMIT $2',[String(classification).toUpperCase(),limit]);
+            }else{
+              rows=await query('SELECT payload FROM selector_snapshots ORDER BY decision_time DESC LIMIT $1',[limit]);
+            }
+            payload={status:'ok',mode:'selector-history',action:'list',items:(rows.rows||[]).map(x=>x.payload)};
+          }
           res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
         }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
       }
