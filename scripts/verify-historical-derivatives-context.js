@@ -55,5 +55,27 @@ const fetchImpl=async url=>{
   assert(oiRange.pages>=4);
   assert(oiRange.rows.every(x=>x.timestamp>=START+5*H&&x.timestamp<=START+25*H));
 
+
+  const partialFetch=async url=>{
+    const u=new URL(url),p=u.pathname;
+    if(p.endsWith('/openInterestHist')||p.endsWith('/takerlongshortRatio'))return{ok:false,status:451,json:async()=>({})};
+    let data=[];
+    if(p.endsWith('/fundingRate'))data=select(funding,u,'fundingTime');
+    else if(p.endsWith('/klines')){
+      const et=Number(u.searchParams.get('endTime')||Infinity),limit=Number(u.searchParams.get('limit')||1500);
+      data=spot.filter(x=>x[6]<=et).slice(-limit);
+    }
+    return{ok:true,status:200,json:async()=>data};
+  };
+  const partialEngine=createCryptoResearchDataEngine({fetchImpl:partialFetch,marketType:'spot'});
+  const partial=await partialEngine.buildHistoricalContextTimeline('AAAUSDT',{startTime:start,endTime:end,stepMs:Q,warmupHours:24});
+  assert(partial.timeline.length>0);
+  assert.equal(partial.coverage.oiRows,0);
+  assert.equal(partial.coverage.taker15mRows,0);
+  assert(partial.coverage.spot15mRows>0);
+  assert.equal(partial.coverage.fullDerivativesHistorical,false);
+  assert(partial.coverage.sourceErrors.oi);
+  assert(partial.timeline.some(x=>x.spot15m.length>0));
+
   console.log('historical derivatives context verification passed');
 })().catch(e=>{console.error(e);process.exit(1)});
