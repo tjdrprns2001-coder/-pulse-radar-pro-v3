@@ -54,7 +54,8 @@ x=E.analyze({
   },
   bookManual:{riskPlan:{invalidation:baseEntry-1,targets:[baseEntry+.6]}}
 });
-assert(['B','C'].includes(x.grade),'late/poor-space entry must not remain A');
+assert.notEqual(x.grade,'A','late/poor-space entry must not remain A');
+assert(['C','D'].includes(x.grade),'late entry with <1R target space should be C/D');
 assert.equal(x.lateEntry,true);
 assert(x.warnings.some(v=>/늦은 추격/.test(v)));
 console.log('entry confirmation engine PASS');
