@@ -10,7 +10,9 @@ must(js.includes('function finderPass('),'finder filter missing');
 must(js.includes('function finderScore('),'finder score missing');
 must(js.includes("preset==='retest'"),'retest preset logic missing');
 must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
-must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
+must(js.includes("setInterval(()=>{if(document.visibilityState==='visible')refresh(false)},60000)"),'60s visible-only autoscan cadence missing');
+must(js.includes("if((state.loading||state.deepLoading)&&!force)return"),'overlapping scan guard missing');
+must(js.includes('saveScanSession')&&js.includes('restoreScanSession'),'scan session restore missing');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 

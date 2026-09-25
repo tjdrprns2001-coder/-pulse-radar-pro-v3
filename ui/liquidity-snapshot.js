@@ -7,6 +7,7 @@ const LABEL={'1w':'1W','3d':'3D','1d':'1D','12h':'12H','4h':'4H','1h':'1H','15m'
 const HTF={'1w':'1w','3d':'1w','1d':'1w','12h':'1d','4h':'1d','1h':'4h','15m':'1h','5m':'15m'};
 const $=id=>document.getElementById(id);
 let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,gateStore=null,gateState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
+const STRUCTURE_CACHE_KEY='pulse.liquidity.structure-cache.v1',STRUCTURE_CACHE_TTL=60000,STRUCTURE_CACHE_MAX=8,structureMemory=new Map();
 
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function finite(v){return Number.isFinite(Number(v))}
@@ -19,7 +20,9 @@ function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 function htfBias(data){const events=Array.isArray(data?.events)?data.events:[],last=events.at(-1);if(last?.dir)return last.dir;const label=String(data?.bias?.label||data?.bias||'');if(/up|bull|상승/i.test(label))return'up';if(/down|bear|하락/i.test(label))return'down';return'neutral'}
 function toneForPhase(s){if(model?.referenceOnly)return'tone-na';if(s?.phase==='POST_SWEEP_DRAW')return'tone-confirm';if(s?.phase==='SWEEP_WAIT_RECLAIM')return'tone-wait';return'tone-info'}
 function setTone(el,tone){if(!el)return;el.classList.remove('tone-confirm','tone-wait','tone-risk','tone-info','tone-na');el.classList.add(tone)}
-async function structure(symbol,tf){const u='/api/structure?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+'&limit=600';const r=await fetch(u,{cache:'no-store'}),d=await r.json();if(!r.ok||!d?.ok)throw new Error(d?.error||('구조 데이터 HTTP '+r.status));return d}
+function readStructureCache(key){const mem=structureMemory.get(key);if(mem&&Date.now()-mem.ts<STRUCTURE_CACHE_TTL)return mem.data;try{const box=JSON.parse(sessionStorage.getItem(STRUCTURE_CACHE_KEY)||'{}'),row=box?.[key];if(row&&Date.now()-Number(row.ts)<STRUCTURE_CACHE_TTL&&row.data){structureMemory.set(key,row);return row.data}}catch{}return null}
+function writeStructureCache(key,data){const row={ts:Date.now(),data};structureMemory.set(key,row);try{const box=JSON.parse(sessionStorage.getItem(STRUCTURE_CACHE_KEY)||'{}')||{};box[key]=row;const keep=Object.entries(box).sort((a,b)=>Number(b[1]?.ts||0)-Number(a[1]?.ts||0)).slice(0,STRUCTURE_CACHE_MAX);sessionStorage.setItem(STRUCTURE_CACHE_KEY,JSON.stringify(Object.fromEntries(keep)))}catch{}}
+async function structure(symbol,tf){const key=clean(symbol)+':'+String(tf),cached=readStructureCache(key);if(cached)return cached;const u='/api/structure?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+'&limit=600';const r=await fetch(u,{cache:'default'}),d=await r.json();if(!r.ok||!d?.ok)throw new Error(d?.error||('구조 데이터 HTTP '+r.status));writeStructureCache(key,d);return d}
 function syncSymbol(s){try{parent.postMessage({type:'pulse-symbol-sync',symbol:s},'*')}catch{}}
 
 function phaseShort(s){if(model?.referenceOnly)return'5m 참고 전용';if(s.phase==='POST_SWEEP_DRAW')return'Sweep+Reclaim 확인';if(s.phase==='SWEEP_WAIT_RECLAIM')return'Sweep · Reclaim 대기';return'스윕 전'}
