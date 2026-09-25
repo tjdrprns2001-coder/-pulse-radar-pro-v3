@@ -8,6 +8,14 @@
   const price=v=>fmt(v,v>1?4:8);
   const time=v=>v?new Date(v).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'미확인';
   let items=[],summary=null,filter='ALL',running=false,controller=null,timer=null,lastFinished=0;
+  const scanStale=()=>!running&&((lastFinished&&Date.now()-lastFinished>120000)||(!lastFinished&&summary?.asOf&&Date.now()-summary.asOf>120000));
+  function setProgress(total,completed,failed){
+    const processed=completed+failed,pct=total?Math.min(100,Math.round(processed/total*100)):0;
+    if($('scanTotal'))$('scanTotal').textContent=total;
+    if($('scanCompleted'))$('scanCompleted').textContent=completed;
+    if($('scanFailed'))$('scanFailed').textContent=failed;
+    if($('scanPct'))$('scanPct').textContent=pct+'%';
+  }
   function spark(values){
     const a=(values||[]).filter(Number.isFinite);if(a.length<2)return '';
     const lo=Math.min(...a),range=Math.max(...a)-lo||1;
@@ -15,7 +23,7 @@
   }
   function card(x){
     const f=x.flow||{},s=x.stats||{},p=x.plan||{},warnings=[...(x.blockers||[]),...(x.missing||[]),...(x.waiting||[])];
-    const stale=Date.now()-(x.asOf||0)>120000;
+    const stale=scanStale();
     const state=stale&&x.state==='CONFIRMED'?'DATA_GAP':x.state;
     const reasons=stale?['이전 스캔 결과입니다. 새 스캔으로 진입 상태를 재확인하세요.',...warnings]:warnings;
     const line=reasons.length?reasons.slice(0,2):(x.reasons||[]).slice(0,2);
@@ -31,7 +39,7 @@
   function render(){
     const expanded=new Set([...document.querySelectorAll('.card details[open]')].map(el=>el.closest('.card').dataset.symbol));
     const query=$('query').value.trim().toUpperCase(),counts=Object.fromEntries(Object.keys(labels).map(k=>[k,0]));
-    const display=items.map(x=>Date.now()-x.asOf>120000&&x.state==='CONFIRMED'?{...x,state:'DATA_GAP'}:x);
+    const stale=scanStale(),display=items.map(x=>stale&&x.state==='CONFIRMED'?{...x,state:'DATA_GAP'}:x);
     display.forEach(x=>counts[x.state]=(counts[x.state]||0)+1);
     for(const k of Object.keys(labels))$('count-'+k).textContent=counts[k];
     const selected=display.filter(x=>(filter==='ALL'||x.state===filter)&&x.symbol.includes(query)).sort((a,b)=>rank[a.state]-rank[b.state]||b.score-a.score);
@@ -45,41 +53,60 @@
     const data=await response.json();if(!response.ok||data.status!=='ok')throw new Error(data.error||`HTTP ${response.status}`);return data;
   }
   function arm(){clearTimeout(timer);const minutes=Number($('interval').value);if(minutes&&document.visibilityState==='visible'&&!running)timer=setTimeout(scan,minutes*60000)}
-  function save(){try{sessionStorage.setItem('trader_scan_v1',JSON.stringify({items,summary,savedAt:Date.now()}))}catch{}}
+  function save(){try{sessionStorage.setItem('trader_scan_v1',JSON.stringify({items,summary,lastFinished,savedAt:Date.now()}))}catch{}}
   function showSummary(){
     if(!summary)return;
     $('regime').textContent=regimeLabels[summary.regime?.state]||regimeLabels.UNKNOWN;
     $('asOf').textContent='스캔 시작 시점 '+time(summary.asOf);
     $('marketNote').textContent=summary.regime?.state==='RISK_OFF'?'신규 롱은 제외하고, 구조와 제외 사유를 기록합니다.':'BTC·ETH가 모두 상승 정렬된 환경에서만 진입 확인으로 분류합니다.';
-    $('coverage').textContent=`선물 ${summary.universeCount}개 시세 필터 · 기본 통과 ${summary.eligibleCount}개 · 예비검사 ${summary.candidates.length}개 · 정밀 최대 ${summary.deepLimit}개`;
+    $('coverage').textContent=`Binance USDT 무기한 거래가능 ${summary.universeCount}개 · 1W/1D/4H/1H/15m/5m 6TF 전수검사 · 기본 필터 통과 ${summary.eligibleCount}개`;
+    setProgress(summary.universeCount,0,0);
   }
   async function scan(){
-    if(running)return;clearTimeout(timer);running=true;controller=new AbortController();items=[];summary=null;render();
+    if(running)return;clearTimeout(timer);running=true;controller=new AbortController();items=[];summary=null;lastFinished=0;render();setProgress(0,0,0);
     $('regime').textContent='시장 상태 확인 중';$('asOf').textContent='조회 중';$('marketNote').textContent='BTC·ETH 선물 확정봉을 다시 확인합니다.';
-    $('start').disabled=true;$('stop').disabled=false;$('bar').style.width='2%';$('status').textContent='전체 선물 시세와 BTC·ETH 시장 환경 확인 중…';
-    let failedLight=0,deepErrors=0,completed=0,deepTotal=0;
+    $('start').disabled=true;$('stop').disabled=false;$('bar').style.width='2%';$('status').textContent='Binance USDT 무기한 거래가능 종목 전체 목록 확인 중…';
+    let completed=0,failed=0,total=0;
     try{
-      summary=await request('trader-summary');showSummary();$('bar').style.width='10%';
-      const symbols=summary.candidates.map(x=>x.symbol),light=[];
-      for(let i=0;i<symbols.length;i+=4){
-        if(controller.signal.aborted)throw new DOMException('Stopped','AbortError');
-        $('status').textContent=`1H·4H 예비검사 ${Math.min(i+4,symbols.length)}/${symbols.length}`;
-        try{const out=await request('trader-light',{symbols:symbols.slice(i,i+4).join(',')});light.push(...out.items)}catch(e){if(controller.signal.aborted)throw e;failedLight+=symbols.slice(i,i+4).length}
-        $('bar').style.width=(10+35*Math.min(i+4,symbols.length)/Math.max(1,symbols.length))+'%';
+      summary=await request('trader-summary');showSummary();
+      const symbols=summary.candidates.map(x=>x.symbol),batches=[];total=symbols.length;
+      for(let i=0;i<symbols.length;i+=4)batches.push(symbols.slice(i,i+4));
+      setProgress(total,0,0);$('bar').style.width=total?'5%':'100%';
+      let next=0;
+      async function worker(){
+        while(next<batches.length){
+          if(controller.signal.aborted)return;
+          const batch=batches[next++],returned=new Set(),failedSymbols=new Set();
+          try{
+            const data=await request('trader-batch',{symbols:batch.join(',')});
+            for(const item of data.items||[]){items.push(item);if(item?.symbol)returned.add(item.symbol)}
+            for(const err of data.errors||[])if(err?.symbol)failedSymbols.add(err.symbol);
+            for(const symbol of batch){
+              if(returned.has(symbol))continue;
+              failedSymbols.add(symbol);
+              items.push({symbol,state:'DATA_GAP',score:0,asOf:Date.now(),reasons:[],waiting:[],blockers:[],missing:['정밀 데이터 응답 누락']});
+            }
+          }catch(e){
+            if(controller.signal.aborted)return;
+            for(const symbol of batch){
+              failedSymbols.add(symbol);
+              items.push({symbol,state:'DATA_GAP',score:0,asOf:Date.now(),reasons:[],waiting:[],blockers:[],missing:['정밀 데이터 조회 실패: '+e.message]});
+            }
+          }
+          failed+=failedSymbols.size;completed+=batch.length-failedSymbols.size;
+          const processed=completed+failed,pct=total?Math.round(processed/total*100):100;
+          $('status').textContent=`6TF 전수검사 ${processed}/${total} · 완료 ${completed} · 실패 ${failed}`;
+          $('coverage').textContent=`Binance USDT 무기한 거래가능 ${total}개 · 6TF 전수검사 진행 ${processed}/${total} · 완료 ${completed} · 실패 ${failed}`;
+          $('bar').style.width=(5+95*pct/100)+'%';setProgress(total,completed,failed);render();save();
+        }
       }
-      const candidates=light.filter(x=>x.eligible).sort((a,b)=>b.score-a.score||a.symbol.localeCompare(b.symbol)).slice(0,summary.deepLimit);
-      deepTotal=candidates.length;let next=0;
-      async function worker(){while(next<candidates.length){if(controller.signal.aborted)return;const candidate=candidates[next++];
-        try{const data=await request('trader-deep',{symbol:candidate.symbol});items.push(data.item)}
-        catch(e){if(controller.signal.aborted)return;deepErrors++;items.push({symbol:candidate.symbol,state:'DATA_GAP',score:0,asOf:Date.now(),missing:['정밀 데이터 조회 실패: '+e.message],waiting:[],blockers:[]})}
-        completed++;$('status').textContent=`6TF 정밀검사 ${completed}/${deepTotal} · 결과가 순차 반영됩니다.`;$('bar').style.width=(45+55*completed/Math.max(1,deepTotal))+'%';render();save();
-      }}
       await Promise.all([worker(),worker()]);
       if(controller.signal.aborted)throw new DOMException('Stopped','AbortError');
-      $('status').textContent=`완료 · 정밀 ${completed}개 · 예비조회 실패 ${failedLight}개 · 정밀조회 실패 ${deepErrors}개`;
-      $('coverage').textContent+=` · 예비 구조 통과 ${light.filter(x=>x.eligible).length}개 / 구조 제외·부족 ${light.filter(x=>!x.eligible).length}개 · 실제 정밀 ${completed}개`;
-      $('bar').style.width='100%';lastFinished=Date.now();save();
-    }catch(e){$('status').textContent=controller.signal.aborted?'스캔 중지 · 완료된 결과만 표시합니다.':'스캔 실패 · '+e.message}
+      lastFinished=Date.now();setProgress(total,completed,failed);$('bar').style.width='100%';
+      $('status').textContent=`완료 · 전체 ${total}개 · 완료 ${completed}개 · 실패 ${failed}개`;
+      $('coverage').textContent=`Binance USDT 무기한 거래가능 ${total}개를 1W/1D/4H/1H/15m/5m로 전수검사 · 완료 ${completed} · 실패 ${failed} · 조건 미달 종목도 사유 보존`;
+      save();
+    }catch(e){$('status').textContent=controller.signal.aborted?`스캔 중지 · 완료 ${completed} · 실패 ${failed} · 나머지 미검사`:'스캔 실패 · '+e.message}
     finally{running=false;$('start').disabled=false;$('stop').disabled=true;render();arm()}
   }
   $('start').addEventListener('click',scan);
@@ -91,5 +118,5 @@
   window.addEventListener('pagehide',()=>{controller?.abort();clearTimeout(timer)});
   // Expire visible entry confirmations even when auto-refresh is off.
   setInterval(()=>{if(document.visibilityState==='visible'&&!running&&items.length)render()},30000);
-  try{const cached=JSON.parse(sessionStorage.getItem('trader_scan_v1')||'null');if(cached&&Date.now()-cached.savedAt<3600000&&Array.isArray(cached.items)){items=cached.items;summary=cached.summary;showSummary();render();$('status').textContent='이전 결과를 복원했습니다. 새 스캔으로 현재 상태를 확인하세요.'}}catch{}
+  try{const cached=JSON.parse(sessionStorage.getItem('trader_scan_v1')||'null');if(cached&&Date.now()-cached.savedAt<3600000&&Array.isArray(cached.items)){items=cached.items;summary=cached.summary;lastFinished=Number(cached.lastFinished)||0;showSummary();const failed=items.filter(x=>x.missing?.some?.(m=>String(m).includes('조회 실패')||String(m).includes('응답 누락'))).length;setProgress(summary?.universeCount||items.length,Math.max(0,items.length-failed),failed);render();$('status').textContent='이전 전수검사 결과를 복원했습니다. 새 스캔으로 현재 상태를 확인하세요.'}}catch{}
 })();
