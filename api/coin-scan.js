@@ -100,7 +100,7 @@ module.exports=async function handler(req,res,ctx={}){
       if(runtimeBase){
         const params=new URLSearchParams();
         for(const [k,v] of Object.entries(q||{}))if(v!=null&&k!=='mode')params.set(k,String(v));
-        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),5000);
+        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
         try{
           const rr=await fetch(runtimeBase+'/selector-history?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
           if(rr.ok){const body=await rr.json();return res.status(200).json(body)}
