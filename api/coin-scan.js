@@ -99,6 +99,15 @@ module.exports=async function handler(req,res,ctx={}){
         const rows=await service.listSelectorTransitions({symbol:q.symbol||null,limit});
         return res.status(200).json({status:'ok',mode:'selector-history',action:'transitions',updatedAt:Date.now(),items:rows});
       }
+      if(action==='ablation'){
+        const report=await service.getSelectorAblation({
+          horizon:String(q.horizon||'h24'),
+          feeBps:Number(q.feeBps)||0,
+          slippageBps:Number(q.slippageBps)||0,
+          fundingBps:Number(q.fundingBps)||0
+        });
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'ablation',updatedAt:Date.now(),report});
+      }
       if(action==='stats'){
         const lockedOosStart=Number(q.lockedOosStart)||null;
         return res.status(200).json({status:'ok',mode:'selector-history',action:'stats',updatedAt:Date.now(),stats:await service.getSelectorStats({lockedOosStart})});
