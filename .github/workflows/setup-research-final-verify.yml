@@ -1,0 +1,38 @@
+name: Setup Research Final Verify
+
+on:
+  push:
+    branches:
+      - research/setup-feature-rejection-audit
+    paths:
+      - 'lib/coin-scan/setup-execution-gate.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'lib/research-backtest-v2/setup-*.js'
+      - 'scripts/verify-setup-*.js'
+      - '.github/workflows/setup-research-final-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm install --no-audit --no-fund
+      - name: Verify setup research stack
+        run: |
+          npm run test:setup-state-machine
+          npm run test:setup-execution-gate
+          npm run test:setup-point-in-time-replay
+          npm run test:setup-execution-coverage
+          npm run test:setup-validation-harness
+          npm run test:setup-batch-validation
+          npm run test:setup-validation-report
+          npm run test:setup-validation-campaign
+          npm run test:coin-scan-provider
