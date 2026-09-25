@@ -38,14 +38,14 @@ assert(r.netR>1.5&&r.netR<2);
 const frames={'5m':[],'15m':[],'1h':[]};
 for(let i=0;i<30;i++){
   const c=95+i*0.2;
-  frames['5m'].push(kline(i,{o:c-.1,h:c+.5,l:c-.5,c,q:12000,openTime:i*300000,closeTime:(i+1)*300000}));
-  frames['15m'].push(kline(i,{o:c-.2,h:c+.8,l:c-.8,c,q:18000,openTime:i*900000,closeTime:(i+1)*900000}));
-  frames['1h'].push(kline(i,{o:c-.3,h:c+3,l:c-1,c,q:30000,openTime:i*3600000,closeTime:(i+1)*3600000}));
+  frames['5m'].push(kline(i,{o:c-.1,h:c+.5,l:c-.5,c,q:12000,openTime:NOW-(30-i)*300000,closeTime:NOW-(29-i)*300000}));
+  frames['15m'].push(kline(i,{o:c-.2,h:c+.8,l:c-.8,c,q:18000,openTime:NOW-(30-i)*900000,closeTime:NOW-(29-i)*900000}));
+  frames['1h'].push(kline(i,{o:c-.3,h:c+3,l:c-1,c,q:30000,openTime:NOW-(30-i)*3600000,closeTime:NOW-(29-i)*3600000}));
 }
 const now=NOW;
 const freshSpot=[];
-for(let i=0;i<21;i++)freshSpot.push(kline(i,{q:10000+(i%3)*100,openTime:(i+8)*900000,closeTime:(i+9)*900000}));
-freshSpot.push(kline(21,{q:50000,openTime:29*900000,closeTime:30*900000}));
+for(let i=0;i<21;i++)freshSpot.push(kline(i,{q:10000+(i%3)*100,openTime:NOW-(22-i)*900000,closeTime:NOW-(21-i)*900000}));
+freshSpot.push(kline(21,{q:50000,openTime:NOW-900000,closeTime:NOW}));
 const item={
   symbol:'TESTUSDT',updatedAt:now,fundingRate:.01,oi4hChangePct:1,priceChange1h:1,
   setupFeatures:{
