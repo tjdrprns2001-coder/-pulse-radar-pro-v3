@@ -13,3 +13,11 @@ must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
 must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
+
+const selector=fs.readFileSync('config/selector_r0_1.yaml','utf8');
+const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.1.schema.json','utf8'));
+must(selector.includes('version: selector-r0.1'),'selector spec version missing');
+must(selector.includes('maximum_cross_venue_deviation_bps: 35'),'cross venue hard limit missing');
+must(selector.includes('candidate_min_final_score: 75'),'candidate threshold missing');
+must(schema.properties.classification.enum.includes('CANDIDATE'),'selector snapshot classification contract missing');
+must(schema.properties.classification.enum.includes('RISK_FILTERED'),'risk-filtered contract missing');
