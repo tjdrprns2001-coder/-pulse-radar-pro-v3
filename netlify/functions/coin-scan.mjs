@@ -14,6 +14,11 @@ function bridgeResponse(){
 
 export default async function netlifyCoinScan(req){
   const bridge=bridgeResponse();
-  await handler({query:queryFrom(req.url)},bridge.res,{getStore:(name)=>getStore(name)});
+  let body=null;
+  if(!['GET','HEAD'].includes(String(req.method||'GET').toUpperCase())){
+    const raw=await req.text().catch(()=>'');
+    if(raw){try{body=JSON.parse(raw)}catch{body=raw}}
+  }
+  await handler({query:queryFrom(req.url),method:req.method||'GET',body},bridge.res,{getStore:(name)=>getStore(name)});
   return bridge.response();
 }
