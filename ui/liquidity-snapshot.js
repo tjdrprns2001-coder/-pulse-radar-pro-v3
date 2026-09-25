@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,JOURNAL=window.PulseLiquidityEventJournal,GATE=window.PulseSampleReadinessGate;
+const SC=window.PulseSnapshotStructureCache,M=window.PulseLiquidityMapEngine,TRE=window.PulseTrendlineRetestEngine,JOURNAL=window.PulseLiquidityEventJournal,GATE=window.PulseSampleReadinessGate;
 const PRIMARY_TF=M?.TF_ORDER||['1w','1d','4h','1h','15m'];
 const EXTRA_TF=M?.EXTRA_TF_ORDER||['3d','12h','5m'];
 const ALL_TF=[...new Set([...PRIMARY_TF,...EXTRA_TF])];
@@ -22,7 +22,7 @@ function toneForPhase(s){if(model?.referenceOnly)return'tone-na';if(s?.phase==='
 function setTone(el,tone){if(!el)return;el.classList.remove('tone-confirm','tone-wait','tone-risk','tone-info','tone-na');el.classList.add(tone)}
 function readStructureCache(key){const mem=structureMemory.get(key);if(mem&&Date.now()-mem.ts<STRUCTURE_CACHE_TTL)return mem.data;try{const box=JSON.parse(sessionStorage.getItem(STRUCTURE_CACHE_KEY)||'{}'),row=box?.[key];if(row&&Date.now()-Number(row.ts)<STRUCTURE_CACHE_TTL&&row.data){structureMemory.set(key,row);return row.data}}catch{}return null}
 function writeStructureCache(key,data){const row={ts:Date.now(),data};structureMemory.set(key,row);try{const box=JSON.parse(sessionStorage.getItem(STRUCTURE_CACHE_KEY)||'{}')||{};box[key]=row;const keep=Object.entries(box).sort((a,b)=>Number(b[1]?.ts||0)-Number(a[1]?.ts||0)).slice(0,STRUCTURE_CACHE_MAX);sessionStorage.setItem(STRUCTURE_CACHE_KEY,JSON.stringify(Object.fromEntries(keep)))}catch{}}
-async function structure(symbol,tf){const key=clean(symbol)+':'+String(tf),cached=readStructureCache(key);if(cached)return cached;const u='/api/structure?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+'&limit=600';const r=await fetch(u,{cache:'default'}),d=await r.json();if(!r.ok||!d?.ok)throw new Error(d?.error||('구조 데이터 HTTP '+r.status));writeStructureCache(key,d);return d}
+async function structure(symbol,tf,force=false){if(SC)return SC.fetchStructure({symbol:clean(symbol),interval:tf,limit:600,force});const key=clean(symbol)+':'+String(tf),cached=!force&&readStructureCache(key);if(cached)return cached;const u='/api/structure?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(tf)+'&limit=600';const r=await fetch(u,{cache:'no-store'}),d=await r.json();if(!r.ok||!d?.ok)throw new Error(d?.error||('구조 데이터 HTTP '+r.status));writeStructureCache(key,d);return d}
 function syncSymbol(s){try{parent.postMessage({type:'pulse-symbol-sync',symbol:s},'*')}catch{}}
 
 function phaseShort(s){if(model?.referenceOnly)return'5m 참고 전용';if(s.phase==='POST_SWEEP_DRAW')return'Sweep+Reclaim 확인';if(s.phase==='SWEEP_WAIT_RECLAIM')return'Sweep · Reclaim 대기';return'스윕 전'}
@@ -209,11 +209,11 @@ function savePng(){const cv=$('snapshot');if(!model||!cv)return;cv.toBlob(blob=>
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('symbol',clean($('symbol').value));u.searchParams.set('tf',currentTf);history.replaceState(null,'',u)}
 function selectTf(t){if(!ALL_TF.includes(t))return;currentTf=t;document.querySelectorAll('#tfTabs button,#extraTfTabs button').forEach(x=>x.classList.toggle('active',x.dataset.tf===t));$('extraTfTabs').hidden=true;$('moreTfBtn').setAttribute('aria-expanded','false');showAllLiquidity=false;showAllPd=false;updateUrl();run()}
 function addTfButtons(){for(const t of PRIMARY_TF){const b=document.createElement('button');b.textContent=LABEL[t];b.dataset.tf=t;b.classList.toggle('active',t===currentTf);b.onclick=()=>selectTf(t);$('tfTabs').append(b)}for(const t of EXTRA_TF){const b=document.createElement('button');b.textContent=LABEL[t]+(t==='5m'?' · 참고':'');b.dataset.tf=t;b.classList.toggle('active',t===currentTf);b.onclick=()=>selectTf(t);$('extraTfTabs').append(b)}}
-async function run(){
+async function run(force=false){
   if(!M){$('status').textContent='엔진 로드 실패';setTone($('status'),'tone-risk');return}
   const token=++seq,symbol=clean($('symbol').value);$('symbol').value=symbol;$('status').textContent='분석 중';setTone($('status'),'tone-info');$('levelDetail').hidden=true;
   try{
-    const htf=HTF[currentTf],outcomeTf=(['5m','15m','1h'].includes(currentTf)?currentTf:'1h'),[a,b,o]=await Promise.all([structure(symbol,currentTf),htf===currentTf?Promise.resolve(null):structure(symbol,htf),outcomeTf===currentTf?Promise.resolve(null):structure(symbol,outcomeTf)]);
+    const htf=HTF[currentTf],outcomeTf=(['5m','15m','1h'].includes(currentTf)?currentTf:'1h'),[a,b,o]=await Promise.all([structure(symbol,currentTf,force),htf===currentTf?Promise.resolve(null):structure(symbol,htf,force),outcomeTf===currentTf?Promise.resolve(null):structure(symbol,outcomeTf,force)]);
     if(token!==seq)return;raw=a;htfRaw=b||a;outcomeRaw=o||a;const hb=htfBias(htfRaw);
     model=M.buildLiquidityMap({candles:raw.candles,canonicalSwings:raw.canonicalSwings,canonicalEvents:raw.events,timeframe:currentTf,htfBias:hb});
     if(!model.ok)throw new Error(model.error||'유동성 분석 실패');
@@ -228,8 +228,8 @@ function init(){
   try{if(JOURNAL&&window.localStorage)journalStore=JOURNAL.createLocalStorageStore(window.localStorage)}catch{journalStore=null}
   try{if(GATE&&window.localStorage)gateStore=GATE.createLocalStorageStore(window.localStorage)}catch{gateStore=null}
   renderGate();$('journalExport').onclick=exportJournal;
-  $('run').onclick=run;$('savePng').onclick=savePng;$('expandChart').onclick=toggleFullscreen;$('snapshot').onclick=inspectCanvas;$('snapshot').ondblclick=toggleFullscreen;
-  $('symbol').onkeydown=e=>{if(e.key==='Enter')run()};document.querySelectorAll('[data-layer]').forEach(x=>x.onchange=draw);
+  $('run').onclick=()=>run(true);$('savePng').onclick=savePng;$('expandChart').onclick=toggleFullscreen;$('snapshot').onclick=inspectCanvas;$('snapshot').ondblclick=toggleFullscreen;
+  $('symbol').onkeydown=e=>{if(e.key==='Enter')run(true)};document.querySelectorAll('[data-layer]').forEach(x=>x.onchange=draw);
   $('liqMore').onclick=()=>{showAllLiquidity=!showAllLiquidity;renderLiquidityList()};$('pdMore').onclick=()=>{showAllPd=!showAllPd;renderPdList()};
   $('scoreHelp').onclick=()=>{$('scoreHelpPanel').hidden=!$('scoreHelpPanel').hidden};
   $('moreTfBtn').onclick=()=>{const p=$('extraTfTabs'),next=p.hidden;p.hidden=!next;$('moreTfBtn').setAttribute('aria-expanded',String(next))};
