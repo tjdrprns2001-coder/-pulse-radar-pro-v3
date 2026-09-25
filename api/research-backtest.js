@@ -23,7 +23,7 @@ module.exports=async function handler(req,res,ctx={}){
       return res.status(400).json({status:'error',error:'invalid action'});
     }
     if(method!=='POST')return res.status(405).json({status:'error',error:'GET 또는 POST만 지원합니다.'});
-    if(!['run','evaluate','dante-run','causal-ict-run','setup-validate','setup-pit-replay','setup-replay','walk-forward','paper-open','paper-mark','paper-close'].includes(action))return res.status(400).json({status:'error',error:'invalid action'});
+    if(!['run','evaluate','dante-run','causal-ict-run','setup-batch-validate','setup-validate','setup-pit-replay','setup-replay','walk-forward','paper-open','paper-mark','paper-close'].includes(action))return res.status(400).json({status:'error',error:'invalid action'});
     const configured=String(ctx.adminToken??process.env.RESEARCH_BACKTEST_ADMIN_TOKEN??'');
     if(!configured)return res.status(503).json({status:'error',error:'research admin token is not configured'});
     if(String(header(req,'x-research-admin-token')||'')!==configured)return res.status(401).json({status:'error',error:'unauthorized'});
@@ -33,6 +33,7 @@ module.exports=async function handler(req,res,ctx={}){
     else if(action==='evaluate')data=await runtime.evaluate(body);
     else if(action==='dante-run')data=await runtime.runDante(body);
     else if(action==='causal-ict-run')data=await runtime.runCausalIct(body);
+    else if(action==='setup-batch-validate')data=await runtime.runSetupBatchValidation(body);
     else if(action==='setup-validate')data=await runtime.runSetupValidation(body);
     else if(action==='setup-pit-replay')data=await runtime.runSetupPointInTime(body);
     else if(action==='setup-replay')data=await runtime.runSetupReplay(body);
