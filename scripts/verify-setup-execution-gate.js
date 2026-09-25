@@ -74,6 +74,11 @@ Gate.apply({item:fake,frames,execution:execGood,spot15m:freshSpot,eventRisk:null
 assert.equal(fake.setupExecution.fakeBreakout,true);
 assert.equal(fake.setupFeatures.breakout.hardReject,true);
 
+const eventBlocked={...item,setupFeatures:{bottom:{...item.setupFeatures.bottom},breakout:{...item.setupFeatures.breakout}}};
+Gate.apply({item:eventBlocked,frames,execution:execGood,spot15m:freshSpot,intelligence:{updatedAt:now},eventRisk:{level:'HIGH',hard:true},sequenceGap:null,feeBps:4});
+assert.equal(eventBlocked.setupFeatures.bottom.hardReject,true);
+assert.equal(eventBlocked.setupFeatures.breakout.hardReject,true);
+
 const knife={...item,priceChange1h:-2,oi4hChangePct:3,setupFeatures:{bottom:{evidence:{bottomStruct:{sweepLow:98}},sweepLowCloseBreak:false,zoneCloseBreak:false,mssConfirmed:false},breakout:{...item.setupFeatures.breakout}}};
 Gate.apply({item:knife,frames,execution:execGood,spot15m:freshSpot,eventRisk:null,sequenceGap:false,feeBps:4});
 assert.equal(knife.setupExecution.fallingKnife,true);
