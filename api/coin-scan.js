@@ -56,7 +56,7 @@ module.exports=async function handler(req,res,ctx={}){
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
   const fresh=['1','true','yes'].includes(String(q.fresh||'').toLowerCase());
   const persistObservations=String(q.persist||'1')!=='0';
-  res.setHeader('Cache-Control',fresh?'no-store, max-age=0':(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',fresh?'no-store, max-age=0':(mode==='deep'||mode==='validation'||mode==='prescan')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
