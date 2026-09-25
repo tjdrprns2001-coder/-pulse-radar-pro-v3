@@ -91,23 +91,18 @@ async function depthSnapshot(stream,market='spot'){
 }
 function createBinanceRuntime({market='spot'}={}){
   const isSpot=market==='spot';
-  const streams=symbols().map(s=>s.toLowerCase()+(isSpot?'@bookTicker':'@depth@100ms'));
+  const streams=symbols().map(s=>s.toLowerCase()+'@bookTicker');
   const source=isSpot?'binance-spot-ws':'binance-futures-ws';
   const mux=createBinanceWsMultiplexer({
     url:isSpot?'wss://stream.binance.com:9443/stream':'wss://fstream.binance.com/stream',
-    restSnapshot:isSpot?null:(stream)=>depthSnapshot(stream,market),
+    restSnapshot:null,
     onEvent:async({stream,data,receivedAt})=>{
       const symbol=stream.split('@')[0].toUpperCase();
-      if(isSpot){
-        if(!/bookticker/i.test(stream))return;
-        const seq=Number(data.u);
-        await runtime.ingest({source_name:source,source_kind:'book_ticker',entity_key:symbol,source_time:receivedAt,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number.isFinite(seq)?seq:null,sequence_no:Number.isFinite(seq)?seq:null,payload:data});
-        await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number.isFinite(seq)?seq:null,last_source_time:receivedAt,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market,transport:'websocket-bookTicker'}});
-        return;
-      }
-      if(!/depth/i.test(stream)||data.u==null)return;
-      await runtime.ingest({source_name:source,source_kind:'orderbook',entity_key:symbol,source_time:Number(data.E)||receivedAt,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number(data.u),sequence_no:Number(data.u),payload:data});
-      await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number(data.u),last_source_time:Number(data.E)||receivedAt,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market}});
+      if(!/bookticker/i.test(stream))return;
+      const seq=Number(data.u);
+      const sourceTime=Number(data.E)||receivedAt;
+      await runtime.ingest({source_name:source,source_kind:'book_ticker',entity_key:symbol,source_time:sourceTime,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number.isFinite(seq)?seq:null,sequence_no:Number.isFinite(seq)?seq:null,payload:data});
+      await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number.isFinite(seq)?seq:null,last_source_time:sourceTime,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market,transport:'websocket-bookTicker'}});
     },
     onState:s=>{const key=isSpot?'binanceSpot':'binanceFutures';health[key]={...s,updatedAt:Date.now(),market}},
     maxStreams:Number(env.BINANCE_MAX_STREAMS||200)
@@ -182,12 +177,7 @@ function streamFresh(market,symbol){
   const h=health?.[market]||{};
   const age=h.lastMessageAt!=null?Date.now()-Number(h.lastMessageAt):Infinity;
   const transportFresh=(h.state==='LIVE'||h.state==='RESYNC_REQUIRED')&&!h.silent&&age<30000;
-  if(market==='binanceSpot')return transportFresh;
-  const key=String(symbol||'').toLowerCase()+'@depth@100ms';
-  const guards=Array.isArray(h.guards)?h.guards:[];
-  const g=guards.find(x=>String(x.source||'').toLowerCase()===key);
-  const sequenceFresh=Boolean(g?.fresh&&g?.status==='OK');
-  return transportFresh||sequenceFresh;
+  return transportFresh;
 }
 async function recordSelectorFallback(list,reason){
   const now=Date.now(),bucket=Math.floor(now/300000)*300000,rows=[];
