@@ -40,14 +40,22 @@ test('restored chart snapshot is cloned separately and adds weekly timeframe',()
   assert.match(weekly,/runSnapshotAnalysis/);
 });
 
-test('V5 shell exposes pro 8TF snapshot and preserves legacy restored snapshot',()=>{
+test('V5 shell consolidates snapshot tools into snapshot center while preserving legacy routes',()=>{
   const shell=fs.readFileSync('pulse-unified.html','utf8');
   const shellJs=fs.readFileSync('ui/pulse-shell.js','utf8');
+  const hub=fs.readFileSync('snapshot-hub.html','utf8');
+  const hubJs=fs.readFileSync('ui/snapshot-hub.js','utf8');
   assert.doesNotMatch(shell,/pulse-shell-snapshot-restore\.js/);
-  assert.match(shell,/data-view="mtfsnapshot"/);
-  assert.match(shell,/8TF 스냅샷/);
-  assert.match(shellJs,/mtfsnapshot:\{title:'8TF 스냅샷'/);
-  assert.match(shellJs,/mtf-snapshot-pro\.html/);
-  assert.match(shell,/data-view="chartsnapshot"/);
-  assert.match(shellJs,/snapshot-analysis-restored\.html/);
+  assert.match(shell,/data-view="snapshotcenter"/);
+  assert.match(shell,/스냅샷 센터/);
+  assert.doesNotMatch(shell,/data-view="mtfsnapshot"/);
+  assert.doesNotMatch(shell,/data-view="liquiditysnapshot"/);
+  assert.doesNotMatch(shell,/data-view="chartsnapshot"/);
+  assert.match(shellJs,/snapshotcenter:\{title:'스냅샷 센터'/);
+  assert.match(shellJs,/mtfsnapshot:\{title:'8TF 스냅샷'.*mode:'board'/);
+  assert.match(shellJs,/chartsnapshot:\{title:'차트 스냅샷'.*mode:'quality'/);
+  for(const mode of ['board','liquidity','quality'])assert.match(hub,new RegExp(`data-mode=["']${mode}["']`));
+  assert.match(hubJs,/mtf-snapshot-pro\.html/);
+  assert.match(hubJs,/liquidity-snapshot\.html/);
+  assert.match(hubJs,/snapshot-analysis-restored\.html/);
 });
