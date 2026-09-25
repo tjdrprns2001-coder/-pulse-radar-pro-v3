@@ -31,3 +31,6 @@ must(ledgerJs.includes("action=replay"),'selector replay UI missing');
 must(ledgerJs.includes('selector-history'),'selector history UI API missing');
 must(scheduled.includes("schedule:'5 * * * *'"),'hourly selector collector schedule missing');
 must(scheduled.includes('SELECTOR_MVP_SYMBOLS'),'selector MVP universe override missing');
+
+must(ledgerHtml.includes('loadEvidence'),'selector evidence ledger control missing');
+must(ledgerJs.includes("action=evidence"),'selector evidence API UI missing');
