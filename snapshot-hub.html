@@ -1,0 +1,17 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/snapshot-hub.css?v=20260925-hub1"><title>PulseRadar · 스냅샷 센터</title></head><body>
+<main class="hub">
+<header class="hubHero"><div><span class="eyebrow">SNAPSHOT CENTER · 3-IN-1</span><h1>스냅샷 센터</h1><p>8TF 구조 보드, 유동성 지도, 품질·서사를 한 화면에서 전환합니다. 한 번에 한 모듈만 로드해 중복 계산과 모바일 메모리 사용을 줄입니다.</p></div><span id="hubStatus" class="status">대기</span></header>
+<section class="modeBar" aria-label="스냅샷 모드">
+  <button class="modeBtn active" data-mode="board"><b>8TF 보드</b><span>1W→5m · ICT/SMC · 이벤트 재생</span></button>
+  <button class="modeBtn" data-mode="liquidity"><b>유동성</b><span>BSL/SSL · Sweep · PD Array</span></button>
+  <button class="modeBtn" data-mode="quality"><b>품질·서사</b><span>구조 · Flow · Calibration · Regime</span></button>
+</section>
+<section class="hubTools">
+  <div class="hubSymbolControl"><input id="hubSymbol" value="BTCUSDT" aria-label="종목"><button id="applySymbol" class="primary">종목 적용</button></div>
+  <div class="hubMeta"><b id="modeTitle">8TF 보드</b><span id="modeDesc">8개 시간봉 구조를 한 번에 비교합니다.</span></div>
+  <div class="hubActions"><button id="reloadModule">현재 모듈 새로고침</button><button id="openDirect">새 탭 ↗</button></div>
+</section>
+<section class="frameCard"><div id="frameLoading" class="frameLoading">스냅샷 모듈 불러오는 중…</div><iframe id="snapshotFrame" class="moduleFrame" title="PulseRadar snapshot module" loading="eager"></iframe></section>
+<section class="hubFoot"><span>공통 종목 상태를 유지하고, 모드 전환 시 필요한 모듈만 로드합니다.</span><span>기존 개별 URL은 호환용으로 유지합니다.</span></section>
+</main>
+<script src="/ui/snapshot-hub.js?v=20260925-hub1" defer></script></body></html>

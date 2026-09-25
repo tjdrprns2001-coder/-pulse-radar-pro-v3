@@ -8,8 +8,9 @@
     assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
     analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
-    mtfsnapshot:{title:'8TF 스냅샷',desc:'1W → 3D → 1D → 12H → 4H → 1H → 15m → 5m',path:'/mtf-snapshot-pro.html'},
-    liquiditysnapshot:{title:'유동성 스냅샷',desc:'BSL·SSL · EQH/EQL · Sweep/Reclaim · FVG/OB/Breaker · 조건부 경로',path:'/liquidity-snapshot.html'},
+    snapshotcenter:{title:'스냅샷 센터',desc:'8TF · 유동성 · 품질/서사 통합 · 필요한 모듈만 로드',path:'/snapshot-hub.html'},
+    mtfsnapshot:{title:'8TF 스냅샷',desc:'스냅샷 센터 · 8TF 보드',path:'/snapshot-hub.html',mode:'board'},
+    liquiditysnapshot:{title:'유동성 스냅샷',desc:'스냅샷 센터 · 유동성 지도',path:'/snapshot-hub.html',mode:'liquidity'},
     longtrend:{title:'장기추세선',desc:'28D → 14D → 1W → 3D → 1D → 4H · 가중 평균 최종 추세선',path:'/long-trend-dashboard.html'},
     report:{title:'종합 리포트',desc:'멀티TF · SMC/ICT · 수급 · 뉴스 · 반증',path:'/coin-report.html'},
     dante:{title:'주식단테 실전 랩',desc:'공개 기법 · 자동/수동 체크 · 차트 오버레이 · 멀티TF',path:'/dante-lab.html'},
@@ -23,7 +24,7 @@
     liquidity:{title:'유동성',desc:'FVG · Sweep · Liquidity 연구',path:'/liquidity-lab-v2.html'},
     surge:{title:'급등 패턴',desc:'PRE-SURGE · 급등 전후 패턴 연구',path:'/surge-pattern-lab.html'},
     snapshot:{title:'MTF 스냅샷',desc:'다중 시간봉 구조 스냅샷',path:'/snapshot-analysis.html'},
-    chartsnapshot:{title:'차트 스냅샷',desc:'복원된 MTF 스냅샷 · Signal Quality v2',path:'/snapshot-analysis-restored.html'},
+    chartsnapshot:{title:'차트 스냅샷',desc:'스냅샷 센터 · 품질/서사',path:'/snapshot-hub.html',mode:'quality'},
     performance:{title:'성과 검증',desc:'신호 성과 · Calibration · 품질 검증',path:'/signal-performance.html'},
     backtest:{title:'Dante 연구검증',desc:'256 · 밥그릇 · 이평때리기 · 워크포워드 · Paper Trading',path:'/research-backtest.html'},
     historical:{title:'과거 검증',desc:'Historical validation',path:'/historical-validation.html'},
@@ -34,7 +35,7 @@
   const ROOT={
     home:'home',pulseai:'ai',bookai:'ai',
     scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
-    report:'analysis',analysis:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
+    report:'analysis',analysis:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
@@ -45,7 +46,7 @@
   function readRecent(){try{const a=JSON.parse(localStorage.getItem('pr_recent')||'[]');return Array.isArray(a)&&a[0]?a[0]:'BTCUSDT'}catch{return'BTCUSDT'}}
   function symbol(){return cleanSymbol($('symbol').value)}
   function activePreset(){return presets?.getPreset($('preset')?.value||'clean')||{id:'clean'}}
-  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20260921-v5');return u.pathname+u.search}
+  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20260921-v5');if(o.mode)u.searchParams.set('mode',o.mode);if(key==='snapshotcenter'){const sq=new URLSearchParams(location.search);for(const k of ['mode','tf','eventId','stageTransition','v2Type','scanUpdatedAt']){const v=sq.get(k);if(v)u.searchParams.set(k,v)}}return u.pathname+u.search}
   function emit(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
   function openMenu(){side.scrollTop=0;side.classList.add('open');shade.classList.add('open')}
   function closeMenu(){side.classList.remove('open');shade.classList.remove('open')}
@@ -66,7 +67,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','report','analysis','mtfsnapshot','liquiditysnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','assistantscan','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='bookai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
@@ -86,14 +87,14 @@
     closeMenu();emit('pulse:viewchange',{view:key});
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
-  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','mtfsnapshot','liquiditysnapshot','longtrend','multi','report','ict','dante','bookai'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
+  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','report','ict','dante','bookai'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
   function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
   $('menuBtn').onclick=openMenu;shade.onclick=closeMenu;$('go').onclick=applySymbol;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')applySymbol()});$('preset').addEventListener('change',applyPreset);
   $('openTab').onclick=()=>window.open(srcFor(current),'_blank');
   frame.addEventListener('load',()=>{loading.classList.add('hide');injectShellMode()});
-  window.addEventListener('message',e=>{if(e.data?.type==='pulse-symbol-sync')return syncChildSymbol(e.data.symbol);if(e.data?.type==='pulse-nav'&&V[e.data.view]){if(e.data.symbol)$('symbol').value=cleanSymbol(e.data.symbol);setView(e.data.view,true)}});
+  window.addEventListener('message',e=>{if(e.data?.type==='pulse-symbol-sync')return syncChildSymbol(e.data.symbol);if(e.data?.type==='pulse-nav'&&V[e.data.view]){if(e.data.symbol)$('symbol').value=cleanSymbol(e.data.symbol);if(e.data.view==='snapshotcenter'){const u=new URL(location.href);for(const k of ['mode','tf','eventId','stageTransition','v2Type','scanUpdatedAt']){const v=e.data[k];if(v!=null&&v!=='')u.searchParams.set(k,String(v));else if(k==='eventId')u.searchParams.delete(k)}history.replaceState(null,'',u)}setView(e.data.view,true)}});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 
   loadUniverseCounts();const q=new URLSearchParams(location.search);$('symbol').value=cleanSymbol(q.get('symbol')||readRecent());const loaded=presets.loadPreset(),requested=presets.getPreset(q.get('preset')||loaded.id);$('preset').value=requested.id;setTopState('live');setView(q.get('view')||'home',false);

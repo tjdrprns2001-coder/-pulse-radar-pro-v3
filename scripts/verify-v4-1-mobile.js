@@ -10,7 +10,8 @@ assert(/\/ui\/pulse-shell\.js\?v=[A-Za-z0-9._-]+/.test(shell),'V5 shell JS cache
 assert(shell.includes('/ui/pulse-shell.css?v=20260921-v5'),'V5 shell CSS cache-bust missing');
 assert(!shell.includes('pulse-shell-snapshot-restore.js'),'legacy snapshot shell injector must be removed');
 assert(!shell.includes('pulse-shell-v2-operations.js'),'legacy operations shell injector must be removed');
-assert(shell.includes('data-view="chartsnapshot"')&&shell.includes('data-view="backfill"'),'legacy tools must be folded into V5 menu directly');
+assert(shell.includes('data-view="snapshotcenter"')&&shell.includes('data-view="backfill"'),'snapshot tools must be consolidated into V5 center and backfill retained');
+assert(shellJs.includes("chartsnapshot:{title:'차트 스냅샷'")&&shellJs.includes("mode:'quality'"),'legacy snapshot view key must remain as compatibility alias');
 assert(shellJs.includes("searchParams.set('build','20260921-v5')"),'child view cache-bust missing');
 assert(shellJs.includes("side.scrollTop=0"),'drawer should open from top');
 assert(shellJs.includes('/ui/pulse-child-normalize.css?v=20260921-v5'),'injected normalization cache-bust missing');

@@ -11,7 +11,7 @@ assert(js.includes('DEEP_CHUNK=6'),'bounded deep chunk required');
 assert(js.includes('candidateSymbols'),'progressive candidate enrichment required');
 assert(js.includes('60000'),'60s refresh required');
 for(const s of ['AbortController','state.deepLoading','sessionStorage','SCAN_SESSION_FRESH_MS','visibilitychange','cache:\'default\''])assert(js.includes(s),`scan lifecycle protection missing ${s}`);
-assert(js.includes('mtf-snapshot-pro.html'),'V5 snapshot deep link required');
+assert(js.includes('snapshot-hub.html')&&js.includes("view:'snapshotcenter'")&&js.includes("mode='board'"),'V5 snapshot center deep link required');
 assert(js.includes('eventSnapshotId'),'scanner snapshot links must use server-captured event IDs');
 assert(/escapeHtml|textContent/.test(js),'safe text rendering required');
 assert(js.includes("'&quot;'"),'HTML quote escaping must remain complete');
