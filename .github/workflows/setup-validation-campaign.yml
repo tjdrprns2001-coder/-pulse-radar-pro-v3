@@ -37,9 +37,10 @@ jobs:
           --tf=${{ inputs.timeframe }}
           --out=artifacts/setup-validation-campaign
       - name: Upload validation artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: setup-validation-campaign
           path: artifacts/setup-validation-campaign
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
