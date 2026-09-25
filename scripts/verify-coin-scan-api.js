@@ -102,6 +102,18 @@ const provider={
   assert(recDeep.autoRecommendationRecording&&recDeep.autoRecommendationRecording.recorded===1);
   assert(recDeep.autoRecommendationEvaluation&&recDeep.autoRecommendationEvaluation.evaluated===1,'deep scan should evaluate due recommendation outcomes');
 
+  let preIgnitionCalls=0;
+  const preIgnitionHistory={
+    async observe(items,context){preIgnitionCalls++;assert.equal(items.length,1);assert(context&&context.marketSource);return{observed:1,recorded:1,duplicates:0,skipped:0,buckets:{S60_69:1},errors:[]}},
+    async evaluateDue(){return{eventsChecked:1,attempted:1,evaluated:1,unavailable:0,pending:0,errors:[]}},
+    async stats(){return{version:'PREIGNITION_OOS_STATS_v1',sampleCount:4,thresholds:{'60':{sampleCount:3}},byBucket:{S60_69:{sampleCount:1}}}},
+    async list(){return[{id:'PI1',symbol:'C0USDT',bucket:'S60_69',score:65,capturedAt:222222}]}
+  };
+  const piService=createScanService({provider,now:()=>222222,preIgnitionHistory});
+  const piDeep=await piService.run({mode:'deep',symbols:['C0USDT'],limit:1});
+  assert.equal(preIgnitionCalls,1,'deep scan must record pre-ignition OOS snapshot once');
+  assert.equal(piDeep.preIgnitionRecording.recorded,1);
+
   const cat=out.items[0]?.category;
   if(cat){const f=await service.run({mode:'summary',category:cat,limit:10});assert(f.items.every(x=>x.category===cat))}
   const sector=out.items.find(x=>x.sector)?.sector;
@@ -144,6 +156,16 @@ const provider={
   code=0;body=null;headers={};
   await handler({method:'POST',query:{mode:'recommendation-history',action:'observe'},body:{symbol:'BAD!',state:'BOGUS'}},res,{service:recService});
   assert.equal(code,400,'invalid promotion state must be rejected');
+
+  code=0;body=null;headers={};
+  await handler({query:{mode:'preignition-history',action:'stats'}},res,{service:piService});
+  assert.equal(code,200);assert.equal(body.mode,'preignition-history');assert.equal(body.stats.sampleCount,4);assert(String(headers['Cache-Control']).includes('no-store'));
+  code=0;body=null;headers={};
+  await handler({query:{mode:'preignition-history',action:'list',bucket:'S60_69'}},res,{service:piService});
+  assert.equal(code,200);assert.equal(body.items[0].bucket,'S60_69');
+  code=0;body=null;headers={};
+  await handler({query:{mode:'preignition-history',action:'evaluate'}},res,{service:piService});
+  assert.equal(code,200);assert.equal(body.evaluation.evaluated,1);
 
   console.log('coin scan api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
