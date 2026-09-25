@@ -23,7 +23,7 @@ function defaultService(getStore){
         recommendationHistory=createRecommendationHistoryService({store,resolver});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
         selectorLedger=createSelectorLedgerService({store,resolver});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
     singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
   }
@@ -39,7 +39,7 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
