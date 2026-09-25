@@ -22,6 +22,7 @@ const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-se
   assert.equal((await svc.transitions()).length,1);
   const evald=await svc.evaluateDue();assert(evald.evaluated>=1);
   const stats=await svc.stats({lockedOosStart:now});assert.equal(stats.lockedOos.configured,true);
+  const ablation=await svc.ablation({horizon:'h24',feeBps:4,slippageBps:6,fundingBps:1});assert.equal(ablation.version,'SELECTOR_ABLATION_r0.4');assert.equal(ablation.datasetCount,1);assert.equal(ablation.report.locked,true);
   const csv=svc.toCsv(await svc.list());assert(csv.includes('snapshot_id')&&csv.includes('TESTUSDT'));
   console.log('selector ledger PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
