@@ -60,6 +60,18 @@ CREATE TABLE IF NOT EXISTS dead_letter_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS chain_blocks (
+  chain_id TEXT NOT NULL,
+  block_number BIGINT NOT NULL,
+  block_hash TEXT NOT NULL,
+  parent_hash TEXT,
+  observed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status TEXT NOT NULL DEFAULT 'CANONICAL',
+  replaced_hash TEXT,
+  PRIMARY KEY(chain_id, block_number, block_hash)
+);
+CREATE INDEX IF NOT EXISTS chain_blocks_latest_idx ON chain_blocks(chain_id, block_number, observed_at DESC);
+
 CREATE TABLE IF NOT EXISTS address_labels (
   chain_id TEXT NOT NULL,
   address TEXT NOT NULL,
