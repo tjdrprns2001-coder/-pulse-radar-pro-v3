@@ -22,6 +22,8 @@ must(js.includes('CLASS_PAGE_SIZE=12'),'bounded mobile result rendering missing'
 must(js.includes('evidenceText')&&js.includes('data_gaps'),'structured screening evidence rendering missing');
 must(js.includes("'conflicted'"),'conflicted screening merge missing');
 must(js.includes("fresh=1&run="),'manual fresh scan token missing');
+must(js.includes("persist=0"),'UI deep chunks must be read-only');
+must(js.includes('futuresListed===true'),'futures-first display filter missing');
 must(!js.includes("if(!restored)refresh(false)"),'first-load scan must remain manual');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
