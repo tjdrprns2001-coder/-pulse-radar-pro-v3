@@ -91,6 +91,10 @@ module.exports=async function handler(req,res,ctx={}){
         const replay=await service.replaySelectorSnapshot(id);if(!replay)return res.status(404).json({status:'error',error:'selector snapshot not found'});
         return res.status(200).json({status:'ok',mode:'selector-history',action:'replay',replay});
       }
+      if(action==='evidence'){
+        const rows=await service.listSelectorEvidence({symbol:q.symbol||null,limit});
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'evidence',updatedAt:Date.now(),items:rows});
+      }
       if(action==='transitions'){
         const rows=await service.listSelectorTransitions({symbol:q.symbol||null,limit});
         return res.status(200).json({status:'ok',mode:'selector-history',action:'transitions',updatedAt:Date.now(),items:rows});
