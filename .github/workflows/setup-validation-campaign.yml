@@ -1,6 +1,14 @@
 name: Setup Validation Campaign
 
 on:
+  push:
+    branches:
+      - research/setup-feature-rejection-audit
+    paths:
+      - 'lib/research-backtest-v2/**'
+      - 'lib/coin-scan/**'
+      - 'scripts/run-setup-validation-campaign.js'
+      - '.github/workflows/setup-validation-campaign.yml'
   workflow_dispatch:
     inputs:
       days:
