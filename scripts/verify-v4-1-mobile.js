@@ -20,7 +20,7 @@ assert(market.includes('pulse-child-normalize.css?v=20260921-v5'),'extended mark
 assert(market.includes('.layout>*{min-width:0}'),'extended market child widths must be shrink-safe');
 assert(scan.includes('자동 전체스캔')&&!scan.includes('자동 코인 분류'),'scanner label must be V5 canonical');
 assert(scan.includes('/ui/coin-scan.css?v=20260925-pipeline1'),'scanner CSS cache-bust missing');
-assert(scan.includes('/ui/coin-scan.js?v=20260925-pipeline2'),'scanner JS cache-bust missing');
+assert(scan.includes('/ui/coin-scan.js?v=20260925-rank1'),'scanner JS cache-bust missing');
 assert(scanCss.includes('.tabs button{flex:0 0 auto'),'scanner filter chips must not shrink');
 assert(scanCss.includes('grid-template-columns:1fr 1fr;width:100%'),'scanner top actions must fit mobile');
 assert(intel.includes('코인 정보 · 일정 · 뉴스'),'coin intel heading must be canonical');

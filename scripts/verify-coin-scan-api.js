@@ -1,5 +1,5 @@
 const assert=require('assert');
-const {createScanService,applySectorRotation}=require('../lib/coin-scan/scan-service.js');
+const {createScanService,applySectorRotation,AUTO_DEEP_MAX_24H_PCT,fastCandidatePriority,deepPreIgnitionScore}=require('../lib/coin-scan/scan-service.js');
 const handler=require('../api/coin-scan.js');
 
 function frame(base=100){return Array.from({length:60},(_,i)=>[0,String(base+i*.1),String(base+i*.1+1),String(base+i*.1-1),String(base+i*.1+.2),String(1000+i*10),Date.now()-1000,String((1000+i*10)*(base+i*.1)),10,'550',String((1000+i*10)*(base+i*.1)*.56),0])}
@@ -13,6 +13,17 @@ const provider={
   async scanDeepCandidates(symbols,intervals){deepCalls.push(symbols.slice());const results={},errors=[];for(const s of symbols){if(s==='C1USDT'){errors.push({symbol:s,interval:'1h',error:'boom'});continue}if(s==='C2USDT'){const partial=intervals.filter(tf=>tf!=='5m');results[s]=Object.fromEntries(partial.map(tf=>[tf,frame()]));errors.push({symbol:s,interval:'5m',error:'partial'});continue}results[s]=Object.fromEntries(intervals.map(tf=>[tf,frame()]))}return{results,errors,contexts:{}}}
 };
 (async()=>{
+  const earlyFast=fastCandidatePriority({row:{symbol:'EARLYUSDT',futuresListed:true,spotListed:true,marketScope:'spot+futures'},evidence:{priceChange24h:2,quoteVolume24h:25000000,spotFuturesBasisPct:.1},fast:{candidateScore:48,alreadySurged:false}});
+  const extendedFast=fastCandidatePriority({row:{symbol:'LATEUSDT',futuresListed:true,marketScope:'futures'},evidence:{priceChange24h:15,quoteVolume24h:25000000},fast:{candidateScore:80,alreadySurged:false}});
+  assert.equal(AUTO_DEEP_MAX_24H_PCT,12,'automatic deep-scan extension cutoff must stay aligned with recommendation guard');
+  assert(earlyFast.eligible&&earlyFast.score>48,'quiet liquid futures candidate should receive pre-ignition priority boost');
+  assert.equal(extendedFast.eligible,false,'already-extended 24H price must be excluded from automatic deep scan');
+  assert.equal(extendedFast.reason,'PRICE_EXTENDED');
+  const earlyDeep=deepPreIgnitionScore({dataState:'live',scanClass:{key:'PRE-SURGE'},candidateScore:62,tradeSignal:{confidence:66},priceChange24h:2,priceChange1h:1,priceChange15m:.3,v3LongTier:'PASS',v2Type:'A-pre',preSurge:{label:'관찰'},structure:'bullish',reaccumulating:true,oi4hChangePct:3,trueTakerRatio:1.25,v3Rvol:{main1h:{value:1.8},ignition15m:{value:2.1}},momentumSignals:{overheated:false}});
+  const lateDeep=deepPreIgnitionScore({dataState:'live',scanClass:{key:'PRE-SURGE'},candidateScore:90,tradeSignal:{confidence:90},priceChange24h:14,priceChange1h:2,priceChange15m:1,v3LongTier:'PASS',v2Type:'A',structure:'bullish'});
+  assert(earlyDeep>=60,'aligned pre-ignition structure should receive a high readiness score');
+  assert.equal(lateDeep,0,'extended price must hard-zero pre-ignition ranking');
+
   const rotated=applySectorRotation([
     {symbol:'LEADERUSDT',sector:'AI',dataState:'live',priceChange24h:8,scanClass:{key:'POST-SURGE'},reasons:[],structure:'bullish',summary:''},
     {symbol:'LAGUSDT',sector:'AI',dataState:'live',priceChange24h:2,scanClass:{key:'ANOMALY'},reasons:[],structure:'neutral',summary:''},
@@ -29,6 +40,10 @@ const provider={
   assert.equal(out.deepScanCount,0,'summary must not launch expensive 6TF deep scan');
   assert.equal(deepCalls.length,0,'summary path must stay fast');
   assert(Array.isArray(out.candidateSymbols)&&out.candidateSymbols.length>0,'summary returns candidate symbols for progressive enrichment');
+  assert(!out.candidateSymbols.includes('C0USDT'),'24H +30% symbol must not consume automatic deep-scan capacity');
+  assert(out.candidateSelection&&out.candidateSelection.version==='PREIGNITION_SELECTION_v1','candidate selection audit metadata required');
+  assert(out.candidateSelection.extendedExcludedCount>=1,'candidate selection metadata must count extended exclusions');
+  assert.equal(out.candidateSelection.max24hAutoDeepPct,12);
   assert(out.categories&&typeof out.categories==='object');
   assert(out.scanClasses&&typeof out.scanClasses==='object','v2 scan class counts required');
   assert(out.marketBreadth&&Number.isFinite(out.marketBreadth.up),'market breadth summary required');
@@ -51,6 +66,8 @@ const provider={
   assert.deepEqual(deepCalls[0],['C0USDT','C1USDT','C2USDT']);
   for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.scanClass.key,'STALE',`${sym} failed data must map to STALE`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
   assert(deep.items.find(x=>x.symbol==='C0USDT'),'deep mode returns requested symbol');
+  assert.equal(deep.items.find(x=>x.symbol==='C0USDT').preIgnitionScore,0,'manual deep scan may inspect an extended symbol but must rank it out of pre-ignition candidates');
+  assert.equal(deep.items.find(x=>x.symbol==='C0USDT').autoDeepEligible,false,'manual deep scan must preserve automatic-deep exclusion audit');
 
   let recorderCalls=0;
   const recorder={async recordItems(items){recorderCalls++;assert(items.length>0);throw new Error('blob down')}};
