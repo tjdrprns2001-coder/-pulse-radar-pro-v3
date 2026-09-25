@@ -63,7 +63,7 @@ const fast=core.fastScore({priceChange24h:3,quoteVolume24h:10000000,volumeAccele
 assert(Number.isFinite(fast.candidateScore));
 assert(fast.candidateScore>=0&&fast.candidateScore<=100);
 assert(Array.isArray(fast.fastReasons));
-assert.equal(core.CATEGORY_ORDER.length,8);
+assert.equal(core.CATEGORY_ORDER.length,10);
 
 const strong=core.buildTradeSignal({dataState:'live',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:4},takerRatio:1.42,volumeAcceleration:2.1,priceChange1h:2.4,priceChange15m:1.1,alreadySurged:false,momentumSignals:{aligned:true,overheated:false,score:4}});
 assert.equal(strong.level,'매수 후보');
