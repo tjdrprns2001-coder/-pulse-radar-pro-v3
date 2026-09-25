@@ -11,6 +11,11 @@ const {normalizeAlchemy}=require('../lib/coin-scan/alchemy-webhook.js');
 const {createVerifiedNewsProvider}=require('../lib/coin-scan/verified-news-provider.js');
 const {createMacroCalendarProvider}=require('../lib/coin-scan/macro-calendar-provider.js');
 const {createTtlCache}=require('../lib/coin-scan/cache.js');
+const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
+const {createPostgresSelectorStore}=require('../lib/coin-scan/postgres-selector-store.js');
+const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
 
 const {Pool}=pg;
 const env=process.env;
@@ -21,7 +26,10 @@ const pool=new Pool({connectionString:DB_URL,max:Number(env.PG_POOL_MAX||5),ssl:
 const query=(sql,params=[])=>pool.query(sql,params);
 const store=createPostgresRuntimeStore({query});
 const runtime=createRuntimeWorker({store});
-const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},errors:[]};
+const selectorStore=createPostgresSelectorStore({query});
+const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
+const selectorScanService=createScanService({provider:createBinanceProvider({}),selectorLedger});
+const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},errors:[]};
 let evmCollector=null;
 
 async function migrate(){
@@ -160,12 +168,46 @@ async function runEvidencePollers(){
     await new Promise(r=>setTimeout(r,5000));
   }
 }
+async function runSelectorScanner(){
+  const interval=Math.max(60000,Number(env.SELECTOR_SCAN_INTERVAL_MS||900000));
+  await new Promise(r=>setTimeout(r,Number(env.SELECTOR_SCAN_START_DELAY_MS||12000)));
+  while(true){
+    try{
+      const list=symbols();
+      const result=await selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true});
+      health.selector={status:'FRESH',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null};
+    }catch(e){
+      health.selector={status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};
+      health.errors.push({source:'selector',at:Date.now(),error:String(e?.message||e)});
+    }
+    await new Promise(r=>setTimeout(r,interval));
+  }
+}
+
 function server(){
   const port=Number(env.PORT||8787);
   return http.createServer(async(req,res)=>{
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
     if(req.url==='/ready'){const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
     if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}
+    {
+      const u=new URL(req.url,'http://runtime.local');
+      if(u.pathname==='/selector-history'){
+        try{
+          const action=String(u.searchParams.get('action')||'list').toLowerCase();
+          const symbol=u.searchParams.get('symbol')||null;
+          const limit=Math.max(1,Math.min(1000,Number(u.searchParams.get('limit'))||500));
+          let payload;
+          if(action==='transitions')payload={status:'ok',mode:'selector-history',action,items:await selectorLedger.transitions({symbol,limit})};
+          else if(action==='evidence')payload={status:'ok',mode:'selector-history',action,items:await selectorLedger.evidence({symbol,limit})};
+          else if(action==='stats')payload={status:'ok',mode:'selector-history',action,stats:await selectorLedger.stats({lockedOosStart:Number(u.searchParams.get('lockedOosStart'))||null})};
+          else if(action==='ablation')payload={status:'ok',mode:'selector-history',action,report:await selectorLedger.ablation({horizon:String(u.searchParams.get('horizon')||'h24'),feeBps:Number(u.searchParams.get('feeBps'))||0,slippageBps:Number(u.searchParams.get('slippageBps'))||0,fundingBps:Number(u.searchParams.get('fundingBps'))||0})};
+          else if(action==='replay'){const id=String(u.searchParams.get('id')||'');payload={status:'ok',mode:'selector-history',action,replay:await selectorLedger.replay(id)}}
+          else payload={status:'ok',mode:'selector-history',action:'list',items:await selectorLedger.list({symbol,classification:u.searchParams.get('classification')||null,limit})};
+          res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
+        }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+      }
+    }
     if(req.url==='/stats'){
       try{
         const [raw,bySource,watermarks]=await Promise.all([
@@ -197,4 +239,5 @@ runEvm();
 runBinance();
 runQueues();
 runEvidencePollers();
+runSelectorScanner();
 process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
