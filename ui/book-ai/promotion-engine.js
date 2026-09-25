@@ -26,12 +26,12 @@ function scannerGates(item={}){
   const rvol=n(item.v3Rvol?.ignition15m?.value??item.volumeAcceleration15m??item.volumeAcceleration);
   const causal=item?.v3?.causalIct||item?.causalIct||{},causalAvailable=causal?.available===true,causalTf=causal?.primaryTf||'4h',causalRow=causal?.timeframes?.[causalTf]||{},causalStage=String(causalRow?.sequence?.long?.stage||causal?.longStage||'N/A'),causalPass=causal?.contractPass!==false&&causalRow?.contractPass!==false,causalReady=['REVISIT','INTENT','FILLED'].includes(causalStage);
   const tf=item.tfState||{},one=text(tf['1h']?.bias??tf['1h']?.direction??tf['1h']?.trend).toLowerCase(),m15=text(tf['15m']?.bias??tf['15m']?.direction??tf['15m']?.trend).toLowerCase();
-  const blocked=[];
+  const reentry=Boolean(item?.strategyCycle?.reentryEligible);const blocked=[];
   if(item?.dataState==='failed'||item?.dataState==='stale')blocked.push('데이터 불안정');
   if(item?.v3Invalidation)blocked.push('v3 장기 구조 무효화');
-  if(['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(scanClass(item)))blocked.push(scanClass(item));
+  if(['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(scanClass(item))&&!(scanClass(item)==='POST-SURGE'&&reentry))blocked.push(scanClass(item));
   if(item?.tradeSignal?.level==='제외')blocked.push(...(item.tradeSignal.invalidations||['Scanner 제외']));
-  if(ch!=null&&ch>=12)blocked.push('24H 과진행');
+  if(ch!=null&&ch>=12&&!reentry)blocked.push('24H 과진행');
   if(taker!=null&&taker<0.8)blocked.push('taker 매도 우위');
   if(rvol!=null&&rvol>=8)blocked.push('15m 거래량 과열');
   if(causalAvailable&&!causalPass)blocked.push('Causal ICT 인과성 계약 실패');
@@ -39,18 +39,18 @@ function scannerGates(item={}){
   if(v3==='PASS')passed.push('HTF PASS');else missing.push('HTF PASS');
   if(align!=null&&align>=60)passed.push('HTF 정렬');else missing.push('HTF 정렬 ≥60%');
   if(item.structure==='bullish')passed.push('상위 구조 상승');else missing.push('상위 구조 상승');
-  if(ch!=null&&ch<=8)passed.push('과진행 아님');else missing.push('24H 과진행 해소');
+  if((ch!=null&&ch<=8)||reentry)passed.push(reentry?'급등 후 재진입 리셋':'과진행 아님');else missing.push('24H 과진행 해소');
   const derivative=(oi!=null&&oi>=1)||bool(xoi.available);
   if(derivative)passed.push(oi!=null&&oi>=1?'OI 증가':'교차 OI 확인');else missing.push('OI/XOI 확인');
   if(taker!=null&&taker>=1.2)passed.push('taker 확인');else missing.push('taker ≥1.2');
   if(rvol!=null&&rvol>=1.5&&rvol<6)passed.push('15m RVOL 점화');else missing.push('15m RVOL 1.5~6x');
   const lowerOk=(!one||!one.includes('down'))&&(!m15||!m15.includes('down'));
   if(lowerOk)passed.push('하위TF 비약세');else failed.push('1H/15m 약세');
-  const presurge=['PRE-SURGE','ACCUMULATION-PRE','META-PRE'].includes(scanClass(item))||item?.preSurge?.label==='가능성 높음'||item?.preSurge?.label==='관찰';
+  const presurge=['PRE-SURGE','RE-ENTRY','PATTERN-SETUP','ACCUMULATION-PRE','META-PRE'].includes(scanClass(item))||item?.preSurge?.label==='가능성 높음'||item?.preSurge?.label==='관찰';
   if(presurge)passed.push('선행 구조');else missing.push('PRE-SURGE/축적');
   if(causalAvailable){if(causalReady)passed.push('Causal ICT '+causalStage);else missing.push('Causal ICT '+causalStage+' → REVISIT 대기')}else missing.push('Causal ICT 데이터');
 
-  const readyCore=v3==='PASS'&&align!=null&&align>=60&&item.structure==='bullish'&&(ch==null||ch<=8)&&presurge;
+  const readyCore=v3==='PASS'&&align!=null&&align>=60&&item.structure==='bullish'&&(ch==null||ch<=8||reentry)&&presurge;
   const finalGate=derivative&&taker!=null&&taker>=1.2&&rvol!=null&&rvol>=1.5&&rvol<6&&lowerOk&&(!causalAvailable||causalReady);
   return{blocked:uniq(blocked),missing:uniq(missing),failed:uniq(failed),passed:uniq(passed),readyCore,finalGate,metrics:{v3,align,ch,oi,taker,rvol,xoiAvailable:bool(xoi.available),lowerOk,presurge,causalAvailable,causalStage,causalPass,causalReady}};
 }
