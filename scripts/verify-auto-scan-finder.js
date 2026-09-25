@@ -13,7 +13,17 @@ must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
 must(js.includes("AUTO_REFRESH_KEY='pulse.coin-scan.auto-refresh-minutes.v1'")&&js.includes('autoRefreshMinutes')&&js.includes('[0,5,10]'),'manual/5m/10m autoscan cadence missing');
 must(js.includes("if((state.loading||state.prescanLoading||state.deepLoading)&&!force)return"),'overlapping scan guard missing');
 must(js.includes('saveScanSession')&&js.includes('restoreScanSession'),'scan session restore missing');
-must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v4'"),'scan session cache version must invalidate stale scanner ranking state');
+must(js.includes('SCAN_PERSIST_KEY')&&js.includes('localStorage.setItem(SCAN_PERSIST_KEY'),'persistent scan snapshot fallback missing');
+must(js.includes('compactItem')&&js.includes('saveScanSession(true)'),'compact forced navigation snapshot missing');
+must(js.includes("'conflicted'")&&js.includes('evidenceText')&&js.includes('data_gaps'),'structured screening evidence/conflict rendering missing');
+must(js.includes("fresh=1&run=")&&js.includes("persist=0"),'fresh/manual scan tokens and read-only deep chunks missing');
+must(js.includes('futuresListed===true'),'futures-first display filter missing');
+must(js.includes('RE-ENTRY')&&js.includes('PATTERN-SETUP')&&js.includes('FAKEOUT-RISK'),'restored strategy classes missing');
+must(js.includes('strategyCycle')&&js.includes('strategyMarkup')&&js.includes('bookManualMarkup'),'latest strategy/book card integration missing');
+must(js.includes('mode=prescan')&&js.includes('prescanLoading'),'progressive prescan stage missing');
+must(js.includes('mode=scan-run')&&js.includes('pollServerRun')&&js.includes('resumeServerRun'),'persistent server scan-run missing');
+must(!js.includes("if(!restored)refresh(false)"),'first-load scan must remain manual');
+must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v5'"),'scan session cache version must invalidate stale scanner strategy/ranking state');
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
@@ -27,7 +37,7 @@ must(js.includes('candidateSelection')&&js.includes('과진행 '),'candidate sel
 must(js.includes('(Number(b.preIgnitionScore)||0)-(Number(a.preIgnitionScore)||0)'),'scanner cards must sort by pre-ignition readiness inside class');
 must(js.includes('mode=prescan')&&js.includes('tryServerScanRun')&&js.includes('coin-scan-run-background'),'latest prescan/server-run pipeline missing');
 must(js.includes("'RE-ENTRY'")&&js.includes("'PATTERN-SETUP'")&&js.includes("'FAKEOUT-RISK'"),'restored rediscovery classes missing');
-must(css.includes('.finderResults'),'finder responsive styling missing');
+must(css.includes('.finderResults')&&css.includes('.strategyTrack')&&css.includes('.fakeoutBox')&&css.includes('.entryQuality'),'latest scanner responsive/strategy styling missing');
 console.log('auto-scan-finder verification passed');
 
 const selector=fs.readFileSync('config/selector_r0_3.yaml','utf8');
