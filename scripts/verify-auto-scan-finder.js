@@ -15,6 +15,10 @@ must(js.includes("if((state.loading||state.deepLoading)&&!force)return"),'overla
 must(js.includes('saveScanSession')&&js.includes('restoreScanSession'),'scan session restore missing');
 must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v2'"),'scan session cache version must invalidate stale v1 state');
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
+must(js.includes('SCAN_SESSION_WRITE_MIN_MS=2000')&&js.includes('saveScanSession(force=false)'),'scan session write throttle missing');
+must(js.includes('function renderFilteredView()')&&js.includes('setTimeout(renderFilteredView,100)'),'filtered autoscan render debounce missing');
+must(js.includes('state.items=sortItems(decorateDormancy(state.items))'),'deep merge finalization must defer full sort/dormancy work until enrichment completes');
+must(css.includes('content-visibility:auto')&&css.includes('contain-intrinsic-size'),'offscreen autoscan rendering optimization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
 must(css.includes('.finderResults'),'finder responsive styling missing');
