@@ -28,7 +28,7 @@ const store=createPostgresRuntimeStore({query});
 const runtime=createRuntimeWorker({store});
 const selectorStore=createPostgresSelectorStore({query});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
-const selectorScanService=createScanService({provider:createBinanceProvider({}),selectorLedger});
+const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
 const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},errors:[]};
 let evmCollector=null;
 
