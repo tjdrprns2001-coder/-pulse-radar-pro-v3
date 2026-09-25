@@ -18,6 +18,11 @@ must(js.includes("if((state.loading||state.deepLoading)&&!force)return"),'overla
 must(js.includes('saveScanSession')&&js.includes('restoreScanSession'),'scan session restore missing');
 must(js.includes('SCAN_PERSIST_KEY')&&js.includes('localStorage.setItem(SCAN_PERSIST_KEY'),'persistent scan snapshot fallback missing');
 must(js.includes('compactItem')&&js.includes('saveScanSession(true)'),'compact forced navigation snapshot missing');
+must(js.includes('CLASS_PAGE_SIZE=12'),'bounded mobile result rendering missing');
+must(js.includes('evidenceText')&&js.includes('data_gaps'),'structured screening evidence rendering missing');
+must(js.includes("'conflicted'"),'conflicted screening merge missing');
+must(js.includes("fresh=1&run="),'manual fresh scan token missing');
+must(!js.includes("if(!restored)refresh(false)"),'first-load scan must remain manual');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 
