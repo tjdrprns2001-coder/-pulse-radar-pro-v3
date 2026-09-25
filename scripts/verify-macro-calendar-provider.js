@@ -1,0 +1,11 @@
+const assert=require('assert');
+const M=require('../lib/coin-scan/macro-calendar-provider.js');
+const ics='BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:cpi-1\nDTSTART:20261014T123000Z\nSUMMARY:Consumer Price Index\nEND:VEVENT\nBEGIN:VEVENT\nUID:noise\nDTSTART:20261015T123000Z\nSUMMARY:Regional survey\nEND:VEVENT\nEND:VCALENDAR';
+const rows=M.parseIcs(ics,Date.parse('2026-09-25T00:00:00Z'));
+assert.equal(rows.length,1);
+assert.equal(rows[0].event_type,'CPI');
+assert.equal(rows[0].source_tier,1);
+const fomc=M.fomcEvents(Date.parse('2026-09-25T00:00:00Z'));
+assert(fomc.some(x=>x.event_id==='fed:fomc:2026-10-28'));
+assert(fomc.every(x=>x.source_name==='Federal Reserve'));
+console.log('official macro calendar provider PASS');

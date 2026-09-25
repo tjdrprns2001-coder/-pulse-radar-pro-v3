@@ -23,7 +23,9 @@ const intelligence={
 const good=Screening.screen(goodRow,{execution,intelligence,decisionTime:now,dataCutoff:now});
 assert.equal(good.classification,'CANDIDATE');
 assert(good.scores.final_score>=75);
-assert.equal(good.spec_version,'selector-r0.1');
+assert.equal(good.spec_version,'selector-r0.2');
+assert.equal(good.evidence_context.version,'EVIDENCE_CONTEXT_r0.2');
+assert(Object.prototype.hasOwnProperty.call(good.scores,'catalyst_context'));
 assert(good.snapshot_id&&good.input_hash);
 assert.equal(good.decision_time,new Date(now).toISOString());
 assert(Array.isArray(good.evidence)&&good.evidence.length>0);
@@ -32,10 +34,12 @@ const futureNews={...intelligence,news:{available:true,items:[{title:'TEST explo
 const pit=Screening.screen(goodRow,{execution,intelligence:futureNews,decisionTime:now,dataCutoff:now});
 assert.notEqual(pit.classification,'EVENT_RISK','future news must not leak into earlier snapshot');
 
-const eventIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit confirmed',publishedAt:now-60000,observedAt:now-30000}]}};
+const unverifiedIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit rumored',source:'anonymous social',publishedAt:now-60000,observedAt:now-30000,verification_status:'UNVERIFIED'}]}};
+const unverified=Screening.screen(goodRow,{execution,intelligence:unverifiedIntel,decisionTime:now,dataCutoff:now});
+assert.notEqual(unverified.classification,'EVENT_RISK','unverified news must not change classification');
+const eventIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit confirmed',source:'Project Foundation',source_tier:2,publishedAt:now-60000,observedAt:now-30000,verification_status:'OFFICIAL_CONFIRMED'}]}};
 const risky=Screening.screen(goodRow,{execution,intelligence:eventIntel,decisionTime:now,dataCutoff:now});
-assert.equal(risky.classification,'REJECTED');
-assert(risky.exclusion_reasons.includes('SECURITY_EVENT'));
+assert.equal(risky.classification,'EVENT_RISK');
 
 const thin=Screening.screen(goodRow,{execution:{},intelligence:{cex:{exchangeCount:1},coverage:{}},decisionTime:now,dataCutoff:now});
 assert.equal(thin.classification,'INSUFFICIENT_DATA');
@@ -49,7 +53,8 @@ const bundle=Screening.bundle([good,crowded,thin,risky]);
 assert.equal(bundle.candidates.length,1);
 assert.equal(bundle.riskFiltered.length,1);
 assert.equal(bundle.insufficientData.length,1);
-assert.equal(bundle.rejected.length,1);
+assert.equal(bundle.eventRisk.length,1);
+assert.equal(bundle.rejected.length,0);
 assert.equal(bundle.all.length,4);
 
-console.log('candidate-screening-engine selector-r0.1 verification passed');
+console.log('candidate-screening-engine selector-r0.2 verification passed');
