@@ -26,6 +26,7 @@ for(const [name,src] of [['coin-scan',coinScan],...Object.entries(v2)]){
 }
 for(const name of v2Names){const expected=name==='research-backtest'?`api/${name}.js`:`handlers/${name}.js`;if(!v2[name].includes(expected))throw new Error('shared '+name+' handler not reused')}
 if(!/api\/coin-scan\.js/.test(coinScan))throw new Error('shared coin scan handler not reused');
+if(!/method:req\.method\|\|'GET'/.test(coinScan)||!/body\}/.test(coinScan)||!/req\.text\(\)/.test(coinScan))throw new Error('coin scan Netlify wrapper must forward method and body');
 if(!/ctx\.getStore/.test(coinScanApi))throw new Error('coin scan API must pass injected getStore into auxiliary recorders');
 if(!/queryStringParameters/.test(radar)||!/statusCode/.test(radar)||!/headers/.test(radar))throw new Error('legacy radar adapter contract missing');
 if(!/method\s*:\s*event\.httpMethod/.test(legacy)||!/body\s*:/.test(legacy)||!/send\s*\(/.test(legacy)||!/end\s*\(/.test(legacy))throw new Error('legacy req/res bridge incomplete');
