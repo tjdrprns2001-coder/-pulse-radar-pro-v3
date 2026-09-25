@@ -34,10 +34,12 @@ const futureNews={...intelligence,news:{available:true,items:[{title:'TEST explo
 const pit=Screening.screen(goodRow,{execution,intelligence:futureNews,decisionTime:now,dataCutoff:now});
 assert.notEqual(pit.classification,'EVENT_RISK','future news must not leak into earlier snapshot');
 
-const eventIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit confirmed',publishedAt:now-60000,observedAt:now-30000}]}};
+const unverifiedIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit rumored',source:'anonymous social',publishedAt:now-60000,observedAt:now-30000,verification_status:'UNVERIFIED'}]}};
+const unverified=Screening.screen(goodRow,{execution,intelligence:unverifiedIntel,decisionTime:now,dataCutoff:now});
+assert.notEqual(unverified.classification,'EVENT_RISK','unverified news must not change classification');
+const eventIntel={...intelligence,news:{available:true,items:[{title:'TEST exploit confirmed',source:'Project Foundation',source_tier:2,publishedAt:now-60000,observedAt:now-30000,verification_status:'OFFICIAL_CONFIRMED'}]}};
 const risky=Screening.screen(goodRow,{execution,intelligence:eventIntel,decisionTime:now,dataCutoff:now});
-assert.equal(risky.classification,'REJECTED');
-assert(risky.exclusion_reasons.includes('SECURITY_EVENT'));
+assert.equal(risky.classification,'EVENT_RISK');
 
 const thin=Screening.screen(goodRow,{execution:{},intelligence:{cex:{exchangeCount:1},coverage:{}},decisionTime:now,dataCutoff:now});
 assert.equal(thin.classification,'INSUFFICIENT_DATA');
