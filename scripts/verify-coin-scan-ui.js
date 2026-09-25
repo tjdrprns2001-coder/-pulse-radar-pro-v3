@@ -40,7 +40,7 @@ assert(css.includes('.tradeSignal'),'trade signal layout style required');
 assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
-assert(/\/ui\/coin-scan\.js\?v=20260925-breakout1/.test(html),'official v3 scanner UI must use current cache-bust');
+assert(/\/ui\/coin-scan\.js\?v=20260925-entry1/.test(html),'official v3 scanner UI must use current cache-bust');
 for(const s of ['v3Markup','marketCrossMarkup','글로벌 시장 교차검증','CEX ','스왑/선물','최대 가격편차','장기 1W','정렬','테이커 매수/매도','상대거래량 1H','5분 참고','이평 배열 1H','인과성 ICT','봉 부족','인과성 규칙','근접 PD구간','정밀검사'])assert(js.includes(s)||html.includes(s),`official v3 flow UI missing ${s}`);
 assert(css.includes('@media(max-width:650px)')||css.includes('@media (max-width:650px)'),'mobile breakpoint required');
 assert(!/\.scanCard\s*\{[^}]*width:\s*[5-9]\d\dpx/s.test(css),'fixed wide cards forbidden');
@@ -51,3 +51,5 @@ for(const s of ['mode=prescan','prescanLoading','1H·4H 패턴 프리스캔','pr
 for(const s of ['bookManualMarkup','책 종합기법','bookRisk','registrySummary'])assert(js.includes(s)||css.includes(s),`book strategy UI missing ${s}`);
 
 for(const s of ['breakoutTimingMarkup','돌파 후 상태','늦은 진입 주의','breakoutTiming'])assert(js.includes(s)||css.includes(s),`breakout timing UI missing ${s}`);
+
+for(const s of ['entryQualityMarkup','A급 진입 자리','트리거','취소','entryQuality'])assert(js.includes(s)||css.includes(s),`entry quality UI missing ${s}`);
