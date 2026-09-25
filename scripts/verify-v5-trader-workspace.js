@@ -68,7 +68,9 @@ for(const id of ['compareToggle','compareSection','compareEvent','compareGrid','
 for(const term of ['추세선','구조','핵심 PD Array','유동성'])assert(snap.includes(term),'minimal snapshot overlay missing '+term);
 assert(!snap.includes('data-show="profile"')&&!snap.includes('data-show="ma"')&&!snap.includes('data-show="dante"'),'heavy snapshot overlays must not be enabled in V1');
 assert(snap.includes('/ui/ict-trainer/engine.js')&&snap.includes('/ui/trader/snapshot-record.js'),'snapshot must reuse ICT engine and replay record module');
-assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('for(let i=0;i<TF.length;i++){const tf=TF[i]'),'8TF snapshots must use direct intervals with sequential fetch');
+assert(snap.includes('/ui/snapshot/shared-structure-cache.js'),'8TF snapshot shared structure cache wiring missing');
+assert(snapJs.includes("source:'binance-original-kline'")&&snapJs.includes('SC.fetchStructure')&&snapJs.includes('STRUCTURE_LIMIT=600'),'8TF snapshots must use direct intervals through the shared structure cache');
+assert(snapJs.includes('BOARD_CONCURRENCY=2')&&snapJs.includes('fetchTfPool')&&snapJs.includes('Promise.all(workers)'),'8TF snapshot bounded concurrency pool missing');
 assert(snapJs.includes('IntersectionObserver')&&snapJs.includes('ruleSummary'),'snapshot lazy rendering or rule-based summary missing');
 assert(snapJs.includes('pdText')&&snapJs.includes('snapshotDisplay')&&snapJs.includes('confirmedText'),'snapshot friendly display helpers missing');
 assert(snapJs.includes('ensureMarketContext')&&snapJs.includes('dolState')&&snapJs.includes('priceText'),'snapshot live DOL/tick-size display helpers missing');
@@ -163,5 +165,5 @@ assert(report.includes('snapshot-hub.html')&&report.includes('dante-lab.html'),'
 assert.deepEqual(vercel.regions,['icn1'],'Vercel functions must remain in Seoul');
 assert(!Object.keys(vercel.functions||{}).some(k=>/dante|snapshot|trader/i.test(k)),'V5 static features must not consume new Hobby serverless slots');
 
-for(const f of ['ui/long-trend/card-engine.js','ui/long-trend/aggregate-engine.js','ui/long-trend-dashboard.js','ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/snapshot-hub.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
+for(const f of ['ui/snapshot/shared-structure-cache.js','ui/long-trend/card-engine.js','ui/long-trend/aggregate-engine.js','ui/long-trend-dashboard.js','ui/trader/analysis-engine.js','ui/trader/snapshot-record.js','ui/trader/snapshot-renderer.js','ui/trader/mtf-snapshot-pro.js','ui/snapshot-hub.js','ui/dante/dante-methods.js','ui/dante/dante-lab.js','ui/chart/unified-chart-v5.js','ui/chart/plugins/moving-average-plugin.js','ui/chart/plugins/volume-profile-plugin.js','ui/ict-trainer/engine.js','ui/ict-trainer/app.js'])new vm.Script(read(f),{filename:f});
 console.log('PulseRadar V5 trader workspace PASS');
