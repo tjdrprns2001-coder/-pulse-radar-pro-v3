@@ -48,12 +48,12 @@ function dist(a=[]){
   const provider=createBinanceProvider({fetchImpl:globalThis.fetch});
   const snapshots=[];
   for(let i=0;i<samples;i++){
-    const observedAt=Date.now(),rows=[];
-    for(const symbol of syms){
+    const observedAt=Date.now();
+    const rows=await Promise.all(syms.map(async symbol=>{
       const execution=await provider.getExecutionContext(symbol,{spotListed:true,futuresListed:true});
       const metrics=Gate.executionMetrics(execution);
-      rows.push({symbol,observedAt,execution,metrics});
-    }
+      return{symbol,observedAt,execution,metrics};
+    }));
     snapshots.push({sample:i+1,observedAt,rows,summary:summarizeSample(rows)});
     if(i<samples-1&&intervalMs>0)await sleep(intervalMs);
   }
