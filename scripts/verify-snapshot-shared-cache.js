@@ -1,0 +1,25 @@
+'use strict';
+const assert=require('assert');
+const Cache=require('../ui/snapshot/shared-structure-cache.js');
+(async()=>{
+  Cache._resetForTests();
+  let calls=0;
+  const fetchImpl=async url=>{calls++;await new Promise(r=>setTimeout(r,8));return{ok:true,status:200,json:async()=>({ok:true,url,candles:[{time:1,open:1,high:2,low:.5,close:1.5,volume:10}]})}};
+  const opts={symbol:'btcusdt',interval:'4H',limit:600,fetchImpl};
+  const [a,b]=await Promise.all([Cache.fetchStructure(opts),Cache.fetchStructure(opts)]);
+  assert.equal(calls,1,'same-key in-flight requests must dedupe');
+  assert.strictEqual(a,b,'deduped callers must receive the same resolved object');
+  const c=await Cache.fetchStructure(opts);
+  assert.equal(calls,1,'fresh memory cache must avoid another request');
+  assert.strictEqual(c,a,'fresh memory hit should preserve cached object');
+  await Cache.fetchStructure({...opts,force:true});
+  assert.equal(calls,2,'force refresh must bypass cache');
+  await Cache.fetchStructure({...opts,limit:500});
+  assert.equal(calls,3,'different analysis limits must not alias cache keys');
+  Cache.clearSymbol('BTCUSDT');
+  await Cache.fetchStructure(opts);
+  assert.equal(calls,4,'symbol clear must invalidate cached structure rows');
+  const s=Cache.stats();
+  assert(s.hits>=1&&s.network===4,'cache stats must expose reuse/network counts');
+  console.log('snapshot shared structure cache PASS');
+})().catch(e=>{console.error(e);process.exit(1)});
