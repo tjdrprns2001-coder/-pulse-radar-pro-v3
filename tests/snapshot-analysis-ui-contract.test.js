@@ -37,6 +37,8 @@ test('restored chart snapshot is cloned separately and adds weekly timeframe',()
   for(const tf of ['15m','1h','4h','1d','1w']) assert.match(restored,new RegExp(`data-tf=["']${tf}["']`));
   assert.match(restored,/snapshot-weekly\.js/);
   assert.match(restored,/shared-structure-cache\.js/);
+  assert.doesNotMatch(restored,/snapshot-mobile-label-guard\.js/);
+  assert.match(html,/shared-structure-cache\.js/);
   assert.match(weekly,/state\.tf\s*=\s*['"]1w['"]/);
   assert.match(weekly,/runSnapshotAnalysis/);
   assert.match(js,/PulseSnapshotStructureCache/);
