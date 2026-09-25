@@ -63,7 +63,7 @@ module.exports=async function handler(req,res,ctx={}){
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
     }
     if(mode==='runtime-health'){
-      const base=String(process.env.SELECTOR_RUNTIME_URL||'').replace(/\/$/,'');
+      const base=String(process.env.SELECTOR_RUNTIME_URL||'https://pulseradar-selector-runtime.onrender.com').replace(/\/$/,'');
       if(!base)return res.status(200).json({status:'ok',mode:'runtime-health',configured:false,runtime:null});
       const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),3000);
       try{
