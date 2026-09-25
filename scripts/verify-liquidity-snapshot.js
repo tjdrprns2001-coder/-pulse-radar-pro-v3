@@ -13,8 +13,8 @@ for(const s of ['유동성 스냅샷','핵심 요약','차트 확대','scoreHelp
 for(const s of ['session-profile.js','smc-engine.js','liquidity-engine.js','liquidity-map-engine.js','trendline-retest-engine.js','liquidity-snapshot.js'])assert(html.includes(s),'engine wiring missing '+s);
 for(const s of ["getContext('2d')",'requestFullscreen','pseudoFullscreen','inspectCanvas','rangePositionPct','showAllLiquidity','showAllPd','EXTRA_TF','5m 단독 신호','DOL →','trendRetest','RETESTING','TL 무효화'])assert(js.includes(s),'mobile interaction missing '+s);
 for(const s of ['.chartCard:fullscreen','.chartCard.pseudoFullscreen','overflow-x:auto','aspect-ratio:1.18/1','.levelDetail','.stateBadge'])assert(css.includes(s),'mobile style missing '+s);
-assert(shell.includes('data-view="liquiditysnapshot"')&&shell.includes('유동성 스냅샷'),'shell menu missing');
-assert(shellJs.includes("liquiditysnapshot:{title:'유동성 스냅샷'")&&shellJs.includes("path:'/liquidity-snapshot.html'"),'shell route missing');
+assert(shell.includes('data-view="snapshotcenter"')&&shell.includes('스냅샷 센터'),'shell menu missing');
+assert(shellJs.includes("liquiditysnapshot:{title:'유동성 스냅샷'")&&shellJs.includes("path:'/snapshot-hub.html',mode:'liquidity'"),'shell compatibility route missing');
 assert(scan.includes('liquidityUrl')&&scan.includes('유동성 지도'),'scanner deep link missing');
 assert.deepEqual(Engine.TF_ORDER,['1w','1d','4h','1h','15m'],'primary TF order changed unexpectedly');
 assert.deepEqual(Engine.EXTRA_TF_ORDER,['3d','12h','5m'],'extra TF order missing');
