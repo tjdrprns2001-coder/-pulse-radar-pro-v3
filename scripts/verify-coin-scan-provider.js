@@ -46,6 +46,9 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(calls.filter(x=>x.includes('exchangeInfo')).length,1,'exchangeInfo should cache');
   const ticks=await p.getTickers();assert.equal(ticks.length,1);
   const k=await p.getKlines('XLMUSDT','1h',120);assert.equal(k.length,1);
+  assert.equal(typeof p.scanLightCandidates,'function','light prescan provider required');
+  const light=await p.scanLightCandidates(['XLMUSDT'],['4h','1h'],150);assert(light.results.XLMUSDT&&light.results.XLMUSDT['4h']&&light.results.XLMUSDT['1h'],'light prescan must return 4H/1H frames');
+  assert(calls.some(x=>x.includes('/klines')&&x.includes('limit=150')),'light prescan must use bounded 150-bar requests');
   const ctx=await p.getDerivativesContext('XLMUSDT');
   assert(Math.abs(ctx.fundingPct-.01)<1e-12,'funding percent should be preserved');
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
@@ -63,4 +66,3 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   console.log('coin scan provider PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
 
-assert.equal(typeof provider.scanLightCandidates,'function','light prescan provider required');
