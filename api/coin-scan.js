@@ -8,12 +8,14 @@ const {createAlertService}=require('../lib/signal-performance/alerts.js');
 const {createTransitionSnapshotService}=require('../lib/coin-scan/transition-snapshot-service.js');
 const {createSetupStateTracker}=require('../lib/coin-scan/setup-state-tracker.js');
 const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
+const {createPreIgnitionOosService}=require('../lib/coin-scan/preignition-oos.js');
+const {createPreIgnitionResolver}=require('../lib/coin-scan/preignition-resolver.js');
 const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,preIgnitionHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null;
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});marketValidationStore=store;
@@ -23,12 +25,13 @@ function defaultService(getStore){
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
         setupStateTracker=createSetupStateTracker({store});
         recommendationHistory=createRecommendationHistoryService({store,resolver});
+        preIgnitionHistory=createPreIgnitionOosService({store,resolver:createPreIgnitionResolver({})});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
         selectorLedger=createSelectorLedgerService({store,resolver});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;setupStateTracker=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;setupStateTracker=null;recommendationHistory=null;preIgnitionHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
     if(!setupStateTracker)setupStateTracker=createSetupStateTracker({});
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,preIgnitionHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
   }
   return singleton;
 }
@@ -54,7 +57,7 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='preignition-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
@@ -86,6 +89,16 @@ module.exports=async function handler(req,res,ctx={}){
         const body=await r.json().catch(()=>({}));return res.status(r.ok?200:503).json({status:r.ok?'ok':'degraded',mode:'runtime-health',configured:true,runtime:body});
       }catch(e){return res.status(503).json({status:'degraded',mode:'runtime-health',configured:true,error:String(e?.message||e),runtime:null})}
       finally{clearTimeout(timer)}
+    }
+    if(mode==='preignition-history'){
+      const action=String(q.action||'stats').toLowerCase();
+      if(action==='evaluate')return res.status(200).json({status:'ok',mode:'preignition-history',action:'evaluate',updatedAt:Date.now(),evaluation:await service.evaluatePreIgnitionHistory()});
+      if(action==='list'){
+        const since=Number(q.since)||null,rows=await service.listPreIgnitionHistory({symbol:q.symbol||null,bucket:q.bucket||null,limit,since,includeOutcomes:String(q.includeOutcomes||'1')!=='0'});
+        return res.status(200).json({status:'ok',mode:'preignition-history',action:'list',updatedAt:Date.now(),items:rows});
+      }
+      const since=Number(q.since)||null;
+      return res.status(200).json({status:'ok',mode:'preignition-history',action:'stats',updatedAt:Date.now(),stats:await service.getPreIgnitionStats({since})});
     }
     if(mode==='validation'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
