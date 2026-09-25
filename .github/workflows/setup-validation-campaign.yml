@@ -40,9 +40,9 @@ jobs:
       - name: Run setup validation campaign
         run: >
           npm run research:setup-campaign --
-          --days=${{ inputs.days }}
-          --symbols=${{ inputs.symbols }}
-          --tf=${{ inputs.timeframe }}
+          --days=${{ inputs.days || '28' }}
+          --symbols=${{ inputs.symbols || 'BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT,LINKUSDT,SUIUSDT,ONDOUSDT,FETUSDT,PEPEUSDT,BONKUSDT,WIFUSDT' }}
+          --tf=${{ inputs.timeframe || '15m' }}
           --out=artifacts/setup-validation-campaign
       - name: Upload validation artifacts
         if: always()
