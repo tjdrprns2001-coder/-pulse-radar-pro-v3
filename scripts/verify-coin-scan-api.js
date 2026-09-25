@@ -115,6 +115,21 @@ const provider={
   assert.equal(code,200);assert.equal(body.scanRunId,'scan-test-1');assert.equal(headers['Cache-Control'],'no-store, max-age=0','manual fresh scan must bypass response cache');
 
   code=0;body=null;headers={};
+  const scanRunStub={scanRun:{
+    async start(){return{id:'scan-test-bg',status:'QUEUED',stage:'queued'}},
+    async get(id){return{id,status:'RUNNING',stage:'deep',deepDone:6,deepTotal:12}},
+    async execute(id){return{id,status:'DONE',stage:'complete',deepDone:12,deepTotal:12}}
+  }};
+  await handler({method:'POST',query:{mode:'scan-run',action:'start',precision:'1'}},res,{service:scanRunStub});
+  assert.equal(code,202);assert.equal(body.run.id,'scan-test-bg');assert.equal(headers['Cache-Control'],'no-store, max-age=0');
+  code=0;body=null;headers={};
+  await handler({query:{mode:'scan-run',action:'status',id:'scan-test-bg'}},res,{service:scanRunStub});
+  assert.equal(code,200);assert.equal(body.run.deepDone,6);
+  code=0;body=null;headers={};
+  await handler({query:{mode:'scan-run',action:'execute',id:'scan-test-bg'}},res,{service:scanRunStub});
+  assert.equal(code,200);assert.equal(body.run.status,'DONE');
+
+  code=0;body=null;headers={};
   await handler({query:{mode:'event-snapshots',action:'get',eventId:'EV-A'}},res,{service:transitionService});
   assert.equal(code,200);assert.equal(body.bundle.eventId,'EV-A');assert(String(headers['Cache-Control']).includes('no-store'));
   code=0;body=null;headers={};
