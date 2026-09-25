@@ -219,6 +219,8 @@ async function runSelectorScanner(){
   await new Promise(r=>setTimeout(r,Number(env.SELECTOR_SCAN_START_DELAY_MS||12000)));
   while(true){
     const list=symbols();
+    const preIds=await recordSelectorFallback(list,'websocket baseline before deep scan');
+    health.selector={status:'BASELINE',updatedAt:Date.now(),symbols:list,fallbackSnapshots:preIds.length};
     try{
       const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('selector deep scan timeout')),timeoutMs));
       const result=await Promise.race([selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true}),timeout]);
@@ -303,4 +305,4 @@ runBinance();
 runQueues();
 runEvidencePollers();
 runSelectorScanner();
-process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
+process.on('SIGTERM',()=>{process.exit(0)});
