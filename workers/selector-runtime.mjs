@@ -165,6 +165,17 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
     if(req.url==='/ready'){const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
+    if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}
+    if(req.url==='/stats'){
+      try{
+        const [raw,bySource,watermarks]=await Promise.all([
+          query("SELECT count(*)::int AS raw_events, min(created_at) AS first_event_at, max(created_at) AS last_event_at FROM raw_events"),
+          query("SELECT source_name, count(*)::int AS events FROM raw_events GROUP BY source_name ORDER BY events DESC"),
+          query("SELECT source_name, entity_key, status, last_sequence, updated_at FROM source_watermarks ORDER BY updated_at DESC LIMIT 100")
+        ]);
+        res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'ok',raw:raw.rows?.[0]||{},bySource:bySource.rows||[],watermarks:watermarks.rows||[],health}));
+      }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+    }
     if(req.url==='/webhook/alchemy'&&req.method==='POST'){
       let raw='';for await(const chunk of req)raw+=chunk;
       const parsed=normalizeAlchemy(raw,{signatureHeader:req.headers['x-alchemy-signature'],signingKey:env.ALCHEMY_WEBHOOK_SIGNING_KEY,receivedAt:Date.now()});
