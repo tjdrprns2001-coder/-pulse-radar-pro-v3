@@ -54,6 +54,8 @@ const conflicted=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,
 assert.equal(conflicted.classification,'CONFLICTED');
 const stale=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,sourceHealth:{status:'STALE',blocking:true}},decisionTime:now,dataCutoff:now});
 assert.equal(stale.classification,'INSUFFICIENT_DATA');
+const degraded=Screening.screen(goodRow,{execution,intelligence:{...goodIntel,sourceHealth:{status:'DEGRADED',blocking:false}},decisionTime:now,dataCutoff:now});
+assert.equal(degraded.classification,'WATCHLIST');
 
 const bundle=Screening.bundle([good,crowded,thin,risky,conflicted]);
 assert.equal(bundle.candidates.length,1);
