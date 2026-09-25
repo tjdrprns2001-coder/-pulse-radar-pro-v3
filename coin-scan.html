@@ -2,10 +2,10 @@
 <section class="finder" aria-label="자동스캔 검색기">
   <div class="finderHead"><div><h2>자동스캔 검색기</h2><p>Binance USDT 무기한 선물 후보를 기존 v3·OI·taker·RVOL·ICT 근거로 자동 압축합니다.</p></div><button id="finderToggle" class="scanBtn active" type="button">자동검색 ON</button></div>
   <div class="finderControls">
-    <label>검색 프리셋 <select id="finderPreset"><option value="balanced">균형 후보</option><option value="ignition">점화 직전</option><option value="quiet">조용한 축적</option><option value="retest">리테스트</option><option value="derivatives">파생 수급</option></select></label>
+    <label>검색 프리셋 <select id="finderPreset"><option value="validated" selected>검증 후보(A/B)</option><option value="balanced">균형 후보</option><option value="ignition">점화 직전</option><option value="quiet">조용한 축적</option><option value="retest">리테스트</option><option value="derivatives">파생 수급</option></select></label>
     <label>표시 <select id="finderLimit"><option value="8">8개</option><option value="12" selected>12개</option><option value="20">20개</option></select></label>
-    <span id="finderStatus" class="finderStatus">후보 계산 중…</span>
+    <span id="finderStatus" class="finderStatus">후보 계산 중…</span></div><div id="finderClassStats" class="finderClassStats" aria-live="polite"></div><div class="finderResultsWrap">
   </div>
-  <div id="finderResults" class="finderResults"><div class="finderEmpty">스캔 결과를 기다리는 중…</div></div>
+  <div id="finderResults" class="finderResults"><div class="finderEmpty">스캔 결과를 기다리는 중…</div></div></div>
 </section>
 <section class="filters"><div class="tabs" id="categoryTabs"><button class="active" data-category="전체">전체</button><button data-category="PRE-SURGE">🔥 급등 직전</button><button data-category="ACCUMULATION-PRE">🟢 잠복 축적</button><button data-category="META-PRE">🟢 메타 선행</button><button data-category="SECTOR-ROTATION">🟣 섹터 순환매</button><button data-category="ANOMALY">🟠 이상징후</button><button data-category="POST-SURGE">🔵 급등 완료</button><button data-category="DISTRIBUTION-RISK">⚫ 분배 위험</button><button data-category="PUMP-RISK">🔴 펌프 위험</button><button data-category="STALE">⚪ 판단 보류</button></div><div class="sectorRow"><label>섹터 <select id="sector"><option>전체</option><option>AI</option><option>MEME</option><option>RWA</option><option>DeFi</option><option>L1</option><option>L2</option><option>Gaming</option><option>Infrastructure</option><option>기타</option></select></label><input id="query" placeholder="종목 검색 · Enter로 종합 분석" autocomplete="off"></div></section><section id="results" class="results" aria-live="polite"></section><p class="foot">분류는 시장 관찰용입니다. 급등 직전·잠복 축적 후보와 이미 급등한 종목·위험 종목을 분리하며 자동 주문 기능은 없습니다. 데이터가 오래되거나 오류가 나면 판단을 보류합니다.</p></main><script src="/ui/coin-scan.js?v=20260925-finder1" defer></script></body></html>
