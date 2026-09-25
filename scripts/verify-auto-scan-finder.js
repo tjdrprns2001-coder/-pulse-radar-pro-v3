@@ -14,13 +14,14 @@ must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
 must(css.includes('.finderResults'),'finder responsive styling missing');
 console.log('auto-scan-finder verification passed');
 
-const selector=fs.readFileSync('config/selector_r0_1.yaml','utf8');
-const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.1.schema.json','utf8'));
-must(selector.includes('version: selector-r0.1'),'selector spec version missing');
+const selector=fs.readFileSync('config/selector_r0_2.yaml','utf8');
+const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.2.schema.json','utf8'));
+must(selector.includes('version: selector-r0.2'),'selector spec version missing');
 must(selector.includes('maximum_cross_venue_deviation_bps: 35'),'cross venue hard limit missing');
-must(selector.includes('candidate_min_final_score: 75'),'candidate threshold missing');
+must(selector.includes('catalyst_context: 0.05'),'candidate threshold missing');
 must(schema.properties.classification.enum.includes('CANDIDATE'),'selector snapshot classification contract missing');
 must(schema.properties.classification.enum.includes('RISK_FILTERED'),'risk-filtered contract missing');
+must(schema.properties.evidence_context.properties.version.const==='EVIDENCE_CONTEXT_r0.2','evidence context contract missing');
 
 const ledgerHtml=fs.readFileSync('selector-ledger.html','utf8');
 const ledgerJs=fs.readFileSync('ui/selector-ledger.js','utf8');
