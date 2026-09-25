@@ -182,6 +182,27 @@ if(mode==='recommendation-history'){
       const rows=await service.listTransitionSnapshots({symbol:q.symbol||null,limit});
       return res.status(200).json({status:'ok',items:rows.map(x=>({eventId:x.eventId,symbol:x.symbol,detectedAt:x.detectedAt,detectedAtIso:x.detectedAtIso,eventMeta:x.eventMeta,snapshotIds:x.snapshotIds||[]}))});
     }
+    if(mode==='selector-compact'){
+      const deepLimit=Math.max(5,Math.min(120,Number(q.deepLimit)||60));
+      const result=await service.run({mode:'deep',category,sector,limit:deepLimit,symbols,precision:true});
+      const screening=result.autoScreening||{};
+      const rows=Array.isArray(screening.all)?screening.all:[];
+      return res.status(200).json({
+        status:'ok',
+        mode:'selector-compact',
+        updatedAt:result.updatedAt||Date.now(),
+        universe:result.universe||null,
+        universeMeta:result.universeMeta||null,
+        marketCoverage:result.marketCoverage||null,
+        deepScanCount:result.deepScanCount||0,
+        dataHealth:result.dataHealth||null,
+        marketSource:result.marketSource||null,
+        derivativesSource:result.derivativesSource||null,
+        autoScreeningMeta:result.autoScreeningMeta||null,
+        autoScreening:{all:rows},
+        candidateSymbols:result.candidateSymbols||[]
+      });
+    }
     return res.status(200).json(await service.run({mode,category,sector,limit,symbols,precision}));
   }
   catch(e){return res.status(Number(e&&e.statusCode)||502).json({status:'error',updatedAt:Date.now(),error:String(e&&e.message||e),scanCount:0,deepScanCount:0,partial:true,dataHealth:{live:0,delayed:0,blocked:0,errors:1},categories:{},candidateSymbols:[],items:[]})}

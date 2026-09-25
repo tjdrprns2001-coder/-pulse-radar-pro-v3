@@ -91,23 +91,18 @@ async function depthSnapshot(stream,market='spot'){
 }
 function createBinanceRuntime({market='spot'}={}){
   const isSpot=market==='spot';
-  const streams=symbols().map(s=>s.toLowerCase()+(isSpot?'@bookTicker':'@depth@100ms'));
+  const streams=symbols().map(s=>s.toLowerCase()+'@bookTicker');
   const source=isSpot?'binance-spot-ws':'binance-futures-ws';
   const mux=createBinanceWsMultiplexer({
     url:isSpot?'wss://stream.binance.com:9443/stream':'wss://fstream.binance.com/stream',
-    restSnapshot:isSpot?null:(stream)=>depthSnapshot(stream,market),
+    restSnapshot:null,
     onEvent:async({stream,data,receivedAt})=>{
       const symbol=stream.split('@')[0].toUpperCase();
-      if(isSpot){
-        if(!/bookticker/i.test(stream))return;
-        const seq=Number(data.u);
-        await runtime.ingest({source_name:source,source_kind:'book_ticker',entity_key:symbol,source_time:receivedAt,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number.isFinite(seq)?seq:null,sequence_no:Number.isFinite(seq)?seq:null,payload:data});
-        await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number.isFinite(seq)?seq:null,last_source_time:receivedAt,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market,transport:'websocket-bookTicker'}});
-        return;
-      }
-      if(!/depth/i.test(stream)||data.u==null)return;
-      await runtime.ingest({source_name:source,source_kind:'orderbook',entity_key:symbol,source_time:Number(data.E)||receivedAt,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number(data.u),sequence_no:Number(data.u),payload:data});
-      await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number(data.u),last_source_time:Number(data.E)||receivedAt,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market}});
+      if(!/bookticker/i.test(stream))return;
+      const seq=Number(data.u);
+      const sourceTime=Number(data.E)||receivedAt;
+      await runtime.ingest({source_name:source,source_kind:'book_ticker',entity_key:symbol,source_time:sourceTime,received_time:receivedAt,available_time:receivedAt,venue:'binance',market_type:market,symbol,update_id:Number.isFinite(seq)?seq:null,sequence_no:Number.isFinite(seq)?seq:null,payload:data});
+      await runtime.updateWatermark(source,symbol,{status:'FRESH',last_sequence:Number.isFinite(seq)?seq:null,last_source_time:sourceTime,last_received_time:receivedAt,last_available_time:receivedAt,gap_count:0,metadata:{stream,market,transport:'websocket-bookTicker'}});
     },
     onState:s=>{const key=isSpot?'binanceSpot':'binanceFutures';health[key]={...s,updatedAt:Date.now(),market}},
     maxStreams:Number(env.BINANCE_MAX_STREAMS||200)
@@ -182,12 +177,7 @@ function streamFresh(market,symbol){
   const h=health?.[market]||{};
   const age=h.lastMessageAt!=null?Date.now()-Number(h.lastMessageAt):Infinity;
   const transportFresh=(h.state==='LIVE'||h.state==='RESYNC_REQUIRED')&&!h.silent&&age<30000;
-  if(market==='binanceSpot')return transportFresh;
-  const key=String(symbol||'').toLowerCase()+'@depth@100ms';
-  const guards=Array.isArray(h.guards)?h.guards:[];
-  const g=guards.find(x=>String(x.source||'').toLowerCase()===key);
-  const sequenceFresh=Boolean(g?.fresh&&g?.status==='OK');
-  return transportFresh||sequenceFresh;
+  return transportFresh;
 }
 async function recordSelectorFallback(list,reason){
   const now=Date.now(),bucket=Math.floor(now/300000)*300000,rows=[];
@@ -216,41 +206,72 @@ async function recordSelectorFallback(list,reason){
 }
 async function runVercelSelectorFallback(list){
   const base=String(env.VERCEL_SCAN_URL||'https://pulse-radar-pro-v3.vercel.app/api/coin-scan').replace(/\/$/,'');
-  const url=base+'?mode=deep&symbols='+encodeURIComponent(list.join(','))+'&limit='+list.length+'&precision=true&t='+Date.now();
-  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),Number(env.VERCEL_SCAN_TIMEOUT_MS||30000));
-  try{
-    const res=await fetch(url,{signal:ctrl.signal,headers:{accept:'application/json','user-agent':'PulseRadar-Render-Fallback/1.0'}});
-    if(!res.ok)throw new Error('Vercel deep scan HTTP '+res.status);
-    const body=await res.json();
-    if(body?.status!=='ok'||!body?.autoScreening||!Array.isArray(body.autoScreening.all)||!body.autoScreening.all.length)throw new Error('Vercel deep scan missing autoScreening');
-    const rawBySymbol=new Map((body.items||[]).map(item=>[String(item.symbol||'').toUpperCase(),{row:{symbol:item.symbol,item},execution:null,intelligence:item.marketIntelligence||{}}]));
-    const recording=await selectorLedger.observe({screeningBundle:body.autoScreening,rawBySymbol,context:{capturedAt:body.updatedAt||Date.now(),marketSource:body.marketSource||'vercel-deep',derivativesSource:body.derivativesSource||null}});
-    return{body,recording};
-  }finally{clearTimeout(timer)}
+  const deepLimit=Math.max(5,Math.min(30,Number(env.SELECTOR_DEEP_LIMIT||20)));
+  async function getJson(url,timeoutMs){
+    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+    try{
+      const res=await fetch(url,{signal:ctrl.signal,headers:{accept:'application/json','user-agent':'PulseRadar-Render-Fallback/1.0'}});
+      if(!res.ok)throw new Error('Vercel scan HTTP '+res.status);
+      return await res.json();
+    }finally{clearTimeout(timer)}
+  }
+  const timeoutMs=Number(env.VERCEL_SCAN_TIMEOUT_MS||45000);
+  const firstUrl=base+'?mode=selector-compact&deepLimit='+deepLimit+'&precision=true&t='+Date.now();
+  const first=await getJson(firstUrl,timeoutMs);
+  let body=first;
+  if(!body?.autoScreening||!Array.isArray(body.autoScreening.all)||!body.autoScreening.all.length){
+    const candidates=(Array.isArray(first?.candidateSymbols)?first.candidateSymbols:[]).map(x=>String(x||'').toUpperCase()).filter(Boolean).slice(0,deepLimit);
+    if(!candidates.length)throw new Error('Vercel whole-market scan returned no candidate symbols');
+    const deepUrl=base+'?mode=deep&symbols='+encodeURIComponent(candidates.join(','))+'&limit='+candidates.length+'&precision=true&t='+Date.now();
+    body=await getJson(deepUrl,timeoutMs);
+  }
+  if(body?.status!=='ok'||!body?.autoScreening||!Array.isArray(body.autoScreening.all)||!body.autoScreening.all.length)throw new Error('Vercel deep scan missing autoScreening');
+  const rawBySymbol=new Map((body.items||[]).map(item=>[
+    String(item.symbol||'').toUpperCase(),
+    {row:{symbol:item.symbol,item},execution:null,intelligence:item.marketIntelligence||{}}
+  ]));
+  const recording=await selectorLedger.observe({
+    screeningBundle:body.autoScreening,
+    rawBySymbol,
+    context:{capturedAt:body.updatedAt||Date.now(),marketSource:body.marketSource||'vercel-two-stage',derivativesSource:body.derivativesSource||null}
+  });
+  return{body,recording,wholeMarket:{scanCount:first?.scanCount||first?.universeMeta?.count||0,candidateCount:(first?.candidateSymbols||[]).length}};
 }
 
 async function runSelectorScanner(){
   const interval=Math.max(60000,Number(env.SELECTOR_SCAN_INTERVAL_MS||900000));
   const timeoutMs=Math.max(15000,Number(env.SELECTOR_SCAN_TIMEOUT_MS||45000));
+  const preferRemote=String(env.SELECTOR_REMOTE_FIRST||'1')!=='0';
   await new Promise(r=>setTimeout(r,Number(env.SELECTOR_SCAN_START_DELAY_MS||12000)));
   while(true){
     const list=symbols();
-    const preIds=await recordSelectorFallback(list,'websocket baseline before deep scan');
-    health.selector={status:'BASELINE',updatedAt:Date.now(),symbols:list,fallbackSnapshots:preIds.length};
+    let remoteError=null,localError=null;
+    if(preferRemote){
+      try{
+        const remote=await runVercelSelectorFallback(list);
+        health.selector={status:'REMOTE_PRIMARY',updatedAt:Date.now(),symbols:list,wholeMarket:remote.wholeMarket||null,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null};
+        await new Promise(r=>setTimeout(r,interval));
+        continue;
+      }catch(e){remoteError=e}
+    }
     try{
       const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('selector deep scan timeout')),timeoutMs));
       const result=await Promise.race([selectorScanService.run({mode:'deep',symbols:list,limit:list.length,precision:true}),timeout]);
-      health.selector={status:'FRESH',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null};
+      health.selector={status:'LOCAL_FALLBACK',updatedAt:Date.now(),symbols:list,deepScanCount:result.deepScanCount||0,recording:result.selectorRecording||null,screening:result.autoScreeningMeta||null,remoteError:remoteError?String(remoteError?.message||remoteError):null};
     }catch(e){
-      try{
-        const remote=await runVercelSelectorFallback(list);
-        health.selector={status:'REMOTE_FALLBACK',updatedAt:Date.now(),symbols:list,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null,localError:String(e?.message||e)};
-      }catch(remoteError){
-        const fallbackIds=await recordSelectorFallback(list,(e?.message||e)+' | vercel fallback: '+String(remoteError?.message||remoteError));
-        health.selector={status:'PARTIAL',updatedAt:Date.now(),symbols:list,fallbackSnapshots:fallbackIds.length,error:String(e?.message||e),remoteError:String(remoteError?.message||remoteError)};
-        health.errors.push({source:'selector',at:Date.now(),error:String(e?.message||e)});
-        health.errors.push({source:'selector-vercel-fallback',at:Date.now(),error:String(remoteError?.message||remoteError)});
+      localError=e;
+      if(!preferRemote){
+        try{
+          const remote=await runVercelSelectorFallback(list);
+          health.selector={status:'REMOTE_FALLBACK',updatedAt:Date.now(),symbols:list,wholeMarket:remote.wholeMarket||null,deepScanCount:remote.body?.deepScanCount||0,recording:remote.recording||null,screening:remote.body?.autoScreeningMeta||null,localError:String(e?.message||e)};
+          await new Promise(r=>setTimeout(r,interval));
+          continue;
+        }catch(re){remoteError=re}
       }
+      const fallbackIds=await recordSelectorFallback(list,[remoteError,localError].filter(Boolean).map(x=>String(x?.message||x)).join(' | '));
+      health.selector={status:'PARTIAL',updatedAt:Date.now(),symbols:list,fallbackSnapshots:fallbackIds.length,error:localError?String(localError?.message||localError):null,remoteError:remoteError?String(remoteError?.message||remoteError):null};
+      if(localError)health.errors.push({source:'selector',at:Date.now(),error:String(localError?.message||localError)});
+      if(remoteError)health.errors.push({source:'selector-vercel-fallback',at:Date.now(),error:String(remoteError?.message||remoteError)});
     }
     await new Promise(r=>setTimeout(r,interval));
   }
