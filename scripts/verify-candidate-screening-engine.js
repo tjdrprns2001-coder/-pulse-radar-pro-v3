@@ -23,7 +23,9 @@ const intelligence={
 const good=Screening.screen(goodRow,{execution,intelligence,decisionTime:now,dataCutoff:now});
 assert.equal(good.classification,'CANDIDATE');
 assert(good.scores.final_score>=75);
-assert.equal(good.spec_version,'selector-r0.1');
+assert.equal(good.spec_version,'selector-r0.2');
+assert.equal(good.evidence_context.version,'EVIDENCE_CONTEXT_r0.2');
+assert(Object.prototype.hasOwnProperty.call(good.scores,'catalyst_context'));
 assert(good.snapshot_id&&good.input_hash);
 assert.equal(good.decision_time,new Date(now).toISOString());
 assert(Array.isArray(good.evidence)&&good.evidence.length>0);
@@ -52,4 +54,4 @@ assert.equal(bundle.insufficientData.length,1);
 assert.equal(bundle.rejected.length,1);
 assert.equal(bundle.all.length,4);
 
-console.log('candidate-screening-engine selector-r0.1 verification passed');
+console.log('candidate-screening-engine selector-r0.2 verification passed');
