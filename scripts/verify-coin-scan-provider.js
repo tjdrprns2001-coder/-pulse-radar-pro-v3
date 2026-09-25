@@ -4,7 +4,8 @@ const {DEFAULT_BASES,DEFAULT_FUTURES_BASES,createBinanceProvider}=require('../li
 
 assert.equal(DEFAULT_BASES[0],'https://data-api.binance.vision','public market-data-only host should be preferred for serverless deployments');
 assert.equal(DEFAULT_FUTURES_BASES[0],'https://fapi.binance.com','primary futures host should remain canonical');
-assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list should be present');
+assert(DEFAULT_FUTURES_BASES.includes('https://www.binance.com'),'www Binance futures gateway should be available for HTTP 451 serverless fallback');
+assert(DEFAULT_FUTURES_BASES.length>=4,'official futures host fallback list should be present');
 
 (async()=>{
   let now=1000;

@@ -50,6 +50,18 @@ async function fetchSelectorOverlay(limit=100){
   }catch(_e){return null}finally{clearTimeout(timer)}
 }
 module.exports=async function handler(req,res,ctx={}){
+  if(['trader-summary','trader-light','trader-deep','trader-batch'].includes(String(req?.query?.mode||''))){
+    res.setHeader('Cache-Control','no-store, max-age=0');
+    try{
+      const trader=ctx.traderService||require('../lib/coin-scan/trader-service.js').defaultTraderService();
+      const q=req.query, symbols=String(q.symbols||'').split(',').filter(Boolean);
+      const data=q.mode==='trader-summary'?await trader.summary():
+        q.mode==='trader-light'?await trader.light(symbols):
+        q.mode==='trader-batch'?await trader.deepBatch(symbols):
+        await trader.deep(q.symbol);
+      return res.status(200).json(data);
+    }catch(e){return res.status(e.statusCode===400?400:503).json({status:'error',error:String(e.message||e),source:'Binance futures',items:[]})}
+  }
   const service=ctx.service||defaultService(ctx.getStore);
   const q=req&&req.query||{};
   const requestedMode=String(q.mode||'summary');
