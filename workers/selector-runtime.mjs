@@ -216,15 +216,20 @@ async function recordSelectorFallback(list,reason){
 }
 async function runVercelSelectorFallback(list){
   const base=String(env.VERCEL_SCAN_URL||'https://pulse-radar-pro-v3.vercel.app/api/coin-scan').replace(/\/$/,'');
-  const url=base+'?mode=deep&symbols='+encodeURIComponent(list.join(','))+'&limit='+list.length+'&precision=true&t='+Date.now();
-  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),Number(env.VERCEL_SCAN_TIMEOUT_MS||30000));
+  const deepLimit=Math.max(10,Math.min(120,Number(env.SELECTOR_DEEP_LIMIT||60)));
+  const url=base+'?mode=selector-compact&deepLimit='+deepLimit+'&precision=true&t='+Date.now();
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),Number(env.VERCEL_SCAN_TIMEOUT_MS||45000));
   try{
     const res=await fetch(url,{signal:ctrl.signal,headers:{accept:'application/json','user-agent':'PulseRadar-Render-Fallback/1.0'}});
-    if(!res.ok)throw new Error('Vercel deep scan HTTP '+res.status);
+    if(!res.ok)throw new Error('Vercel compact scan HTTP '+res.status);
     const body=await res.json();
-    if(body?.status!=='ok'||!body?.autoScreening||!Array.isArray(body.autoScreening.all)||!body.autoScreening.all.length)throw new Error('Vercel deep scan missing autoScreening');
-    const rawBySymbol=new Map((body.items||[]).map(item=>[String(item.symbol||'').toUpperCase(),{row:{symbol:item.symbol,item},execution:null,intelligence:item.marketIntelligence||{}}]));
-    const recording=await selectorLedger.observe({screeningBundle:body.autoScreening,rawBySymbol,context:{capturedAt:body.updatedAt||Date.now(),marketSource:body.marketSource||'vercel-deep',derivativesSource:body.derivativesSource||null}});
+    if(body?.status!=='ok'||!body?.autoScreening||!Array.isArray(body.autoScreening.all)||!body.autoScreening.all.length)throw new Error('Vercel compact scan missing autoScreening');
+    const rawBySymbol=new Map();
+    for(const snap of body.autoScreening.all){
+      const symbol=String(snap?.symbol||'').toUpperCase();
+      if(symbol)rawBySymbol.set(symbol,{row:{symbol,item:snap?.source_row?.item||null},execution:snap?.evidence_context?.execution||null,intelligence:snap?.evidence_context?.market_intelligence||{}});
+    }
+    const recording=await selectorLedger.observe({screeningBundle:body.autoScreening,rawBySymbol,context:{capturedAt:body.updatedAt||Date.now(),marketSource:body.marketSource||'vercel-compact',derivativesSource:body.derivativesSource||null}});
     return{body,recording};
   }finally{clearTimeout(timer)}
 }
