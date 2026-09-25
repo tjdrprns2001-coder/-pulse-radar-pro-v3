@@ -6,7 +6,8 @@ const ALL_TF=[...new Set([...PRIMARY_TF,...EXTRA_TF])];
 const LABEL={'1w':'1W','3d':'3D','1d':'1D','12h':'12H','4h':'4H','1h':'1H','15m':'15m','5m':'5m'};
 const HTF={'1w':'1w','3d':'1w','1d':'1w','12h':'1d','4h':'1d','1h':'4h','15m':'1h','5m':'15m'};
 const $=id=>document.getElementById(id);
-let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,gateStore=null,gateState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;\nconst STRUCTURE_CACHE_KEY='pulse.liquidity.structure-cache.v1',STRUCTURE_CACHE_TTL=60000,STRUCTURE_CACHE_MAX=8,structureMemory=new Map();
+let currentTf='1h',model=null,raw=null,htfRaw=null,outcomeRaw=null,trendRetest=null,journalStore=null,journalState=null,gateStore=null,gateState=null,seq=0,showAllLiquidity=false,showAllPd=false,renderGeo=null,pseudoFull=false;
+const STRUCTURE_CACHE_KEY='pulse.liquidity.structure-cache.v1',STRUCTURE_CACHE_TTL=60000,STRUCTURE_CACHE_MAX=8,structureMemory=new Map();
 
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function finite(v){return Number.isFinite(Number(v))}
