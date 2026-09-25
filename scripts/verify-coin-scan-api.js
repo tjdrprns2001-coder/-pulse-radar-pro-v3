@@ -56,6 +56,11 @@ const provider={
   const recorder={async recordItems(items){recorderCalls++;assert(items.length>0);throw new Error('blob down')}};
   const isolated=createScanService({provider,now:()=>222222,performanceRecorder:recorder});
   const isolatedDeep=await isolated.run({mode:'deep',symbols:['C0USDT'],limit:1});
+  const readOnlyRecorder={calls:0,async recordItems(){this.calls++;return{recorded:1,errors:[]}}};
+  const readOnlyService=createScanService({provider,now:()=>222222,performanceRecorder:readOnlyRecorder});
+  const readOnlyDeep=await readOnlyService.run({mode:'deep',symbols:['C0USDT'],limit:1,persistObservations:false});
+  assert.equal(readOnlyDeep.persistObservations,false);assert.equal(readOnlyRecorder.calls,0,'read-only UI deep scan must not record performance/ledger side effects');
+
   assert.equal(isolatedDeep.status,'ok','recorder failure must not fail scan');
   assert.equal(recorderCalls,1,'deep scan should invoke performance recorder once');
   assert(Number.isFinite(isolatedDeep.items[0]?.lastPrice),'deep item must expose finite lastPrice for immutable snapshot');
@@ -104,6 +109,25 @@ const provider={
   const res={setHeader(k,v){headers[k]=v},status(n){code=n;return this},json(v){body=v;return v}};
   await handler(req,res,{service});
   assert.equal(code,200);assert.equal(body.status,'ok');assert.equal(body.deepScanCount,2);assert(String(headers['Cache-Control']).includes('stale-while-revalidate'));
+
+  code=0;body=null;headers={};
+  await handler({query:{mode:'summary',limit:'5',fresh:'1',run:'scan-test-1'}},res,{service});
+  assert.equal(code,200);assert.equal(body.scanRunId,'scan-test-1');assert.equal(headers['Cache-Control'],'no-store, max-age=0','manual fresh scan must bypass response cache');
+
+  code=0;body=null;headers={};
+  const scanRunStub={scanRun:{
+    async start(){return{id:'scan-test-bg',status:'QUEUED',stage:'queued'}},
+    async get(id){return{id,status:'RUNNING',stage:'deep',deepDone:6,deepTotal:12}},
+    async execute(id){return{id,status:'DONE',stage:'complete',deepDone:12,deepTotal:12}}
+  }};
+  await handler({method:'POST',query:{mode:'scan-run',action:'start',precision:'1'}},res,{service:scanRunStub});
+  assert.equal(code,202);assert.equal(body.run.id,'scan-test-bg');assert.equal(headers['Cache-Control'],'no-store, max-age=0');
+  code=0;body=null;headers={};
+  await handler({query:{mode:'scan-run',action:'status',id:'scan-test-bg'}},res,{service:scanRunStub});
+  assert.equal(code,200);assert.equal(body.run.deepDone,6);
+  code=0;body=null;headers={};
+  await handler({query:{mode:'scan-run',action:'execute',id:'scan-test-bg'}},res,{service:scanRunStub});
+  assert.equal(code,200);assert.equal(body.run.status,'DONE');
 
   code=0;body=null;headers={};
   await handler({query:{mode:'event-snapshots',action:'get',eventId:'EV-A'}},res,{service:transitionService});
