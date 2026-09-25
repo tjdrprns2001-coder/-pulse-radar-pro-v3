@@ -12,8 +12,8 @@ const universe=core.filterUniverse(exchangeInfo,tickers);
 assert.deepEqual(universe.map(x=>x.symbol),['XLMUSDT']);
 
 assert(Array.isArray(core.SCAN_CLASS_ORDER),'v2 scan class order required');
-assert.equal(core.SCAN_CLASS_ORDER.length,11,'eleven scanner classes required');
-for(const key of ['PRE-SURGE','RE-ENTRY','PATTERN-SETUP','ACCUMULATION-PRE','META-PRE','SECTOR-ROTATION','ANOMALY','POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'])assert(core.SCAN_CLASS_ORDER.includes(key),`missing ${key}`);
+assert.equal(core.SCAN_CLASS_ORDER.length,12,'twelve scanner classes required');
+for(const key of ['PRE-SURGE','RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','ACCUMULATION-PRE','META-PRE','SECTOR-ROTATION','ANOMALY','POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'])assert(core.SCAN_CLASS_ORDER.includes(key),`missing ${key}`);
 
 const pre=core.classifyV2({dataState:'live',alreadySurged:false,structure:'bullish',structureShift4h:true,priceChange24h:2.2,priceChange1h:2.1,priceChange15m:1.1,volumeAcceleration15m:3.4,volumeIncreasing5m:3,takerRatio:1.25,momentumSignals:{aligned:true,overheated:false}});
 assert.equal(pre.key,'PRE-SURGE');
@@ -29,6 +29,13 @@ const reentry=core.classifyV2({dataState:'live',priceChange24h:14,priceChange1h:
 assert.equal(reentry.key,'RE-ENTRY','validated re-entry must override POST-SURGE');
 const patternSetup=core.classifyV2({dataState:'live',priceChange24h:4,priceChange1h:.8,priceChange15m:.2,structure:'bullish',takerRatio:1.05,strategyCycle:{patternEligible:true,reentryEligible:false,reentryScore:76,best:{label:'책 패턴·반전',stage:'CHART_TRIGGER_CONFIRMED'},reasons:['역헤드앤숄더']}});
 assert.equal(patternSetup.key,'PATTERN-SETUP','book/pattern setup must get its own class');
+const fakeoutRisk=core.classifyV2({dataState:'live',priceChange24h:3,structure:'bullish',strategyCycle:{fakeout:{longBlocked:true,primary:{label:'가짜 돌파 확정'}}}});
+assert.equal(fakeoutRisk.key,'FAKEOUT-RISK','confirmed fakeout must get dedicated risk class');
+const fakeoutCategory=core.classify({dataState:'live',strategyCycle:{fakeout:{longBlocked:true,primary:{label:'가짜 돌파 확정'}}}});
+assert.equal(fakeoutCategory.category,'가짜 돌파·롱 회피');
+const fakeoutSignal=core.buildTradeSignal({dataState:'live',scanClassKey:'FAKEOUT-RISK',category:'가짜 돌파·롱 회피',structure:'bullish',takerRatio:1.4,volumeAcceleration:2,strategyCycle:{fakeout:{longBlocked:true}}});
+assert.equal(fakeoutSignal.level,'제외','fakeout risk must hard-block new long signal');
+assert(fakeoutSignal.invalidations.some(x=>x.includes('가짜 돌파')),'fakeout block must explain long avoidance');
 const reentryCategory=core.classify({dataState:'live',alreadySurged:true,structure:'bullish',strategyCycle:{reentryEligible:true,reentryScore:82,reasons:['급등 후 재축적']}});
 assert.equal(reentryCategory.category,'재상승 준비','re-entry category must beat already surged');
 const reentrySignal=core.buildTradeSignal({dataState:'live',category:'재상승 준비',scanClass:{key:'RE-ENTRY'},structure:'bullish',alreadySurged:true,takerRatio:1.18,volumeAcceleration:1.55,priceChange1h:1.2,priceChange15m:.4,momentumSignals:{aligned:true,overheated:false},strategyCycle:{reentryEligible:true,reentryScore:82,best:{label:'유동성 스윕·회복'}}});
@@ -63,7 +70,7 @@ const fast=core.fastScore({priceChange24h:3,quoteVolume24h:10000000,volumeAccele
 assert(Number.isFinite(fast.candidateScore));
 assert(fast.candidateScore>=0&&fast.candidateScore<=100);
 assert(Array.isArray(fast.fastReasons));
-assert.equal(core.CATEGORY_ORDER.length,10);
+assert.equal(core.CATEGORY_ORDER.length,11);
 
 const strong=core.buildTradeSignal({dataState:'live',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:4},takerRatio:1.42,volumeAcceleration:2.1,priceChange1h:2.4,priceChange15m:1.1,alreadySurged:false,momentumSignals:{aligned:true,overheated:false,score:4}});
 assert.equal(strong.level,'매수 후보');
