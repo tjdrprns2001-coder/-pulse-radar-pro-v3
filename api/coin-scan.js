@@ -8,10 +8,11 @@ const {createAlertService}=require('../lib/signal-performance/alerts.js');
 const {createTransitionSnapshotService}=require('../lib/coin-scan/transition-snapshot-service.js');
 const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
 const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
+const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null;
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,recommendationHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null;
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});marketValidationStore=store;
@@ -21,9 +22,10 @@ function defaultService(getStore){
         transitionSnapshotRecorder=createTransitionSnapshotService({store});
         recommendationHistory=createRecommendationHistoryService({store,resolver});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null}
+        selectorLedger=createSelectorLedgerService({store,resolver});
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;recommendationHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore,marketValidationPerformance});
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,recommendationHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
   }
   return singleton;
 }
@@ -37,7 +39,7 @@ module.exports=async function handler(req,res,ctx={}){
   const sector=q.sector?String(q.sector):null;
   const symbols=q.symbols?String(q.symbols).split(',').map(s=>s.trim()).filter(Boolean):[];
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
-  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',(mode==='deep'||mode==='validation')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='event-snapshots'||mode==='recommendation-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
@@ -82,7 +84,34 @@ module.exports=async function handler(req,res,ctx={}){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
       return res.status(200).json(await service.getMarketIntelligence(symbol));
     }
-    if(mode==='recommendation-history'){
+        if(mode==='selector-history'){
+      const action=String(q.action||'list').toLowerCase();
+      if(action==='replay'){
+        const id=String(q.id||'').trim();if(!id)return res.status(400).json({status:'error',error:'id required'});
+        const replay=await service.replaySelectorSnapshot(id);if(!replay)return res.status(404).json({status:'error',error:'selector snapshot not found'});
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'replay',replay});
+      }
+      if(action==='transitions'){
+        const rows=await service.listSelectorTransitions({symbol:q.symbol||null,limit});
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'transitions',updatedAt:Date.now(),items:rows});
+      }
+      if(action==='stats'){
+        const lockedOosStart=Number(q.lockedOosStart)||null;
+        return res.status(200).json({status:'ok',mode:'selector-history',action:'stats',updatedAt:Date.now(),stats:await service.getSelectorStats({lockedOosStart})});
+      }
+      if(action==='export'){
+        const format=String(q.format||'json').toLowerCase();
+        if(format==='csv'){
+          const csv=await service.exportSelectorCsv({symbol:q.symbol||null,classification:q.classification||null,limit});
+          res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="selector-r0.1.csv"');return res.status(200).send(csv);
+        }
+        const rows=await service.listSelectorHistory({symbol:q.symbol||null,classification:q.classification||null,limit});
+        res.setHeader('Content-Disposition','attachment; filename="selector-r0.1.json"');return res.status(200).json({status:'ok',specVersion:'selector-r0.1',items:rows});
+      }
+      const rows=await service.listSelectorHistory({symbol:q.symbol||null,classification:q.classification||null,limit});
+      return res.status(200).json({status:'ok',mode:'selector-history',action:'list',updatedAt:Date.now(),items:rows});
+    }
+if(mode==='recommendation-history'){
       const action=String(q.action||'list').toLowerCase();
       if(action==='stats'){
         const stats=await service.getRecommendationStats({state:q.state||'RECOMMEND'});

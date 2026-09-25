@@ -1,0 +1,11 @@
+const assert=require('assert');
+const {createSequenceGuard,STATUS}=require('../lib/coin-scan/source-sequence-guard.js');
+let t=1000;const g=createSequenceGuard({now:()=>t,maxAgeMs:300});
+assert.equal(g.observe('book',{sequence:10,eventTime:900,observedAt:t}).status,STATUS.OK);
+assert.equal(g.observe('book',{sequence:12,eventTime:950,observedAt:t+10}).status,STATUS.SEQUENCE_GAP);
+assert.equal(g.snapshot('book').recoveryRequired,true);
+g.beginRecovery('book');
+const r=g.recover('book',{snapshotSequence:20,eventTime:1000,observedAt:t+20});
+assert.equal(r.status,STATUS.OK);assert.equal(r.recoveryRequired,false);assert.equal(r.lastSequence,20);
+t=2000;assert.equal(g.snapshot('book').status,STATUS.DEGRADED);
+console.log('source sequence guard PASS');

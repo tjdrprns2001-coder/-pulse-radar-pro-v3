@@ -1,0 +1,32 @@
+const fs=require('fs');
+const html=fs.readFileSync('coin-scan.html','utf8');
+const js=fs.readFileSync('ui/coin-scan.js','utf8');
+const css=fs.readFileSync('ui/coin-scan.css','utf8');
+const must=(ok,msg)=>{if(!ok)throw new Error(msg)};
+must(html.includes('id="finderResults"'),'finder results mount missing');
+must(html.includes('id="finderPreset"'),'finder preset missing');
+must(html.includes('value="derivatives"'),'derivatives preset missing');
+must(js.includes('function finderPass('),'finder filter missing');
+must(js.includes('function finderScore('),'finder score missing');
+must(js.includes("preset==='retest'"),'retest preset logic missing');
+must(js.includes("preset==='derivatives'"),'derivatives preset logic missing');
+must(js.includes('setInterval(refresh,60000)'),'60s autoscan cadence missing');
+must(css.includes('.finderResults'),'finder responsive styling missing');
+console.log('auto-scan-finder verification passed');
+
+const selector=fs.readFileSync('config/selector_r0_1.yaml','utf8');
+const schema=JSON.parse(fs.readFileSync('contracts/selector-snapshot-r0.1.schema.json','utf8'));
+must(selector.includes('version: selector-r0.1'),'selector spec version missing');
+must(selector.includes('maximum_cross_venue_deviation_bps: 35'),'cross venue hard limit missing');
+must(selector.includes('candidate_min_final_score: 75'),'candidate threshold missing');
+must(schema.properties.classification.enum.includes('CANDIDATE'),'selector snapshot classification contract missing');
+must(schema.properties.classification.enum.includes('RISK_FILTERED'),'risk-filtered contract missing');
+
+const ledgerHtml=fs.readFileSync('selector-ledger.html','utf8');
+const ledgerJs=fs.readFileSync('ui/selector-ledger.js','utf8');
+const scheduled=fs.readFileSync('netlify/functions/selector-scheduled-scan.mjs','utf8');
+must(ledgerHtml.includes('Selector r0.1 검증 원장'),'selector ledger dashboard missing');
+must(ledgerJs.includes("action=replay"),'selector replay UI missing');
+must(ledgerJs.includes('selector-history'),'selector history UI API missing');
+must(scheduled.includes("schedule:'5 * * * *'"),'hourly selector collector schedule missing');
+must(scheduled.includes('SELECTOR_MVP_SYMBOLS'),'selector MVP universe override missing');

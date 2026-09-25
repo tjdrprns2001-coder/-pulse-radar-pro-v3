@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pulseradar.local/contracts/selector-snapshot-r0.1.schema.json",
+  "title": "PulseRadar selector snapshot r0.1",
+  "type": "object",
+  "required": [
+    "spec_version",
+    "snapshot_id",
+    "instrument_id",
+    "decision_time",
+    "data_cutoff",
+    "timeframe",
+    "input_hash",
+    "classification",
+    "scores",
+    "evidence",
+    "contradictions",
+    "data_gaps",
+    "invalidation_conditions",
+    "disclaimer"
+  ],
+  "properties": {
+    "spec_version": {
+      "const": "selector-r0.1"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instrument_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decision_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "timeframe": {
+      "type": "string"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "classification": {
+      "enum": [
+        "CANDIDATE",
+        "WATCHLIST",
+        "EVENT_RISK",
+        "RISK_FILTERED",
+        "INSUFFICIENT_DATA",
+        "REJECTED"
+      ]
+    },
+    "rank": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "scores": {
+      "type": "object",
+      "required": [
+        "market_quality",
+        "ict_setup",
+        "execution_quality",
+        "derivatives_context",
+        "onchain_context",
+        "catalyst_risk",
+        "data_quality",
+        "final_score"
+      ]
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "contradictions": {
+      "type": "array"
+    },
+    "data_gaps": {
+      "type": "array"
+    },
+    "exclusion_reasons": {
+      "type": "array"
+    },
+    "invalidation_conditions": {
+      "type": "array"
+    },
+    "source_meta": {
+      "type": "object"
+    },
+    "disclaimer": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

@@ -4,7 +4,7 @@
     pulseai:{title:'Pulse AI',desc:'시장 변화 · 이벤트 · 뉴스 한글 브리핑',path:'/pulse-ai.html'},
     bookai:{title:'Book AI',desc:'책 규칙 · 근거 완성도 · 상태 전이 · Canonical Snapshot',path:'/book-ai-analyst.html'},
     scanner:{title:'확장 시장 탐색',desc:'현물 + 8개 선물거래소 · 기초자산 중복 제거',path:'/index.html'},
-    autoscan:{title:'자동 전체스캔',desc:'코어 유니버스 전체 · 상태별 자동 분류',path:'/coin-scan.html'},
+    autoscan:{title:'자동스캔 검색기',desc:'선물 우선 · v3/OI/taker/RVOL/ICT 자동 압축',path:'/coin-scan.html'},
     assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
     analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
