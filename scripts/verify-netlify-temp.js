@@ -27,7 +27,7 @@ for(const [name,src] of [['coin-scan',coinScan],...Object.entries(v2)]){
 }
 for(const name of v2Names){const expected=name==='research-backtest'?`api/${name}.js`:`handlers/${name}.js`;if(!v2[name].includes(expected))throw new Error('shared '+name+' handler not reused')}
 if(!/api\/coin-scan\.js/.test(coinScan))throw new Error('shared coin scan handler not reused');
-if(!/api\/coin-scan\.js/.test(coinScanRunBg)||!/@netlify\/blobs/.test(coinScanRunBg)||!/mode:'scan-run'/.test(coinScanRunBg)||!/action:'execute'/.test(coinScanRunBg))throw new Error('background scan-run function contract missing');
+if(!/api\/coin-scan\.js/.test(coinScanRunBg)||!/@netlify\/blobs/.test(coinScanRunBg)||!/mode:'scan-run'/.test(coinScanRunBg)||!/action:'execute'/.test(coinScanRunBg)||!/background:true/.test(coinScanRunBg))throw new Error('background scan-run function contract missing');
 if(!/method:req\.method\|\|'GET'/.test(coinScan)||!/body\}/.test(coinScan)||!/req\.text\(\)/.test(coinScan))throw new Error('coin scan Netlify wrapper must forward method and body');
 if(!/ctx\.getStore/.test(coinScanApi))throw new Error('coin scan API must pass injected getStore into auxiliary recorders');
 if(!/queryStringParameters/.test(radar)||!/statusCode/.test(radar)||!/headers/.test(radar))throw new Error('legacy radar adapter contract missing');
