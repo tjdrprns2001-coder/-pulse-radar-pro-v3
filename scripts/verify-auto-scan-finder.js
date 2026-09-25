@@ -18,6 +18,7 @@ must(js.includes('function symbolKey('),'autoscan symbol normalization missing')
 must(js.includes('SCAN_SESSION_WRITE_MIN_MS=2000')&&js.includes('saveScanSession(force=false)'),'scan session write throttle missing');
 must(js.includes('function renderFilteredView()')&&js.includes('setTimeout(renderFilteredView,100)'),'filtered autoscan render debounce missing');
 must(js.includes('state.items=sortItems(decorateDormancy(state.items))'),'deep merge finalization must defer full sort/dormancy work until enrichment completes');
+must(js.includes('DEEP_HTTP_WORKERS=2')&&js.includes("workers=state.precision?1:DEEP_HTTP_WORKERS")&&js.includes('Promise.all(Array.from({length:Math.min(workers,rest.length)},worker))'),'bounded parallel deep-chunk pipeline missing');
 must(css.includes('content-visibility:auto')&&css.includes('contain-intrinsic-size'),'offscreen autoscan rendering optimization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
