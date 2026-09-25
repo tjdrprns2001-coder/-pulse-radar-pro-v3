@@ -103,3 +103,50 @@ CREATE TABLE IF NOT EXISTS selector_corrections (
   reason TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+
+-- Selector ledger persistence
+CREATE TABLE IF NOT EXISTS selector_snapshots (
+  snapshot_id TEXT PRIMARY KEY,
+  symbol TEXT,
+  classification TEXT,
+  decision_time TIMESTAMPTZ,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS selector_snapshots_symbol_time_idx ON selector_snapshots(symbol,decision_time DESC);
+
+CREATE TABLE IF NOT EXISTS selector_raw (
+  snapshot_id TEXT PRIMARY KEY,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS selector_transitions (
+  transition_id TEXT PRIMARY KEY,
+  symbol TEXT,
+  decision_time TIMESTAMPTZ,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS selector_outcomes (
+  snapshot_id TEXT PRIMARY KEY,
+  payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS selector_stats (
+  stats_id TEXT PRIMARY KEY,
+  payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS selector_evidence (
+  evidence_id TEXT PRIMARY KEY,
+  symbol TEXT,
+  recorded_at TIMESTAMPTZ,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS selector_state (
+  state_key TEXT PRIMARY KEY,
+  payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
