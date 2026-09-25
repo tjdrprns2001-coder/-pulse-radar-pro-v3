@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pulseradar.local/contracts/selector-snapshot-r0.3.schema.json",
+  "title": "PulseRadar selector snapshot r0.3",
+  "type": "object",
+  "required": [
+    "spec_version",
+    "snapshot_id",
+    "instrument_id",
+    "decision_time",
+    "data_cutoff",
+    "input_hash",
+    "classification",
+    "scores",
+    "evidence_context",
+    "source_event_ids",
+    "source_versions"
+  ],
+  "properties": {
+    "spec_version": {
+      "const": "selector-r0.3"
+    },
+    "classification": {
+      "enum": [
+        "CANDIDATE",
+        "WATCHLIST",
+        "EVENT_RISK",
+        "CONFLICTED",
+        "RISK_FILTERED",
+        "INSUFFICIENT_DATA",
+        "REJECTED"
+      ]
+    },
+    "source_health": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_versions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_context": {
+      "type": "object",
+      "required": [
+        "version",
+        "decision_time",
+        "onchain",
+        "catalysts",
+        "source_event_ids",
+        "source_versions"
+      ],
+      "properties": {
+        "version": {
+          "const": "EVIDENCE_CONTEXT_r0.3"
+        },
+        "onchain": {
+          "type": "object"
+        },
+        "catalysts": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
