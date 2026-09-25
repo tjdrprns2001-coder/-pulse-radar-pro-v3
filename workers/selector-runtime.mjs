@@ -111,7 +111,14 @@ function createBinanceRuntime({market='spot'}={}){
 }
 async function runBinance(){
   const spot=createBinanceRuntime({market:'spot'}),futures=createBinanceRuntime({market:'futures'});
-  setInterval(()=>{health.binanceSpot={...health.binanceSpot,...spot.heartbeat(),updatedAt:Date.now()};health.binanceFutures={...health.binanceFutures,...futures.heartbeat(),updatedAt:Date.now()}},5000).unref();
+  const lastReconnect={spot:0,futures:0},cooldown=Math.max(10000,Number(env.BINANCE_WS_RECONNECT_COOLDOWN_MS||15000));
+  setInterval(()=>{
+    const now=Date.now(),sh=spot.heartbeat(),fh=futures.heartbeat();
+    health.binanceSpot={...health.binanceSpot,...sh,updatedAt:now};
+    health.binanceFutures={...health.binanceFutures,...fh,updatedAt:now};
+    if(sh.state==='LIVE'&&sh.silent&&now-lastReconnect.spot>=cooldown){lastReconnect.spot=now;health.errors.push({source:'binance-spot-watchdog',at:now,error:'silent websocket reconnect'});spot.connect()}
+    if(fh.state==='LIVE'&&fh.silent&&now-lastReconnect.futures>=cooldown){lastReconnect.futures=now;health.errors.push({source:'binance-futures-watchdog',at:now,error:'silent websocket reconnect'});futures.connect()}
+  },5000).unref();
 }
 function extractTxHashes(value,out=new Set()){
   if(value==null)return out;
@@ -287,6 +294,22 @@ function server(){
     if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}
     {
       const u=new URL(req.url,'http://runtime.local');
+      if(u.pathname==='/selector-latest'){
+        try{
+          const limit=Math.max(1,Math.min(200,Number(u.searchParams.get('limit'))||100));
+          const rows=await query(`
+            SELECT payload FROM (
+              SELECT DISTINCT ON (symbol) symbol, decision_time, payload
+              FROM selector_snapshots
+              ORDER BY symbol, decision_time DESC
+            ) latest
+            ORDER BY decision_time DESC
+            LIMIT $1
+          `,[limit]);
+          const payload={status:'ok',mode:'selector-latest',updatedAt:Date.now(),wholeMarket:health.selector?.wholeMarket||null,screening:health.selector?.screening||null,items:(rows.rows||[]).map(x=>x.payload)};
+          res.writeHead(200,{'content-type':'application/json',...corsHeaders()});return res.end(JSON.stringify(payload));
+        }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+      }
       if(u.pathname==='/selector-history'){
         try{
           const action=String(u.searchParams.get('action')||'list').toLowerCase();
