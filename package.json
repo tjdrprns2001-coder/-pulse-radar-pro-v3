@@ -114,10 +114,11 @@
     "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js",
     "test:recommendation-validation-gate": "node scripts/verify-recommendation-validation-gate.js",
     "test:final99": "node scripts/verify-final99-release.js",
-    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:selector-ledger && npm run test:source-sequence",
+    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:selector-ledger && npm run test:source-sequence && npm run test:selector-api",
     "test:candidate-screening": "node scripts/verify-candidate-screening-engine.js",
     "test:selector-ledger": "node scripts/verify-selector-ledger.js",
-    "test:source-sequence": "node scripts/verify-source-sequence-guard.js"
+    "test:source-sequence": "node scripts/verify-source-sequence-guard.js",
+    "test:selector-api": "node scripts/verify-selector-api.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
