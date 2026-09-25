@@ -1,0 +1,32 @@
+name: Setup Execution Shadow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm install --no-audit --no-fund
+      - name: Collect live execution shadow
+        run: >
+          node scripts/run-setup-execution-shadow.js
+          --samples=3
+          --interval-ms=10000
+          --out=artifacts/setup-execution-shadow
+      - name: Upload execution shadow
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-execution-shadow
+          path: artifacts/setup-execution-shadow
+          if-no-files-found: warn
+          retention-days: 30
