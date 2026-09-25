@@ -237,7 +237,130 @@ function server(){
           else if(action==='stats')payload={status:'ok',mode:'selector-history',action,stats:await selectorLedger.stats({lockedOosStart:Number(u.searchParams.get('lockedOosStart'))||null})};
           else if(action==='ablation')payload={status:'ok',mode:'selector-history',action,report:await selectorLedger.ablation({horizon:String(u.searchParams.get('horizon')||'h24'),feeBps:Number(u.searchParams.get('feeBps'))||0,slippageBps:Number(u.searchParams.get('slippageBps'))||0,fundingBps:Number(u.searchParams.get('fundingBps'))||0})};
           else if(action==='replay'){const id=String(u.searchParams.get('id')||'');payload={status:'ok',mode:'selector-history',action,replay:await selectorLedger.replay(id)}}
-          else payload={status:'ok',mode:'selector-history',action:'list',items:await selectorLedger.list({symbol,classification:u.searchParams.get('classification')||null,limit})};
+          else {
+            const classification=u.searchParams.get('classification')||null;
+            const clauses=[],vals=[];let n=1;
+            if(symbol){clauses.push('symbol=
+          res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
+        }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+      }
+    }
+    if(req.url==='/stats'){
+      try{
+        const [raw,bySource,watermarks]=await Promise.all([
+          query("SELECT count(*)::int AS raw_events, min(created_at) AS first_event_at, max(created_at) AS last_event_at FROM raw_events"),
+          query("SELECT source_name, count(*)::int AS events FROM raw_events GROUP BY source_name ORDER BY events DESC"),
+          query("SELECT source_name, entity_key, status, last_sequence, updated_at FROM source_watermarks ORDER BY updated_at DESC LIMIT 100")
+        ]);
+        res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'ok',raw:raw.rows?.[0]||{},bySource:bySource.rows||[],watermarks:watermarks.rows||[],health}));
+      }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+    }
+    if(req.url==='/webhook/alchemy'&&req.method==='POST'){
+      let raw='';for await(const chunk of req)raw+=chunk;
+      const parsed=normalizeAlchemy(raw,{signatureHeader:req.headers['x-alchemy-signature'],signingKey:env.ALCHEMY_WEBHOOK_SIGNING_KEY,receivedAt:Date.now()});
+      if(!parsed.ok){
+        if(parsed.dlq)await runtime.journal.deadLetter('alchemy:'+Date.now(),parsed.error);
+        res.writeHead(parsed.status,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:parsed.error}));
+      }
+      const event=await runtime.ingest(parsed.event);
+      await runtime.journal.enqueue('RPC_VERIFY',event.event_id,'webhook finality verification required');
+      if(store?.enqueue)await store.enqueue({queue_name:'rpc_verify',event_id:event.event_id,idempotency_key:'rpc_verify:'+event.event_id,payload:event,next_attempt_at:Date.now()});
+      res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'accepted',eventId:event.event_id,finality:'RPC_PENDING'}));
+    }
+    res.writeHead(404);res.end('not found');
+  }).listen(port,'0.0.0.0');
+}
+await migrate();
+server();
+runEvm();
+runBinance();
+runQueues();
+runEvidencePollers();
+runSelectorScanner();
+process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
++(n++));vals.push(String(symbol).toUpperCase())}
+            if(classification){clauses.push('classification=
+          res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
+        }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+      }
+    }
+    if(req.url==='/stats'){
+      try{
+        const [raw,bySource,watermarks]=await Promise.all([
+          query("SELECT count(*)::int AS raw_events, min(created_at) AS first_event_at, max(created_at) AS last_event_at FROM raw_events"),
+          query("SELECT source_name, count(*)::int AS events FROM raw_events GROUP BY source_name ORDER BY events DESC"),
+          query("SELECT source_name, entity_key, status, last_sequence, updated_at FROM source_watermarks ORDER BY updated_at DESC LIMIT 100")
+        ]);
+        res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'ok',raw:raw.rows?.[0]||{},bySource:bySource.rows||[],watermarks:watermarks.rows||[],health}));
+      }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+    }
+    if(req.url==='/webhook/alchemy'&&req.method==='POST'){
+      let raw='';for await(const chunk of req)raw+=chunk;
+      const parsed=normalizeAlchemy(raw,{signatureHeader:req.headers['x-alchemy-signature'],signingKey:env.ALCHEMY_WEBHOOK_SIGNING_KEY,receivedAt:Date.now()});
+      if(!parsed.ok){
+        if(parsed.dlq)await runtime.journal.deadLetter('alchemy:'+Date.now(),parsed.error);
+        res.writeHead(parsed.status,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:parsed.error}));
+      }
+      const event=await runtime.ingest(parsed.event);
+      await runtime.journal.enqueue('RPC_VERIFY',event.event_id,'webhook finality verification required');
+      if(store?.enqueue)await store.enqueue({queue_name:'rpc_verify',event_id:event.event_id,idempotency_key:'rpc_verify:'+event.event_id,payload:event,next_attempt_at:Date.now()});
+      res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'accepted',eventId:event.event_id,finality:'RPC_PENDING'}));
+    }
+    res.writeHead(404);res.end('not found');
+  }).listen(port,'0.0.0.0');
+}
+await migrate();
+server();
+runEvm();
+runBinance();
+runQueues();
+runEvidencePollers();
+runSelectorScanner();
+process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
++(n++));vals.push(String(classification).toUpperCase())}
+            vals.push(limit);
+            const sql='SELECT payload FROM selector_snapshots'+(clauses.length?' WHERE '+clauses.join(' AND '):'')+' ORDER BY decision_time DESC LIMIT 
+          res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
+        }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+      }
+    }
+    if(req.url==='/stats'){
+      try{
+        const [raw,bySource,watermarks]=await Promise.all([
+          query("SELECT count(*)::int AS raw_events, min(created_at) AS first_event_at, max(created_at) AS last_event_at FROM raw_events"),
+          query("SELECT source_name, count(*)::int AS events FROM raw_events GROUP BY source_name ORDER BY events DESC"),
+          query("SELECT source_name, entity_key, status, last_sequence, updated_at FROM source_watermarks ORDER BY updated_at DESC LIMIT 100")
+        ]);
+        res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'ok',raw:raw.rows?.[0]||{},bySource:bySource.rows||[],watermarks:watermarks.rows||[],health}));
+      }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
+    }
+    if(req.url==='/webhook/alchemy'&&req.method==='POST'){
+      let raw='';for await(const chunk of req)raw+=chunk;
+      const parsed=normalizeAlchemy(raw,{signatureHeader:req.headers['x-alchemy-signature'],signingKey:env.ALCHEMY_WEBHOOK_SIGNING_KEY,receivedAt:Date.now()});
+      if(!parsed.ok){
+        if(parsed.dlq)await runtime.journal.deadLetter('alchemy:'+Date.now(),parsed.error);
+        res.writeHead(parsed.status,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:parsed.error}));
+      }
+      const event=await runtime.ingest(parsed.event);
+      await runtime.journal.enqueue('RPC_VERIFY',event.event_id,'webhook finality verification required');
+      if(store?.enqueue)await store.enqueue({queue_name:'rpc_verify',event_id:event.event_id,idempotency_key:'rpc_verify:'+event.event_id,payload:event,next_attempt_at:Date.now()});
+      res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({status:'accepted',eventId:event.event_id,finality:'RPC_PENDING'}));
+    }
+    res.writeHead(404);res.end('not found');
+  }).listen(port,'0.0.0.0');
+}
+await migrate();
+server();
+runEvm();
+runBinance();
+runQueues();
+runEvidencePollers();
+runSelectorScanner();
+process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});
++n;
+            const rows=await query(sql,vals);
+            payload={status:'ok',mode:'selector-history',action:'list',items:(rows.rows||[]).map(x=>x.payload)};
+          }
           res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify(payload));
         }catch(e){res.writeHead(500,{'content-type':'application/json'});return res.end(JSON.stringify({status:'error',error:String(e?.message||e)}))}
       }
