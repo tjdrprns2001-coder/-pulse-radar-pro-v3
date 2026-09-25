@@ -62,6 +62,16 @@ module.exports=async function handler(req,res,ctx={}){
       const recording=await service.recordRecommendationPromotion(row,{updatedAt:Date.now(),marketSource:String(body.marketSource||'book-ai-client'),derivativesSource:body.derivativesSource?String(body.derivativesSource):null});
       return res.status(200).json({status:'ok',mode:'recommendation-history',action:'observe',recording});
     }
+    if(mode==='runtime-health'){
+      const base=String(process.env.SELECTOR_RUNTIME_URL||'').replace(/\/$/,'');
+      if(!base)return res.status(200).json({status:'ok',mode:'runtime-health',configured:false,runtime:null});
+      const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),3000);
+      try{
+        const r=await fetch(base+'/health',{signal:ctrl.signal,headers:{accept:'application/json'}});
+        const body=await r.json().catch(()=>({}));return res.status(r.ok?200:503).json({status:r.ok?'ok':'degraded',mode:'runtime-health',configured:true,runtime:body});
+      }catch(e){return res.status(503).json({status:'degraded',mode:'runtime-health',configured:true,error:String(e?.message||e),runtime:null})}
+      finally{clearTimeout(timer)}
+    }
     if(mode==='validation'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
       const at=Number(q.at)||null;return res.status(200).json(await service.getMarketValidation(symbol,{decisionTimestamp:at,persist:String(q.persist||'1')!=='0'}));
