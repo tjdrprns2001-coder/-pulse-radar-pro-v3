@@ -60,6 +60,8 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
+  assert(ctx.derivativesProfile.oiProfile.samples>=2,'legacy OI profile must reuse v2 OI rows');
+  assert(ctx.derivativesProfile.takerProfile.samples>0,'legacy taker profile must reuse v2 15m rows');
   const coalesceBefore=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
   await Promise.all([p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120)]);
   const coalesceAfter=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
@@ -70,7 +72,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert((klineMax.get('XLMUSDT')||0)>=2,'deep timeframe klines should fetch in parallel');
   assert((klineMax.get('XLMUSDT')||0)<=2,'per-symbol timeframe concurrency must stay bounded');
   await p.scanDeepCandidates(['XLMUSDT'],['5m']);
-  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must fetch 300 bars for 24H RVOL memory');
+  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=220')),'5m deep scan should use bounded 220-bar payload');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
   assert(batch.errors.length>=1,'failed symbol recorded');
   active=0;maxActive=0; // measure mapLimit itself, not parallel derivative/XOI fetches above
