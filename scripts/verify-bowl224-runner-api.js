@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('assert');
-const handler=require('../api/bowl224-research.js');
+const handler=require('../handlers/bowl224-research.js');
 const {selectFormalSymbols,discoverFormalSymbols,collectStandalone1hSignals,createBowl224Runner}=require('../lib/research-backtest-v2/bowl224/runner.js');
 const {createMemoryBowl224Store}=require('../lib/research-backtest-v2/bowl224/store.js');
 const {buildBowlStats}=require('../lib/research-backtest-v2/bowl224/stats.js');
