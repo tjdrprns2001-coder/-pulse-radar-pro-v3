@@ -22,6 +22,10 @@ assert(out.sampleSimilarityV2&&out.sampleSimilarityV2.version==='SAMPLE_SIMILARI
 assert(Array.isArray(out.sampleSimilarityV2.successTop5)&&out.sampleSimilarityV2.successTop5.length<=5,'success TOP5 required');
 assert(Array.isArray(out.sampleSimilarityV2.negativeTop3)&&out.sampleSimilarityV2.negativeTop3.length<=3,'negative TOP3 required');
 assert(typeof out.sampleSimilarityV2.ignitionPath==='string','ignition path required');
+assert(out.samplingV3&&out.samplingV3.version==='ASTRA_SAMPLING_V3','shared deep analyzer must attach Sampling v3');
+assert.equal(out.samplingV3.rankingEffect,0,'shared Sampling v3 must remain shadow');
+assert(out.samplingV3.integrity&&typeof out.samplingV3.integrity.status==='string','shared deep integrity audit required');
+assert.equal(out.samplingV3.microstructure.status,'NOT_REQUESTED','microstructure must not be fetched implicitly inside shared analyzer');
 assert(out.strategyCycle&&typeof out.strategyCycle==='object','multi-strategy cycle required');
 assert(Array.isArray(out.strategyCycle.activeTracks),'multi-strategy active tracks required');
 assert(typeof out.strategyCycle.stage==='string','multi-strategy stage required');
