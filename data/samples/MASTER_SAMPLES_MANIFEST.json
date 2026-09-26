@@ -849,7 +849,7 @@
     }
   },
   "sampling_v3": {
-    "version": "ASTRA_SAMPLING_V3",
+    "version": "ASTRA_SAMPLING_V3.1",
     "status": "SHADOW_RESEARCH_ACTIVE",
     "engine": "lib/coin-scan/sampling-v3.js",
     "contract": "data/samples/SAMPLING_V3_RESEARCH_CONTRACT.json",
@@ -878,16 +878,76 @@
     "promotion_gate": "forward/OOS validation required before any ranking weight",
     "latest_ci": {
       "workflow": "Sample Dataset v2 Validation",
-      "run_id": 36256117692,
+      "run_id": 36257201595,
       "conclusion": "success",
-      "commit": "288cac6d627f1d15e31d418eec8345d0593367b9"
+      "commit": "31187aa586a05ec032e67eea8cc808f79dba1876",
+      "passed_steps": [
+        "Master dataset",
+        "Similarity engine",
+        "Blind validation",
+        "Sampling v3",
+        "Sampling v3 integrity",
+        "Sampling v3 alternative bars",
+        "Sampling v3 OOS",
+        "Provider microstructure",
+        "Deep scan wiring",
+        "Astra wiring"
+      ]
     },
     "safeguards": [
       "closed candles only",
       "partial resample buckets dropped",
+      "explicit isClosed/isComplete/isSynthetic state",
+      "higher-TF features available only after closeTime",
+      "native/synthetic candle mismatch auditing",
+      "aggTrades duplicate removal and chronological ordering",
+      "causal lagged thresholds for alternative bars",
       "same-bar dual barrier hit remains unresolved",
-      "no extra exchange calls in Astra deep path",
-      "no rank/category override"
-    ]
+      "candidate-only bounded microstructure requests",
+      "microstructure failure does not fail the main scan",
+      "no Sampling v3 rank/category override before real forward OOS promotion gate"
+    ],
+    "integrity_engine": "lib/coin-scan/sampling-v3-integrity.js",
+    "alternative_bar_engine": "lib/coin-scan/sampling-v3-alt-bars.js",
+    "oos_engine": "lib/coin-scan/sampling-v3-oos.js",
+    "oos_ledger": "data/samples/SAMPLING_V3_OOS_LEDGER.json",
+    "integrity_features": [
+      "isClosed",
+      "isComplete",
+      "isSynthetic",
+      "featureAvailableAt",
+      "native-vs-synthetic 1m→5m audit",
+      "native-vs-synthetic 1m→15m audit",
+      "MTF as-of merge guard"
+    ],
+    "alternative_bars": [
+      "DOLLAR",
+      "IMBALANCE",
+      "RUN"
+    ],
+    "microstructure_source": "Binance USD-M futures aggTrades",
+    "microstructure_budget": {
+      "max_deep_symbols": 4,
+      "extra_requests_per_symbol": 2,
+      "requests": [
+        "1m klines",
+        "futures aggTrades"
+      ],
+      "failure_mode": "NON_BLOCKING_PARTIAL"
+    },
+    "oos_validation": {
+      "methods": [
+        "purged expanding walk-forward",
+        "embargo",
+        "marginal-uniqueness sequential bootstrap"
+      ],
+      "promotion_gate": {
+        "min_events": 80,
+        "min_folds": 3,
+        "min_mean_accuracy": 0.55
+      },
+      "current_status": "COLLECTING_FORWARD_LABELS",
+      "ranking_effect_until_pass": 0
+    }
   }
 }
