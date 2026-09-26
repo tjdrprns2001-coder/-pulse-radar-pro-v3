@@ -11,7 +11,7 @@ function node(tag,cls,txt){
 function clear(el){while(el?.firstChild)el.removeChild(el.firstChild)}
 function fmtPct(v,d=1){const n=Number(v);return Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(d)}%`:'—'}
 function fmtNum(v){const n=Number(v);return Number.isFinite(n)?n.toLocaleString('ko-KR'):'—'}
-function fmtMoney(v){const n=Number(v);if(!Number.isFinite(n))return'—';if(Math.abs(n)>=1e9)return'
+function fmtMoney(v){const n=Number(v);if(!Number.isFinite(n))return'—';if(Math.abs(n)>=1e9)return'USD '+(n/1e9).toFixed(2)+'B';if(Math.abs(n)>=1e6)return'USD '+(n/1e6).toFixed(1)+'M';if(Math.abs(n)>=1e3)return'USD '+(n/1e3).toFixed(1)+'K';return'USD '+n.toFixed(0)}
 function age(ms){const n=Number(ms);if(!Number.isFinite(n))return'시간 미상';if(n<60000)return'방금';if(n<3600000)return`${Math.max(1,Math.floor(n/60000))}분 전`;return`${Math.floor(n/3600000)}시간 전`}
 function openReport(symbol){
   const s=String(symbol||'').trim().toUpperCase();if(!s)return;
