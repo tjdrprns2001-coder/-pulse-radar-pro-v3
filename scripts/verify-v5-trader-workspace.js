@@ -28,7 +28,7 @@ assert(snapshotHubJs.includes("parent.postMessage({type:'pulse-symbol-sync'")&&s
 assert(snapshotHubCss.includes('safe-area-inset-bottom')&&snapshotHubCss.includes('@media(max-width:760px)'),'snapshot center mobile/safe-area layout missing');
 assert(shell.includes('data-view="longtrend"')&&shell.includes('장기추세선'),'long-term trend menu missing');
 assert(shellJs.includes("longtrend:{title:'장기추세선'")&&shellJs.includes("path:'/long-trend-dashboard.html'"),'long-term trend route missing');
-assert(shellJs.includes("searchParams.set('build','20260921-v5')"),'V5 child cache-bust missing');
+assert(/searchParams\.set\('build','[A-Za-z0-9._-]+'\)/.test(shellJs),'V5 child cache-bust missing');
 for(const page of ['dante-lab.html','mtf-snapshot-pro.html','unified-chart.html']){const src=read(page),sp=src.indexOf('/ui/chart/session-profile.js'),liq=src.indexOf('/ui/chart/liquidity-engine.js');assert(sp>=0&&liq>sp,'session profile must load before liquidity engine: '+page);}
 
 assert(home.includes('REFRESH=3600000'),'home must refresh hourly');
