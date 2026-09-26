@@ -4,8 +4,10 @@
   "principle": "Keep canonical time-bar scan; add information-driven event sampling without changing ranking until OOS validation.",
   "inputs": {
     "market": [
+      "closed 1m OHLCV (candidate-only audit)",
       "closed 5m OHLCV",
-      "closed 15m OHLCV"
+      "closed 15m OHLCV",
+      "Binance futures aggTrades (candidate-only microstructure)"
     ],
     "derivatives": [
       "1H OI change",
@@ -71,13 +73,65 @@
   "runtime": {
     "ranking_effect": 0,
     "required_mode": "SHADOW",
-    "promotion_requirement": "separate OOS validation using forward outcomes; no promotion from in-sample unit tests"
+    "promotion_requirement": "separate OOS validation using forward outcomes; no promotion from in-sample unit tests",
+    "microstructure_budget": {
+      "scope": "ASTRA deep candidates only",
+      "max_symbols": 4,
+      "extra_requests_per_symbol": 2,
+      "requests": [
+        "1m klines",
+        "futures aggTrades"
+      ],
+      "failure_mode": "non-blocking PARTIAL/UNAVAILABLE"
+    }
   },
   "safeguards": [
     "closed candles only",
-    "no extra exchange API calls in Astra deep path",
     "no ranking/category override",
     "event provenance retained in output",
-    "ambiguous same-bar barrier hits are not force-labeled"
-  ]
+    "ambiguous same-bar barrier hits are not force-labeled",
+    "candidate-only microstructure calls are bounded",
+    "microstructure failures do not fail the main scan",
+    "no ranking/category override until real forward OOS promotion gate passes"
+  ],
+  "extension": "ASTRA_SAMPLING_V3.1",
+  "integrity": {
+    "candle_state": [
+      "isClosed",
+      "isComplete",
+      "isSynthetic",
+      "featureAvailableAt"
+    ],
+    "native_synthetic_audit": [
+      "1m→5m",
+      "1m→15m"
+    ],
+    "mtf_rule": "higher-timeframe features are only available when closeTime < decisionTime",
+    "duplicate_policy": "dedupe by openTime for candles and aggregate-trade id/composite key for aggTrades"
+  },
+  "alternative_bars": {
+    "status": "SHADOW_ONLY",
+    "types": [
+      "DOLLAR",
+      "IMBALANCE",
+      "RUN"
+    ],
+    "threshold_policy": "lagged rolling median trade notional; current/future trade notional is not used to set its own threshold",
+    "source": "Binance USD-M futures aggTrades",
+    "ranking_effect": 0
+  },
+  "oos_validation": {
+    "engine": "lib/coin-scan/sampling-v3-oos.js",
+    "methods": [
+      "purged expanding walk-forward",
+      "embargo",
+      "marginal-uniqueness sequential bootstrap"
+    ],
+    "promotion_gate": {
+      "min_events": 80,
+      "min_folds": 3,
+      "min_mean_accuracy": 0.55
+    },
+    "current_status": "COLLECTING_FORWARD_LABELS"
+  }
 }
