@@ -3,6 +3,7 @@
     home:{title:'시장 데스크',desc:'전체시장 · 1시간 브리핑 · AI 후보',path:'/workspace-home.html'},
     pulseai:{title:'Pulse AI',desc:'시장 변화 · 이벤트 · 뉴스 한글 브리핑',path:'/pulse-ai.html'},
     bookai:{title:'Book AI',desc:'책 규칙 · 근거 완성도 · 상태 전이 · Canonical Snapshot',path:'/book-ai-analyst.html'},
+    researchai:{title:'연구 학습 AI',desc:'급등 샘플 · 책 규칙 · 6H/24H 실제 결과 자동 학습',path:'/research-ai.html'},
     scanner:{title:'확장 시장 탐색',desc:'현물 + 8개 선물거래소 · 기초자산 중복 제거',path:'/index.html'},
     autoscan:{title:'자동스캔 검색기',desc:'선물 우선 · v3/OI/taker/RVOL/ICT 자동 압축',path:'/coin-scan.html'},
     astra:{title:'Astra 자동스캔',desc:'Astra·Manus·Perplexity·Grok·Gemini·Claude · Binance USDT 무기한 전체',path:'/astra-scan.html'},
@@ -36,7 +37,7 @@
     diagnostics:{title:'진단 센터',desc:'API · 데이터 · 분석 모듈 상태',path:'/diagnostics.html'}
   };
   const ROOT={
-    home:'home',pulseai:'ai',bookai:'ai',
+    home:'home',pulseai:'ai',bookai:'ai',researchai:'ai',
     scanner:'scan',autoscan:'scan',astra:'scan',traderscan:'scan',assistantscan:'scan',radar:'scan',
     report:'analysis',analysis:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
@@ -72,7 +73,7 @@
     if(key==='radar')return'DEX 별도';
     if(['autoscan','astra','traderscan','assistantscan','preignitionoos','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
-    if(key==='intel'||key==='pulseai'||key==='bookai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
+    if(key==='intel'||key==='pulseai'||key==='bookai'||key==='researchai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
   }
   function updateUniverseChip(key=current){const el=$('universeChip');if(el)el.textContent=scopeText(key)}
