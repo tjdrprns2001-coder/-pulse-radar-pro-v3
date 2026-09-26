@@ -3,7 +3,7 @@ const assert=require('assert');
 const S=require('../lib/coin-scan/sampling-v3.js');
 
 function rows(count=120,tf=300000){
-  const out=[];let p=100;const start=1_700_000_000_000;
+  const out=[];let p=100;const rawStart=1_700_000_000_000,start=Math.floor(rawStart/(15*60*1000))*(15*60*1000);
   for(let i=0;i<count;i++){
     const drift=i<60?0.02:(i<90?0.08:0.18);
     const o=p,c=p*(1+drift/100),h=Math.max(o,c)*(1+(i%17===0?.012:.002)),l=Math.min(o,c)*(1-(i%23===0?.01:.002));
