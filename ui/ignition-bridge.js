@@ -46,8 +46,8 @@ async function load(){
      $('results').innerHTML='<div class="empty">IGNITION은 독립 서비스이므로 오류가 나도 Pulse Radar의 다른 기능은 계속 사용할 수 있습니다.</div>';
      timer=setTimeout(load,30000);return;
    }
-   $('connection').textContent='연결됨';$('connection').className='live';
-   $('scanStatus').textContent=j.scanStatus||j.state||'-';
+   $('connection').textContent=j.state==='fallback'?'이전 완료본':'연결됨';$('connection').className=j.state==='fallback'?'delayed':'live';
+   $('scanStatus').textContent=j.sourceStatus&&j.sourceStatus!==j.scanStatus?(j.scanStatus+' / '+j.sourceStatus):(j.scanStatus||j.state||'-');
    $('candidateCount').textContent=String(j.candidateCount??0);
    $('usableCount').textContent=String(j.usableCount??0);
    $('freshness').textContent=age(j.freshnessMs);
@@ -55,10 +55,12 @@ async function load(){
    $('stage').textContent=j.stage||'-';
    $('updatedAt').textContent='업데이트 '+date(j.updatedAt||j.fetchedAt);
    renderCounts(j.counts||{});
-   $('notice').textContent=j.state==='empty'?'연결은 정상입니다. 아직 완료/부분 검색 결과가 없습니다.':('후보 '+j.candidateCount+'개 · 정밀 완료 '+j.usableCount+'개 · 분석 중 '+j.partialCount+'개');
+   if(j.state==='empty')$('notice').textContent='연결은 정상입니다. 아직 검색 결과가 없습니다.';
+   else if(j.state==='fallback')$('notice').textContent='최신 작업이 '+(j.sourceStatus||'실패/취소')+' 상태라 마지막 완료 결과를 안전하게 표시 중입니다.';
+   else if(j.state==='partial')$('notice').textContent='부분 결과 수신 중 · 후보 '+j.candidateCount+'개 · 정밀 완료 '+j.usableCount+'개 · 분석 중 '+j.partialCount+'개';
+   else $('notice').textContent='정밀 검색 완료 · 후보 '+j.candidateCount+'개 · 10TF 완료 '+j.usableCount+'개';
    render();
-   const active=['running','active','processing','partial'].includes(String(j.scanStatus||j.state||'').toLowerCase());
-   timer=setTimeout(load,active?15000:60000);
+   timer=setTimeout(load,j.active?10000:(j.state==='fallback'?30000:60000));
  }catch(e){
    $('connection').textContent='연결 이상';$('connection').className='degraded';
    $('notice').textContent='Pulse 서버 프록시 조회 실패';
