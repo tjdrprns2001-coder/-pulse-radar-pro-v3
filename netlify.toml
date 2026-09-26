@@ -33,6 +33,13 @@
   status = 200
   force = true
 
+
+[[redirects]]
+  from = "/api/learning-ai*"
+  to = "/.netlify/functions/api-index?route=learning-ai"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/api/dante-backtest*"
   to = "/.netlify/functions/api-index?route=dante-backtest"
