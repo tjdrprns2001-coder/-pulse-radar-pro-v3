@@ -32,7 +32,8 @@ module.exports=async function handler(req,res,ctx={}){
   try{
     if(method==='GET'&&mode==='brief'){
       const selectedSymbol=String(q.symbol||q.selectedSymbol||'').trim().toUpperCase()||null;
-      return res.status(200).json(await service.getBrief({selectedSymbol}));
+      const force=['1','true','yes'].includes(String(q.fresh||'').toLowerCase());
+      return res.status(200).json(await service.getBrief({selectedSymbol,force}));
     }
     if(method==='GET'&&mode==='health'){
       return res.status(200).json(await service.health());
