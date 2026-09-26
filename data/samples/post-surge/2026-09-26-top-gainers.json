@@ -1,0 +1,479 @@
+{
+  "schema_version": "1.0",
+  "sample_set": "post_surge_reverse_samples",
+  "captured_at": "2026-09-26",
+  "purpose": "급등 후 현재 상태를 저장해 PRE-SURGE 역추적/후반 분배/2차 재점화 패턴 비교에 사용하는 샘플 세트",
+  "source": "Binance USDⓈ-M futures + PulseRadar Claude Astra+SURGE v3 deep scan",
+  "labels": {
+    "pre_surge_reverse": [
+      "RAREUSDT",
+      "2ZUSDT",
+      "PHAUSDT",
+      "ARKUSDT",
+      "ENAUSDT"
+    ],
+    "late_distribution": [
+      "MUBARAKUSDT",
+      "AEROUSDT",
+      "VELODROMEUSDT"
+    ],
+    "secondary_reignition": [
+      "PUMPUSDT",
+      "SUIUSDT",
+      "JTOUSDT"
+    ],
+    "overheated_reference": [
+      "RAREUSDT",
+      "2ZUSDT"
+    ]
+  },
+  "notes": [
+    "급등 후 현재 OI 경로가 깨진 종목은 PRE-SURGE 진입 샘플이 아니라 역추적용/신규롱 제외 역샘플로 취급",
+    "RARE/2Z는 OI와 1H RVOL이 극단적으로 폭발한 초대형 급등형",
+    "PHA/ARK/ENA는 급등 후 OI BUILD가 약화된 후반 진행형",
+    "PUMP/SUI/JTO는 큰 상승 후 하위봉 재점화/재가속 관찰형"
+  ],
+  "samples": [
+    {
+      "symbol": "RAREUSDT",
+      "chg24_pct": 62.452,
+      "price": 0.02133,
+      "spot_chg24_pct": 63.747,
+      "funding_pct": -0.586721,
+      "oi": {
+        "h1": 25.6176,
+        "h4": 73.0024,
+        "h8": 65.812,
+        "h12": 63.2404,
+        "h24": 143.8471,
+        "path": "+/-/-",
+        "pattern": "BUILD_WEAKENING"
+      },
+      "rvol": {
+        "h1": 6.5696,
+        "m15": 1.715,
+        "m5": 0.6223
+      },
+      "taker": {
+        "h1": 1.013,
+        "m15": 0.9721,
+        "m5": 1.0875
+      },
+      "rsi": {
+        "h1": 85.24,
+        "m15": 72.07
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": false,
+        "week_pos_pct": 12.76,
+        "day_pos_pct": 68.47
+      },
+      "sample_tags": [
+        "PRE_SURGE_REVERSE",
+        "OVERHEATED",
+        "OI_EXPLOSION"
+      ]
+    },
+    {
+      "symbol": "2ZUSDT",
+      "chg24_pct": 31.673,
+      "price": 0.07271,
+      "spot_chg24_pct": 32.64,
+      "funding_pct": -0.126302,
+      "oi": {
+        "h1": 3.5709,
+        "h4": 47.2958,
+        "h8": 46.9824,
+        "h12": 46.49,
+        "h24": 42.9125,
+        "path": "+/-/-",
+        "pattern": "BUILD_WEAKENING"
+      },
+      "rvol": {
+        "h1": 9.0899,
+        "m15": 3.2362,
+        "m5": 0.8196
+      },
+      "taker": {
+        "h1": 1.0155,
+        "m15": 1.165,
+        "m5": 1.0014
+      },
+      "rsi": {
+        "h1": 82.46,
+        "m15": 78.63
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": false,
+        "week_pos_pct": 0.41,
+        "day_pos_pct": 28.1
+      },
+      "sample_tags": [
+        "PRE_SURGE_REVERSE",
+        "OVERHEATED",
+        "OI_EXPLOSION",
+        "RVOL_EXPLOSION"
+      ]
+    },
+    {
+      "symbol": "PHAUSDT",
+      "chg24_pct": 37.161,
+      "price": 0.0774,
+      "spot_chg24_pct": 36.508,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": -1.718,
+        "h4": 0.1872,
+        "h8": 4.687,
+        "h12": -0.2323,
+        "h24": 107.1929,
+        "path": "+/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 0.7209,
+        "m15": 0.6036,
+        "m5": 0.5019
+      },
+      "taker": {
+        "h1": 0.9598,
+        "m15": 0.8561,
+        "m5": 0.9305
+      },
+      "rsi": {
+        "h1": 50.95,
+        "m15": 36.6
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": true,
+        "week_pos_pct": 21.03,
+        "day_pos_pct": 82.31
+      },
+      "sample_tags": [
+        "PRE_SURGE_REVERSE",
+        "POST_SURGE_COOLING"
+      ]
+    },
+    {
+      "symbol": "ARKUSDT",
+      "chg24_pct": 28.41,
+      "price": 0.2843,
+      "spot_chg24_pct": 28.733,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": 0.6319,
+        "h4": 3.8347,
+        "h8": 10.6208,
+        "h12": 9.5696,
+        "h24": 36.9296,
+        "path": "+/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 1.2501,
+        "m15": 0.782,
+        "m5": 0.4241
+      },
+      "taker": {
+        "h1": 1.0228,
+        "m15": 1.0729,
+        "m5": 0.939
+      },
+      "rsi": {
+        "h1": 70.3,
+        "m15": 58.81
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": true,
+        "week_pos_pct": 17.73,
+        "day_pos_pct": 93.22
+      },
+      "sample_tags": [
+        "PRE_SURGE_REVERSE",
+        "LATE_STAGE"
+      ]
+    },
+    {
+      "symbol": "ENAUSDT",
+      "chg24_pct": 24.81,
+      "price": 0.27809,
+      "spot_chg24_pct": 24.72,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": -0.268,
+        "h4": 0.9968,
+        "h8": 0.1831,
+        "h12": -0.1407,
+        "h24": 5.3927,
+        "path": "+/-/-",
+        "pattern": "BUILD_WEAKENING"
+      },
+      "rvol": {
+        "h1": 0.7308,
+        "m15": 1.0481,
+        "m5": 1.0133
+      },
+      "taker": {
+        "h1": 1.0788,
+        "m15": 0.5976,
+        "m5": 0.9091
+      },
+      "rsi": {
+        "h1": 66.56,
+        "m15": 60.38
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": true,
+        "week_pos_pct": 25.17,
+        "day_pos_pct": 98.6
+      },
+      "sample_tags": [
+        "PRE_SURGE_REVERSE",
+        "POST_SURGE_WEAK_TAKER"
+      ]
+    },
+    {
+      "symbol": "MUBARAKUSDT",
+      "chg24_pct": 27.855,
+      "price": 0.05485,
+      "spot_chg24_pct": 28.218,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": 0.0562,
+        "h4": 0.7655,
+        "h8": -2.7364,
+        "h12": -3.5459,
+        "h24": -11.5485,
+        "path": "+/-/-",
+        "pattern": "BUILD_WEAKENING"
+      },
+      "rvol": {
+        "h1": 0.4696,
+        "m15": 0.6086,
+        "m5": 1.6335
+      },
+      "taker": {
+        "h1": 0.8571,
+        "m15": 1.1506,
+        "m5": 0.963
+      },
+      "rsi": {
+        "h1": 50.68,
+        "m15": 44.29
+      },
+      "htf": {
+        "discount": false,
+        "mid_term_premium": false,
+        "week_pos_pct": 70.88,
+        "day_pos_pct": 59.61
+      },
+      "sample_tags": [
+        "LATE_DISTRIBUTION"
+      ]
+    },
+    {
+      "symbol": "AEROUSDT",
+      "chg24_pct": 20.235,
+      "price": 0.899,
+      "spot_chg24_pct": 20.051,
+      "funding_pct": 0.008419,
+      "oi": {
+        "h1": -3.1599,
+        "h4": -1.5949,
+        "h8": 1.2476,
+        "h12": -0.0211,
+        "h24": 12.9738,
+        "path": "-/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 1.6448,
+        "m15": 0.6118,
+        "m5": 0.5969
+      },
+      "taker": {
+        "h1": 0.8391,
+        "m15": 1.355,
+        "m5": 1.052
+      },
+      "rsi": {
+        "h1": 62.1,
+        "m15": 51.8
+      },
+      "htf": {
+        "discount": false,
+        "mid_term_premium": true,
+        "week_pos_pct": 40.03,
+        "day_pos_pct": 96.84
+      },
+      "sample_tags": [
+        "LATE_DISTRIBUTION",
+        "OI_DECLINE_AFTER_SURGE"
+      ]
+    },
+    {
+      "symbol": "VELODROMEUSDT",
+      "chg24_pct": 20.333,
+      "price": 0.03835,
+      "spot_chg24_pct": 20.056,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": -0.1594,
+        "h4": 1.695,
+        "h8": 4.7906,
+        "h12": 4.5882,
+        "h24": 8.2294,
+        "path": "+/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 2.2531,
+        "m15": 0.3684,
+        "m5": 0.9143
+      },
+      "taker": {
+        "h1": 0.8247,
+        "m15": 0.6996,
+        "m5": 1.0917
+      },
+      "rsi": {
+        "h1": 69.06,
+        "m15": 52.02
+      },
+      "htf": {
+        "discount": false,
+        "mid_term_premium": true,
+        "week_pos_pct": 38.3,
+        "day_pos_pct": 96.43
+      },
+      "sample_tags": [
+        "LATE_DISTRIBUTION",
+        "WEAK_TAKER"
+      ]
+    },
+    {
+      "symbol": "PUMPUSDT",
+      "chg24_pct": 15.72,
+      "price": 0.004564,
+      "spot_chg24_pct": 15.72,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": -0.3917,
+        "h4": 1.6073,
+        "h8": 3.8016,
+        "h12": 3.3259,
+        "h24": -2.2935,
+        "path": "+/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 1.3445,
+        "m15": 1.0476,
+        "m5": 1.2299
+      },
+      "taker": {
+        "h1": 0.9001,
+        "m15": 0.6545,
+        "m5": 2.4628
+      },
+      "rsi": {
+        "h1": 78.47,
+        "m15": 58.93
+      },
+      "htf": {
+        "discount": false,
+        "mid_term_premium": false,
+        "week_pos_pct": 48.21,
+        "day_pos_pct": 70.63
+      },
+      "sample_tags": [
+        "SECONDARY_REIGNITION",
+        "LOWER_TF_REACCELERATION"
+      ]
+    },
+    {
+      "symbol": "JTOUSDT",
+      "chg24_pct": 13.566,
+      "price": 0.5818,
+      "spot_chg24_pct": 13.426,
+      "funding_pct": 0.005,
+      "oi": {
+        "h1": 0.6563,
+        "h4": -0.6328,
+        "h8": -0.0356,
+        "h12": -3.8512,
+        "h24": 16.3559,
+        "path": "-/+/-",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 0.5212,
+        "m15": 1.468,
+        "m5": 0.7932
+      },
+      "taker": {
+        "h1": 0.9935,
+        "m15": 0.7329,
+        "m5": 0.9959
+      },
+      "rsi": {
+        "h1": 71.78,
+        "m15": 48.55
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": false,
+        "week_pos_pct": 17.84,
+        "day_pos_pct": 39.78
+      },
+      "sample_tags": [
+        "SECONDARY_REIGNITION_REFERENCE"
+      ]
+    },
+    {
+      "symbol": "SUIUSDT",
+      "chg24_pct": 13.379,
+      "price": 1.1644,
+      "spot_chg24_pct": 13.399,
+      "funding_pct": 0.003417,
+      "oi": {
+        "h1": -0.8265,
+        "h4": 0.2274,
+        "h8": 0.0461,
+        "h12": 1.274,
+        "h24": 7.5623,
+        "path": "+/-/+",
+        "pattern": "OTHER"
+      },
+      "rvol": {
+        "h1": 0.443,
+        "m15": 0.9593,
+        "m5": 1.4393
+      },
+      "taker": {
+        "h1": 1.3391,
+        "m15": 1.155,
+        "m5": 1.4776
+      },
+      "rsi": {
+        "h1": 61.32,
+        "m15": 44.47
+      },
+      "htf": {
+        "discount": true,
+        "mid_term_premium": true,
+        "week_pos_pct": 10.46,
+        "day_pos_pct": 95.99
+      },
+      "sample_tags": [
+        "SECONDARY_REIGNITION",
+        "LEADER_REACCELERATION"
+      ]
+    }
+  ]
+}
