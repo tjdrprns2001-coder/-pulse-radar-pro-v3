@@ -55,11 +55,24 @@ module.exports=async function handler(req,res,ctx={}){
     try{
       const q=req.query||{},runtime=String(process.env.TRADER_RUNTIME_URL||'').replace(/\/$/,'');
       if(runtime&&String(q.local||'')!=='1'){
-        const params=new URLSearchParams();for(const [k,v] of Object.entries(q))if(v!=null)params.set(k,String(v));params.set('local','1');
+        const params=new URLSearchParams();for(const [k,v] of Object.entries(q))if(v!=null)params.set(k,String(v));params.set('local','1');params.set('learning','0');
         const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),110000);
         try{
           const rr=await fetch(runtime+'/api/coin-scan?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
           const body=await rr.json().catch(()=>({status:'error',error:'Trader runtime invalid response'}));
+          if(rr.ok&&(q.mode==='trader-deep'||q.mode==='trader-batch')){
+            try{
+              const adapter=require('../lib/learning/scanner-adapter.js');
+              const learnItems=q.mode==='trader-batch'?(Array.isArray(body.items)?body.items:[]):(body.item?[body.item]:[]);
+              const learned=await adapter.ingestScannerItems(learnItems,{source:q.mode,asOf:body.asOf||Date.now()});
+              if(Array.isArray(body.items))body.items=learned.items;
+              else if(body.item)body.item=learned.items[0]||body.item;
+              body.learning=learned.learning;
+              body.learning.authority='unified-runtime';
+            }catch(_learningError){
+              body.learning={shadowOnly:true,status:'degraded',authority:'unified-runtime',error:String(_learningError?.message||_learningError),source:q.mode};
+            }
+          }
           return res.status(rr.ok?200:rr.status).json(body);
         }finally{clearTimeout(timer)}
       }
@@ -69,11 +82,11 @@ module.exports=async function handler(req,res,ctx={}){
         q.mode==='trader-light'?await trader.light(symbols):
         q.mode==='trader-batch'?await trader.deepBatch(symbols):
         await trader.deep(q.symbol);
-      if(q.mode==='trader-deep'||q.mode==='trader-batch'){
+      if(String(q.learning||'1')!=='0'&&(q.mode==='trader-deep'||q.mode==='trader-batch')){
         try{
           const adapter=require('../lib/learning/scanner-adapter.js');
           const learnItems=q.mode==='trader-batch'?(Array.isArray(data.items)?data.items:[]):(data.item?[data.item]:[]);
-          const learned=adapter.ingestScannerItems(learnItems,{source:q.mode,asOf:data.asOf||Date.now()});
+          const learned=await adapter.ingestScannerItems(learnItems,{source:q.mode,asOf:data.asOf||Date.now()});
           if(Array.isArray(data.items))data.items=learned.items;
           else if(data.item)data.item=learned.items[0]||data.item;
           data.learning=learned.learning;
@@ -295,7 +308,7 @@ if(mode==='recommendation-history'){
     if(String(mode).toLowerCase()==='deep'&&Array.isArray(result.items)){
       try{
         const adapter=require('../lib/learning/scanner-adapter.js');
-        const learned=adapter.ingestScannerItems(result.items,{source:'auto-scan-deep',marketState:result.marketState||null,asOf:result.updatedAt||Date.now()});
+        const learned=await adapter.ingestScannerItems(result.items,{source:'auto-scan-deep',marketState:result.marketState||null,asOf:result.updatedAt||Date.now()});
         result.items=learned.items;
         result.learning=learned.learning;
       }catch(_learningError){
