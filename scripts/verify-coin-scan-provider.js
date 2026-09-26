@@ -24,7 +24,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/exchangeInfo'))return{ok:true,json:async()=>({symbols:[{symbol:'XLMUSDT',baseAsset:'XLM',quoteAsset:'USDT',status:'TRADING',isSpotTradingAllowed:true}]})};
     if(u.pathname.endsWith('/ticker/24hr'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastPrice:'1',quoteVolume:'1000',priceChangePercent:'2'}]};
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
-    if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>[{sumOpenInterest:'100'},{sumOpenInterest:'103'}]};
+    if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>Array.from({length:97},(_,i)=>({sumOpenInterest:String(i===96?103:100),timestamp:i}))};
     if(u.pathname.endsWith('/takerlongshortRatio'))return{ok:true,json:async()=>Array.from({length:32},(_,i)=>({timestamp:i,buyVol:String(120+i),sellVol:'100',buySellRatio:String((120+i)/100)}))};
     if(u.pathname.endsWith('/klines')){
       const sym=u.searchParams.get('symbol')||'UNKNOWN',n=(klineActive.get(sym)||0)+1;klineActive.set(sym,n);klineMax.set(sym,Math.max(klineMax.get(sym)||0,n));
@@ -77,7 +77,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert((klineMax.get('XLMUSDT')||0)>=2,'deep timeframe klines should fetch in parallel');
   assert((klineMax.get('XLMUSDT')||0)<=2,'per-symbol timeframe concurrency must stay bounded');
   await p.scanDeepCandidates(['XLMUSDT'],['5m']);
-  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=220')),'5m deep scan should use bounded 220-bar payload');
+  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must preserve 24H RVOL memory coverage');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
   assert(batch.errors.length>=1,'failed symbol recorded');
   active=0;maxActive=0; // measure mapLimit itself, not parallel derivative/XOI fetches above
