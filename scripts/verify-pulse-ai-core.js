@@ -5,6 +5,7 @@ const {buildContext}=require('../lib/pulse-ai/context-builder.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
 const {enrichCatalysts,summarizeCatalysts}=require('../lib/pulse-ai/event-catalyst.js');
 const Analyst=require('../lib/pulse-ai/deterministic-analyst.js');
+const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
 
 const base={status:'ok',updatedAt:1000,scanCount:5,partial:false,dataHealth:{live:5,delayed:0,blocked:0,errors:0},
  marketBreadth:{count:5,up:3,down:2,flat:0,median:.7,majors:{BTC:-.5,ETH:-.8,SOL:1.2}},
@@ -58,6 +59,22 @@ assert.equal(enriched[0].eventTypeKo,'메인넷');assert.equal(enriched[0].timin
 assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건'));
 
 (async()=>{
+  let runtimeCalls=0;
+  const runtime=createRuntimeScanService({
+    runtimeUrl:'https://runtime.example',
+    fetchImpl:async()=>{runtimeCalls++;return{ok:true,status:200,json:async()=>JSON.parse(JSON.stringify(base))}},
+    fallback:{run:async()=>{throw new Error('fallback should not run')}}
+  });
+  const runtimeBody=await runtime.run({mode:'summary',limit:100});
+  assert.equal(runtimeBody.pulseAiScanSource,'runtime');assert.equal(runtimeCalls,1);
+  const failover=createRuntimeScanService({
+    runtimeUrl:'https://runtime.example',
+    fetchImpl:async()=>{throw new Error('remote down')},
+    fallback:{run:async()=>JSON.parse(JSON.stringify(base))}
+  });
+  const fallbackBody=await failover.run({mode:'summary'});
+  assert.equal(fallbackBody.pulseAiScanSource,'local-fallback');
+
   const scanService={run:async()=>JSON.parse(JSON.stringify(base))};
   const researchAI={hydrateRemote:async()=>true,status:()=>researchStatus};
   const gateway={available:false,provider:'gemini',model:'gemini-test',brief:async()=>{throw new Error('must not call')},chat:async()=>{throw new Error('must not call')}};
