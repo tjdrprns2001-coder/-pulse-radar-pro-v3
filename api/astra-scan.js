@@ -13,7 +13,8 @@ function marketOf(q={}){
     eth24hChange:n(q.eth),
     median24hChange:n(q.median),
     positiveVolumeRatio:n(q.positiveVolumeRatio),
-    volumeWeightedBreadth:n(q.volumeWeightedBreadth)
+    volumeWeightedBreadth:n(q.volumeWeightedBreadth),
+    oiScanDegraded:String(q.oiDegraded||'').toLowerCase()==='true'
   };
 }
 module.exports=async function handler(req,res,ctx={}){
