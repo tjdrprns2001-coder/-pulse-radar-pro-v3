@@ -21,6 +21,10 @@ on:
       - 'scripts/verify-sampling-v3-oos-service.js'
       - 'scripts/verify-sampling-v3-outcome-resolver.js'
       - 'lib/signal-performance/store.js'
+      - 'lib/coin-scan/scanner-core.js'
+      - 'lib/coin-scan/auto-recommender.js'
+      - 'scripts/verify-coin-scan-core.js'
+      - 'scripts/verify-auto-recommender.js'
       - '.github/workflows/check-auto-scanner-speed-v2.yml'
   pull_request:
     paths:
@@ -49,6 +53,8 @@ jobs:
       - run: node --check lib/coin-scan/scan-run-service.js
       - run: node --check api/coin-scan.js
       - run: node --check ui/coin-scan.js
+      - run: npm run test:coin-scan-core
+      - run: npm run test:auto-recommender
       - run: npm run test:coin-scan-provider
       - run: npm run test:coin-scan-api
       - run: npm run test:coin-scan-ui
