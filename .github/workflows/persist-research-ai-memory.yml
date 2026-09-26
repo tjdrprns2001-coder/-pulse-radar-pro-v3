@@ -15,12 +15,24 @@ concurrency:
 jobs:
   checkpoint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout learning memory branch
         uses: actions/checkout@v4
         with:
           ref: learning-memory
           fetch-depth: 0
+
+      - name: Resolve confirmed-candle outcomes
+        run: |
+          set -euo pipefail
+          curl --retry 2 --retry-delay 5 --max-time 180 -fsSL             -X POST             "https://pulseradar-pro-unified-0926.onrender.com/api/learning-ai?action=resolve&limit=12"             -o /tmp/research-ai-resolve.json
+          node <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/research-ai-resolve.json','utf8'));
+          if(x.status!=='ok')throw new Error('outcome resolve failed');
+          console.log(JSON.stringify({processedSymbols:x.processedSymbols,changed:x.changed,resolved:x.resolved,errors:x.errors},null,2));
+          NODE
 
       - name: Fetch runtime learning state
         run: |
@@ -34,15 +46,33 @@ jobs:
           fs.writeFileSync('data/learning/research-ai-state.json',JSON.stringify(x.state,null,2)+'\n');
           NODE
 
+      - name: Write checkpoint execution metadata
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const meta={
+            checkpointedAt:new Date().toISOString(),
+            githubRunId:process.env.RUN_ID,
+            githubRunAttempt:process.env.RUN_ATTEMPT,
+            sourceSha:process.env.SOURCE_SHA,
+            workflow:'persist-research-ai-memory'
+          };
+          fs.writeFileSync('data/learning/research-ai-checkpoint-meta.json',JSON.stringify(meta,null,2)+'\n');
+          NODE
+
       - name: Commit checkpoint when changed
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/learning/research-ai-state.json; then
+          if git diff --quiet -- data/learning/research-ai-state.json data/learning/research-ai-checkpoint-meta.json; then
             echo "No learning-memory change"
             exit 0
           fi
           git config user.name "PulseRadar Learning Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/learning/research-ai-state.json
+          git add data/learning/research-ai-state.json data/learning/research-ai-checkpoint-meta.json
           git commit -m "chore: checkpoint research AI memory [skip render]"
           git push origin learning-memory

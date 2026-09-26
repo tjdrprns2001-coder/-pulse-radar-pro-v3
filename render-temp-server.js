@@ -19,7 +19,7 @@ const indexRoutes=new Set([
   'backtest','calibration-freeze','calibration-health','detail','historical-structure-study','htf',
   'independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
   'dante-backtest','structure','temporal-features','trendline-study','signal-alerts','signal-backfill',
-  'signal-calibration','signal-health','signal-performance'
+  'signal-calibration','signal-health','signal-performance','learning-ai'
 ]);
 
 function contentType(file){

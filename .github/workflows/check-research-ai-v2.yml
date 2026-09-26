@@ -1,0 +1,45 @@
+name: Research AI v2 checks
+
+on:
+  push:
+    branches:
+      - feature/research-ai-v2-continuation-20260926
+    paths:
+      - 'lib/learning/**'
+      - 'scripts/verify-research-ai-v2.js'
+      - 'package.json'
+      - '.github/workflows/check-research-ai-v2.yml'
+  pull_request:
+    paths:
+      - 'lib/learning/**'
+      - 'scripts/verify-research-ai-v2.js'
+      - 'package.json'
+      - '.github/workflows/check-research-ai-v2.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/learning/outcome-engine.js
+      - run: node --check lib/learning/canonical-snapshot.js
+      - run: node --check lib/learning/similarity.js
+      - run: node --check lib/learning/neural.js
+      - run: node --check lib/learning/dataset-split.js
+      - run: node --check lib/learning/model-registry.js
+      - run: node --check lib/learning/metrics.js
+      - run: node --check lib/learning/evidence.js
+      - run: node --check lib/learning/research-ai-v2.js
+      - run: node --check lib/learning/scanner-adapter.js
+      - run: node --check lib/learning/research-stats.js
+      - run: node --check lib/learning/archetype-lab.js
+      - run: node --check handlers/learning-ai.js
+      - run: node --check api/coin-scan.js
+      - run: node --check api/astra-scan.js
+      - run: node --check ui/research-ai.js
+      - run: npm run test:research-ai-v2
