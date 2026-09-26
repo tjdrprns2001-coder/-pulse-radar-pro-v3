@@ -849,7 +849,7 @@
     }
   },
   "sampling_v3": {
-    "version": "ASTRA_SAMPLING_V3.1",
+    "version": "ASTRA_SAMPLING_V3.2",
     "status": "SHADOW_RESEARCH_ACTIVE",
     "engine": "lib/coin-scan/sampling-v3.js",
     "contract": "data/samples/SAMPLING_V3_RESEARCH_CONTRACT.json",
@@ -905,7 +905,12 @@
       "same-bar dual barrier hit remains unresolved",
       "candidate-only bounded microstructure requests",
       "microstructure failure does not fail the main scan",
-      "no Sampling v3 rank/category override before real forward OOS promotion gate"
+      "no Sampling v3 rank/category override before real forward OOS promotion gate",
+      "frozen train/evaluation thresholds for v3.2 alternative bars",
+      "tick/volume/dollar/imbalance/run bars use trade-level source",
+      "explicit INCLUDE_FULL_TRADE overshoot policy",
+      "incomplete alternative-bar tails are dropped",
+      "Sampling OOS IDs remain stable across v3.x revisions"
     ],
     "integrity_engine": "lib/coin-scan/sampling-v3-integrity.js",
     "alternative_bar_engine": "lib/coin-scan/sampling-v3-alt-bars.js",
@@ -921,6 +926,8 @@
       "MTF as-of merge guard"
     ],
     "alternative_bars": [
+      "TICK",
+      "VOLUME",
       "DOLLAR",
       "IMBALANCE",
       "RUN"
@@ -968,7 +975,8 @@
         "validated_chunk_top_candidates": [
           "1m native/synthetic audit",
           "Binance futures aggTrades",
-          "Dollar/Imbalance/Run bars"
+          "Tick/Volume/Dollar/Imbalance/Run bars",
+          "frozen calibration threshold audit"
         ],
         "microstructure_limit_per_deep_call": 4,
         "microstructure_workers": 2,
@@ -991,7 +999,9 @@
           "integrity",
           "nativeSyntheticAudit",
           "microstructure status",
-          "Dollar/Imbalance/Run counts",
+          "Tick/Volume/Dollar/Imbalance/Run counts",
+          "threshold mode",
+          "overshoot policy",
           "rankingEffect"
         ]
       },
@@ -1033,13 +1043,43 @@
       "api": "mode=sampling-history actions=list|stats|evaluate",
       "ui": "scan-run shows newly captured sample count",
       "ranking_effect": 0,
-      "promotion_requires": "real forward OOS gate"
+      "promotion_requires": "real forward OOS gate",
+      "sampling_revision": "3.2",
+      "persists_alternative_bar_features": [
+        "tickCount",
+        "volumeCount",
+        "dollarCount",
+        "imbalanceCount",
+        "runCount",
+        "thresholdMode",
+        "overshootPolicy",
+        "calibration metadata"
+      ]
     },
     "forward_sample_ci": {
       "sample_validation_run": 36258407257,
       "sample_validation_conclusion": "success",
       "auto_scanner_speed_run": 36258426203,
       "auto_scanner_speed_conclusion": "success"
+    },
+    "alternative_bar_version": "SAMPLING_V3_ALT_BARS_v2",
+    "threshold_policy": {
+      "mode": "FROZEN_CALIBRATION",
+      "calibration_fraction": 0.35,
+      "evaluation_thresholds_frozen": true,
+      "rolling_thresholds": "SHADOW_DIAGNOSTIC_ONLY",
+      "future_data_used_for_thresholds": false
+    },
+    "overshoot_policy": {
+      "mode": "INCLUDE_FULL_TRADE",
+      "synthetic_trade_split": false,
+      "carry_excess_to_next_bar": false,
+      "partial_tail": "DROP_INCOMPLETE_TAIL"
+    },
+    "sample_identity_policy": {
+      "id_prefix": "sampling-v3.1",
+      "reason": "stable immutable identity retained across research revision upgrades to prevent duplicate symbol/hour samples",
+      "research_revision_field": "samplingRevision"
     }
   }
 }
