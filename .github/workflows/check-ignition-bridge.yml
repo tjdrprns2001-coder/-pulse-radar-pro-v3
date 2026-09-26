@@ -1,0 +1,47 @@
+name: IGNITION Pulse bridge checks
+
+on:
+  push:
+    branches:
+      - feature/pulse-ignition-readonly-bridge
+    paths:
+      - 'handlers/ignition-results.js'
+      - 'ignition-bridge.html'
+      - 'ui/ignition-bridge.js'
+      - 'ui/ignition-bridge.css'
+      - 'api/index.js'
+      - 'render-temp-server.js'
+      - 'pulse-unified.html'
+      - 'ui/pulse-shell.js'
+      - 'scripts/verify-ignition-bridge.js'
+      - 'package.json'
+      - '.github/workflows/check-ignition-bridge.yml'
+  pull_request:
+    paths:
+      - 'handlers/ignition-results.js'
+      - 'ignition-bridge.html'
+      - 'ui/ignition-bridge.js'
+      - 'ui/ignition-bridge.css'
+      - 'api/index.js'
+      - 'render-temp-server.js'
+      - 'pulse-unified.html'
+      - 'ui/pulse-shell.js'
+      - 'scripts/verify-ignition-bridge.js'
+      - 'package.json'
+      - '.github/workflows/check-ignition-bridge.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check handlers/ignition-results.js
+      - run: node --check ui/ignition-bridge.js
+      - run: node --check render-temp-server.js
+      - run: npm run test:ignition-bridge
+      - run: npm run test:vercel-hobby
