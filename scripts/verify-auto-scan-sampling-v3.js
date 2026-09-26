@@ -18,7 +18,11 @@ function trades(n=240){
 const symbols=['AAAUSDT','BBBUSDT','CCCUSDT','DDDUSDT','EEEUSDT','FFFUSDT'];
 const exchange={symbols:symbols.map(s=>({symbol:s,baseAsset:s.replace('USDT',''),quoteAsset:'USDT',status:'TRADING',contractType:'PERPETUAL',isSpotTradingAllowed:true}))};
 const tickers=symbols.map((s,i)=>({symbol:s,lastPrice:String(100+i),priceChangePercent:String(1+i*.1),quoteVolume:'25000000',closeTime:NOW-1}));
-let researchCalls=[];
+let researchCalls=[],samplingObserveCalls=[];
+const samplingOosHistory={
+  async observe(items,context){samplingObserveCalls.push({count:items.length,context});return{observed:items.length,recorded:items.filter(x=>x.dataState==='live'&&x.samplingV3).length,duplicates:0,skipped:0,errors:[]}},
+  async list(){return[]},async stats(){return{snapshotCount:0,evaluated24hCount:0,promotionReady:false}},async evaluateDue(){return{eventsChecked:0,evaluated:0}}
+};
 const provider={
   async getSpotUniverse(){return exchange},
   async getFuturesUniverse(){return exchange},
@@ -52,9 +56,12 @@ const provider={
 
 (async()=>{
   assert.equal(AUTO_SAMPLING_RESEARCH_LIMIT,4,'automatic scanner microstructure budget must stay capped at four symbols per validated deep chunk');
-  const service=createScanService({provider,now:()=>NOW});
+  const service=createScanService({provider,now:()=>NOW,samplingOosHistory});
   const light=await service.run({mode:'deep',symbols,limit:6,validation:'light',persistObservations:false});
   assert.equal(light.items.length,6);
+  assert.equal(light.samplingOosRecording.recorded,6,'Sampling v3.1 samples must persist even when persistObservations=false');
+  assert.equal(samplingObserveCalls.length,1);
+  assert.equal(samplingObserveCalls[0].count,6);
   assert.equal(light.samplingResearch.requested,4,'light automatic deep scan must micro-enrich only top four symbols');
   assert.equal(light.samplingResearch.ready,4);
   assert.equal(researchCalls.length,4);
@@ -71,6 +78,8 @@ const provider={
   researchCalls=[];
   const fast=await service.run({mode:'deep',symbols,limit:6,validation:'off',persistObservations:false});
   assert.equal(fast.samplingResearch.requested,0,'validation-off chunks must make zero 1m/aggTrades research calls');
+  assert.equal(fast.samplingOosRecording.recorded,6,'validation-off chunk must still capture core forward samples');
+  assert.equal(samplingObserveCalls.length,2);
   assert.equal(researchCalls.length,0);
   assert(fast.items.every(x=>x.samplingV3?.microstructure?.status==='NOT_REQUESTED'));
   assert(fast.items.every(x=>x.samplingV3?.rankingEffect===0));
