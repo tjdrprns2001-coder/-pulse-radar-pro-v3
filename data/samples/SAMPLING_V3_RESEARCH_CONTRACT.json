@@ -131,14 +131,26 @@
       "calibration_fraction": 0.35,
       "rule": "derive thresholds only from the leading calibration segment; freeze them for the later evaluation segment",
       "rolling_mode": "retained as shadow diagnostic comparison only",
-      "future_evaluation_data_used_for_thresholds": false
+      "future_evaluation_data_used_for_thresholds": false,
+      "scope": "PER_SNAPSHOT_CAUSAL_SPLIT",
+      "insufficient_calibration": "primary frozen bars remain unavailable; rolling bars are diagnostics only"
     },
     "overshoot_policy": {
       "mode": "INCLUDE_FULL_TRADE",
       "rule": "the trade that crosses a volume/notional/imbalance threshold remains wholly in the closing bar; excess is measured but not synthetically split or carried",
       "partial_tail": "DROP_INCOMPLETE_TAIL"
     },
-    "ranking_effect": 0
+    "ranking_effect": 0,
+    "tick_definition": "TICK logical family uses Binance aggTrade event count, not exchange raw fill count.",
+    "source_schema": {
+      "venue": "BINANCE",
+      "market": "USD-M linear perpetual",
+      "event_type": "aggTrade",
+      "event_time_field": "T",
+      "receive_time_available": false,
+      "quantity_field": "q",
+      "notional": "p × q"
+    }
   },
   "oos_validation": {
     "engine": "lib/coin-scan/sampling-v3-oos.js",
