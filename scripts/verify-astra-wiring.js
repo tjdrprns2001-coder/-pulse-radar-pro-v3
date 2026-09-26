@@ -7,6 +7,7 @@ const api=fs.readFileSync('api/astra-scan.js','utf8');
 const legacy=fs.readFileSync('coin-scan.html','utf8');
 const netlify=fs.readFileSync('netlify.toml','utf8');
 const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));
+new Function(js); // syntax-check browser bundle without executing DOM code
 assert(html.includes('Astra 자동스캔'));
 assert(html.includes('id="astraRun"'));
 assert(html.includes('id="scanMethod"')&&html.includes('value="manus"')&&html.includes('value="perplexity"')&&html.includes('value="grok"')&&html.includes('value="gemini"'),'scan method selector missing');
