@@ -10,6 +10,8 @@ const Registry=require('../lib/learning/model-registry.js');
 const Evidence=require('../lib/learning/evidence.js');
 const V2=require('../lib/learning/research-ai-v2.js');
 const Adapter=require('../lib/learning/scanner-adapter.js');
+const ResearchStats=require('../lib/learning/research-stats.js');
+const ArchetypeLab=require('../lib/learning/archetype-lab.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -117,5 +119,17 @@ assert.equal(astra.flow.oi4hPct,2.4);
 assert.equal(astra.flow.takerRatio,1.35);
 assert.equal(astra.stats['1h'].rvol,1.8);
 assert.equal(astra.setup.type,'WATCH_PRIORITY');
+
+// Research statistics must keep derived rules research-only.
+const labeledRows=[
+  {key:'a',symbol:'A',asOf:1,label:1,features:Array(18).fill(.2),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'astra',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],outcomeV2:{mfePct:9,maePct:-1}},
+  {key:'b',symbol:'B',asOf:2,label:1,features:Array(18).fill(.22),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'trader',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],outcomeV2:{mfePct:8,maePct:-1.2}},
+  {key:'c',symbol:'C',asOf:3,label:0,features:Array(18).fill(-.3),regime:'RISK_OFF',setupType:'COMPRESSION',source:'auto',bookRuleIds:['RSI'],outcomeV2:{mfePct:1,maePct:-4}}
+];
+const rs=ResearchStats.summary(labeledRows);
+assert(rs.byRegime.some(x=>x.key==='RISK_ON'&&x.count===2));
+const clusters=ArchetypeLab.buildClusters(labeledRows,{similarityThreshold:.8,minOverlap:6});
+assert(clusters.length>=1);
+assert(clusters.every(x=>x.state==='RESEARCH_CANDIDATE'&&x.productionEligible===false));
 
 console.log('Research AI v2 PASS');
