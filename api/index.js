@@ -20,7 +20,8 @@ const handlers = {
   'signal-backfill': require('../handlers/signal-backfill'),
   'signal-calibration': require('../handlers/signal-calibration'),
   'signal-health': require('../handlers/signal-health'),
-  'signal-performance': require('../handlers/signal-performance')
+  'signal-performance': require('../handlers/signal-performance'),
+  'learning-ai': require('../handlers/learning-ai')
 };
 
 module.exports = async function handler(req, res) {
