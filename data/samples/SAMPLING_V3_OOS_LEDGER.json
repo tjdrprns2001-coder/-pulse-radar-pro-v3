@@ -1,0 +1,31 @@
+{
+  "schema_version": "sampling-v3-oos-ledger.1",
+  "status": "COLLECTING",
+  "created_at": "2026-09-27T01:45:00+09:00",
+  "source": "Astra Sampling v3.1 forward snapshots",
+  "promotion_policy": {
+    "ranking_effect_until_pass": 0,
+    "min_events": 80,
+    "min_folds": 3,
+    "min_mean_accuracy": 0.55,
+    "validation": "purged walk-forward + embargo + sequential bootstrap"
+  },
+  "required_event_fields": [
+    "id",
+    "symbol",
+    "startTime",
+    "endTime",
+    "label",
+    "score",
+    "samplingStage",
+    "eventTypes",
+    "sourceScanId"
+  ],
+  "labels": [
+    "SURGE",
+    "FAILED_BOS",
+    "NO_TRIGGER",
+    "UNRESOLVED"
+  ],
+  "events": []
+}
