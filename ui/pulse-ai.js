@@ -99,7 +99,7 @@ function render(data){
   $('aiBadge').textContent=data.aiGenerated?'생성형 AI':'로컬 분석';$('aiBadge').dataset.mode=data.aiGenerated?'ai':'fallback';
   $('providerBadge').textContent=data.aiGenerated?`${data.provider||'AI'} · ${data.model||''}`.trim():data.aiAvailable?'AI 대기 · 로컬 분석':'로컬 분석';
   $('dataBadge').textContent=q.state==='LIVE'?'데이터 LIVE':`데이터 ${q.state||'확인'}`;$('dataBadge').dataset.state=q.state||'UNKNOWN';
-  $('marketRegime').textContent=m.regime==='RISK_ON'?'상승 확산':m.regime==='RISK_OFF'?'위험 축소':'혼조';
+  $('marketRegime').textContent=m.regime==='RISK_ON'?'상승 확산':m.regime==='ALT_BREADTH'?'알트 확산 · 메이저 약세':m.regime==='RISK_OFF'?'위험 축소':m.regime==='MAJOR_DIVERGENCE'?'메이저 강세 · 시장 폭 약세':'혼조';
   $('marketRegime').dataset.regime=m.regime||'MIXED';
   $('breadth').textContent=`${fmtNum(m.up)} / ${fmtNum(m.down)}`;
   $('breadthDetail').textContent=`상승비 ${Number.isFinite(Number(m.breadthRatio))?(Number(m.breadthRatio)*100).toFixed(1)+'%':'—'}`;

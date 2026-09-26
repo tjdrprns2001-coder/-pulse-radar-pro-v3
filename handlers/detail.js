@@ -46,10 +46,10 @@ const deriv=await derivativesIntel(pair),events=news.filter(x=>x.isEvent||x.cate
 function externalFuturesDetail(row,requested){
   const exchanges=Array.isArray(row?.exchanges)?row.exchanges:[],name=String(requested||row?.symbol||'').toUpperCase();
   return{ok:true,market:'futures',symbol:row?.symbol||name,externalFuturesOnly:true,sourceExchanges:exchanges,primaryExchange:row?.primaryExchange||null,
-    timeframes:[],preSurge:{score:row?.preScore??0,stage:'외부 선물 관찰',reasons:[`${exchanges.length||1}개 선물 거래소 중복 제거 집계`,'Binance 정밀 캔들 미지원 종목은 외부 시세 기준으로만 표시']},
+    timeframes:[],preSurge:{score:row?.preScore??0,stage:'멀티거래소 선물 대체 관찰',reasons:[`${exchanges.length||1}개 선물 거래소 중복 제거 집계`,'Binance 정밀 조회가 현재 미확인·제한되어 외부 선물 시세로 보강']},
     surge:{score:row?.surgeScore??0,aligned:0},
-    riskGate:{hard:[],warn:['외부 거래소 전용 종목 · 정밀 MTF 지표는 아직 Binance 지원 종목에 우선 제공'],excluded:false},
-    confidence:{grade:'OBSERVE',label:'멀티거래소 선물 시세 관찰'},
+    riskGate:{hard:[],warn:['Binance 정밀 조회 미확인·제한 상태 · 외부 거래소 선물 시세로 임시 보강'],excluded:false},
+    confidence:{grade:'OBSERVE',label:'멀티거래소 선물 대체 관찰'},
     externalMarket:{price:row?.price??null,change24:row?.change24??null,quoteVolume24h:row?.quoteVol24??null,exchangeCount:row?.exchangeCount??exchanges.length,openInterestUsd:row?.openInterestUsd??null,fundingRate:row?.fundingRate??null,contracts:row?.contracts||[]}};
 }
 module.exports=async function handler(req,res){res.setHeader('Cache-Control','s-maxage=60, stale-while-revalidate=300');try{

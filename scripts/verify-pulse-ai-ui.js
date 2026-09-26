@@ -12,9 +12,9 @@ assert(js.includes('selectedSymbol:selectedSymbol()'),'chat must forward shell-s
 assert(js.includes("setInterval(()=>{if(!document.hidden)load(false)},60000)"),'polling must be visibility-aware and 60s');
 assert(js.includes("document.addEventListener('visibilitychange'"),'hidden tab should not keep expensive polling active');
 assert(js.includes("parent.postMessage({type:'pulse-nav',view:'report'"),'candidate/focus must open report through shell');
-assert(js.includes('textContent'),'dynamic text must use textContent');
+assert(js.includes('textContent'),'dynamic text must use textContent');assert(js.includes('알트 확산 · 메이저 약세'),'breadth-major divergence label must be explicit');
 assert(!js.includes('.innerHTML='),'Pulse AI v2 should not inject untrusted HTML');
-assert(page.includes('심층 분석'));assert(page.includes('Research AI'));assert(page.includes('아직 덜 간 우선 관찰'));
+assert(page.includes('심층 분석'));assert(page.includes('Research AI'));assert(page.includes('아직 덜 간 우선 관찰'));assert(page.includes('이벤트 · 뉴스'));
 assert(!page.match(/order|leverage|withdraw|wallet signing/i),'Pulse AI UI must not expose trading execution controls');
 assert(css.includes('@media(max-width:520px)'),'mobile layout required');
 assert(shell.includes('data-view="pulseai"'));assert(/\/ui\/pulse-shell\.js\?v=[A-Za-z0-9._-]+/.test(shell),'shell JS must be cache-busted');

@@ -11,12 +11,14 @@ const {defaultResearchAIv2}=require('../lib/learning/research-ai-v2.js');
 const detailHandler=require('../handlers/detail.js');
 
 let singleton=null;
-async function resolveDetail(symbol){
+async function callDetail(query){
   let code=200,body=null;
   const res={setHeader(){},status(n){code=n;return this},json(v){body=v;return this}};
-  await detailHandler({query:{symbol:String(symbol||'').toUpperCase()}},res);
+  await detailHandler({query},res);
   return code<400&&body?.ok?body:null;
 }
+async function resolveDetail(symbol){return callDetail({symbol:String(symbol||'').toUpperCase()})}
+async function resolveEventIntel(symbol){return callDetail({symbol:String(symbol||'').toUpperCase(),intel:'1'})}
 function defaultService(){
   if(!singleton){
     const localScanService=createScanService({provider:createBinanceProvider({})});
@@ -25,7 +27,7 @@ function defaultService(){
     const marketIntelService=createMarketIntelService({
       coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
     });
-    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2(),detailResolver:resolveDetail});
+    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2(),detailResolver:resolveDetail,eventResolver:resolveEventIntel});
   }
   return singleton;
 }
