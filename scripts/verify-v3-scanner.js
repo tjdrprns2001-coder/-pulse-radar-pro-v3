@@ -94,7 +94,7 @@ assert.match(V3.formatOutput({symbol:'TESTUSDT',type:'A',v3:fakeV3}),/장기정�
 const provider=createBinanceProvider({fetchImpl:async()=>{throw new Error('network disabled in unit test')}});
 assert.equal(provider.deepRowsForInterval('1d'),1260,'1d payload must still provide at least 40 synthetic 28d bars');
 assert.equal(provider.deepRowsForInterval('1h'),420);
-assert.equal(provider.deepRowsForInterval('5m'),220,'5m payload should remain bounded for scanner latency');
+assert.equal(provider.deepRowsForInterval('5m'),300,'5m payload must preserve 24H RVOL/sample-memory coverage');
 
 const deep=fs.readFileSync(require.resolve('../lib/coin-scan/deep-scan.js'),'utf8');
 assert.match(deep,/const V3=require\('\.\/v3-scan-engine\.js'\)/);
