@@ -2,7 +2,7 @@
 const assert=require('assert');
 const {detectEvents}=require('../lib/pulse-ai/event-detector.js');
 const {buildContext}=require('../lib/pulse-ai/context-builder.js');
-const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {createBriefingService,fallback}=require('../lib/pulse-ai/briefing-service.js');
 const {enrichCatalysts,summarizeCatalysts}=require('../lib/pulse-ai/event-catalyst.js');
 const Analyst=require('../lib/pulse-ai/deterministic-analyst.js');
 const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
@@ -48,6 +48,10 @@ const futuresOnly={...JSON.parse(JSON.stringify(base)),partial:true,marketCovera
 assert.equal(Analyst.dataQuality(futuresOnly,2000).state,'LIVE','healthy futures-first summary should not be marked partial merely because spot is absent');
 const spotOnlyQuality={...JSON.parse(JSON.stringify(base)),partial:true,marketCoverage:{spot:5,futures:0,both:0,total:5}};
 assert.equal(Analyst.dataQuality(spotOnlyQuality,2000).state,'DEGRADED','spot-only fallback must be visible as degraded for futures-first Pulse AI');
+const healthyBrief=fallback(futuresOnly,{material:false,events:[],sectorClusters:[]},{researchStatus,aiConfigured:false,now:2000});
+assert(!healthyBrief.dataWarnings.some(x=>/지연|불완전/.test(x)),'healthy futures-first scan must not show a false partial-data warning');
+const degradedBrief=fallback(spotOnlyQuality,{material:false,events:[],sectorClusters:[]},{researchStatus,aiConfigured:false,now:2000});
+assert(degradedBrief.dataWarnings.some(x=>/불완전/.test(x)),'spot-only scan should warn about incomplete futures coverage');
 const answer=Analyst.deterministicAnswer({question:'AAA 지금 어때?',selectedSymbol:'AAAUSDT',scan:base,researchStatus});
 assert(answer.answer.includes('AAAUSDT'),'local chat must answer selected symbol');
 const researchAnswer=Analyst.deterministicAnswer({question:'Research AI 학습 상태',scan:base,researchStatus});
