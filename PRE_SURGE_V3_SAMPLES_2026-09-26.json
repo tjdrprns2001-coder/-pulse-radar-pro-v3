@@ -1,0 +1,183 @@
+{
+  "schema_version": "pre-surge-v3.0",
+  "captured_at": "2026-09-26T17:42:00+09:00",
+  "source": "Binance USDT perpetual live reverse-trace sample",
+  "purpose": "Reverse-engineered pre-surge reference set for scanner calibration. Long-focused; short/crowding signals are risk filters.",
+  "samples": [
+    {
+      "symbol": "RAREUSDT",
+      "change_24h_pct": 61.995,
+      "pre_6h_change_pct": 6.64,
+      "pre_6h_range_pct": 6.72,
+      "breakout_1h_pct": 15.87,
+      "breakout_1h_rvol": 243.29,
+      "oi_pre_1h_pct": 0.87,
+      "oi_pre_4h_pct": 3.73,
+      "taker_pre": 0.95,
+      "taker_break": 0.93
+    },
+    {
+      "symbol": "PHAUSDT",
+      "change_24h_pct": 37.267,
+      "pre_6h_change_pct": 18.19,
+      "pre_6h_range_pct": 20.34,
+      "breakout_1h_pct": 12.3,
+      "breakout_1h_rvol": 12.15,
+      "oi_pre_1h_pct": 6.07,
+      "oi_pre_4h_pct": 46.97,
+      "taker_pre": 1,
+      "taker_break": 1.02
+    },
+    {
+      "symbol": "2ZUSDT",
+      "change_24h_pct": 32.108,
+      "pre_6h_change_pct": 4.17,
+      "pre_6h_range_pct": 7.43,
+      "breakout_1h_pct": 14.5,
+      "breakout_1h_rvol": 32.89,
+      "oi_pre_1h_pct": 15.4,
+      "oi_pre_4h_pct": 16.61,
+      "taker_pre": 1.24,
+      "taker_break": 1.1
+    },
+    {
+      "symbol": "ARKUSDT",
+      "change_24h_pct": 28.907,
+      "pre_6h_change_pct": 8.33,
+      "pre_6h_range_pct": 24.37,
+      "breakout_1h_pct": 10.99,
+      "breakout_1h_rvol": 2.96,
+      "oi_pre_1h_pct": -4.46,
+      "oi_pre_4h_pct": 12.11,
+      "taker_pre": 0.99,
+      "taker_break": 1.06
+    },
+    {
+      "symbol": "MUBARAKUSDT",
+      "change_24h_pct": 27.296,
+      "pre_6h_change_pct": -1.52,
+      "pre_6h_range_pct": 3.46,
+      "breakout_1h_pct": 6.97,
+      "breakout_1h_rvol": 3.38,
+      "oi_pre_1h_pct": -0.58,
+      "oi_pre_4h_pct": 0.42,
+      "taker_pre": 1.04,
+      "taker_break": 1.11
+    },
+    {
+      "symbol": "ENAUSDT",
+      "change_24h_pct": 24.644,
+      "pre_6h_change_pct": 3.08,
+      "pre_6h_range_pct": 4.77,
+      "breakout_1h_pct": 5.52,
+      "breakout_1h_rvol": 4.47,
+      "oi_pre_1h_pct": 2.76,
+      "oi_pre_4h_pct": 5.06,
+      "taker_pre": 0.96,
+      "taker_break": 0.92
+    },
+    {
+      "symbol": "AEROUSDT",
+      "change_24h_pct": 20.182,
+      "pre_6h_change_pct": 3.3,
+      "pre_6h_range_pct": 6.06,
+      "breakout_1h_pct": 5.98,
+      "breakout_1h_rvol": 3.71,
+      "oi_pre_1h_pct": -2.65,
+      "oi_pre_4h_pct": 1.79,
+      "taker_pre": 0.88,
+      "taker_break": 1.22
+    },
+    {
+      "symbol": "PUMPUSDT",
+      "change_24h_pct": 15.822,
+      "pre_6h_change_pct": 2.77,
+      "pre_6h_range_pct": 5.21,
+      "breakout_1h_pct": 4.09,
+      "breakout_1h_rvol": 2.23,
+      "oi_pre_1h_pct": 2.34,
+      "oi_pre_4h_pct": 3.34,
+      "taker_pre": 1.29,
+      "taker_break": 1.29
+    },
+    {
+      "symbol": "JTOUSDT",
+      "change_24h_pct": 13.664,
+      "pre_6h_change_pct": 5.75,
+      "pre_6h_range_pct": 6.41,
+      "breakout_1h_pct": 2.8,
+      "breakout_1h_rvol": 3.06,
+      "oi_pre_1h_pct": 1.83,
+      "oi_pre_4h_pct": 3.06,
+      "taker_pre": 1.07,
+      "taker_break": 1.21
+    },
+    {
+      "symbol": "SUIUSDT",
+      "change_24h_pct": 13.34,
+      "pre_6h_change_pct": 5.74,
+      "pre_6h_range_pct": 6.5,
+      "breakout_1h_pct": 6.36,
+      "breakout_1h_rvol": 5.65,
+      "oi_pre_1h_pct": 1.16,
+      "oi_pre_4h_pct": 4.32,
+      "taker_pre": 1.01,
+      "taker_break": 1.02
+    }
+  ],
+  "learned_rules": {
+    "paths": [
+      {
+        "id": "OI_BUILD",
+        "description": "4H OI accumulation is an independent pass path; do not require 1H OI to also be positive.",
+        "guide": "4H OI +1% to +5% is a strong ordinary pre-surge band; extreme values are event/squeeze-risk and need separate handling."
+      },
+      {
+        "id": "OI_ACCEL",
+        "description": "15m-1H OI acceleration is an independent exception path for symbols missed by 4H-only gates."
+      },
+      {
+        "id": "VOL_IGNITION",
+        "description": "Allow quiet-price + RVOL ignition + structure break even when OI is weak."
+      }
+    ],
+    "taker": {
+      "compression_band": "0.9-1.1",
+      "early_ignition": "1.1-1.3",
+      "strong_confirmation": ">=1.3 sustained",
+      "note": "Do not reject taker around 1.0; many surge samples were balanced before ignition."
+    },
+    "rvol": {
+      "preparing": "2.5-3x",
+      "ignition": "3-6x",
+      "strong_progress": ">10x"
+    },
+    "pre_price_behavior": "Prefer roughly -2% to +6% over the prior ~6h for quiet pre-surge candidates, but do not hard-reject wider ranges when 4H OI build is strong.",
+    "sample_medians_approx": {
+      "oi_pre_4h_pct": 4,
+      "oi_pre_1h_pct": 1.5,
+      "breakout_1h_rvol": 4.1,
+      "taker_pre": 1,
+      "pre_6h_range_pct": 6.5
+    }
+  },
+  "pattern_groups": {
+    "quiet_oi_build_then_volume_ignition": [
+      "ENAUSDT",
+      "PUMPUSDT",
+      "JTOUSDT",
+      "SUIUSDT"
+    ],
+    "oi_leads_aggressively": [
+      "PHAUSDT",
+      "2ZUSDT"
+    ],
+    "absorption_or_reset": [
+      "ARKUSDT",
+      "AEROUSDT"
+    ],
+    "low_noise_volume_ignition_exception": [
+      "MUBARAKUSDT"
+    ]
+  }
+}
