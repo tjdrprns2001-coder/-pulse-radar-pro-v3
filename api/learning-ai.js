@@ -1,6 +1,10 @@
 'use strict';
 
-const {defaultResearchAI}=require('../lib/learning/research-ai.js');
+const {defaultResearchAIv2:defaultResearchAI}=require('../lib/learning/research-ai-v2.js');
+const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
+let outcomeProvider=null;
+function provider(){if(!outcomeProvider)outcomeProvider=createBinanceProvider({});return outcomeProvider}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 function parseBody(req){
   let body=req?.body||{};
@@ -37,6 +41,22 @@ module.exports=async function handler(req,res){
     }
     if(action==='export'){
       return res.status(200).json({status:'ok',mode:'learning-ai',action,state:ai.exportState()});
+    }
+    if(action==='resolve'){
+      if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
+      const state=ai.exportState(),now=Date.now(),max=Math.max(1,Math.min(20,Number(req?.query?.limit)||12));
+      const pending=(state.observations||[]).filter(o=>o?.symbol&&(!o.outcomeV2||o.outcomeV2.confirmed!==true)&&now-Number(o.asOf||0)<=96*3600000);
+      const symbols=[...new Set(pending.sort((a,b)=>Number(a.asOf||0)-Number(b.asOf||0)).map(o=>o.symbol))].slice(0,max);
+      const errors=[];let changed=0,resolved=0;
+      for(const symbol of symbols){
+        try{
+          const candles=await provider().getFuturesKlines(symbol,'1h',200);
+          const out=ai.resolveSymbol(symbol,candles,{now});
+          changed+=Number(out.changed)||0;resolved+=Number(out.resolved)||0;
+        }catch(e){errors.push({symbol,error:String(e?.message||e)})}
+        await sleep(120);
+      }
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,processedSymbols:symbols.length,changed,resolved,errors,statusData:ai.status()});
     }
     if(action==='predict'){
       if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
