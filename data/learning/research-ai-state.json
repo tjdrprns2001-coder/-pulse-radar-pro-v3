@@ -1,9 +1,334 @@
 {
-  "version": "RESEARCH_AI_v1",
-  "updatedAt": 1790414030055,
-  "source": "runtime",
+  "version": "RESEARCH_AI_v2",
+  "updatedAt": 1790430310834,
+  "source": "runtime-outcome",
+  "observations": [
+    {
+      "key": "BTCUSDT:497337",
+      "symbol": "BTCUSDT",
+      "asOf": 1790413612870,
+      "capturedAt": 1790413612875,
+      "price": 84161.9,
+      "scannerState": "EXCLUDED",
+      "scannerScore": 10,
+      "regime": "MIXED",
+      "setupType": "COMPRESSION",
+      "features": [
+        0.1,
+        -0.0605,
+        0.9898945763074052,
+        -0.020247181289727578,
+        0.06697511047367849,
+        0.06536,
+        0,
+        0.35,
+        1,
+        0,
+        0.1321803235107531,
+        -0.1516608905831254,
+        0.7175714744619276,
+        1,
+        0.39332414255122927,
+        -0.08641319901558493,
+        0,
+        0.32798283273066936
+      ],
+      "researchScore": 26,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6874317171853399
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6582913356166447
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.6133143157445835
+        }
+      ],
+      "bookRuleIds": [
+        "OBV",
+        "RSI",
+        "MACD"
+      ],
+      "outcome6hPct": null,
+      "outcome24hPct": null,
+      "label": null,
+      "source": "trader-deep",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": false,
+        "entryPrice": 84161.9,
+        "asOf": 1790413612870,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790417212870,
+            "closeAt": 1790420399999,
+            "returnPct": -0.031605750345453654
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790424412870,
+            "closeAt": 1790427599999,
+            "returnPct": -0.1813171993502949
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790435212870,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790456812870,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790500012870,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790672812870,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": 0,
+        "maePct": -0.2185074243808538,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 88369.995,
+          "sl": 81637.04299999999
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790430310834,
+        "confirmedBars": 3
+      },
+      "labelStatus": "UNRESOLVED",
+      "outcome1hPct": -0.031605750345453654,
+      "outcome3hPct": -0.1813171993502949,
+      "outcome12hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": 0,
+      "mae72hPct": -0.2185074243808538,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "ETHUSDT:497337",
+      "symbol": "ETHUSDT",
+      "asOf": 1790414030041,
+      "capturedAt": 1790414030055,
+      "price": 2680.78,
+      "scannerState": "WATCH",
+      "scannerScore": 25,
+      "regime": "MIXED",
+      "setupType": "COMPRESSION",
+      "features": [
+        0.25,
+        -0.06125,
+        0.9671248832214503,
+        0.007136704846355535,
+        -0.14780974284393775,
+        0.10119999999999998,
+        0,
+        0.35,
+        1,
+        0,
+        0.04239113349032948,
+        -0.22124935197657136,
+        0.7777181380968754,
+        -1,
+        0.09838599290942582,
+        0.013654264391004848,
+        0,
+        1
+      ],
+      "researchScore": 31,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6580749621027452
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6056086566664308
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5847655846626256
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcome6hPct": null,
+      "outcome24hPct": null,
+      "label": null,
+      "source": "trader-deep",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": false,
+        "entryPrice": 2680.78,
+        "asOf": 1790414030041,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790417630041,
+            "closeAt": 1790420399999,
+            "returnPct": 0.19994180798124095
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790424830041,
+            "closeAt": 1790427599999,
+            "returnPct": 0.2607450070501782
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790435630041,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790457230041,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790500430041,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790673230041,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": 0.40809018270799857,
+        "maePct": 0.01566708196867328,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 2814.8190000000004,
+          "sl": 2600.3566
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790430310834,
+        "confirmedBars": 3
+      },
+      "labelStatus": "UNRESOLVED",
+      "outcome1hPct": 0.19994180798124095,
+      "outcome3hPct": 0.2607450070501782,
+      "outcome12hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": 0.40809018270799857,
+      "mae72hPct": 0.01566708196867328,
+      "tpSlOrder": "NONE"
+    }
+  ],
   "model": {
+    "version": "RESEARCH_NEURAL_v2",
     "type": "tiny_mlp_18x12x6x1",
+    "inputSize": 18,
+    "h1": 12,
+    "h2": 6,
     "trainedLabels": 0,
     "trainedAt": null,
     "w1": [
@@ -366,125 +691,50 @@
     ],
     "b3": 0
   },
-  "observations": [
-    {
-      "key": "BTCUSDT:497337",
-      "symbol": "BTCUSDT",
-      "asOf": 1790413612870,
-      "capturedAt": 1790413612875,
-      "price": 84161.9,
-      "scannerState": "EXCLUDED",
-      "scannerScore": 10,
-      "regime": "MIXED",
-      "setupType": "COMPRESSION",
-      "features": [
-        0.1,
-        -0.0605,
-        0.9898945763074052,
-        -0.020247181289727578,
-        0.06697511047367849,
-        0.06536,
-        0,
-        0.35,
-        1,
-        0,
-        0.1321803235107531,
-        -0.1516608905831254,
-        0.7175714744619276,
-        1,
-        0.39332414255122927,
-        -0.08641319901558493,
-        0,
-        0.32798283273066936
-      ],
-      "researchScore": 26,
-      "researchStage": "LOW_MATCH",
-      "sampleTop": [
-        {
-          "symbol": "ENAUSDT",
-          "similarity": 0.6874317171853399
+  "registry": {
+    "version": "RESEARCH_MODEL_REGISTRY_v2",
+    "models": [
+      {
+        "id": "tiny-mlp-v2",
+        "type": "tiny_mlp_18x12x6x1",
+        "state": "SHADOW",
+        "createdAt": 1790430310832,
+        "updatedAt": 1790430310832,
+        "metrics": {},
+        "metadata": {
+          "shadowOnly": true
         },
-        {
-          "symbol": "PUMPUSDT",
-          "similarity": 0.6582913356166447
-        },
-        {
-          "symbol": "AEROUSDT",
-          "similarity": 0.6133143157445835
-        }
-      ],
-      "bookRuleIds": [
-        "OBV",
-        "RSI",
-        "MACD"
-      ],
-      "outcome6hPct": null,
-      "outcome24hPct": null,
-      "label": null,
-      "source": "trader-deep"
-    },
-    {
-      "key": "ETHUSDT:497337",
-      "symbol": "ETHUSDT",
-      "asOf": 1790414030041,
-      "capturedAt": 1790414030055,
-      "price": 2680.78,
-      "scannerState": "WATCH",
-      "scannerScore": 25,
-      "regime": "MIXED",
-      "setupType": "COMPRESSION",
-      "features": [
-        0.25,
-        -0.06125,
-        0.9671248832214503,
-        0.007136704846355535,
-        -0.14780974284393775,
-        0.10119999999999998,
-        0,
-        0.35,
-        1,
-        0,
-        0.04239113349032948,
-        -0.22124935197657136,
-        0.7777181380968754,
-        -1,
-        0.09838599290942582,
-        0.013654264391004848,
-        0,
-        1
-      ],
-      "researchScore": 31,
-      "researchStage": "LOW_MATCH",
-      "sampleTop": [
-        {
-          "symbol": "ENAUSDT",
-          "similarity": 0.6580749621027452
-        },
-        {
-          "symbol": "PUMPUSDT",
-          "similarity": 0.6056086566664308
-        },
-        {
-          "symbol": "AEROUSDT",
-          "similarity": 0.5847655846626256
-        }
-      ],
-      "bookRuleIds": [
-        "RSI",
-        "MACD"
-      ],
-      "outcome6hPct": null,
-      "outcome24hPct": null,
-      "label": null,
-      "source": "trader-deep"
-    }
-  ],
+        "history": [
+          {
+            "at": 1790430310832,
+            "state": "SHADOW",
+            "reason": "created"
+          }
+        ]
+      }
+    ],
+    "activeModelId": null,
+    "updatedAt": 1790430310832
+  },
   "training": {
     "labels": 0,
     "positive": 0,
     "negative": 0,
     "lastLoss": null,
-    "lastTrainedAt": null
+    "lastTrainedAt": null,
+    "dataset": {
+      "train": 0,
+      "validation": 0,
+      "lockedOos": 0
+    },
+    "metrics": {
+      "validation": null,
+      "lockedOos": null
+    }
+  },
+  "validation": {
+    "lockedOosStart": null,
+    "frozenAt": null
   },
   "memory": {
     "seedSamples": 10,
@@ -497,7 +747,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790414042563,
+  "exportedAt": 1790430312265,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -517,5 +767,17 @@
     "rvol15m",
     "regime",
     "netRR"
-  ]
+  ],
+  "research": {
+    "stats": {
+      "version": "RESEARCH_STATS_v2",
+      "scoreBuckets": [],
+      "byRegime": [],
+      "bySetup": [],
+      "bySource": [],
+      "bookRules": [],
+      "derivedRules": []
+    },
+    "archetypes": []
+  }
 }
