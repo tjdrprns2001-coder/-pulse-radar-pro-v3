@@ -29,8 +29,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
       - name: Master dataset
         run: npm run test:master-samples-v2
       - name: Similarity engine
