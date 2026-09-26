@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Binance} from '../lib/scanner/binance.mjs';
+import {MemoryStore} from './memory-store.mjs';
+test('same closed TF window reuses cache across snapshot times',async()=>{let calls=0;const store=new MemoryStore();const raw=Array.from({length:150},(_,i)=>[i*3600000,1,2,.5,1,100,(i+1)*3600000-1,100,1,50]);const api=new Binance(store,async()=>{calls++;return new Response(JSON.stringify(raw));});const a=await api.bars('XUSDT','1h',150*3600000+100,149);const b=await api.bars('XUSDT','1h',150*3600000+200,149);assert.equal(calls,1);assert.deepEqual(a,b);});
+test('failed response body retries and records errors rather than crashing entire scanner',async()=>{let calls=0;const api=new Binance(new MemoryStore(),async()=>{calls++;return {ok:true,status:200,headers:new Headers(),json:async()=>{throw new Error('body aborted')}};});await assert.rejects(()=>api.get('/fapi/v1/time'),/응답 읽기 실패/);assert.equal(calls,2);assert.equal(api.metrics.errors,1);});
+test('exchangeInfo cache keeps only universe fields',async()=>{const api=new Binance(new MemoryStore(),async()=>new Response(JSON.stringify({symbols:[{symbol:'XUSDT',baseAsset:'X',quoteAsset:'USDT',status:'TRADING',contractType:'PERPETUAL',filters:Array(100).fill({unused:1})}]})));const d=await api.get('/fapi/v1/exchangeInfo');assert.equal(d.symbols[0].filters,undefined);assert.equal(d.symbols[0].contractType,'PERPETUAL');});
