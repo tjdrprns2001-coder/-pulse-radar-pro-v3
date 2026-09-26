@@ -77,7 +77,10 @@ const provider={
   assert(typeof d.items[0].verdict.samplingV3Stage==='string','Sampling v3 stage required');
   assert(d.items[0].samplingV3.integrity&&['PASS','WARN','FAIL'].includes(d.items[0].samplingV3.integrity.status),'Sampling v3 integrity audit required');
   assert(d.items[0].samplingV3.nativeSyntheticAudit,'native/synthetic candle audit required');
-  assert(d.items[0].samplingV3.alternativeBars&&d.items[0].samplingV3.alternativeBars.version==='SAMPLING_V3_ALT_BARS_v1','aggTrades alternative bars required');
+  assert(d.items[0].samplingV3.alternativeBars&&d.items[0].samplingV3.alternativeBars.version==='SAMPLING_V3_ALT_BARS_v2','aggTrades alternative bars required');
+  assert(d.items[0].samplingV3.alternativeBars.bars.tickCount>0&&d.items[0].samplingV3.alternativeBars.bars.volumeCount>0,'Astra tick/volume bars required');
+  assert.equal(d.items[0].samplingV3.alternativeBars.policy.thresholdMode,'FROZEN_CALIBRATION','Astra alternative-bar thresholds must be train/eval separated');
+  assert.equal(d.items[0].samplingV3.alternativeBars.diagnostics.futureDataUsedForThresholds,false,'Astra thresholds must not use evaluation/future trades');
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
   const m=await scan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});
