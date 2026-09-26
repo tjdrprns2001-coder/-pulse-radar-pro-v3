@@ -1,0 +1,231 @@
+{
+  "schema_version": "pre-surge-v3-live-reverse-batch.1",
+  "captured_at": "2026-09-27T00:24:00+09:00",
+  "source": "Binance USDT perpetual live surge + reverse trace",
+  "purpose": "Store current surge samples and reverse-traced pre-surge/exception patterns for scanner calibration.",
+  "current_surge_snapshot": [
+    {
+      "symbol": "QUSDT",
+      "change_24h_pct": 56.328
+    },
+    {
+      "symbol": "RAREUSDT",
+      "change_24h_pct": 52.309
+    },
+    {
+      "symbol": "2ZUSDT",
+      "change_24h_pct": 27.261
+    },
+    {
+      "symbol": "USUSDT",
+      "change_24h_pct": 23.329
+    },
+    {
+      "symbol": "BRUSDT",
+      "change_24h_pct": 21.38
+    },
+    {
+      "symbol": "FILUSDT",
+      "change_24h_pct": 20.087
+    },
+    {
+      "symbol": "WLDUSDT",
+      "change_24h_pct": 16.965
+    },
+    {
+      "symbol": "RUNEUSDT",
+      "change_24h_pct": 16.441
+    },
+    {
+      "symbol": "DASHUSDT",
+      "change_24h_pct": 16.096
+    },
+    {
+      "symbol": "QNTUSDT",
+      "change_24h_pct": 15.377
+    },
+    {
+      "symbol": "ACEUSDT",
+      "change_24h_pct": 14.277
+    },
+    {
+      "symbol": "JTOUSDT",
+      "change_24h_pct": 11.495
+    }
+  ],
+  "reverse_trace_samples": [
+    {
+      "symbol": "RAREUSDT",
+      "pre6h_change_pct": 6.64,
+      "breakout_1h_pct": 15.87,
+      "breakout_rvol": 243.29,
+      "oi15_pct": 1.92,
+      "oi1h_pct": -0.71,
+      "oi4h_pct": 4.1,
+      "taker_pre": 0.95,
+      "taker_break": 0.93,
+      "funding_at_event": -0.00001874,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "2ZUSDT",
+      "pre6h_change_pct": 4.17,
+      "breakout_1h_pct": 14.5,
+      "breakout_rvol": 32.89,
+      "oi15_pct": 7.83,
+      "oi1h_pct": 15.33,
+      "oi4h_pct": 16.55,
+      "taker_pre": 1.24,
+      "taker_break": 1.1,
+      "funding_at_event": 0.00005,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "USUSDT",
+      "pre6h_change_pct": 20.16,
+      "breakout_1h_pct": 4.49,
+      "breakout_rvol": 5.11,
+      "oi15_pct": 4.59,
+      "oi1h_pct": 7.8,
+      "oi4h_pct": 13.38,
+      "taker_pre": 1.17,
+      "taker_break": 1.02,
+      "funding_at_event": 0.00058809,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "FILUSDT",
+      "pre6h_change_pct": 2.23,
+      "breakout_1h_pct": 6.15,
+      "breakout_rvol": 4.91,
+      "oi15_pct": 0.61,
+      "oi1h_pct": 0.18,
+      "oi4h_pct": 0.9,
+      "taker_pre": 0.99,
+      "taker_break": 1.17,
+      "funding_at_event": 0.0001,
+      "path": "VOL_IGNITION"
+    },
+    {
+      "symbol": "RUNEUSDT",
+      "pre6h_change_pct": 9.28,
+      "breakout_1h_pct": 2.88,
+      "breakout_rvol": 6.18,
+      "oi15_pct": 1.47,
+      "oi1h_pct": 2.59,
+      "oi4h_pct": 7.01,
+      "taker_pre": 0.93,
+      "taker_break": 0.97,
+      "funding_at_event": 0.0001,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "DASHUSDT",
+      "pre6h_change_pct": 1.28,
+      "breakout_1h_pct": 4.32,
+      "breakout_rvol": 3.99,
+      "oi15_pct": 0.34,
+      "oi1h_pct": -0.42,
+      "oi4h_pct": 1.93,
+      "taker_pre": 0.74,
+      "taker_break": 1.32,
+      "funding_at_event": 0.0001,
+      "path": "VOL_IGNITION"
+    },
+    {
+      "symbol": "QNTUSDT",
+      "pre6h_change_pct": 4.87,
+      "breakout_1h_pct": 3.95,
+      "breakout_rvol": 7.64,
+      "oi15_pct": 2.98,
+      "oi1h_pct": 9.61,
+      "oi4h_pct": 17.08,
+      "taker_pre": 1.27,
+      "taker_break": 1.03,
+      "funding_at_event": -0.00004631,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "JTOUSDT",
+      "pre6h_change_pct": 8.91,
+      "breakout_1h_pct": 2.76,
+      "breakout_rvol": 4.65,
+      "oi15_pct": 2.86,
+      "oi1h_pct": 6.14,
+      "oi4h_pct": 9.12,
+      "taker_pre": 1.21,
+      "taker_break": 0.94,
+      "funding_at_event": 0.00005,
+      "path": "OI_BUILD"
+    },
+    {
+      "symbol": "ACEUSDT",
+      "pre6h_change_pct": -2.64,
+      "breakout_1h_pct": 7.47,
+      "breakout_rvol": 4.37,
+      "oi15_pct": -0.27,
+      "oi1h_pct": 0.77,
+      "oi4h_pct": -0.28,
+      "taker_pre": 0.69,
+      "taker_break": 1.07,
+      "funding_at_event": 0.00005,
+      "path": "VOL_IGNITION"
+    },
+    {
+      "symbol": "QUSDT",
+      "pre6h_change_pct": -2.48,
+      "breakout_1h_pct": 17.71,
+      "breakout_rvol": 13.03,
+      "oi15_pct": 0.36,
+      "oi1h_pct": 0.6,
+      "oi4h_pct": -2.33,
+      "taker_pre": 1.31,
+      "taker_break": 0.85,
+      "funding_at_event": 0.00034058,
+      "path": "OI_ACCEL"
+    },
+    {
+      "symbol": "BRUSDT",
+      "pre6h_change_pct": -10.48,
+      "breakout_1h_pct": 8.23,
+      "breakout_rvol": 2.53,
+      "oi15_pct": -6.48,
+      "oi1h_pct": -14.28,
+      "oi4h_pct": -20.5,
+      "taker_pre": 0.96,
+      "taker_break": 1.04,
+      "funding_at_event": 0.00005,
+      "path": "OI_FLUSH_REVERSAL"
+    }
+  ],
+  "scanner_paths": [
+    {
+      "id": "OI_BUILD",
+      "description": "4H OI accumulation leads price before ignition."
+    },
+    {
+      "id": "OI_ACCEL",
+      "description": "15m-1H OI flips/accelerates even when 4H OI is weak or negative."
+    },
+    {
+      "id": "VOL_IGNITION",
+      "description": "RVOL expansion + taker transition + structure break can ignite without strong 4H OI."
+    },
+    {
+      "id": "OI_RESET_RELOAD",
+      "description": "4H OI remains constructive while short-horizon OI resets, then reloads."
+    },
+    {
+      "id": "OI_FLUSH_REVERSAL",
+      "description": "Large OI flush/liquidation reset followed by price reversal/expansion; keep separate from ordinary accumulation."
+    }
+  ],
+  "learned_rules": {
+    "do_not_hard_reject_taker_near_1": true,
+    "do_not_require_4h_oi_positive_for_all_paths": true,
+    "preferred_pre6h_price_band_pct": "about -3 to +6 for quiet candidates",
+    "ordinary_ignition_rvol": "3x to 6x",
+    "extreme_ignition_rvol": ">10x",
+    "note": "Use path-specific scoring rather than one global gate."
+  }
+}
