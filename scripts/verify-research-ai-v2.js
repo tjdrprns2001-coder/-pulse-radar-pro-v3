@@ -132,4 +132,16 @@ const clusters=ArchetypeLab.buildClusters(labeledRows,{similarityThreshold:.8,mi
 assert(clusters.length>=1);
 assert(clusters.every(x=>x.state==='RESEARCH_CANDIDATE'&&x.productionEligible===false));
 
+// Research AI central-state wiring: scanners must hydrate persisted memory before mutation,
+ // trader runtime must return raw scan data, and learning status must stay on the unified runtime.
+const fs=require('fs');
+const adapterSrc=fs.readFileSync(require.resolve('../lib/learning/scanner-adapter.js'),'utf8');
+const coinSrc=fs.readFileSync(require.resolve('../api/coin-scan.js'),'utf8');
+const learningSrc=fs.readFileSync(require.resolve('../handlers/learning-ai.js'),'utf8');
+assert(adapterSrc.includes('await ai.hydrateRemote(false)'),'scanner adapter must hydrate persisted memory before ingest');
+assert(coinSrc.includes("params.set('learning','0')"),'proxied trader runtime must not mutate its own Research AI state');
+assert(coinSrc.includes("body.learning.authority='unified-runtime'"),'proxied trader results must be ingested by unified runtime');
+assert(!learningSrc.includes('forwardToRuntime'),'learning API must remain authoritative on unified runtime');
+// Research AI central-state wiring
+
 console.log('Research AI v2 PASS');
