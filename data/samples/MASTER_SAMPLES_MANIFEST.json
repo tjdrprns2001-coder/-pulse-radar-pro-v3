@@ -1001,6 +1001,45 @@
         "auto_scanner_speed_run": 36257706851,
         "auto_scanner_speed_conclusion": "success"
       }
+    },
+    "forward_sample_pipeline": {
+      "status": "CODE_COMPLETE_CI_GREEN",
+      "capture_service": "lib/coin-scan/sampling-v3-oos-service.js",
+      "outcome_resolver": "lib/coin-scan/sampling-v3-outcome-resolver.js",
+      "runtime_store": "Netlify Blobs / pulse-signal-performance",
+      "runtime_prefixes": [
+        "sampling-v3-oos-snapshots/",
+        "sampling-v3-oos-outcomes/",
+        "sampling-v3-oos-stats/"
+      ],
+      "automatic_sources": [
+        "direct deep scan",
+        "background scan-run"
+      ],
+      "capture_independent_of_general_persist_switch": true,
+      "dedupe": "symbol + UTC hour bucket",
+      "horizons": [
+        "6H",
+        "24H"
+      ],
+      "outcome_labels": [
+        "SURGE",
+        "FAILED_BOS",
+        "NO_TRIGGER",
+        "UNRESOLVED"
+      ],
+      "scheduled_evaluator": "netlify/functions/coin-scan-sampling-evaluate.mjs",
+      "schedule_cron": "17 * * * *",
+      "api": "mode=sampling-history actions=list|stats|evaluate",
+      "ui": "scan-run shows newly captured sample count",
+      "ranking_effect": 0,
+      "promotion_requires": "real forward OOS gate"
+    },
+    "forward_sample_ci": {
+      "sample_validation_run": 36258407257,
+      "sample_validation_conclusion": "success",
+      "auto_scanner_speed_run": 36258426203,
+      "auto_scanner_speed_conclusion": "success"
     }
   }
 }
