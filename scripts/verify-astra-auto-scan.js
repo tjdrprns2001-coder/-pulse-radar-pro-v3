@@ -10,7 +10,8 @@ function klineSeries({base=.1,count=160,step=.00005,volume=1000,lastVolume=4500,
   }
   return out;
 }
-const universe={symbols:[
+const FIXED=Date.now();
+const universe={serverTime:FIXED,symbols:[
   {symbol:'AAAUSDT',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'USDT',baseAsset:'AAA'},
   {symbol:'BBBUSDT',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'USDT',baseAsset:'BBB'},
   {symbol:'CCCUSDT',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'USDT',baseAsset:'CCC'},
@@ -19,11 +20,11 @@ const universe={symbols:[
   {symbol:'AAABUSD',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'BUSD',baseAsset:'AAA'}
 ]};
 const tickers=[
-  {symbol:'AAAUSDT',lastPrice:'0.108',priceChangePercent:'1.2',quoteVolume:'12000000',closeTime:Date.now()},
-  {symbol:'BBBUSDT',lastPrice:'0.2',priceChangePercent:'11.2',quoteVolume:'90000000',closeTime:Date.now()},
-  {symbol:'CCCUSDT',lastPrice:'0.3',priceChangePercent:'0.2',quoteVolume:'2500000',closeTime:Date.now()},
-  {symbol:'BTCUSDT',lastPrice:'100000',priceChangePercent:'2.0',quoteVolume:'900000000',closeTime:Date.now()},
-  {symbol:'ETHUSDT',lastPrice:'4000',priceChangePercent:'1.5',quoteVolume:'500000000',closeTime:Date.now()}
+  {symbol:'AAAUSDT',lastPrice:'0.108',priceChangePercent:'1.2',quoteVolume:'12000000',closeTime:FIXED},
+  {symbol:'BBBUSDT',lastPrice:'0.2',priceChangePercent:'11.2',quoteVolume:'90000000',closeTime:FIXED},
+  {symbol:'CCCUSDT',lastPrice:'0.3',priceChangePercent:'0.2',quoteVolume:'2500000',closeTime:FIXED},
+  {symbol:'BTCUSDT',lastPrice:'100000',priceChangePercent:'2.0',quoteVolume:'900000000',closeTime:FIXED},
+  {symbol:'ETHUSDT',lastPrice:'4000',priceChangePercent:'1.5',quoteVolume:'500000000',closeTime:FIXED}
 ];
 const provider={
   async getFuturesUniverse(){return universe},
@@ -32,14 +33,15 @@ const provider={
   async getFundingMap(){return new Map([['AAAUSDT',.01]])},
   async getV2OiProfile(symbol){
     if(symbol!=='AAAUSDT')return{rows:[],oi4hPct:null};
-    const now=Date.now()-24*3600000;
-    const rows=Array.from({length:25},(_,i)=>({timestamp:now+i*3600000,sumOpenInterest:String(1000+i*4),sumOpenInterestValue:String(100000+i*400)}));
+    const start=FIXED-25*3600000;
+    const rows=Array.from({length:25},(_,i)=>({timestamp:start+i*3600000,sumOpenInterest:String(1000+i*4),sumOpenInterestValue:String(100000+i*400)}));
     return{rows,oi1hPct:.4,oi4hPct:1.5,oi8hPct:2.1,oi12hPct:2.4,oi24hPct:4,oiDrawdownPct:0};
   },
   async getV2TakerSeries(_symbol,period){
-    const ms=period==='5m'?300000:900000,start=Date.now()-ms*10;
+    const ms=period==='5m'?300000:period==='15m'?900000:3600000,start=FIXED-ms*10;
     return Array.from({length:8},(_,i)=>({timestamp:start+i*ms,buyVol:150,sellVol:100,ratio:1.5}));
   },
+  async getOkxFuturesExecution(){return{available:true,observedAt:FIXED,sourceTimestamp:FIXED-1000}},
   async getFuturesKlines(_symbol,tf){
     const ms=({'5m':300000,'15m':900000,'1h':3600000,'2h':7200000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000})[tf];
     return klineSeries({tfMs:ms});
@@ -83,5 +85,32 @@ const provider={
   assert.equal(Astra.MANUS_CONFIG.scoreA,80);
   assert.equal(Astra.MANUS_CONFIG.scoreB,65);
   assert.equal(Astra.MANUS_CONFIG.scoreC,50);
-  console.log('astra/manus auto scan verification passed');
+
+  const pu=await scan.universe({method:'perplexity'});
+  assert.equal(pu.method,'perplexity');
+  assert.equal(pu.asOf,FIXED,'Perplexity must freeze exchangeInfo serverTime');
+  assert.equal(pu.marketState.volumeWeightedBreadth,pu.marketState.positiveVolumeRatio);
+  const po=await scan.oi(['AAAUSDT'],{method:'perplexity',asOf:pu.asOf});
+  assert.equal(po.items[0].status,'SUCCESS','Perplexity OI must end in terminal exact-window status');
+  assert.equal(po.items[0].pass,true,'Perplexity exact closed 4H OI gate');
+  assert.equal(po.terminalRate,1);
+  assert.equal(po.mismatchedWindow,0);
+  const pd=await scan.deep(['AAAUSDT'],{method:'perplexity',market:mkt,asOf:pu.asOf});
+  const pitem=pd.items[0];
+  assert.equal(pd.method,'perplexity');
+  assert.deepEqual(pd.timeframes,Astra.PERPLEXITY_TIMEFRAMES);
+  assert.equal(pitem.takerCross['1h'].status,'PASS','Perplexity 1H taker must align kline and endpoint windows');
+  assert.equal(pitem.takerCross['15m'].status,'PASS','Perplexity 15m taker must align kline and endpoint windows');
+  assert.equal(pitem.crossExchange.okxStatus,'VERIFIED');
+  assert.equal(pitem.verdict.dataQuality.status,'VERIFIED');
+  assert(Array.isArray(pitem.verdict.counterEvidence)&&pitem.verdict.counterEvidence.length>=1,'Perplexity must always attach quantitative counter-evidence');
+  assert.equal(pitem.verdict.direction==='LONG_BIAS'||pitem.verdict.direction==='NEUTRAL'||pitem.verdict.direction==='LONG_RISK',true);
+  assert(['OI_BUILD','ACCUMULATION_CANDIDATE','TRANSITION_WATCH','IGNITION_CONFIRMED','SHORT_BUILD_RISK','OVERHEATED','INCOMPLETE','DATA_DEGRADED'].includes(pitem.verdict.key));
+  assert.equal(Astra.PERPLEXITY_CONFIG.takerWeak,.8);
+  assert.equal(Astra.PERPLEXITY_CONFIG.takerImprove,1.2);
+  assert.equal(Astra.PERPLEXITY_CONFIG.takerStrong,1.5);
+  assert.equal(Astra.PERPLEXITY_CONFIG.htfDiscountPct,35);
+  assert.equal(Astra.PERPLEXITY_CONFIG.midTermPremiumPct,80);
+  assert.equal(Astra.PERPLEXITY_CONFIG.nfbFundingPct,-1);
+  console.log('astra/manus/perplexity auto scan verification passed');
 })().catch(e=>{console.error(e);process.exit(1)});
