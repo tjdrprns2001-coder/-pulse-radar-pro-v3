@@ -1,18 +1,37 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar Research AI</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260926-v1"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar Research AI v2</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260926-v2"></head><body>
 <main class="rai">
-  <header class="hero"><div><div class="eyebrow">RESEARCH AI · SHADOW LEARNING</div><h1>연구 학습 AI</h1><p>자동스캔 결과 + 급등 역추적 샘플 + 책 규칙 + 실제 6H/24H 결과를 누적해 학습합니다.</p></div><button id="refresh">새로고침</button></header>
-  <section class="notice"><b>현재는 SHADOW_ONLY</b><span>학습 점수는 기존 자동스캐너 순위·진입 신호를 직접 바꾸지 않습니다. 실제 결과 표본이 충분해진 뒤 승격합니다.</span></section>
+  <header class="hero"><div><div class="eyebrow">RESEARCH AI v2 · CAUSAL SHADOW LEARNING</div><h1>연구 학습 AI</h1><p>자동스캔·Astra·Trader 결과와 샘플·책 규칙을 결합하고, 실제 확정봉 outcome만 정답으로 누적합니다.</p></div><button id="refresh">새로고침</button></header>
+  <section class="notice"><b>SHADOW_ONLY 유지</b><span>Research AI는 연구 점수와 검증 통계만 생성합니다. 기존 자동스캐너 순위·진입 판단은 변경하지 않습니다.</span></section>
   <section class="grid metrics">
     <article><span>관측 샘플</span><b id="obs">-</b></article>
+    <article><span>72H 확정</span><b id="confirmed">-</b></article>
+    <article><span>Outcome 대기</span><b id="pending">-</b></article>
     <article><span>실제 라벨</span><b id="labels">-</b></article>
-    <article><span>양성 / 음성</span><b id="pn">-</b></article>
-    <article><span>MLP 상태</span><b id="model">-</b></article>
+    <article><span>성공 / 실패</span><b id="pn">-</b></article>
+    <article><span>모델 상태</span><b id="model">-</b></article>
   </section>
+
   <section class="grid sources">
     <article><h2>학습 소스</h2><div id="sources">불러오는 중…</div></article>
-    <article><h2>저장 상태</h2><div id="persist">불러오는 중…</div></article>
+    <article><h2>저장·모델</h2><div id="persist">불러오는 중…</div></article>
   </section>
-  <section class="card"><div class="cardHead"><div><h2>최근 학습 메모리</h2><p>동일 종목이 다시 관측되면 6H/24H 실제 수익률을 붙여 지도학습 라벨로 전환합니다.</p></div><button id="exportBtn">JSON 보기</button></div><div class="tableWrap"><table><thead><tr><th>종목</th><th>시각</th><th>AI</th><th>상태</th><th>6H</th><th>24H</th><th>라벨</th></tr></thead><tbody id="rows"><tr><td colspan="7">데이터 로딩 중…</td></tr></tbody></table></div></section>
-  <section class="card"><h2>학습 방식</h2><div class="flow"><span>자동스캔 정밀검사</span><i>→</i><span>샘플 유사도</span><i>+</i><span>책 규칙 합치도</span><i>+</i><span>기존 스캔 점수</span><i>→</i><span>6H/24H 실제 결과</span><i>→</i><span>2-hidden-layer MLP 재학습</span></div></section>
+
+  <section class="grid sources">
+    <article><h2>시간순 데이터셋</h2><div id="dataset">불러오는 중…</div></article>
+    <article><h2>검증 성능</h2><div id="validation">불러오는 중…</div></article>
+  </section>
+
+  <section class="card"><div class="cardHead"><div><h2>Score Calibration</h2><p>Research AI 점수 구간별 실제 성공률과 MFE/MAE입니다.</p></div></div><div class="tableWrap"><table><thead><tr><th>점수</th><th>N</th><th>성공률</th><th>평균 MFE</th><th>평균 MAE</th></tr></thead><tbody id="scoreRows"><tr><td colspan="5">데이터 대기</td></tr></tbody></table></div></section>
+
+  <section class="grid researchGrid">
+    <article class="card"><h2>새 Archetype 후보</h2><p>실제 성공 라벨에서 자동 군집화된 연구 후보이며 production 규칙으로 자동 승격되지 않습니다.</p><div class="tableWrap"><table><thead><tr><th>ID</th><th>N</th><th>종목</th><th>MFE</th><th>MAE</th></tr></thead><tbody id="archetypeRows"><tr><td colspan="5">데이터 대기</td></tr></tbody></table></div></article>
+    <article class="card"><h2>책 규칙 성과</h2><p>시장 regime별 실제 결과를 연결한 통계입니다.</p><div class="tableWrap"><table><thead><tr><th>규칙</th><th>Regime</th><th>N</th><th>성공률</th></tr></thead><tbody id="bookRows"><tr><td colspan="4">데이터 대기</td></tr></tbody></table></div></article>
+  </section>
+
+  <section class="card"><h2>시장 Regime별 성과</h2><div class="tableWrap"><table><thead><tr><th>Regime</th><th>N</th><th>성공</th><th>실패</th><th>성공률</th><th>MFE</th><th>MAE</th></tr></thead><tbody id="regimeRows"><tr><td colspan="7">데이터 대기</td></tr></tbody></table></div></section>
+
+  <section class="card"><div class="cardHead"><div><h2>최근 학습 메모리</h2><p>1H→72H 확정봉, MFE/MAE, TP·SL 선후관계를 실제 미래 데이터로 채웁니다.</p></div><button id="exportBtn">JSON 보기</button></div><div class="tableWrap"><table><thead><tr><th>종목</th><th>시각</th><th>AI</th><th>상태</th><th>1H</th><th>6H</th><th>24H</th><th>72H</th><th>MFE</th><th>MAE</th><th>라벨</th></tr></thead><tbody id="rows"><tr><td colspan="11">데이터 로딩 중…</td></tr></tbody></table></div></section>
+
+  <section class="card"><h2>학습 파이프라인</h2><div class="flow"><span>Auto / Astra / Trader</span><i>→</i><span>Canonical Snapshot</span><i>→</i><span>샘플·책 근거</span><i>→</i><span>확정봉 1H~72H</span><i>→</i><span>TRAIN</span><i>→</i><span>VALIDATION</span><i>→</i><span>LOCKED OOS</span><i>→</i><span>SHADOW Model Gate</span></div></section>
   <div id="status" class="status">준비 중…</div>
-</main><script src="/ui/research-ai.js?v=20260926-v1" defer></script></body></html>
+</main><script src="/ui/research-ai.js?v=20260926-v2" defer></script></body></html>
