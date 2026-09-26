@@ -71,14 +71,14 @@ module.exports=async function handler(req,res,ctx={}){
         await trader.deep(q.symbol);
       if(q.mode==='trader-deep'||q.mode==='trader-batch'){
         try{
-          const learner=require('../lib/learning/research-ai.js').defaultResearchAI();
+          const adapter=require('../lib/learning/scanner-adapter.js');
           const learnItems=q.mode==='trader-batch'?(Array.isArray(data.items)?data.items:[]):(data.item?[data.item]:[]);
-          const learned=learner.observe(learnItems,{source:q.mode});
-          if(Array.isArray(data.items))data.items=data.items.map(item=>({...item,researchAI:learned.predictions?.[item.symbol]||null}));
-          else if(data.item)data.item={...data.item,researchAI:learned.predictions?.[data.item.symbol]||null};
-          data.learning={shadowOnly:true,...learned.status,added:learned.added,resolved:learned.resolved};
+          const learned=adapter.ingestScannerItems(learnItems,{source:q.mode,asOf:data.asOf||Date.now()});
+          if(Array.isArray(data.items))data.items=learned.items;
+          else if(data.item)data.item=learned.items[0]||data.item;
+          data.learning=learned.learning;
         }catch(_learningError){
-          data.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError)};
+          data.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError),source:q.mode};
         }
       }
       return res.status(200).json(data);
@@ -294,10 +294,10 @@ if(mode==='recommendation-history'){
     }
     if(String(mode).toLowerCase()==='deep'&&Array.isArray(result.items)){
       try{
-        const learner=require('../lib/learning/research-ai.js').defaultResearchAI();
-        const learned=learner.observe(result.items,{source:'auto-scan-deep'});
-        result.items=result.items.map(item=>({...item,researchAI:learned.predictions?.[item.symbol]||null}));
-        result.learning={shadowOnly:true,...learned.status,added:learned.added,resolved:learned.resolved,source:'auto-scan-deep'};
+        const adapter=require('../lib/learning/scanner-adapter.js');
+        const learned=adapter.ingestScannerItems(result.items,{source:'auto-scan-deep',marketState:result.marketState||null,asOf:result.updatedAt||Date.now()});
+        result.items=learned.items;
+        result.learning=learned.learning;
       }catch(_learningError){
         result.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError),source:'auto-scan-deep'};
       }
