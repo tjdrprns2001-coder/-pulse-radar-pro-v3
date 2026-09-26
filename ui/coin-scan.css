@@ -48,3 +48,6 @@ html[data-shell="1"] .scanTop{justify-content:flex-end;margin-bottom:6px}
 @media(max-width:650px){.autoRefreshControl{display:grid;grid-template-columns:auto 1fr;width:100%}.autoRefreshControl select{width:100%}.scanCard{contain-intrinsic-size:720px}.classSection{contain-intrinsic-size:1180px}}
 
 .resultMoreWrap{display:flex;justify-content:center;padding:4px 0 18px}.resultMore{min-width:min(320px,100%);font-weight:850}@media(max-width:650px){.resultMoreWrap{padding-bottom:24px}}
+
+
+.fusionEvidence{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;padding:8px;border:1px solid #31445f;border-radius:9px;background:#0a1724;font-size:9px;color:#a8bed2}.fusionEvidence b{flex-basis:100%;color:#d8e6f5}.fusionEvidence span{padding:2px 5px;border-radius:999px;background:#0f2233}.fusionEvidence.confirmed{border-color:#2f8f70;background:#092119}.fusionEvidence.confirmed b{color:#6ee7b7}.fusionEvidence.watch{border-color:#7a6332;background:#211b0b}.fusionEvidence.watch b{color:#fcd34d}
