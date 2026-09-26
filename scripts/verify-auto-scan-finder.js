@@ -23,7 +23,7 @@ must(js.includes('RE-ENTRY')&&js.includes('PATTERN-SETUP')&&js.includes('FAKEOUT
 must(js.includes('strategyCycle')&&js.includes('strategyMarkup')&&js.includes('bookManualMarkup'),'latest strategy/book card integration missing');
 must(js.includes('function compactSamplingV3(')&&js.includes('samplingV3:compactSamplingV3(x.samplingV3)'),'Sampling v3.2 session persistence missing');
 must(js.includes('function samplingV3Markup(x)')&&js.includes('OOS 검증 전 Shadow'),'Sampling v3.2 automatic-scan card missing');
-must(js.includes('Sampling v3.2')&&js.includes('Tick ')&&js.includes('Volume '),'tick/volume bar UI missing');
+must(js.includes('Sampling v3.2')&&js.includes('AggTick ')&&js.includes('Volume '),'aggTick/volume bar UI missing');
 must(js.includes('학습구간 고정 임계값')&&js.includes('overshootPolicy'),'frozen-threshold/overshoot UI evidence missing');
 must(js.includes('samplingResearch:m.samplingResearch'),'Sampling v3.2 scan progress metadata missing');
 must(js.includes('samplingSamplesRecorded')&&js.includes('이번 실행 신규 샘플'),'automatic sample count visibility missing');
