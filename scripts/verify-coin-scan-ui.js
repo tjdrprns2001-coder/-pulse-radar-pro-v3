@@ -33,6 +33,8 @@ assert(css.includes('.signalBadge'),'trade signal badge style required');
 assert(css.includes('.momentumLine'),'momentum layout style required');
 assert(css.includes('.classSection'),'grouped classification style required');
 assert(css.includes('.resultMoreWrap')&&css.includes('content-visibility:auto'),'progressive scanner rendering styles required');
+assert(html.includes('class="scanPipeline"')&&css.includes('.scanPipeline'),'speed pipeline status UI required');
+assert(js.includes('fmtElapsed')&&js.includes('scanStartedAt'),'elapsed scan timing required');
 assert(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'bounded global progressive rendering required');
 assert(/\/ui\\/coin-scan\\.js\\?v=20260926-speed2/.test(html),'official v3 scanner UI must use current cache-bust');
 assert(js.includes('preIgnitionScore')&&js.includes('점화전'),'pre-ignition readiness must be visible in scanner UI');
