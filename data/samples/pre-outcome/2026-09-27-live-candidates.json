@@ -1,0 +1,120 @@
+{
+  "schema_version": "pre-outcome-live-candidates.1",
+  "captured_at": "2026-09-27T00:55:00+09:00",
+  "market": "Binance USDⓈ-M Futures",
+  "purpose": "Pre-outcome live candidates captured before knowing success/failure; survivorship-bias control.",
+  "outcome_status": "UNRESOLVED_AT_CAPTURE",
+  "samples": [
+    {
+      "symbol": "GALAUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "WATCH / OI_BUILD_WITH_FLOW_CONFIRMATION_PENDING",
+      "change24hPct": 3.648,
+      "oi4hPct": 3.76,
+      "rvol1h": 2.15,
+      "takerSequence": [
+        0.56,
+        1.28,
+        0.93
+      ],
+      "probeAgeH": 2.75,
+      "probeRvol": 4.89,
+      "probeBuy": 0.444,
+      "postProbeVolRatio": 0.553,
+      "distanceTo6hHighPct": 2.86
+    },
+    {
+      "symbol": "WLDUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "BOS_WAIT / OI_FLOW_ASSISTED",
+      "change24hPct": 6.261,
+      "oi4hPct": 2.7,
+      "rvol1h": 0.78,
+      "takerSequence": [
+        0.8,
+        1.27,
+        1.16
+      ],
+      "probeRvol": null,
+      "distanceTo6hHighPct": 0.16,
+      "note": "No qualifying recent RVOL>=3 probe; useful counterexample to universal probe-memory requirement."
+    },
+    {
+      "symbol": "KAITOUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "CROWDED_BUILD_RISK / WAIT_FLOW_RECOVERY",
+      "change24hPct": 2.884,
+      "oi4hPct": 2.17,
+      "rvol1h": 0.63,
+      "takerSequence": [
+        0.71,
+        0.88,
+        0.66
+      ],
+      "probeAgeH": 16,
+      "probeRvol": 4.76,
+      "probeBuy": 0.465,
+      "postProbeVolRatio": 0.173,
+      "distanceTo6hHighPct": 2.79,
+      "note": "High-value control candidate: several success ingredients but present buy flow weak."
+    },
+    {
+      "symbol": "PENGUUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "PROBE_MEMORY / BOS_WAIT / FLOW_NOT_CONFIRMED",
+      "change24hPct": 1.24,
+      "oi4hPct": 1.95,
+      "rvol1h": 0.51,
+      "takerSequence": [
+        0.66,
+        1.6,
+        0.63
+      ],
+      "probeAgeH": 7.25,
+      "probeRvol": 3.83,
+      "probeBuy": 0.327,
+      "postProbeVolRatio": 0.255,
+      "distanceTo6hHighPct": 1
+    },
+    {
+      "symbol": "ONDOUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "EARLY_OI_BUILD / REQUIRES_FLOW_AND_STRUCTURE_CONFIRMATION",
+      "change24hPct": -0.274,
+      "oi4hPct": 1.49,
+      "note": "Lower-timeframe follow-up intentionally unresolved at capture."
+    },
+    {
+      "symbol": "FILUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "IGNITION_EARLY / RECOMPRESSION",
+      "change24hPct": 5.758,
+      "oi4hPct": 1.25,
+      "note": "Not pristine pre-surge; part of breakout sequence already completed."
+    },
+    {
+      "symbol": "HYPEUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "REIGNITION_WAIT",
+      "change24hPct": -1.147,
+      "oi4hPct": 0.93,
+      "note": "Subdued price while derivative participation not collapsing."
+    },
+    {
+      "symbol": "ICPUSDT",
+      "sampledAt": "2026-09-27T00:55:00+09:00",
+      "label": "PRE_OUTCOME",
+      "status": "WATCH / CROWDING_CHECK",
+      "change24hPct": 0.282,
+      "oi4hPct": 0.82,
+      "note": "Needs renewed taker and confirmed close-based break."
+    }
+  ]
+}
