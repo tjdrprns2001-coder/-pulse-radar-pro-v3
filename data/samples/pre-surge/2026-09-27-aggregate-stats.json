@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "sample_set": "pre_surge_aggregate_statistics",
+  "updated_at": "2026-09-27",
+  "dedupe_rule": "unique symbol; newest reverse-trace sample wins when symbols repeat",
+  "sample_count": 20,
+  "means": {
+    "rvol15m": 1.4625249999999999,
+    "rsi15m": 60.97310000000001,
+    "oi1h_pct": -0.10940500000000002,
+    "oi4h_pct": 1.3344749999999999,
+    "oi8h_pct": 1.7131349999999994,
+    "taker15m_avg1h": 1.0659300000000003,
+    "pre6h_change_pct": 3.1064649999999996,
+    "next6h_gain_pct": 14.96087
+  },
+  "medians": {
+    "rvol15m": 1.3271,
+    "rsi15m": 64.3447,
+    "oi1h_pct": -0.0589,
+    "oi4h_pct": 0.22909999999999997,
+    "oi8h_pct": 0.2509,
+    "taker15m_avg1h": 1.026,
+    "pre6h_change_pct": 1.6721
+  },
+  "frequencies_pct": {
+    "rvol_ge_1": 65,
+    "rvol_ge_1_5": 35,
+    "rvol_ge_3": 10,
+    "oi4h_positive": 55,
+    "oi4h_ge_1": 30,
+    "oi4h_negative": 45,
+    "taker_avg_ge_1": 60,
+    "taker_avg_ge_1_2": 30,
+    "rsi_40_70": 65,
+    "price_pre6h_abs_le_3": 60,
+    "ema20_near_2pct": 65
+  },
+  "interpretation": [
+    "Median is preferred over mean because OI has large outliers such as PHA/ARK.",
+    "Most common baseline is not extreme RVOL or extreme OI; many samples are still relatively quiet before expansion.",
+    "Taker >=1.0 is common but >=1.2 is not universal, so treat flow as confirmation/archetype rather than a universal hard gate.",
+    "OI 4H >=1% captures only a subset; preserve OI-neutral/negative FLOW/RVOL archetypes."
+  ]
+}
