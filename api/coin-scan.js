@@ -292,6 +292,16 @@ if(mode==='recommendation-history'){
         result.sourceWarning=[result.sourceWarning,'Render Selector overlay attached for futures/derivatives context.'].filter(Boolean).join(' ');
       }
     }
+    if(String(mode).toLowerCase()==='deep'&&Array.isArray(result.items)){
+      try{
+        const learner=require('../lib/learning/research-ai.js').defaultResearchAI();
+        const learned=learner.observe(result.items,{source:'auto-scan-deep'});
+        result.items=result.items.map(item=>({...item,researchAI:learned.predictions?.[item.symbol]||null}));
+        result.learning={shadowOnly:true,...learned.status,added:learned.added,resolved:learned.resolved,source:'auto-scan-deep'};
+      }catch(_learningError){
+        result.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError),source:'auto-scan-deep'};
+      }
+    }
     return res.status(200).json(result);
   }
   catch(e){return res.status(Number(e&&e.statusCode)||502).json({status:'error',updatedAt:Date.now(),error:String(e&&e.message||e),scanCount:0,deepScanCount:0,partial:true,dataHealth:{live:0,delayed:0,blocked:0,errors:1},categories:{},candidateSymbols:[],items:[]})}
