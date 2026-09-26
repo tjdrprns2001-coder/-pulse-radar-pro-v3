@@ -19,7 +19,8 @@ assert(Object.values(u).every(x=>x>0&&x<=1));
 
 const boot=O.sequentialBootstrap(events,60,{seed:42});
 assert.equal(boot.length,60);
-assert.equal(new Set(boot.map(x=>x.id)).size,60,'bootstrap selection is without duplicate event ids in one draw');
+assert(boot.every((x,i)=>x.bootstrapDraw===i),'sequential bootstrap draw order must be explicit');
+assert(new Set(boot.map(x=>x.id)).size<=60,'bootstrap sampling may draw overlapping events with replacement');
 
 const folds=O.buildPurgedWalkForward(events,{folds:4,minTrain:20,embargoMs:hour});
 assert(folds.length>=3,'purged walk-forward folds required');
