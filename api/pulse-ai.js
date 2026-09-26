@@ -1,6 +1,7 @@
 'use strict';
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
 const {createPulseAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
 const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
@@ -11,7 +12,8 @@ const {defaultResearchAIv2}=require('../lib/learning/research-ai-v2.js');
 let singleton=null;
 function defaultService(){
   if(!singleton){
-    const scanService=createScanService({provider:createBinanceProvider({})});
+    const localScanService=createScanService({provider:createBinanceProvider({})});
+    const scanService=createRuntimeScanService({fallback:localScanService});
     const gateway=createPulseAIGateway({});
     const marketIntelService=createMarketIntelService({
       coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
