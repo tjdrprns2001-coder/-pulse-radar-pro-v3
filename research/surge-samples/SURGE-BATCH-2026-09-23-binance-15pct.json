@@ -1,0 +1,246 @@
+{
+  "schemaVersion": "SURGE_BATCH_2026_09_23_v1",
+  "sampledMarket": "Binance USDⓈ-M Futures",
+  "selection": {
+    "rule": "24h_price_change_pct >= 15",
+    "populationUsdtFutures": 728,
+    "captured": 20
+  },
+  "antiBias": "success-only post-event sample; not predictive validation",
+  "samples": [
+    {
+      "symbol": "TAKEUSDT",
+      "change24hPct": 235.133,
+      "t0Rvol": 30.06,
+      "oi24ToT0Pct": null,
+      "oiT0To3hPct": null,
+      "route": "FLOW_FIRST_OI_LATE",
+      "deepDiveFile": "TAKE-2026-09-23-delayed-volume-probe-ignition.md"
+    },
+    {
+      "symbol": "METUSDT",
+      "change24hPct": 35.101,
+      "t0": "2026-09-23T09:00:00Z",
+      "t0Rvol": 7.22,
+      "oi24ToT0Pct": 30.33,
+      "oi6ToT0Pct": 18.86,
+      "oiT0To3hPct": 5.81,
+      "route": "OI_LEAD"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "change24hPct": 30.941,
+      "t0": "2026-09-22T12:00:00Z",
+      "t0Rvol": 21.12,
+      "oi24ToT0Pct": -5.37,
+      "oi6ToT0Pct": 4.51,
+      "oiT0To3hPct": 56.22,
+      "route": "OI_LATE"
+    },
+    {
+      "symbol": "4USDT",
+      "change24hPct": 27.996,
+      "t0": "2026-09-22T17:00:00Z",
+      "t0Rvol": 3.18,
+      "oi24ToT0Pct": -1.16,
+      "oi6ToT0Pct": -0.94,
+      "oiT0To3hPct": 2.58,
+      "route": "MIXED"
+    },
+    {
+      "symbol": "NILUSDT",
+      "change24hPct": 26.529,
+      "t0": "2026-09-20T17:00:00Z",
+      "t0Rvol": 9.52,
+      "oi24ToT0Pct": -2.07,
+      "oi6ToT0Pct": 2.72,
+      "oiT0To3hPct": 24.62,
+      "route": "OI_LATE"
+    },
+    {
+      "symbol": "ZROUSDT",
+      "change24hPct": 26.369,
+      "t0": "2026-09-22T16:00:00Z",
+      "t0Rvol": 13.46,
+      "oi24ToT0Pct": 0.11,
+      "oi6ToT0Pct": 2.87,
+      "oiT0To3hPct": 6.13,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "ZESTUSDT",
+      "change24hPct": 25.389,
+      "t0": "2026-09-22T14:00:00Z",
+      "t0Rvol": 6.65,
+      "oi24ToT0Pct": 0.43,
+      "oi6ToT0Pct": 1.94,
+      "oiT0To3hPct": 2.02,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "ALLOUSDT",
+      "change24hPct": 25.347,
+      "t0": "2026-09-20T10:00:00Z",
+      "t0Rvol": 7.67,
+      "oi24ToT0Pct": -2.53,
+      "oi6ToT0Pct": -0.42,
+      "oiT0To3hPct": 1.97,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "CHRUSDT",
+      "change24hPct": 23.766,
+      "t0": "2026-09-22T16:00:00Z",
+      "t0Rvol": 65.5,
+      "oi24ToT0Pct": 35.67,
+      "oi6ToT0Pct": 39.22,
+      "oiT0To3hPct": 35.74,
+      "route": "OI_LEAD"
+    },
+    {
+      "symbol": "SUPERUSDT",
+      "change24hPct": 21.143,
+      "t0": "2026-09-23T04:00:00Z",
+      "t0Rvol": 7.5,
+      "oi24ToT0Pct": 7.22,
+      "oi6ToT0Pct": 8.24,
+      "oiT0To3hPct": 14.47,
+      "route": "RVOL_OI_CHASE"
+    },
+    {
+      "symbol": "USUSDT",
+      "change24hPct": 20.518,
+      "t0": "2026-09-22T13:00:00Z",
+      "t0Rvol": 4.56,
+      "oi24ToT0Pct": 0.71,
+      "oi6ToT0Pct": 0.14,
+      "oiT0To3hPct": -0.82,
+      "route": "MIXED"
+    },
+    {
+      "symbol": "SAGAUSDT",
+      "change24hPct": 19.414,
+      "t0": "2026-09-20T15:00:00Z",
+      "t0Rvol": 9.83,
+      "oi24ToT0Pct": -0.29,
+      "oi6ToT0Pct": -1.33,
+      "oiT0To3hPct": 5.9,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "CYPHUSDT",
+      "change24hPct": 19.208,
+      "t0": "2026-09-21T00:00:00Z",
+      "t0Rvol": 26.22,
+      "oi24ToT0Pct": 4.13,
+      "oi6ToT0Pct": 8.94,
+      "oiT0To3hPct": 24.78,
+      "route": "FLOW_FIRST"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "change24hPct": 19.029,
+      "t0": "2026-09-22T19:00:00Z",
+      "t0Rvol": 6.17,
+      "oi24ToT0Pct": -3.53,
+      "oi6ToT0Pct": -2.78,
+      "oiT0To3hPct": 4.03,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "FIGHTUSDT",
+      "change24hPct": 18.974,
+      "t0": "2026-09-22T23:00:00Z",
+      "t0Rvol": 15.78,
+      "oi24ToT0Pct": 2.83,
+      "oi6ToT0Pct": 0.64,
+      "oiT0To3hPct": 2.01,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "ARIAUSDT",
+      "change24hPct": 17.702,
+      "t0": "2026-09-23T08:00:00Z",
+      "t0Rvol": 16.13,
+      "oi24ToT0Pct": 0.97,
+      "oi6ToT0Pct": 0.71,
+      "oiT0To3hPct": 3.15,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "SENTUSDT",
+      "change24hPct": 16.852,
+      "t0": "2026-09-22T19:00:00Z",
+      "t0Rvol": 8.25,
+      "oi24ToT0Pct": -0.58,
+      "oi6ToT0Pct": 0.69,
+      "oiT0To3hPct": 3.48,
+      "route": "RVOL_IGNITION"
+    },
+    {
+      "symbol": "1000BONKUSDT",
+      "change24hPct": 16.74,
+      "t0": "2026-09-23T06:00:00Z",
+      "t0Rvol": 3.11,
+      "oi24ToT0Pct": 2.83,
+      "oi6ToT0Pct": 5.32,
+      "oiT0To3hPct": 6.39,
+      "route": "MIXED"
+    },
+    {
+      "symbol": "0GUSDT",
+      "change24hPct": 16.557,
+      "t0": "2026-09-23T07:00:00Z",
+      "t0Rvol": 3.15,
+      "oi24ToT0Pct": -0.81,
+      "oi6ToT0Pct": 2.57,
+      "oiT0To3hPct": 1.81,
+      "route": "MIXED"
+    },
+    {
+      "symbol": "PENGUUSDT",
+      "change24hPct": 15.22,
+      "t0": "2026-09-21T15:00:00Z",
+      "t0Rvol": 3.68,
+      "oi24ToT0Pct": -1.58,
+      "oi6ToT0Pct": -2.01,
+      "oiT0To3hPct": -2.04,
+      "route": "MIXED"
+    }
+  ],
+  "routeFamilies": {
+    "OI_LEAD_CASCADE": [
+      "CHRUSDT",
+      "METUSDT"
+    ],
+    "DELAYED_PROBE_OI_CHASE": [
+      "TAKEUSDT",
+      "BCHUSDT",
+      "NILUSDT",
+      "CYPHUSDT"
+    ],
+    "DELAYED_PROBE_RVOL_BOS": [
+      "ALLOUSDT",
+      "4USDT",
+      "ZESTUSDT",
+      "TIAUSDT",
+      "FIGHTUSDT",
+      "SENTUSDT",
+      "1000BONKUSDT",
+      "USUSDT",
+      "PENGUUSDT"
+    ],
+    "MICRO_FLOW_ASSISTED": [
+      "TAKEUSDT",
+      "NILUSDT",
+      "CYPHUSDT",
+      "ZROUSDT",
+      "ARIAUSDT",
+      "0GUSDT"
+    ],
+    "IMMEDIATE_OR_CONTINUOUS": [
+      "SAGAUSDT",
+      "SUPERUSDT"
+    ]
+  }
+}
