@@ -53,8 +53,18 @@ module.exports=async function handler(req,res,ctx={}){
   if(['trader-summary','trader-light','trader-deep','trader-batch'].includes(String(req?.query?.mode||''))){
     res.setHeader('Cache-Control','no-store, max-age=0');
     try{
+      const q=req.query||{},runtime=String(process.env.TRADER_RUNTIME_URL||'').replace(/\/$/,'');
+      if(runtime&&String(q.local||'')!=='1'){
+        const params=new URLSearchParams();for(const [k,v] of Object.entries(q))if(v!=null)params.set(k,String(v));params.set('local','1');
+        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),110000);
+        try{
+          const rr=await fetch(runtime+'/api/coin-scan?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
+          const body=await rr.json().catch(()=>({status:'error',error:'Trader runtime invalid response'}));
+          return res.status(rr.ok?200:rr.status).json(body);
+        }finally{clearTimeout(timer)}
+      }
       const trader=ctx.traderService||require('../lib/coin-scan/trader-service.js').defaultTraderService();
-      const q=req.query, symbols=String(q.symbols||'').split(',').filter(Boolean);
+      const symbols=String(q.symbols||'').split(',').filter(Boolean);
       const data=q.mode==='trader-summary'?await trader.summary():
         q.mode==='trader-light'?await trader.light(symbols):
         q.mode==='trader-batch'?await trader.deepBatch(symbols):
