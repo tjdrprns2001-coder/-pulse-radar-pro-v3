@@ -43,6 +43,30 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert(fallbackCalls[0].startsWith('https://fapi-a.test'),'first futures base should be tried first');
   assert(fallbackCalls[1].startsWith('https://fapi-b.test'),'451 should fall through to next futures base');
 
+  const cloudFallbackCalls=[];
+  const cloudFetch=async url=>{
+    cloudFallbackCalls.push(url);const u=new URL(url);
+    if(u.host==='fapi.blocked.test')return{ok:false,status:451,headers:{get:()=>null},json:async()=>({})};
+    if(u.host==='api.bybit.com')return{ok:false,status:403,headers:{get:()=>null},json:async()=>({})};
+    if(u.host==='www.okx.com'&&u.pathname.includes('/history-candles')){
+      const limit=Math.max(2,Number(u.searchParams.get('limit'))||30),baseTs=1700000000000;
+      return{ok:true,status:200,json:async()=>({code:'0',data:Array.from({length:limit},(_,i)=>{
+        const t=baseTs-i*3600000;return[String(t),'100','101','99','100.5','10','10','1000','1'];
+      })})};
+    }
+    return{ok:false,status:404,headers:{get:()=>null},json:async()=>({})};
+  };
+  const cloudProvider=createBinanceProvider({
+    fetchImpl:cloudFetch,now:()=>1700001000000,cache:createTtlCache({now:()=>1700001000000}),
+    futuresBases:['https://fapi.blocked.test'],crossOiProvider:{getProfile:async()=>({})}
+  });
+  const cloudRows=await cloudProvider.getFuturesKlines('ZECUSDT','1h',30);
+  assert.equal(cloudRows.length,30,'OKX must recover deep candles when Binance and Bybit are blocked');
+  assert.equal(cloudRows._source,'OKX_SWAP','fallback candle provenance must remain explicit');
+  assert(cloudFallbackCalls.some(x=>x.includes('api.bybit.com')),'Bybit should be attempted before OKX');
+  assert(cloudFallbackCalls.some(x=>x.includes('www.okx.com')),'OKX fallback must be attempted');
+  assert.equal(cloudProvider.getSourceState().marketSource,'okx-futures-fallback','runtime must report the actual fallback venue');
+
   const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2,cache:createTtlCache({now:()=>now}),bases:['https://api.binance.test'],futuresBase:'https://fapi.binance.test',crossOiProvider});
   const a=await p.getUniverse();
   const b=await p.getUniverse();
