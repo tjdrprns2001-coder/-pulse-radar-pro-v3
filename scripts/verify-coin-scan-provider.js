@@ -65,7 +65,9 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
-  assert(ctx.derivativesProfile.oiProfile.samples>=2,'legacy OI profile must reuse v2 OI rows');
+  assert.equal(ctx.v2Profile.raw15mRows.length,97,'single upstream OI series must retain 15m raw coverage');
+  assert.equal(ctx.v2Profile.rows.length,25,'v2 rows must remain on 1H cadence for V3 OI-path segment semantics');
+  assert.equal(ctx.derivativesProfile.oiProfile.samples,32,'legacy OI profile must preserve its ~8H 15m sampling window');
   assert(ctx.derivativesProfile.takerProfile.samples>0,'legacy taker profile must reuse v2 15m rows');
   const coalesceBefore=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
   await Promise.all([p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120)]);
