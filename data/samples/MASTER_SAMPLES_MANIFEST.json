@@ -1,0 +1,550 @@
+{
+  "schema_version": "pulse-radar-master-samples-manifest.1",
+  "generated_at": "2026-09-27T01:01:00+09:00",
+  "canonical_loader": "lib/coin-scan/master-samples.js",
+  "canonical_manifest": "data/samples/MASTER_SAMPLES_MANIFEST.json",
+  "policy": {
+    "originals_preserved": true,
+    "dedup_key": "git_blob_sha",
+    "future_rule": "모든 신규 급등/역추적/대조군/Research AI 샘플은 원본 저장 후 이 manifest/loader 기준으로 통합",
+    "branches": [
+      "main",
+      "learning-memory"
+    ]
+  },
+  "summary": {
+    "discovered_locations": 69,
+    "unique_blobs": 41,
+    "duplicate_locations": 28
+  },
+  "latest_learning_state": {
+    "source_branch": "learning-memory",
+    "source_path": "data/learning/research-ai-state.json",
+    "source_sha": "28923652ed85bc120580d42e2b5c20d4e124bf65",
+    "mirrored_main_path": "data/samples/learning/research-ai-state-latest.json"
+  },
+  "sources": [
+    {
+      "sha": "28923652ed85bc120580d42e2b5c20d4e124bf65",
+      "size": 19442,
+      "locations": [
+        {
+          "branch": "learning-memory",
+          "path": "data/learning/research-ai-state.json"
+        }
+      ]
+    },
+    {
+      "sha": "eb277b72e604f52bcb1bff94ea40fa238b92565e",
+      "size": 10244,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/post-surge/2026-09-26-top-gainers.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "data/samples/post-surge/2026-09-26-top-gainers.json"
+        }
+      ]
+    },
+    {
+      "sha": "6cafcafd14c297ed11a056e60d16db9df9d4310b",
+      "size": 1432,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/post-surge/2026-09-26-top-gainers.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "data/samples/post-surge/2026-09-26-top-gainers.md"
+        }
+      ]
+    },
+    {
+      "sha": "93e056abdfc0a2952331d05014b4cc8b65f104ec",
+      "size": 7557,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/pre-surge/2026-09-26-reverse-trace.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "data/samples/pre-surge/2026-09-26-reverse-trace.json"
+        }
+      ]
+    },
+    {
+      "sha": "93544b3e3214f8011b56a0af78fcd218651cb194",
+      "size": 3574,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/pre-surge/2026-09-26-reverse-trace.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "data/samples/pre-surge/2026-09-26-reverse-trace.md"
+        }
+      ]
+    },
+    {
+      "sha": "688af53e542d4da712dc321ca44d5d54be719cf1",
+      "size": 1499,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/pre-surge/2026-09-27-aggregate-stats.json"
+        }
+      ]
+    },
+    {
+      "sha": "a389e85c700f62f52e7fb185db36a6f5ef54a0c1",
+      "size": 1094,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/pre-surge/2026-09-27-aggregate-stats.md"
+        }
+      ]
+    },
+    {
+      "sha": "e79827a5900c4ae073a01f5e97d231bf4a000d15",
+      "size": 3631,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "data/samples/pre-surge/2026-09-27-reverse-trace.json"
+        }
+      ]
+    },
+    {
+      "sha": "50f2aa811b57a1418b832f4f87117b4df2f56159",
+      "size": 60351,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "lib/coin-scan/sample-library.js"
+        }
+      ]
+    },
+    {
+      "sha": "fce281391305f986e6acfa4f81c7c427d781a891",
+      "size": 5809,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "PRE_SURGE_V3_LIVE_REVERSE_BATCH_2026-09-27.json"
+        }
+      ]
+    },
+    {
+      "sha": "2d1fc27275435cda97540e4e0dbfc5b924a78d4e",
+      "size": 14426,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "PRE_SURGE_V3_REVERSE_TRACE_2026-09-26.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "PRE_SURGE_V3_REVERSE_TRACE_2026-09-26.json"
+        }
+      ]
+    },
+    {
+      "sha": "47f7c98d1f333a8a0cfe4438a23ddc3b85c4f32e",
+      "size": 2743,
+      "locations": [
+        {
+          "branch": "learning-memory",
+          "path": "PRE_SURGE_V3_REVERSE_TRACE_2026-09-27.json"
+        }
+      ]
+    },
+    {
+      "sha": "32df6e665387ac5297421bd4bed4444fa306fc6f",
+      "size": 5114,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "PRE_SURGE_V3_SAMPLES_2026-09-26.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "PRE_SURGE_V3_SAMPLES_2026-09-26.json"
+        }
+      ]
+    },
+    {
+      "sha": "423e052bc9a5c5adbe6ef3df4a517dcd56376410",
+      "size": 4471,
+      "locations": [
+        {
+          "branch": "learning-memory",
+          "path": "PRE_SURGE_V3_SAMPLES_2026-09-27.json"
+        }
+      ]
+    },
+    {
+      "sha": "404bb9da6aa2dd25b68aa4d9c0469d60d097c25c",
+      "size": 15872,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-24-live-pump-batch.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-24-live-pump-batch.json"
+        }
+      ]
+    },
+    {
+      "sha": "e633a28f4235343faedd7719dcc72a1c440f6e83",
+      "size": 1303,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-25-live-surge-batch-qnt-ondo-xpl-xlm.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-25-live-surge-batch-qnt-ondo-xpl-xlm.md"
+        }
+      ]
+    },
+    {
+      "sha": "ecf058c48261eee6054eb3b3d4f0ca66061d3697",
+      "size": 3031,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-25-preignition-threshold-calibration-v1.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-25-preignition-threshold-calibration-v1.md"
+        }
+      ]
+    },
+    {
+      "sha": "65fecc48e875b709212f5c8df92e5983c967490f",
+      "size": 3847,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-astra-deep-dive-ordi-dot-trump-atom-shib.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-astra-deep-dive-ordi-dot-trump-atom-shib.json"
+        }
+      ]
+    },
+    {
+      "sha": "f4601e1728005a4c7afc27a41aec735539f02d3f",
+      "size": 6510,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-astra-deep-dive-ordi-dot-trump-atom-shib.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-astra-deep-dive-ordi-dot-trump-atom-shib.md"
+        }
+      ]
+    },
+    {
+      "sha": "ab25d74ee17ca9e30d3fa5be4c0d29671b52c7ea",
+      "size": 6882,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-detailed-reverse-trace.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-detailed-reverse-trace.md"
+        }
+      ]
+    },
+    {
+      "sha": "f84798d9c1418aef2d288cff51f6c561dec8087a",
+      "size": 2472,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-live-surge-batch-rare-pha-ark-ena-aero-pump.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-live-surge-batch-rare-pha-ark-ena-aero-pump.json"
+        }
+      ]
+    },
+    {
+      "sha": "713534a80530b314a6e472ce4429929eecffc3b9",
+      "size": 3512,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-live-surge-batch-rare-pha-ark-ena-aero-pump.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-live-surge-batch-rare-pha-ark-ena-aero-pump.md"
+        }
+      ]
+    },
+    {
+      "sha": "b2c1d2c6a3f5e912168dc5ce10ff975570a3f8cc",
+      "size": 2889,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-26-surge-reverse-trace.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/2026-09-26-surge-reverse-trace.md"
+        }
+      ]
+    },
+    {
+      "sha": "c32750b30c4da2a2d04d488d3af390bafa001e8c",
+      "size": 2917,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-27-live-surge-reverse-trace-q-2z-br-spell-fil-dash.json"
+        }
+      ]
+    },
+    {
+      "sha": "d8efed1f82d2b0f686383874a6be029a40c5cefa",
+      "size": 5052,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-27-live-surge-reverse-trace-q-2z-br-spell-fil-dash.md"
+        }
+      ]
+    },
+    {
+      "sha": "2b56274f25b973a67ad57b217d2ef09f0d72223f",
+      "size": 5528,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-27-live-surge-reverse-trace.md"
+        }
+      ]
+    },
+    {
+      "sha": "601a60cd73cc0872048ea11deb8d2c59414584bd",
+      "size": 1169,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-27-surge-reverse-trace-q-rare-2z-fil-dash-rune-qnt-ace.json"
+        }
+      ]
+    },
+    {
+      "sha": "6b1afa10171d06c2f3666e71506e8ecddfb5495b",
+      "size": 3559,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/2026-09-27-surge-reverse-trace-q-rare-2z-fil-dash-rune-qnt-ace.md"
+        }
+      ]
+    },
+    {
+      "sha": "b1955f3bfda2f5e2f1fb493a95041511f2e23184",
+      "size": 5404,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/BOME-2026-09-24-absorption-taker-reversal-breakout.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/BOME-2026-09-24-absorption-taker-reversal-breakout.md"
+        }
+      ]
+    },
+    {
+      "sha": "c4493c29234a95b0dcfb92bbff1351c65b005c5d",
+      "size": 1777,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/EPIC-2026-09-18-spot-supported-oi-lead.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/EPIC-2026-09-18-spot-supported-oi-lead.md"
+        }
+      ]
+    },
+    {
+      "sha": "e45a1af29f6239adefc2fcbfb7a4a1d2fa670db4",
+      "size": 1862,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/FARTCOIN-2026-09-20-external-spot-led.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/FARTCOIN-2026-09-20-external-spot-led.md"
+        }
+      ]
+    },
+    {
+      "sha": "f3f67306f1217afcde1e1ae32302722e44c817fc",
+      "size": 6187,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/FF-2026-09-22-deleveraging-ignition.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/FF-2026-09-22-deleveraging-ignition.md"
+        }
+      ]
+    },
+    {
+      "sha": "11f7e461784545ea9888af9a3fda8740ceac0c88",
+      "size": 3207,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/FIL-2026-09-22-oi-lead-taker-cascade.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/FIL-2026-09-22-oi-lead-taker-cascade.md"
+        }
+      ]
+    },
+    {
+      "sha": "8be3e8716c584394fb6ee7f2c264decc57e42db0",
+      "size": 1589,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/INTW-2026-09-20-futures-chase.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/INTW-2026-09-20-futures-chase.md"
+        }
+      ]
+    },
+    {
+      "sha": "15832ed7c33a47ba1a64a0c1148f74f2ded52336",
+      "size": 1586,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/OPG-2026-09-20-taker-absorption.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/OPG-2026-09-20-taker-absorption.md"
+        }
+      ]
+    },
+    {
+      "sha": "51f09bd08667c2a424219ee10e3771139f10e543",
+      "size": 5276,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/PEPE-2026-09-20-build-flush-spot-supported-ignition.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/PEPE-2026-09-20-build-flush-spot-supported-ignition.md"
+        }
+      ]
+    },
+    {
+      "sha": "00a8c82a0c01fd7d746b9f02ec939567cb9424bc",
+      "size": 7987,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/PRE-SURGE-RESEARCH-SCHEMA-v1.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/PRE-SURGE-RESEARCH-SCHEMA-v1.md"
+        }
+      ]
+    },
+    {
+      "sha": "f2432f678eb581262d61f9be3c66d2bceb813b8a",
+      "size": 1210,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/README.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/README.md"
+        }
+      ]
+    },
+    {
+      "sha": "d3b3d9073ceb3ede7cbe3924c2131049733b9ccb",
+      "size": 5694,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/SURGE-BATCH-2026-09-23-binance-15pct.json"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/SURGE-BATCH-2026-09-23-binance-15pct.json"
+        }
+      ]
+    },
+    {
+      "sha": "4dd7103470c463a37eaba34ed3035e3f8c88b962",
+      "size": 12325,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/SURGE-BATCH-2026-09-23-binance-15pct.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/SURGE-BATCH-2026-09-23-binance-15pct.md"
+        }
+      ]
+    },
+    {
+      "sha": "f1fc270284daca40849a4ffa23fa5e2e3bb5df35",
+      "size": 19447,
+      "locations": [
+        {
+          "branch": "main",
+          "path": "research/surge-samples/TAKE-2026-09-23-delayed-volume-probe-ignition.md"
+        },
+        {
+          "branch": "learning-memory",
+          "path": "research/surge-samples/TAKE-2026-09-23-delayed-volume-probe-ignition.md"
+        }
+      ]
+    }
+  ]
+}
