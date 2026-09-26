@@ -67,6 +67,10 @@ const provider={
   assert.equal(d.items[0].verdict.key,'IGNITION_CONFIRMED','current Astra strict RVOL+taker+OI ignition gate');
   assert(d.items[0].tf['15m'].rvol>=3,'15m confirmed-candle RVOL');
   assert(d.items[0].tf['5m'].rvol>=3,'5m confirmed-candle RVOL');
+  assert(d.items[0].sampleSimilarityV2&&d.items[0].sampleSimilarityV2.version==='SAMPLE_SIMILARITY_v2','Astra must attach sample similarity v2');
+  assert.equal(d.items[0].sampleSimilarityV2.successTop5.length,5,'Astra success TOP5');
+  assert.equal(d.items[0].sampleSimilarityV2.negativeTop3.length,3,'Astra negative/control TOP3');
+  assert(Number.isFinite(d.items[0].verdict.sampleEvidenceScore),'Astra verdict must expose sample evidence score');
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
   const m=await scan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});
