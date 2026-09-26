@@ -1,6 +1,6 @@
 'use strict';
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
-const {createAstraAutoScanner,CONFIG,MANUS_CONFIG,PERPLEXITY_CONFIG,GROK_CONFIG,GEMINI_CONFIG,METHODS,VERSION,methodOf}=require('../lib/coin-scan/astra-auto-scanner.js');
+const {createAstraAutoScanner,CONFIG,MANUS_CONFIG,PERPLEXITY_CONFIG,GROK_CONFIG,GEMINI_CONFIG,CLAUDE_CONFIG,METHODS,VERSION,methodOf}=require('../lib/coin-scan/astra-auto-scanner.js');
 let singleton=null;
 function defaultScanner(){if(!singleton)singleton=createAstraAutoScanner({provider:createBinanceProvider({})});return singleton}
 function symbolsOf(q={}){return String(q.symbols||'').split(',').map(x=>x.trim()).filter(Boolean)}
@@ -31,6 +31,6 @@ module.exports=async function handler(req,res,ctx={}){
       const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
       return res.status(200).json(await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf)}));
     }
-    return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG}}});
+    return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG},claude:{...CONFIG,...CLAUDE_CONFIG}}});
   }catch(e){return res.status(Number(e?.statusCode)||502).json({status:'error',version:VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)});}
 };
