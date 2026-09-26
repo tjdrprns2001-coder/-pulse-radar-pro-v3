@@ -59,7 +59,7 @@
     $('regime').textContent=regimeLabels[summary.regime?.state]||regimeLabels.UNKNOWN;
     $('asOf').textContent='스캔 시작 시점 '+time(summary.asOf);
     $('marketNote').textContent=summary.regime?.state==='RISK_OFF'?'신규 롱은 제외하고, 구조와 제외 사유를 기록합니다.':'BTC·ETH가 모두 상승 정렬된 환경에서만 진입 확인으로 분류합니다.';
-    $('coverage').textContent=`Binance USDT 무기한 거래가능 ${summary.universeCount}개 · 1W/1D/4H/1H/15m/5m 6TF 전수검사 · 기본 필터 통과 ${summary.eligibleCount}개`;
+    $('coverage').textContent=`Binance USDT 무기한 ${summary.universeCount}개 사전분류 · 6TF 정밀검사 대상 ${summary.eligibleCount}개 · 제외 사유 보존`;
     setProgress(summary.universeCount,0,0);
   }
   async function scan(){
@@ -96,15 +96,15 @@
           failed+=failedSymbols.size;completed+=batch.length-failedSymbols.size;
           const processed=completed+failed,pct=total?Math.round(processed/total*100):100;
           $('status').textContent=`6TF 전수검사 ${processed}/${total} · 완료 ${completed} · 실패 ${failed}`;
-          $('coverage').textContent=`Binance USDT 무기한 거래가능 ${total}개 · 6TF 전수검사 진행 ${processed}/${total} · 완료 ${completed} · 실패 ${failed}`;
+          $('coverage').textContent=`전체 ${total}개 분류 진행 ${processed}/${total} · 6TF 대상만 순차 정밀검사 · 완료 ${completed} · 실패 ${failed}`;
           $('bar').style.width=(5+95*pct/100)+'%';setProgress(total,completed,failed);render();save();
         }
       }
-      await Promise.all([worker(),worker()]);
+      await worker();
       if(controller.signal.aborted)throw new DOMException('Stopped','AbortError');
       lastFinished=Date.now();setProgress(total,completed,failed);$('bar').style.width='100%';
       $('status').textContent=`완료 · 전체 ${total}개 · 완료 ${completed}개 · 실패 ${failed}개`;
-      $('coverage').textContent=`Binance USDT 무기한 거래가능 ${total}개를 1W/1D/4H/1H/15m/5m로 전수검사 · 완료 ${completed} · 실패 ${failed} · 조건 미달 종목도 사유 보존`;
+      $('coverage').textContent=`Binance USDT 무기한 ${total}개 분류 완료 · 필터 통과 종목 6TF 정밀검사 · 완료 ${completed} · 실패 ${failed} · 조건 미달 사유 보존`;
       save();
     }catch(e){$('status').textContent=controller.signal.aborted?`스캔 중지 · 완료 ${completed} · 실패 ${failed} · 나머지 미검사`:'스캔 실패 · '+e.message}
     finally{running=false;$('start').disabled=false;$('stop').disabled=true;render();arm()}
