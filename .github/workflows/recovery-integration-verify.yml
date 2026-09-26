@@ -15,8 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
-      - run: npm ci --ignore-scripts
+      - run: npm install --ignore-scripts --no-audit --no-fund
       - name: V2 + Fusion
         run: |
           npm run test:v2-flow-scanner
