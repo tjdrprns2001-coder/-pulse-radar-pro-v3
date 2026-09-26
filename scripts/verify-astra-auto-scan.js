@@ -71,6 +71,9 @@ const provider={
   assert.equal(d.items[0].sampleSimilarityV2.successTop5.length,5,'Astra success TOP5');
   assert.equal(d.items[0].sampleSimilarityV2.negativeTop3.length,3,'Astra negative/control TOP3');
   assert(Number.isFinite(d.items[0].verdict.sampleEvidenceScore),'Astra verdict must expose sample evidence score');
+  assert(d.items[0].samplingV3&&d.items[0].samplingV3.version==='ASTRA_SAMPLING_V3','Astra must attach Sampling v3 shadow evidence');
+  assert.equal(d.items[0].samplingV3.rankingEffect,0,'Sampling v3 must remain shadow until OOS validation');
+  assert(typeof d.items[0].verdict.samplingV3Stage==='string','Sampling v3 stage required');
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
   const m=await scan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});
