@@ -157,7 +157,9 @@
     "test:trader-scan": "node scripts/verify-trader-scan.js && node scripts/verify-trader-service.js && node scripts/verify-trader-freshness.js && node scripts/verify-trader-result-age.js",
     "test:bowl224-research-v1": "node scripts/verify-bowl224-research-v1.js",
     "test:presurge-book-fusion": "node scripts/verify-presurge-book-fusion.js",
-    "test:research-ai-v2": "node scripts/verify-research-ai-v2.js"
+    "test:research-ai-v2": "node scripts/verify-research-ai-v2.js",
+    "build:master-samples-v2": "node scripts/build-master-sample-dataset-v2.js",
+    "test:master-samples-v2": "node scripts/verify-master-sample-dataset-v2.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
