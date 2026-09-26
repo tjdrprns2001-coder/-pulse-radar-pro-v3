@@ -59,7 +59,7 @@ const provider={
   const service=createScanService({provider,now:()=>NOW,samplingOosHistory});
   const light=await service.run({mode:'deep',symbols,limit:6,validation:'light',persistObservations:false});
   assert.equal(light.items.length,6);
-  assert.equal(light.samplingOosRecording.recorded,6,'Sampling v3.1 samples must persist even when persistObservations=false');
+  assert.equal(light.samplingOosRecording.recorded,6,'Sampling v3.2 samples must persist even when persistObservations=false');
   assert.equal(samplingObserveCalls.length,1);
   assert.equal(samplingObserveCalls[0].count,6);
   assert.equal(light.samplingResearch.requested,4,'light automatic deep scan must micro-enrich only top four symbols');
@@ -71,8 +71,12 @@ const provider={
   assert.equal(enriched.length,4);
   assert.equal(shadow.length,2);
   assert(enriched.every(x=>x.samplingV3.version==='ASTRA_SAMPLING_V3'));
-  assert(enriched.every(x=>x.samplingV3.rankingEffect===0),'Sampling v3.1 must remain shadow in automatic scanner');
-  assert(enriched.every(x=>x.samplingV3.alternativeBars?.version==='SAMPLING_V3_ALT_BARS_v1'));
+  assert(enriched.every(x=>x.samplingV3.rankingEffect===0),'Sampling v3.2 must remain shadow in automatic scanner');
+  assert(enriched.every(x=>x.samplingV3.alternativeBars?.version==='SAMPLING_V3_ALT_BARS_v2'));
+  assert(enriched.every(x=>x.samplingV3.alternativeBars?.bars?.tickCount>0),'v3.2 tick bars required');
+  assert(enriched.every(x=>x.samplingV3.alternativeBars?.bars?.volumeCount>0),'v3.2 volume bars required');
+  assert(enriched.every(x=>x.samplingV3.alternativeBars?.policy?.thresholdMode==='FROZEN_CALIBRATION'),'v3.2 thresholds must be frozen after calibration');
+  assert(enriched.every(x=>x.samplingV3.alternativeBars?.policy?.overshootPolicy==='INCLUDE_FULL_TRADE'),'overshoot policy must be explicit');
   assert(enriched.every(x=>x.samplingV3.integrity),'integrity audit required on auto-scan deep items');
 
   researchCalls=[];
@@ -95,5 +99,5 @@ const provider={
   assert(degraded.samplingResearch.errors.length===1);
   assert(degraded.items.some(x=>x.samplingV3?.microstructure?.status==='UNAVAILABLE'));
 
-  console.log('auto scan Sampling v3.1 PASS');
+  console.log('auto scan Sampling v3.2 PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
