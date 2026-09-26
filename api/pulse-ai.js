@@ -1,31 +1,54 @@
 'use strict';
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
-const {createOpenAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
+const {createPulseAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
 const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
 const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
 const {createMarketIntelService}=require('../lib/market-intel/service.js');
+const {defaultResearchAIv2}=require('../lib/learning/research-ai-v2.js');
+
 let singleton=null;
 function defaultService(){
   if(!singleton){
     const scanService=createScanService({provider:createBinanceProvider({})});
-    const gateway=createOpenAIGateway({});
-    const marketIntelService=createMarketIntelService({coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})});
-    singleton=createBriefingService({scanService,gateway,marketIntelService});
+    const gateway=createPulseAIGateway({});
+    const marketIntelService=createMarketIntelService({
+      coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
+    });
+    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2()});
   }
   return singleton;
 }
-function bodyOf(req){if(!req)return{};if(req.body&&typeof req.body==='object')return req.body;if(typeof req.body==='string'){try{return JSON.parse(req.body)}catch{return{}}}return{}}
+function bodyOf(req){
+  if(!req)return{};
+  if(req.body&&typeof req.body==='object')return req.body;
+  if(typeof req.body==='string'){try{return JSON.parse(req.body)}catch{return{}}}
+  return{};
+}
 module.exports=async function handler(req,res,ctx={}){
-  const service=ctx.service||defaultService();const q=req?.query||{};const mode=String(q.mode||'brief').toLowerCase();
-  res.setHeader('Cache-Control',mode==='brief'?'s-maxage=15, stale-while-revalidate=45':'no-store');
+  const service=ctx.service||defaultService(),q=req?.query||{},mode=String(q.mode||'brief').toLowerCase(),method=String(req?.method||'GET').toUpperCase();
+  res.setHeader('Cache-Control',mode==='brief'?'s-maxage=15, stale-while-revalidate=45':'no-store, max-age=0');
   try{
-    if(req?.method==='GET'&&mode==='brief')return res.status(200).json(await service.getBrief());
-    if(req?.method==='POST'&&mode==='chat'){
-      const b=bodyOf(req);const question=String(b.question||'').trim();if(!question)return res.status(400).json({status:'error',error:'question required'});
-      return res.status(200).json(await service.chat({question,selectedSymbol:b.selectedSymbol||null,deep:Boolean(b.deep)}));
+    if(method==='GET'&&mode==='brief'){
+      const selectedSymbol=String(q.symbol||q.selectedSymbol||'').trim().toUpperCase()||null;
+      return res.status(200).json(await service.getBrief({selectedSymbol}));
+    }
+    if(method==='GET'&&mode==='health'){
+      return res.status(200).json(await service.health());
+    }
+    if(method==='POST'&&mode==='chat'){
+      const b=bodyOf(req),question=String(b.question||'').trim();
+      if(!question)return res.status(400).json({status:'error',error:'question required'});
+      if(question.length>1000)return res.status(400).json({status:'error',error:'question too long'});
+      return res.status(200).json(await service.chat({
+        question,selectedSymbol:b.selectedSymbol||null,deep:Boolean(b.deep)
+      }));
     }
     return res.status(405).json({status:'error',error:'method/mode not allowed'});
-  }catch(e){return res.status(Number(e?.statusCode)||502).json({status:'error',error:String(e?.message||e),aiAvailable:false});}
+  }catch(e){
+    return res.status(Number(e?.statusCode)||502).json({
+      status:'error',error:String(e?.message||e),aiAvailable:false,mode
+    });
+  }
 };
