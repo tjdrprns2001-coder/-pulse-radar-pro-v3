@@ -41,4 +41,5 @@ jobs:
       - run: node --check api/learning-ai.js
       - run: node --check api/coin-scan.js
       - run: node --check api/astra-scan.js
+      - run: node --check ui/research-ai.js
       - run: npm run test:research-ai-v2
