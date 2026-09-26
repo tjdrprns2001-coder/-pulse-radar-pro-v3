@@ -36,7 +36,7 @@ assert(css.includes('.resultMoreWrap')&&css.includes('content-visibility:auto'),
 assert(html.includes('class="scanPipeline"')&&css.includes('.scanPipeline'),'speed pipeline status UI required');
 assert(js.includes('fmtElapsed')&&js.includes('scanStartedAt'),'elapsed scan timing required');
 assert(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'bounded global progressive rendering required');
-assert(/\/ui\\/coin-scan\\.js\\?v=20260926-speed2/.test(html),'official v3 scanner UI must use current cache-bust');
+assert(html.includes('/ui/coin-scan.js?v=20260926-speed2'),'official v3 scanner UI must use current cache-bust');
 assert(js.includes('preIgnitionScore')&&js.includes('점화전'),'pre-ignition readiness must be visible in scanner UI');
 for(const s of ['RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','preScanMarkup','strategyMarkup','fakeoutMarkup','entryQualityMarkup','bookManualMarkup','tryServerScanRun','mode=prescan'])assert(js.includes(s)||html.includes(s),`restored autoscan UI missing ${s}`);
 assert(html.includes('점화전 OOS')&&html.includes('oosLink'),'autoscan OOS dashboard link missing');
