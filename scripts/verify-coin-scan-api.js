@@ -106,6 +106,18 @@ const provider={
   assert(recDeep.autoRecommendationRecording&&recDeep.autoRecommendationRecording.recorded===1);
   assert(recDeep.autoRecommendationEvaluation&&recDeep.autoRecommendationEvaluation.evaluated===1,'deep scan should evaluate due recommendation outcomes');
 
+  let samplingHistoryCalls=0;
+  const samplingHistory={
+    async observe(items,context){samplingHistoryCalls++;assert(items.every(x=>x.samplingV3),'Sampling history must receive normalized Sampling v3 items');assert(context&&Number.isFinite(context.capturedAt));return{observed:items.length,recorded:items.length,duplicates:0,skipped:0,errors:[]}},
+    async evaluateDue(){return{eventsChecked:2,attempted:2,evaluated:2,unavailable:0,pending:0,errors:[],labels:{SURGE:1,NO_TRIGGER:1}}},
+    async stats(){return{version:'SAMPLING_V3_FORWARD_STATS_v1',snapshotCount:12,evaluated24hCount:8,promotionReady:false,labels:{SURGE:3,FAILED_BOS:2,NO_TRIGGER:3,UNRESOLVED:0}}},
+    async list(){return[{id:'sampling-v3.1:C0USDT:0',symbol:'C0USDT',samplingStage:'FLOW_IGNITION',score:72,capturedAt:222222}]}
+  };
+  const samplingService=createScanService({provider,now:()=>222222,samplingOosHistory:samplingHistory});
+  const samplingDeep=await samplingService.run({mode:'deep',symbols:['C0USDT'],limit:1,persistObservations:false,sourceScanId:'scan-sample-1'});
+  assert.equal(samplingHistoryCalls,1,'Sampling v3.1 capture must ignore the general persistObservations switch');
+  assert.equal(samplingDeep.samplingOosRecording.recorded,1);
+
   let preIgnitionCalls=0;
   const preIgnitionHistory={
     async observe(items,context){preIgnitionCalls++;assert.equal(items.length,1);assert(context&&context.marketSource);return{observed:1,recorded:1,duplicates:0,skipped:0,buckets:{S60_69:1},errors:[]}},
@@ -196,6 +208,16 @@ const provider={
   code=0;body=null;headers={};
   await handler({query:{mode:'preignition-history',action:'evaluate'}},res,{service:piService});
   assert.equal(code,200);assert.equal(body.evaluation.evaluated,1);
+
+  code=0;body=null;headers={};
+  await handler({query:{mode:'sampling-history',action:'stats'}},res,{service:samplingService});
+  assert.equal(code,200);assert.equal(body.mode,'sampling-history');assert.equal(body.stats.snapshotCount,12);assert(String(headers['Cache-Control']).includes('no-store'));
+  code=0;body=null;headers={};
+  await handler({query:{mode:'sampling-history',action:'list',stage:'FLOW_IGNITION'}},res,{service:samplingService});
+  assert.equal(code,200);assert.equal(body.items[0].samplingStage,'FLOW_IGNITION');
+  code=0;body=null;headers={};
+  await handler({query:{mode:'sampling-history',action:'evaluate'}},res,{service:samplingService});
+  assert.equal(code,200);assert.equal(body.evaluation.evaluated,2);
 
   console.log('coin scan api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
