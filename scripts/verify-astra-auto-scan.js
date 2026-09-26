@@ -123,5 +123,21 @@ const provider={
   assert.equal(Astra.PERPLEXITY_CONFIG.htfDiscountPct,35);
   assert.equal(Astra.PERPLEXITY_CONFIG.midTermPremiumPct,80);
   assert.equal(Astra.PERPLEXITY_CONFIG.nfbFundingPct,-1);
+
+  const partialProvider={
+    ...provider,
+    async getSpotTickers(){return[]},
+    async getFundingMap(){return new Map()},
+    async getV2TakerSeries(){return[]}
+  };
+  const partialScan=Astra.createAstraAutoScanner({provider:partialProvider});
+  const pm=await partialScan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});
+  assert.equal(pm.items[0].verdict.dataQuality.status,'PARTIAL','missing spot/taker/funding must not hard-fail an otherwise complete Manus scan');
+  assert(!pm.items[0].verdict.blocks.includes('DATA_QUALITY_FAIL'),'partial optional sources must not force Manus exclusion');
+  const pp=await partialScan.deep(['AAAUSDT'],{method:'perplexity',market:{...mkt,oiScanDegraded:false},asOf:u.asOf});
+  assert.equal(pp.items[0].verdict.dataQuality.status,'PARTIAL','Perplexity must preserve usable structure/OI when optional cross-checks are absent');
+  assert.notEqual(pp.items[0].verdict.key,'DATA_DEGRADED','missing taker/spot alone must not discard a usable Perplexity candidate');
+  assert.notEqual(pp.items[0].verdict.key,'IGNITION_CONFIRMED','partial taker evidence must never promote ignition');
+
   console.log('astra/manus/perplexity auto scan verification passed');
 })().catch(e=>{console.error(e);process.exit(1)});
