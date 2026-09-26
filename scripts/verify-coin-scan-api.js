@@ -7,9 +7,9 @@ const exchangeInfo={symbols:Array.from({length:45},(_,i)=>({symbol:`C${i}USDT`,b
 const tickers=exchangeInfo.symbols.map((s,i)=>({symbol:s.symbol,lastPrice:'1',quoteVolume:String(10000000+i),priceChangePercent:String(i===0?30:2)}));
 let deepCalls=[];
 const provider={
-  failAll:false,
-  async getUniverse(){if(this.failAll)throw new Error('upstream down');return exchangeInfo},
-  async getTickers(){if(this.failAll)throw new Error('upstream down');return tickers},
+  failAll:false,universeCalls:0,tickerCalls:0,
+  async getUniverse(){this.universeCalls++;if(this.failAll)throw new Error('upstream down');return exchangeInfo},
+  async getTickers(){this.tickerCalls++;if(this.failAll)throw new Error('upstream down');return tickers},
   async scanDeepCandidates(symbols,intervals){deepCalls.push(symbols.slice());const results={},errors=[];for(const s of symbols){if(s==='C1USDT'){errors.push({symbol:s,interval:'1h',error:'boom'});continue}if(s==='C2USDT'){const partial=intervals.filter(tf=>tf!=='5m');results[s]=Object.fromEntries(partial.map(tf=>[tf,frame()]));errors.push({symbol:s,interval:'5m',error:'partial'});continue}results[s]=Object.fromEntries(intervals.map(tf=>[tf,frame()]))}return{results,errors,contexts:{}}}
 };
 (async()=>{
@@ -37,6 +37,8 @@ const provider={
   const out=await service.run({mode:'summary',limit:100});
   assert.equal(out.status,'ok');
   assert.equal(out.scanCount,45);
+  const universeCallsAfterSummary=provider.universeCalls,tickerCallsAfterSummary=provider.tickerCalls;
+  assert(universeCallsAfterSummary>=1&&tickerCallsAfterSummary>=1,'summary must refresh the market universe snapshot');
   assert.equal(out.deepScanCount,0,'summary must not launch expensive 6TF deep scan');
   assert.equal(deepCalls.length,0,'summary path must stay fast');
   assert(Array.isArray(out.candidateSymbols)&&out.candidateSymbols.length>0,'summary returns candidate symbols for progressive enrichment');
@@ -64,6 +66,8 @@ const provider={
   assert.equal(deep.deepScanCount,3);
   assert.equal(deepCalls.length,1);
   assert.deepEqual(deepCalls[0],['C0USDT','C1USDT','C2USDT']);
+  assert.equal(provider.universeCalls,universeCallsAfterSummary,'deep scan must reuse the fresh summary universe snapshot');
+  assert.equal(provider.tickerCalls,tickerCallsAfterSummary,'deep scan must reuse the fresh summary ticker snapshot');
   for(const sym of ['C1USDT','C2USDT']){const failed=deep.items.find(x=>x.symbol===sym);assert(failed&&failed.category==='데이터 부족·판정 보류',`${sym} partial/missing TF must block`);assert.equal(failed.scanClass.key,'STALE',`${sym} failed data must map to STALE`);assert.equal(failed.tradeSignal.level,'제외',`${sym} blocked data cannot become a trade candidate`)}
   assert(deep.items.find(x=>x.symbol==='C0USDT'),'deep mode returns requested symbol');
   assert.equal(deep.items.find(x=>x.symbol==='C0USDT').preIgnitionScore,0,'manual deep scan may inspect an extended symbol but must rank it out of pre-ignition candidates');
