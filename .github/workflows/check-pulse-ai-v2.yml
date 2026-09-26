@@ -1,0 +1,46 @@
+name: Pulse AI v2 checks
+
+on:
+  push:
+    branches:
+      - feature/pulse-ai-v2-20260926
+    paths:
+      - 'lib/pulse-ai/**'
+      - 'api/pulse-ai.js'
+      - 'pulse-ai.html'
+      - 'ui/pulse-ai.js'
+      - 'ui/pulse-ai.css'
+      - 'scripts/verify-pulse-ai-*.js'
+      - '.github/workflows/check-pulse-ai-v2.yml'
+  pull_request:
+    paths:
+      - 'lib/pulse-ai/**'
+      - 'api/pulse-ai.js'
+      - 'pulse-ai.html'
+      - 'ui/pulse-ai.js'
+      - 'ui/pulse-ai.css'
+      - 'scripts/verify-pulse-ai-*.js'
+      - '.github/workflows/check-pulse-ai-v2.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/pulse-ai/deterministic-analyst.js
+      - run: node --check lib/pulse-ai/context-builder.js
+      - run: node --check lib/pulse-ai/event-detector.js
+      - run: node --check lib/pulse-ai/event-catalyst.js
+      - run: node --check lib/pulse-ai/openai-gateway.js
+      - run: node --check lib/pulse-ai/briefing-service.js
+      - run: node --check api/pulse-ai.js
+      - run: node --check ui/pulse-ai.js
+      - run: npm run test:pulse-ai-core
+      - run: npm run test:pulse-ai-gateway
+      - run: npm run test:pulse-ai-api
+      - run: npm run test:pulse-ai-ui
