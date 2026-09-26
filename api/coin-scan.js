@@ -108,6 +108,7 @@ module.exports=async function handler(req,res,ctx={}){
   const limit=Math.max(1,Math.min(500,Number(q.limit)||100));
   const fresh=['1','true','yes'].includes(String(q.fresh||'').toLowerCase());
   const persistObservations=String(q.persist||'1')!=='0';
+  const validation=['off','light','full','auto'].includes(String(q.validation||'auto').toLowerCase())?String(q.validation||'auto').toLowerCase():'auto';
   res.setHeader('Cache-Control',fresh?'no-store, max-age=0':(mode==='deep'||mode==='validation'||mode==='prescan')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='scan-run'||mode==='event-snapshots'||mode==='recommendation-history'||mode==='preignition-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
@@ -288,7 +289,7 @@ if(mode==='recommendation-history'){
         candidateSymbols:result.candidateSymbols||[]
       });
     }
-    const result=await service.run({mode,category,sector,limit,symbols,precision,persistObservations});
+    const result=await service.run({mode,category,sector,limit,symbols,precision,validation,persistObservations});
     if(q.run)result.scanRunId=String(q.run).slice(0,80);
     const localFutures=Number(result?.universeMeta?.futuresCount||result?.marketCoverage?.futures||0);
     const needsOverlay=!ctx.service&&localFutures===0&&['summary','deep','precision'].includes(String(mode).toLowerCase());
