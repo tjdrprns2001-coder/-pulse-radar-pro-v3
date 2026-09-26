@@ -24,7 +24,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/exchangeInfo'))return{ok:true,json:async()=>({symbols:[{symbol:'XLMUSDT',baseAsset:'XLM',quoteAsset:'USDT',status:'TRADING',isSpotTradingAllowed:true}]})};
     if(u.pathname.endsWith('/ticker/24hr'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastPrice:'1',quoteVolume:'1000',priceChangePercent:'2'}]};
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
-    if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>[{sumOpenInterest:'100'},{sumOpenInterest:'103'}]};
+    if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>Array.from({length:97},(_,i)=>({sumOpenInterest:String(i===96?103:100),timestamp:i}))};
     if(u.pathname.endsWith('/takerlongshortRatio'))return{ok:true,json:async()=>Array.from({length:32},(_,i)=>({timestamp:i,buyVol:String(120+i),sellVol:'100',buySellRatio:String((120+i)/100)}))};
     if(u.pathname.endsWith('/klines')){
       const sym=u.searchParams.get('symbol')||'UNKNOWN',n=(klineActive.get(sym)||0)+1;klineActive.set(sym,n);klineMax.set(sym,Math.max(klineMax.get(sym)||0,n));
@@ -50,16 +50,23 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   const ticks=await p.getTickers();assert.equal(ticks.length,1);
   const k=await p.getKlines('XLMUSDT','1h',120);assert.equal(k.length,1);
   assert.equal(typeof p.scanLightCandidates,'function','light prescan provider required');
+  assert(p.klineTtl('1w')>p.klineTtl('1h'),'completed slow timeframes should cache longer than 1h');
+  assert(p.klineTtl('1d')>=600000,'daily deep frames should reuse cache across short repeated scans');
   const light=await p.scanLightCandidates(['XLMUSDT'],['4h','1h'],150);assert(light.results.XLMUSDT&&light.results.XLMUSDT['4h']&&light.results.XLMUSDT['1h'],'light prescan must return 4H/1H frames');
   assert(calls.some(x=>x.includes('/klines')&&x.includes('limit=150')),'light prescan must use bounded 150-bar requests');
   const taker15Before=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
+  const oiBefore=calls.filter(x=>x.includes('/openInterestHist')).length;
   const ctx=await p.getDerivativesContext('XLMUSDT');
   const taker15After=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
+  const oiAfter=calls.filter(x=>x.includes('/openInterestHist')).length;
   assert.equal(taker15After-taker15Before,1,'legacy and v2 15m taker profiles should share one upstream request');
+  assert.equal(oiAfter-oiBefore,1,'legacy OI change/profile should reuse the v2 1h OI request');
   assert(Math.abs(ctx.fundingPct-.01)<1e-12,'funding percent should be preserved');
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
+  assert(ctx.derivativesProfile.oiProfile.samples>=2,'legacy OI profile must reuse v2 OI rows');
+  assert(ctx.derivativesProfile.takerProfile.samples>0,'legacy taker profile must reuse v2 15m rows');
   const coalesceBefore=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
   await Promise.all([p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120),p.getKlines('COALUSDT','4h',120)]);
   const coalesceAfter=calls.filter(x=>x.includes('/klines')&&x.includes('symbol=COALUSDT')&&x.includes('interval=4h')).length;
@@ -70,7 +77,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert((klineMax.get('XLMUSDT')||0)>=2,'deep timeframe klines should fetch in parallel');
   assert((klineMax.get('XLMUSDT')||0)<=2,'per-symbol timeframe concurrency must stay bounded');
   await p.scanDeepCandidates(['XLMUSDT'],['5m']);
-  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must fetch 300 bars for 24H RVOL memory');
+  assert(calls.some(x=>x.includes('/klines')&&x.includes('interval=5m')&&x.includes('limit=300')),'5m deep scan must preserve 24H RVOL memory coverage');
   assert(batch.contexts.XLMUSDT&&Math.abs(batch.contexts.XLMUSDT.oiChangePct-3)<1e-9,'optional derivatives context preserved');
   assert(batch.errors.length>=1,'failed symbol recorded');
   active=0;maxActive=0; // measure mapLimit itself, not parallel derivative/XOI fetches above
