@@ -22,6 +22,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/astra-scan*"
+  to = "/.netlify/functions/astra-scan:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/dante-backtest*"
   to = "/.netlify/functions/api-index?route=dante-backtest"
   status = 200
@@ -188,6 +194,11 @@
   to = "/.netlify/functions/api-index?route=trendline-study"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/astra-scan"
+  to = "/astra-scan.html"
+  status = 200
 
 [[redirects]]
   from = "/analysis"
