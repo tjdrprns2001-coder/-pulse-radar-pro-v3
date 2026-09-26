@@ -121,19 +121,23 @@ function render(data){
   lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
 }
 async function fetchJson(url,options={},timeout=45000){
-  const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout);
+  const controller=new AbortController(),external=options.signal,relay=()=>controller.abort(),timer=setTimeout(()=>controller.abort(),timeout);
+  if(external){if(external.aborted)controller.abort();else external.addEventListener('abort',relay,{once:true})}
+  const opts={...options,signal:controller.signal,cache:'no-store'};
   try{
-    const r=await fetch(url,{...options,signal:c.signal,cache:'no-store'});
+    const r=await fetch(url,opts);
     const j=await r.json().catch(()=>({status:'error',error:`HTTP ${r.status}`}));
     if(!r.ok||j.status==='error')throw new Error(j.error||`HTTP ${r.status}`);
     return j;
-  }finally{clearTimeout(timer)}
+  }finally{
+    clearTimeout(timer);if(external)external.removeEventListener('abort',relay);
+  }
 }
 async function load(force=false){
   const my=++seq;if(loading)loading.abort();loading=new AbortController();
   $('refresh').disabled=true;$('refresh').textContent='갱신 중…';
   try{
-    const q=new URLSearchParams({mode:'brief',symbol:selectedSymbol()});if(force)q.set('_',String(Date.now()));
+    const q=new URLSearchParams({mode:'brief',symbol:selectedSymbol()});if(force){q.set('fresh','1');q.set('_',String(Date.now()))}
     const j=await fetchJson('/api/pulse-ai?'+q.toString(),{signal:loading.signal},55000);
     if(my===seq)render(j);
   }catch(e){
