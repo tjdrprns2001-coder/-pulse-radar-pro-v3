@@ -32,7 +32,7 @@ module.exports=async function handler(req,res,ctx={}){
       const result=await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf)});
       try{
         const adapter=require('../lib/learning/scanner-adapter.js');
-        const learned=adapter.ingestScannerItems(result.items||[],{source:'astra-'+method,marketState:result.marketState||marketOf(q),asOf:result.asOf});
+        const learned=await adapter.ingestScannerItems(result.items||[],{source:'astra-'+method,marketState:result.marketState||marketOf(q),asOf:result.asOf});
         result.items=learned.items;result.learning=learned.learning;
       }catch(_learningError){result.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError),source:'astra-'+method}}
       return res.status(200).json(result);
