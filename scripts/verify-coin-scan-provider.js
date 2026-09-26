@@ -50,12 +50,17 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   const ticks=await p.getTickers();assert.equal(ticks.length,1);
   const k=await p.getKlines('XLMUSDT','1h',120);assert.equal(k.length,1);
   assert.equal(typeof p.scanLightCandidates,'function','light prescan provider required');
+  assert(p.klineTtl('1w')>p.klineTtl('1h'),'completed slow timeframes should cache longer than 1h');
+  assert(p.klineTtl('1d')>=600000,'daily deep frames should reuse cache across short repeated scans');
   const light=await p.scanLightCandidates(['XLMUSDT'],['4h','1h'],150);assert(light.results.XLMUSDT&&light.results.XLMUSDT['4h']&&light.results.XLMUSDT['1h'],'light prescan must return 4H/1H frames');
   assert(calls.some(x=>x.includes('/klines')&&x.includes('limit=150')),'light prescan must use bounded 150-bar requests');
   const taker15Before=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
+  const oiBefore=calls.filter(x=>x.includes('/openInterestHist')).length;
   const ctx=await p.getDerivativesContext('XLMUSDT');
   const taker15After=calls.filter(x=>x.includes('/takerlongshortRatio')&&x.includes('period=15m')).length;
+  const oiAfter=calls.filter(x=>x.includes('/openInterestHist')).length;
   assert.equal(taker15After-taker15Before,1,'legacy and v2 15m taker profiles should share one upstream request');
+  assert.equal(oiAfter-oiBefore,1,'legacy OI change/profile should reuse the v2 1h OI request');
   assert(Math.abs(ctx.fundingPct-.01)<1e-12,'funding percent should be preserved');
   assert(Math.abs(ctx.oiChangePct-3)<1e-9,'OI percent should be approximately 3%');
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
