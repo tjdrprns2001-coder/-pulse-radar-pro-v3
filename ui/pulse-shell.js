@@ -4,7 +4,8 @@
     pulseai:{title:'Pulse AI',desc:'시장 변화 · 이벤트 · 뉴스 한글 브리핑',path:'/pulse-ai.html'},
     bookai:{title:'Book AI',desc:'책 규칙 · 근거 완성도 · 상태 전이 · Canonical Snapshot',path:'/book-ai-analyst.html'},
     scanner:{title:'확장 시장 탐색',desc:'현물 + 8개 선물거래소 · 기초자산 중복 제거',path:'/index.html'},
-    autoscan:{title:'Astra 자동스캔',desc:'Astra·Manus·Perplexity·Grok·Gemini·Claude · Binance USDT 무기한 전체',path:'/astra-scan.html'},
+    autoscan:{title:'자동스캔 검색기',desc:'선물 우선 · v3/OI/taker/RVOL/ICT 자동 압축',path:'/coin-scan.html'},
+    astra:{title:'Astra 자동스캔',desc:'Astra·Manus·Perplexity·Grok·Gemini·Claude · Binance USDT 무기한 전체',path:'/astra-scan.html'},
     assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
     analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
@@ -35,7 +36,7 @@
   };
   const ROOT={
     home:'home',pulseai:'ai',bookai:'ai',
-    scanner:'scan',autoscan:'scan',assistantscan:'scan',radar:'scan',
+    scanner:'scan',autoscan:'scan',astra:'scan',assistantscan:'scan',radar:'scan',
     report:'analysis',analysis:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',preignitionoos:'scan',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
@@ -68,7 +69,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','assistantscan','preignitionoos','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','astra','assistantscan','preignitionoos','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='bookai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
