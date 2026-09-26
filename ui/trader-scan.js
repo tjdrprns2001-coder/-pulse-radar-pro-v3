@@ -8,7 +8,7 @@
   const price=v=>fmt(v,v>1?4:8);
   const time=v=>v?new Date(v).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'미확인';
   let items=[],summary=null,filter='ALL',running=false,controller=null,timer=null,lastFinished=0;
-  const scanStale=()=>!running&&((lastFinished&&Date.now()-lastFinished>120000)||(!lastFinished&&summary?.asOf&&Date.now()-summary.asOf>120000));
+  const resultStale=x=>window.TraderResultAge?.isStale(x)??true;
   function setProgress(total,completed,failed){
     const processed=completed+failed,pct=total?Math.min(100,Math.round(processed/total*100)):0;
     if($('scanTotal'))$('scanTotal').textContent=total;
@@ -23,7 +23,7 @@
   }
   function card(x){
     const f=x.flow||{},s=x.stats||{},p=x.plan||{},warnings=[...(x.blockers||[]),...(x.missing||[]),...(x.waiting||[])];
-    const stale=scanStale();
+    const stale=resultStale(x);
     const state=stale&&x.state==='CONFIRMED'?'DATA_GAP':x.state;
     const reasons=stale?['이전 스캔 결과입니다. 새 스캔으로 진입 상태를 재확인하세요.',...warnings]:warnings;
     const line=reasons.length?reasons.slice(0,2):(x.reasons||[]).slice(0,2);
@@ -34,18 +34,19 @@
       <div class="why ${x.blockers?.length?'risk':''}">${line.map(escape).join('<br>')}</div>
       <div class="plan"><div><small>호가 기준 가상 진입</small><b>${price(p.entry)}</b></div><div><small>무효화 기준</small><b>${price(p.stop)}</b></div><div><small>가까운 4H 저항</small><b>${price(p.target)}</b></div></div>
       <details><summary>조건별 근거 · 6TF · 보조지표 보기</summary><div class="tf">${Object.entries(s).map(([tf,v])=>`<span>${escape(tf.toUpperCase())} · ${!v.available?'부족':({UP:'상승',DOWN:'하락',MIXED:'혼조'})[v.trend]||'미확인'}</span>`).join('')}</div><ul>${checks.map(t=>`<li>${escape(t)}</li>`).join('')}</ul><p>1H RSI ${fmt(s['1h']?.rsi)} · MACD선 ${fmt(s['1h']?.macd,5)} (${s['1h']?.macdImproving?'개선':'미개선'}) · OBV ${s['1h']?.obvUp?'유입 우세':'미확인/유출'}</p><p>1H SMA 5 / 10 / 20 / 60 / 120: ${[5,10,20,60,120].map(n=>price(s['1h']?.sma?.[n])).join(' / ')}</p><p>8H 환산 펀딩 ${fmt(f.funding8hPct,4)}% · ${escape(p.note||'호가·목표 미확인')}</p></details>
+      <details><summary>데이터 출처·기준 시각</summary><p>${escape(x.dataAudit?.source||'출처 메타데이터 없음')} · ${x.dataAudit?.stage==='PREFILTER'?'사전분류만 수행':x.dataAudit?.stage==='DEEP'?'6TF 조회 수행':'검사 범위 미확인'}</p><p>시세 ${time(x.dataAudit?.tickerTimestamp)} · 판정 시 시세 경과 ${fmt(x.dataAudit?.tickerAgeMs==null?null:x.dataAudit.tickerAgeMs/1000,0)}초<br>OI ${time(x.dataAudit?.oiTimestamp)} · taker 구간 시작 ${time(x.dataAudit?.takerTimestamp)}</p><ul>${Object.entries(x.dataAudit?.frames||{}).map(([tf,v])=>`<li>${escape(tf)}: 마지막 확정봉 ${time(v.lastClosedAt)} · ${fmt(v.bars,0)}봉 · ${v.available?'정상':'부족/지연'}</li>`).join('')}</ul></details>
       <div class="cardBottom"><span>조건 충족 ${fmt(x.score,0)}/100 · ${time(x.asOf)}${stale?' · 이전 결과':''}</span><a href="/coin-report.html?symbol=${encodeURIComponent(x.symbol)}" target="_blank" rel="noopener">종합 리포트 ↗</a></div></article>`;
   }
   function render(){
-    const expanded=new Set([...document.querySelectorAll('.card details[open]')].map(el=>el.closest('.card').dataset.symbol));
+    const expanded=new Set([...document.querySelectorAll('.card details[open]')].map(el=>el.closest('.card').dataset.symbol+':'+[...el.closest('.card').querySelectorAll('details')].indexOf(el)));
     const query=$('query').value.trim().toUpperCase(),counts=Object.fromEntries(Object.keys(labels).map(k=>[k,0]));
-    const stale=scanStale(),display=items.map(x=>stale&&x.state==='CONFIRMED'?{...x,state:'DATA_GAP'}:x);
+    const display=items.map(x=>resultStale(x)&&x.state==='CONFIRMED'?{...x,state:'DATA_GAP'}:x);
     display.forEach(x=>counts[x.state]=(counts[x.state]||0)+1);
     for(const k of Object.keys(labels))$('count-'+k).textContent=counts[k];
     const selected=display.filter(x=>(filter==='ALL'||x.state===filter)&&x.symbol.includes(query)).sort((a,b)=>rank[a.state]-rank[b.state]||b.score-a.score);
     $('resultCount').textContent=selected.length;
     $('results').innerHTML=selected.length?selected.map(card).join(''):`<div class="empty"><span>◎</span><h3>${running?'구조와 수급을 확인하고 있어요.':'이 분류에 해당하는 후보가 없습니다.'}</h3><p>${running?'검사가 끝나는 종목부터 차례로 표시됩니다.':'조건을 충족하지 않으면 후보를 억지로 만들지 않습니다.'}</p></div>`;
-    document.querySelectorAll('.card').forEach(el=>{if(expanded.has(el.dataset.symbol))el.querySelector('details').open=true});
+    document.querySelectorAll('.card').forEach(el=>el.querySelectorAll('details').forEach((detail,i)=>{if(expanded.has(el.dataset.symbol+':'+i))detail.open=true}));
   }
   async function request(mode,params={}){
     const timeout=AbortSignal.timeout(90000),signal=AbortSignal.any([controller.signal,timeout]);
@@ -117,6 +118,6 @@
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearTimeout(timer);return}render();const minutes=Number($('interval').value);if(minutes&&lastFinished&&Date.now()-lastFinished>=minutes*60000)scan();else arm()});
   window.addEventListener('pagehide',()=>{controller?.abort();clearTimeout(timer)});
   // Expire visible entry confirmations even when auto-refresh is off.
-  setInterval(()=>{if(document.visibilityState==='visible'&&!running&&items.length)render()},30000);
+  setInterval(()=>{if(document.visibilityState==='visible'&&items.length)render()},30000);
   try{const cached=JSON.parse(sessionStorage.getItem('trader_scan_v1')||'null');if(cached&&Date.now()-cached.savedAt<3600000&&Array.isArray(cached.items)){items=cached.items;summary=cached.summary;lastFinished=Number(cached.lastFinished)||0;showSummary();const failed=items.filter(x=>x.missing?.some?.(m=>String(m).includes('조회 실패')||String(m).includes('응답 누락'))).length;setProgress(summary?.universeCount||items.length,Math.max(0,items.length-failed),failed);render();$('status').textContent='이전 전수검사 결과를 복원했습니다. 새 스캔으로 현재 상태를 확인하세요.'}}catch{}
 })();
