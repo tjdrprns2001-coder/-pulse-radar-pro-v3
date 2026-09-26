@@ -23,6 +23,15 @@ assert(best.reasons.some(x=>x.includes('PRE-SURGE')));
 const watch=Auto.evaluate(rows[1]);
 assert(['WATCH','WAIT'].includes(watch.state),'incomplete scanner gates must remain WATCH/WAIT');
 assert(watch.missing.length>0);
+const missingOptional=Auto.evaluate({
+  ...base,symbol:'MISSUSDT',oi4hChangePct:null,trueTakerRatio:null,takerRatio:null,
+  volumeAcceleration15m:null,v3Rvol:null,tradeSignal:{level:'관찰',invalidations:[]},
+  preSurge:{label:'관찰'},scanClass:{key:'SECTOR-ROTATION'}
+});
+assert(missingOptional.missing.includes('Binance OI'),'missing OI must remain missing');
+assert(missingOptional.missing.includes('taker'),'missing taker must remain missing');
+assert(missingOptional.missing.includes('15m RVOL'),'missing RVOL must remain missing');
+assert(!missingOptional.invalidations.some(x=>/taker 매도 우위 0\.00/.test(x)),'missing optional fields must remain missing, never zero evidence');
 assert.equal(Auto.evaluate(rows[2]).state,'EXCLUDE');
 assert.equal(Auto.evaluate(rows[3]).state,'EXCLUDE');
 
