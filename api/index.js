@@ -29,6 +29,26 @@ module.exports = async function handler(req, res) {
     return res.status(404).json({ ok: false, error: 'Unknown API route', route });
   }
   try {
+    if(route==='structure'){
+      const runtime=String(process.env.STRUCTURE_RUNTIME_URL||'').replace(/\/$/,'');
+      if(runtime&&String(req.query?.local||'')!=='1'){
+        const params=new URLSearchParams();
+        for(const [k,v] of Object.entries(req.query||{})){
+          if(k==='route'||v==null)continue;
+          params.set(k,String(v));
+        }
+        params.set('local','1');
+        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),25000);
+        try{
+          const rr=await fetch(runtime+'/api/structure?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
+          const body=await rr.json().catch(()=>({ok:false,error:'Structure runtime invalid response'}));
+          if(rr.ok&&body?.ok)return res.status(200).json({...body,structureRuntime:'oregon'});
+          if(rr.status<500)return res.status(rr.status).json(body);
+        }catch(_e){
+          // Fall through to the local handler. Spot data may still be available even if the runtime is not.
+        }finally{clearTimeout(timer)}
+      }
+    }
     return await fn(req, res);
   } catch (error) {
     if (!res.headersSent) {
