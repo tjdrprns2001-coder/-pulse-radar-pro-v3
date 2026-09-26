@@ -8,8 +8,15 @@ const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
 const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
 const {createMarketIntelService}=require('../lib/market-intel/service.js');
 const {defaultResearchAIv2}=require('../lib/learning/research-ai-v2.js');
+const detailHandler=require('../handlers/detail.js');
 
 let singleton=null;
+async function resolveDetail(symbol){
+  let code=200,body=null;
+  const res={setHeader(){},status(n){code=n;return this},json(v){body=v;return this}};
+  await detailHandler({query:{symbol:String(symbol||'').toUpperCase()}},res);
+  return code<400&&body?.ok?body:null;
+}
 function defaultService(){
   if(!singleton){
     const localScanService=createScanService({provider:createBinanceProvider({})});
@@ -18,7 +25,7 @@ function defaultService(){
     const marketIntelService=createMarketIntelService({
       coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
     });
-    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2()});
+    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2(),detailResolver:resolveDetail});
   }
   return singleton;
 }
