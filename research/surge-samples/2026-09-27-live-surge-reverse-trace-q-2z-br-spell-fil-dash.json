@@ -1,0 +1,113 @@
+{
+  "sampledAt": "2026-09-27",
+  "source": "Binance USDⓈ-M perpetual",
+  "batch": "live-surge-reverse-trace",
+  "samples": [
+    {
+      "symbol": "Q",
+      "price24hPct": 56.286,
+      "t0Kst": "2026-09-26 15:00",
+      "t0BarPct": 17.71,
+      "t0Rvol20": 13.03,
+      "pre6hOiPct": -2.4663,
+      "pre12hOiPct": -4.1651,
+      "pre24hOiPct": -12.5137,
+      "pre6hTakerAvg": 0.88785,
+      "pre12hTakerAvg": 0.84748,
+      "dna": "DELEVERAGING_ABSORPTION_RVOL_IGNITION"
+    },
+    {
+      "symbol": "2Z",
+      "price24hPct": 27.429,
+      "t0Kst": "2026-09-26 14:00",
+      "t0BarPct": 6.99,
+      "t0Rvol20": 6.32,
+      "pre6hOiPct": -2.4214,
+      "pre12hOiPct": -1.2167,
+      "pre24hOiPct": -4.2838,
+      "pre6hTakerAvg": 0.78963,
+      "pre12hTakerAvg": 0.88748,
+      "dna": "SELL_CLEANUP_VOLUME_IGNITION"
+    },
+    {
+      "symbol": "BR",
+      "price24hPct": 23.384,
+      "t0Kst": "2026-09-25 21:00",
+      "t0BarPct": 8.23,
+      "t0Rvol20": 2.53,
+      "pre6hOiPct": -16.2457,
+      "pre12hOiPct": -14.9042,
+      "pre24hOiPct": -29.3052,
+      "pre6hTakerAvg": 1.0115,
+      "pre12hTakerAvg": 1.00861,
+      "dna": "DEEP_OI_CLEAN_REVERSAL"
+    },
+    {
+      "symbol": "SPELL",
+      "price24hPct": 20.317,
+      "t0Kst": "2026-09-26 15:00",
+      "t0BarPct": 8.81,
+      "t0Rvol20": 24.7,
+      "pre6hOiPct": 0.9953,
+      "pre12hOiPct": 2.9103,
+      "pre24hOiPct": 15.5805,
+      "pre6hTakerAvg": 0.90943,
+      "pre12hTakerAvg": 1.13978,
+      "dna": "OI_BUILD_EXTREME_RVOL_IGNITION"
+    },
+    {
+      "symbol": "FIL",
+      "price24hPct": 19.909,
+      "t0Kst": "2026-09-26 23:00",
+      "t0BarPct": 6.15,
+      "t0Rvol20": 4.91,
+      "pre6hOiPct": 2.4065,
+      "pre12hOiPct": 10.3029,
+      "pre24hOiPct": 16.7473,
+      "pre6hTakerAvg": 0.90713,
+      "pre12hTakerAvg": 1.00221,
+      "dna": "CLASSIC_OI_LEAD_RVOL_IGNITION"
+    },
+    {
+      "symbol": "DASH",
+      "price24hPct": 16.632,
+      "t0Kst": "2026-09-26 19:00",
+      "t0BarPct": 4.32,
+      "t0Rvol20": 3.99,
+      "pre6hOiPct": 3.0101,
+      "pre12hOiPct": 5.1813,
+      "pre24hOiPct": 1.3441,
+      "pre6hTakerAvg": 0.87715,
+      "pre12hTakerAvg": 0.90563,
+      "dna": "GRADUAL_OI_BUILD_VOLUME_IGNITION"
+    }
+  ],
+  "routes": {
+    "classicOiBuild": {
+      "samples": [
+        "FIL",
+        "SPELL"
+      ],
+      "rule": "6H OI >2%, 12H OI >5%, price compressed, RVOL ignition confirms"
+    },
+    "deleveragingAbsorption": {
+      "samples": [
+        "Q",
+        "2Z"
+      ],
+      "rule": "OI declining + repeated high-RVOL sell pressure + failed continuation lower + reclaim"
+    },
+    "deepCleanReversal": {
+      "samples": [
+        "BR"
+      ],
+      "rule": "deep 12-24H OI contraction + two-way liquidity clear + stabilization + reclaim"
+    },
+    "gradualBuild": {
+      "samples": [
+        "DASH"
+      ],
+      "rule": "moderate 6-12H OI increase + 15m RVOL lead + 1H displacement"
+    }
+  }
+}
