@@ -165,6 +165,16 @@ module.exports=async function handler(req,res,ctx={}){
       const since=Number(q.since)||null;
       return res.status(200).json({status:'ok',mode:'preignition-history',action:'stats',updatedAt:Date.now(),stats:await service.getPreIgnitionStats({since})});
     }
+    if(mode==='sampling-history'){
+      const action=String(q.action||'stats').toLowerCase();
+      if(action==='evaluate')return res.status(200).json({status:'ok',mode:'sampling-history',action:'evaluate',updatedAt:Date.now(),evaluation:await service.evaluateSamplingOosHistory()});
+      if(action==='list'){
+        const since=Number(q.since)||null;
+        const rows=await service.listSamplingOosHistory({symbol:q.symbol||null,stage:q.stage||null,limit,since,includeOutcomes:String(q.includeOutcomes||'1')!=='0'});
+        return res.status(200).json({status:'ok',mode:'sampling-history',action:'list',updatedAt:Date.now(),items:rows});
+      }
+      return res.status(200).json({status:'ok',mode:'sampling-history',action:'stats',updatedAt:Date.now(),stats:await service.getSamplingOosStats()});
+    }
     if(mode==='validation'){
       const symbol=String(q.symbol||'').trim();if(!symbol)return res.status(400).json({status:'error',error:'symbol required'});
       const at=Number(q.at)||null;return res.status(200).json(await service.getMarketValidation(symbol,{decisionTimestamp:at,persist:String(q.persist||'1')!=='0'}));
