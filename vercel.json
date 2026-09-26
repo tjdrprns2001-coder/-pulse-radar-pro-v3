@@ -17,6 +17,9 @@
     },
     "api/market-flow.js": {
       "maxDuration": 20
+    },
+    "api/astra-scan.js": {
+      "maxDuration": 20
     }
   },
   "redirects": [
@@ -27,6 +30,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/astra-scan",
+      "destination": "/astra-scan.html"
+    },
     {
       "source": "/analysis",
       "destination": "/analysis-shell-v12.html"
