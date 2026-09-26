@@ -19,6 +19,8 @@ on:
       - 'lib/coin-scan/sampling-v3-outcome-resolver.js'
       - 'netlify/functions/coin-scan-sampling-evaluate.mjs'
       - 'scripts/verify-sampling-v3-oos-service.js'
+      - 'scripts/verify-sampling-v3-outcome-resolver.js'
+      - 'lib/signal-performance/store.js'
       - '.github/workflows/check-auto-scanner-speed-v2.yml'
   pull_request:
     paths:
