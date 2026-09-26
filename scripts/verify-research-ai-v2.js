@@ -9,6 +9,7 @@ const Neural=require('../lib/learning/neural.js');
 const Registry=require('../lib/learning/model-registry.js');
 const Evidence=require('../lib/learning/evidence.js');
 const V2=require('../lib/learning/research-ai-v2.js');
+const Adapter=require('../lib/learning/scanner-adapter.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -102,5 +103,19 @@ const outcomeRows=[
 const resolved=V2.resolveSymbol(state,'ABCUSDT',outcomeRows,{now:t0+80*3600000});
 assert(resolved.changed>=1);
 assert.equal(state.observations.find(x=>x.symbol==='ABCUSDT').label,1);
+
+// Astra/Manus/Grok/etc. deep rows use the same common adapter without changing scanner verdicts.
+const astra=Adapter.normalizeScannerItem({
+  symbol:'ASTRAUSDT',method:'astra',lastPrice:2,priceChange24h:1.5,quoteVolume24h:20_000_000,
+  oi4hPct:2.4,taker15m:1.35,fundingRatePct:.01,
+  tf:{'1h':{available:true,bars:100,closeTime:t0,close:2,rsi14:57,rvol:1.8,stack:true,above20:true,above60:true},
+      '15m':{available:true,bars:100,closeTime:t0,close:2,rsi14:61,rvol:2.2,stack:true,above20:true,above60:true}},
+  verdict:{key:'WATCH_PRIORITY',label:'watch',score:68}
+},{source:'astra-astra',marketState:{regime:'RISK_ON'},asOf:t0});
+assert.equal(astra.regime,'RISK_ON');
+assert.equal(astra.flow.oi4hPct,2.4);
+assert.equal(astra.flow.takerRatio,1.35);
+assert.equal(astra.stats['1h'].rvol,1.8);
+assert.equal(astra.setup.type,'WATCH_PRIORITY');
 
 console.log('Research AI v2 PASS');
