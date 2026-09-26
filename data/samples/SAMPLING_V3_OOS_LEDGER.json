@@ -1,5 +1,5 @@
 {
-  "schema_version": "sampling-v3-oos-ledger.2",
+  "schema_version": "sampling-v3-oos-ledger.3",
   "status": "RUNTIME_BACKED_COLLECTING",
   "created_at": "2026-09-27T01:45:00+09:00",
   "source": "Astra Sampling v3.1 forward snapshots",
@@ -19,7 +19,9 @@
     "score",
     "samplingStage",
     "eventTypes",
-    "sourceScanId"
+    "sourceScanId",
+    "samplingRevision",
+    "alternativeBars"
   ],
   "labels": [
     "SURGE",
@@ -75,5 +77,24 @@
       "min_mean_accuracy": 0.55,
       "validation": "purged walk-forward + embargo + sequential bootstrap"
     }
+  },
+  "research_revision": "3.2",
+  "identity_policy": {
+    "stable_id_prefix": "sampling-v3.1",
+    "dedupe_key": "symbol + UTC hour bucket",
+    "revision_field": "samplingRevision",
+    "note": "Do not change immutable snapshot IDs for research-only revision upgrades."
+  },
+  "alternative_bar_evidence": {
+    "types": [
+      "TICK",
+      "VOLUME",
+      "DOLLAR",
+      "IMBALANCE",
+      "RUN"
+    ],
+    "threshold_mode": "FROZEN_CALIBRATION",
+    "overshoot_policy": "INCLUDE_FULL_TRADE",
+    "partial_tail": "DROP_INCOMPLETE_TAIL"
   }
 }
