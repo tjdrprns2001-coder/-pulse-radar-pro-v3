@@ -62,3 +62,7 @@ html[data-shell="1"] .scanTop{justify-content:flex-end;margin-bottom:6px}
 .scanPipeline>div[data-state="done"]{border-color:#2f765f;background:#0a201a}
 .scanPipeline>div[data-state="done"]>span{border-color:#2fd6a1;color:#8ee8c7}
 @media(max-width:650px){.scanPipeline{grid-template-columns:1fr 1fr}.scanPipeline>div{padding:8px}.scanPipeline>div>small{white-space:normal;line-height:1.25}}
+
+.allResultsIntro{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:16px 0 8px;padding:11px 12px;border:1px solid #294764;border-radius:12px;background:#091724}
+.allResultsIntro>div{display:grid;gap:3px}.allResultsIntro b{font-size:14px;color:#e6f2ff}.allResultsIntro span,.allResultsIntro small{color:#8fa8bd;font-size:10px;line-height:1.45}.allResultsIntro small{max-width:520px;text-align:right}
+@media(max-width:650px){.allResultsIntro{align-items:flex-start;flex-direction:column;margin-top:14px}.allResultsIntro small{text-align:left;max-width:none}.finder{margin-bottom:14px}.filters{padding-top:2px}}
