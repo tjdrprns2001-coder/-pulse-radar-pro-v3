@@ -815,8 +815,8 @@
       "Research AI state",
       "pre-outcome live candidates"
     ],
-    "status": "SCANNER_WIRED_SHADOW_VALIDATION_PENDING",
-    "scanner_wiring_status": "WIRED_SHADOW_EVIDENCE",
+    "status": "PRODUCTION_ACTIVE",
+    "scanner_wiring_status": "PRODUCTION_WIRED",
     "similarity_engine": "lib/coin-scan/sample-similarity-v2.js",
     "similarity_outputs": [
       "successTop5",
@@ -827,7 +827,25 @@
       "netEvidenceScore",
       "conflictEvidence"
     ],
-    "ranking_effect": "NONE_UNTIL_BLIND_VALIDATION",
-    "next_gate": "blind validation on pre-outcome/OOS candidates before ranking weight"
+    "ranking_effect": "BOUNDED_ACTIVE",
+    "next_gate": "continue forward-labeling PRE_OUTCOME candidates; ranking remains bounded unless a future validation re-approves a changed policy",
+    "ranking_policy": {
+      "version": "SAMPLE_RANKING_POLICY_v1",
+      "approval_file": "data/samples/SAMPLE_RANKING_POLICY_APPROVED.json",
+      "max_bonus": 8,
+      "max_penalty": 8,
+      "hard_gate_override": false,
+      "category_override": false
+    },
+    "blind_validation": {
+      "workflow_run_id": 36255599159,
+      "conclusion": "success",
+      "total": 129,
+      "decisions": 102,
+      "decision_coverage": 0.7906976744186046,
+      "harmful_rate": 0.029411764705882353,
+      "balanced_accuracy": 0.74,
+      "gate_passed": true
+    }
   }
 }
