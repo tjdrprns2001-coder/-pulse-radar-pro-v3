@@ -1,0 +1,95 @@
+{
+  "schema_version": "pre-surge-v3-reverse-trace.2",
+  "captured_at": "2026-09-27T00:24:00+09:00",
+  "methodology": {
+    "cohort": "Current Binance USDT perpetual leaders with >~15% 24H gain and meaningful quote volume.",
+    "objective": "Trace back the immediate pre-ignition state and classify reusable precursor paths.",
+    "note": "Observed live/recent values are calibration samples, not forward performance guarantees."
+  },
+  "reverse_trace": [
+    {
+      "symbol": "QUSDT",
+      "pre_price": 0.02363,
+      "current_price": 0.038842,
+      "pre_1h_rvol": 1.3765,
+      "signature": "OI shock after quiet-to-moderate volume; later taker pulse.",
+      "class": "OI_SHOCK"
+    },
+    {
+      "symbol": "RAREUSDT",
+      "pre_price": 0.01621,
+      "current_price": 0.02275,
+      "pre_1h_rvol": 243.293,
+      "signature": "Extreme volume/event shock with extreme OI expansion; isolate from normal samples.",
+      "class": "EVENT_SHOCK"
+    },
+    {
+      "symbol": "2ZUSDT",
+      "pre_price": 0.06123,
+      "current_price": 0.07183,
+      "pre_1h_rvol": 6.3205,
+      "signature": "Volume ignition first, then massive OI expansion.",
+      "class": "RVOL_LEAD_OI_FOLLOW"
+    },
+    {
+      "symbol": "BRUSDT",
+      "pre_price": 0.91604,
+      "current_price": 1.05427,
+      "pre_1h_rvol": 0.2336,
+      "signature": "Very quiet volume with rolling OI build and taker mostly near/above 1.",
+      "class": "SILENT_BUILD"
+    },
+    {
+      "symbol": "FILUSDT",
+      "pre_price": 1.1672,
+      "current_price": 1.2149,
+      "pre_1h_rvol": 4.912,
+      "signature": "Classic RVOL ignition followed by 4H OI build and taker pulses.",
+      "class": "RVOL_LEAD_OI_FOLLOW"
+    },
+    {
+      "symbol": "ARKUSDT",
+      "pre_price": 0.2468,
+      "current_price": 0.2686,
+      "pre_1h_rvol": 0.6145,
+      "signature": "Low-noise volume but persistent 4H OI accumulation; later reset/reload.",
+      "class": "SILENT_BUILD"
+    },
+    {
+      "symbol": "WLDUSDT",
+      "pre_price": 0.5109,
+      "current_price": 0.5262,
+      "pre_1h_rvol": 1.6635,
+      "signature": "Moderate RVOL, staged OI accumulation and intermittent taker pulses.",
+      "class": "HYBRID_BUILD"
+    },
+    {
+      "symbol": "DASHUSDT",
+      "pre_price": 67.67,
+      "current_price": 72.83,
+      "pre_1h_rvol": 3.135,
+      "signature": "RVOL expansion followed by progressively stronger OI build.",
+      "class": "RVOL_LEAD_OI_FOLLOW"
+    }
+  ],
+  "pattern_groups": {
+    "oi_shock": [
+      "QUSDT"
+    ],
+    "event_shock": [
+      "RAREUSDT"
+    ],
+    "rvol_lead_oi_follow": [
+      "2ZUSDT",
+      "FILUSDT",
+      "DASHUSDT"
+    ],
+    "silent_build": [
+      "BRUSDT",
+      "ARKUSDT"
+    ],
+    "hybrid_build": [
+      "WLDUSDT"
+    ]
+  }
+}
