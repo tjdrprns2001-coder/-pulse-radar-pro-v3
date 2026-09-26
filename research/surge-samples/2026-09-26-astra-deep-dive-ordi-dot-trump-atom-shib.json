@@ -1,0 +1,151 @@
+{
+  "schema": "ASTRA_SAMPLE_BATCH_V1",
+  "asOf": "2026-09-26T00:53:00Z",
+  "source": [
+    "Binance USDT perpetual",
+    "Binance Spot"
+  ],
+  "confirmedBarsOnly": true,
+  "pipeline": {
+    "universe": 527,
+    "stage1": 117,
+    "oiChecked": 117,
+    "oiSurvivors": 18
+  },
+  "samples": [
+    {
+      "symbol": "ORDIUSDT",
+      "dna": "OI_BURST_1H_IGNITION_LTF_RESET",
+      "state": "FIRST_IGNITION_LTF_RESET",
+      "futures24hPct": 4.096,
+      "spot24hPct": 4.113,
+      "oi4hLatestPct": 5.4,
+      "oi4hSampleSpanPct": 8.744,
+      "oi1hSampleSpanPct": 5.258,
+      "oi5mSampleSpanPct": -0.064,
+      "fundingPct": 0.005,
+      "h1": {
+        "rsi": 66.4,
+        "rvol": 3.85,
+        "taker": 1.53
+      },
+      "m15": {
+        "rvol": 1.98,
+        "taker": 0.68
+      },
+      "m5": {
+        "rvol": 0.55,
+        "taker": 0.4
+      },
+      "globalLongShort": 1.3781,
+      "topTraderPositionLongShort": 4.1859,
+      "gate": "4.72~4.76 hold + OI stabilization + taker>1 + volume re-expansion"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "dna": "LATE_OI_TURN_TAKER_BURST_RVOL_WAIT",
+      "state": "A_PRE_IGNITION_WAIT_RVOL",
+      "futures24hPct": 4.362,
+      "spot24hPct": 4.404,
+      "oi4hLatestPct": 1.525,
+      "oi4hSampleSpanPct": -0.561,
+      "oi1hSampleSpanPct": 1.172,
+      "oi5mSampleSpanPct": -0.439,
+      "fundingPct": 0.01,
+      "h4": {
+        "rsi": 60.7,
+        "rvol": 0.85
+      },
+      "m15": {
+        "rvol": 1.23,
+        "taker": 1.331,
+        "previousTaker": 2.123
+      },
+      "m5": {
+        "rvol": 0.88,
+        "taker": 3.1
+      },
+      "globalLongShort": 1.6954,
+      "topTraderPositionLongShort": 2.2272,
+      "orderbookBidAskQtyRatio": 3.393,
+      "gate": "1.223~1.224 break + 15m RVOL>=3 + taker>1 + OI build"
+    },
+    {
+      "symbol": "TRUMPUSDT",
+      "dna": "QUIET_PRICE_PERSISTENT_OI_COMPRESSION",
+      "state": "A_PRE_COMPRESSION",
+      "futures24hPct": 0.62,
+      "spot24hPct": 0.668,
+      "oi4hLatestPct": 1.495,
+      "oi4hSampleSpanPct": 4.528,
+      "oi1hSampleSpanPct": 2.394,
+      "oi5mSampleSpanPct": 0.305,
+      "fundingPct": 0.005,
+      "m15": {
+        "rvol": 1.93,
+        "taker": 0.935
+      },
+      "m5": {
+        "taker": 1.97
+      },
+      "globalLongShort": 1.6991,
+      "topTraderPositionLongShort": 2.2104,
+      "gate": "2.135~2.140 break + 15m RVOL>=3 + taker>=1.3 + OI expansion"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "dna": "SELL_SHOCK_LTF_REABSORPTION_CONFIRM",
+      "state": "LTF_REABSORPTION_CONFIRM",
+      "futures24hPct": 0.955,
+      "spot24hPct": 1.011,
+      "oi4hLatestPct": 1.14,
+      "oi4hSampleSpanPct": 1.725,
+      "oi1hSampleSpanPct": 2.05,
+      "oi5mSampleSpanPct": 0.514,
+      "fundingPct": 0.01,
+      "h4": {
+        "rsi": 55.2,
+        "rvol": 0.82
+      },
+      "m15": {
+        "rvol": 2.5,
+        "taker": 0.442
+      },
+      "m5": {
+        "rsi": 60.1,
+        "rvol": 2,
+        "taker": 2.13
+      },
+      "globalLongShort": 1.2356,
+      "topTraderPositionLongShort": 3.1588,
+      "gate": "15m taker>1 + 15m MACD up + 1.806 break; stronger >1.832"
+    },
+    {
+      "symbol": "1000SHIBUSDT",
+      "spotSymbol": "SHIBUSDT",
+      "dna": "OI_CLEAN_REBUILD_HIGH_RVOL_DIRECTION_WAIT",
+      "state": "CLEAN_REBUILD_DIRECTION_WAIT",
+      "futures24hPct": 2.518,
+      "spot24hPct": 2.586,
+      "oi4hLatestPct": 1.725,
+      "oi4hSampleSpanPct": -0.008,
+      "oi1hSampleSpanPct": 2.285,
+      "oi1hLatestPct": 1.123,
+      "oi5mSampleSpanPct": -0.038,
+      "fundingPct": 0.01,
+      "h1": {
+        "rsi": 63.9
+      },
+      "m15": {
+        "rvol": 4.2,
+        "taker": 0.729
+      },
+      "m5": {
+        "taker": 3.16
+      },
+      "globalLongShort": 1.7152,
+      "topTraderPositionLongShort": 1.7219,
+      "gate": "0.00599 break + 15m taker>=1.2~1.5 + OI rebuild"
+    }
+  ]
+}
