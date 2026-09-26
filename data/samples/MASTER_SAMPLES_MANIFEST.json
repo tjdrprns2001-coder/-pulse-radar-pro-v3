@@ -19,7 +19,8 @@
     "runtime_library_samples": 114,
     "historical_merged_samples_preserved": 94,
     "post_merge_runtime_additions": 20,
-    "recovered_deep_reverse_trace_files": 2
+    "recovered_deep_reverse_trace_files": 2,
+    "pre_outcome_snapshot_files": 1
   },
   "latest_learning_state": {
     "source_branch": "learning-memory",
@@ -779,5 +780,24 @@
       ]
     },
     "note": "These research-branch reverse-trace archives were not present in the previous master loader and are now restored to main and included."
-  }
+  },
+  "pre_outcome_samples": [
+    {
+      "path": "research/surge-samples/LIVE-CANDIDATE-SNAPSHOT-2026-09-27.md",
+      "source_branch": "research/live-candidate-snapshot-20260927",
+      "source_sha": "71fe7fd01c5586a773197bb8e051b037b8a991a0",
+      "symbols": [
+        "GALAUSDT",
+        "WLDUSDT",
+        "KAITOUSDT",
+        "PENGUUSDT",
+        "ONDOUSDT",
+        "FILUSDT",
+        "HYPEUSDT",
+        "ICPUSDT"
+      ],
+      "purpose": "Pre-outcome live snapshot for survivorship-bias control and later success/failure labeling.",
+      "outcome_status": "UNRESOLVED_AT_CAPTURE"
+    }
+  ]
 }
