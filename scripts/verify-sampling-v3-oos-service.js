@@ -3,6 +3,7 @@ const assert=require('assert');
 const {createMemoryStore}=require('../lib/signal-performance/store.js');
 const {createSamplingV3OosService}=require('../lib/coin-scan/sampling-v3-oos-service.js');
 
+(async()=>{
 let now=Date.parse('2026-09-27T00:30:00Z');
 const store=createMemoryStore();
 const resolver={
@@ -45,3 +46,5 @@ const stats=await service.stats();
 assert.equal(stats.snapshotCount,3);assert.equal(stats.evaluated24hCount,3);assert.equal(stats.labels.SURGE,1);assert.equal(stats.labels.FAILED_BOS,1);assert.equal(stats.labels.NO_TRIGGER,1);
 assert.equal(stats.promotionReady,false,'three samples must never promote research ranking');
 console.log('sampling v3 OOS service PASS');
+
+})().catch(e=>{console.error(e);process.exit(1)});
