@@ -69,6 +69,18 @@ module.exports=async function handler(req,res,ctx={}){
         q.mode==='trader-light'?await trader.light(symbols):
         q.mode==='trader-batch'?await trader.deepBatch(symbols):
         await trader.deep(q.symbol);
+      if(q.mode==='trader-deep'||q.mode==='trader-batch'){
+        try{
+          const learner=require('../lib/learning/research-ai.js').defaultResearchAI();
+          const learnItems=q.mode==='trader-batch'?(Array.isArray(data.items)?data.items:[]):(data.item?[data.item]:[]);
+          const learned=learner.observe(learnItems,{source:q.mode});
+          if(Array.isArray(data.items))data.items=data.items.map(item=>({...item,researchAI:learned.predictions?.[item.symbol]||null}));
+          else if(data.item)data.item={...data.item,researchAI:learned.predictions?.[data.item.symbol]||null};
+          data.learning={shadowOnly:true,...learned.status,added:learned.added,resolved:learned.resolved};
+        }catch(_learningError){
+          data.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError)};
+        }
+      }
       return res.status(200).json(data);
     }catch(e){return res.status(e.statusCode===400?400:503).json({status:'error',error:String(e.message||e),source:'Binance futures',items:[]})}
   }
