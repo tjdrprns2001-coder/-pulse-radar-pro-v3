@@ -133,6 +133,10 @@
     {
       "source": "/api/dante-backtest",
       "destination": "/api/index?route=dante-backtest"
+    },
+    {
+      "source": "/api/learning-ai",
+      "destination": "/api/index?route=learning-ai"
     }
   ],
   "regions": [
