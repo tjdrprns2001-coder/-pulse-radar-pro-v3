@@ -47,6 +47,10 @@
       "destination": "/radar.html"
     },
     {
+      "source": "/api/bowl224-research",
+      "destination": "/api/index?route=bowl224-research"
+    },
+    {
       "source": "/api/backtest",
       "destination": "/api/index?route=backtest"
     },
