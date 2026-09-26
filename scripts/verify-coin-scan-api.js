@@ -169,7 +169,7 @@ const provider={
   let scanRunExecuteCalls=0;
   const scanRunStub={scanRun:{
     async start(){return{id:'scan-test-bg',status:'QUEUED',stage:'queued'}},
-    async get(id){return{id,status:'RUNNING',stage:'deep',deepDone:6,deepTotal:12}},
+    async get(id){return{id,status:'RUNNING',stage:'deep',deepDone:6,deepTotal:12,candidateSymbols:['AUSDT'],items:[{symbol:'AUSDT',huge:'x'.repeat(5000)}],autoScreening:{all:[{symbol:'AUSDT',classification:'WATCHLIST'}]}}},
     async execute(id){scanRunExecuteCalls++;return{id,status:'DONE',stage:'complete',deepDone:12,deepTotal:12}}
   }};
   await handler({method:'POST',query:{mode:'scan-run',action:'start',precision:'1'}},res,{service:scanRunStub});
@@ -181,7 +181,13 @@ const provider={
   assert(scanRunExecuteCalls>=1,'background scan-run must execute asynchronously after start');
   code=0;body=null;headers={};
   await handler({query:{mode:'scan-run',action:'status',id:'scan-test-bg'}},res,{service:scanRunStub});
-  assert.equal(code,200);assert.equal(body.run.deepDone,6);
+  assert.equal(code,200);assert.equal(body.run.deepDone,6);assert.equal(body.run.items.length,1);
+  code=0;body=null;headers={};
+  await handler({query:{mode:'scan-run',action:'status',id:'scan-test-bg',progress:'1'}},res,{service:scanRunStub});
+  assert.equal(code,200);assert.equal(body.progressOnly,true);assert.equal(body.run.deepDone,6);
+  assert.equal(body.run.items,undefined,'progress status must omit heavy run items');
+  assert.equal(body.run.autoScreening,undefined,'progress status must omit screening payload');
+  assert.equal(body.run.itemCount,1);assert.equal(body.run.screeningCount,1);assert.equal(body.run.candidateCount,1);
   code=0;body=null;headers={};
   await handler({query:{mode:'scan-run',action:'execute',id:'scan-test-bg'}},res,{service:scanRunStub});
   assert.equal(code,200);assert.equal(body.run.status,'DONE');
