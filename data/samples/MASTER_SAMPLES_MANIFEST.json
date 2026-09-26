@@ -799,5 +799,22 @@
       "purpose": "Pre-outcome live snapshot for survivorship-bias control and later success/failure labeling.",
       "outcome_status": "UNRESOLVED_AT_CAPTURE"
     }
-  ]
+  ],
+  "master_dataset_v2": {
+    "module": "lib/coin-scan/master-sample-dataset-v2.js",
+    "schema": "data/samples/MASTER_SAMPLE_DATASET_v2_SCHEMA.json",
+    "generated_output": "data/samples/MASTER_SAMPLE_DATASET_v2.json",
+    "build_command": "npm run build:master-samples-v2",
+    "verify_command": "npm run test:master-samples-v2",
+    "dedupe_key": "symbol + eventTime; fallback stable record id/name",
+    "includes": [
+      "runtime positive DNA",
+      "negative/control DNA",
+      "raw reverse-trace JSON",
+      "deep reverse-trace archives",
+      "Research AI state",
+      "pre-outcome live candidates"
+    ],
+    "status": "DATASET_LAYER_READY_SCANNER_WIRING_PENDING"
+  }
 }
