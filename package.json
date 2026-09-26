@@ -155,7 +155,8 @@
     "test:scan-run-service": "node scripts/verify-scan-run-service.js",
     "test:astra-auto-scan": "node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-claude-scan.js && node scripts/verify-astra-wiring.js",
     "test:trader-scan": "node scripts/verify-trader-scan.js && node scripts/verify-trader-service.js && node scripts/verify-trader-freshness.js && node scripts/verify-trader-result-age.js",
-    "test:bowl224-research-v1": "node scripts/verify-bowl224-research-v1.js"
+    "test:bowl224-research-v1": "node scripts/verify-bowl224-research-v1.js",
+    "test:presurge-book-fusion": "node scripts/verify-presurge-book-fusion.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
