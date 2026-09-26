@@ -154,6 +154,14 @@ module.exports=async function handler(req,res,ctx={}){
       const id=String(q.id||q.run||'').trim();if(!id)return res.status(400).json({status:'error',error:'scan run id required'});
       if(action==='execute'){const run=await service.scanRun.execute(id);return res.status(200).json({status:'ok',mode:'scan-run',action:'execute',run})}
       const run=await service.scanRun.get(id);if(!run)return res.status(404).json({status:'error',error:'scan run not found'});
+      const progressOnly=['1','true','yes'].includes(String(q.progress||'').toLowerCase());
+      if(progressOnly){
+        const {items,autoScreening,candidateSymbols,...progressRun}=run;
+        progressRun.itemCount=Array.isArray(items)?items.length:0;
+        progressRun.screeningCount=Array.isArray(autoScreening?.all)?autoScreening.all.length:0;
+        progressRun.candidateCount=Array.isArray(candidateSymbols)?candidateSymbols.length:0;
+        return res.status(200).json({status:'ok',mode:'scan-run',action:'status',progressOnly:true,run:progressRun});
+      }
       return res.status(200).json({status:'ok',mode:'scan-run',action:'status',run});
     }
     if(mode==='runtime-health'){
