@@ -142,6 +142,13 @@ const provider={
   await handler({query:{mode:'summary',limit:'5',fresh:'1',run:'scan-test-1'}},res,{service});
   assert.equal(code,200);assert.equal(body.scanRunId,'scan-test-1');assert.equal(headers['Cache-Control'],'no-store, max-age=0','manual fresh scan must bypass response cache');
 
+  let forwarded=null;
+  const validationStub={async run(opts){forwarded=opts;return{status:'ok',mode:'deep',updatedAt:1,scanCount:1,deepScanCount:1,items:[],dataHealth:{live:0,delayed:0,blocked:0,errors:0}}}};
+  code=0;body=null;headers={};
+  await handler({query:{mode:'deep',symbols:'C0USDT',limit:'1',validation:'off',persist:'0'}},res,{service:validationStub});
+  assert.equal(code,200);assert.equal(forwarded.validation,'off','API must forward autoscan validation budget');
+  assert.equal(forwarded.persistObservations,false,'read-only auto scanner chunks must remain side-effect free');
+
   code=0;body=null;headers={};
   const scanRunStub={scanRun:{
     async start(){return{id:'scan-test-bg',status:'QUEUED',stage:'queued'}},
