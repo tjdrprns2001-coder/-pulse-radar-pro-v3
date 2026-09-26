@@ -27,7 +27,8 @@ must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v5'"),'scan session 
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
-must(js.includes('DEEP_WORKERS=2')&&js.includes('Promise.all(Array.from({length:Math.min(DEEP_WORKERS'),'deep enrichment must use bounded parallel chunk workers');
+must(js.includes('DEEP_CHUNK=8')&&js.includes('DEEP_WORKERS=2')&&js.includes('FULL_VALIDATION_CHUNKS=2')&&js.includes('Promise.all(Array.from({length:Math.min(DEEP_WORKERS'),'deep enrichment must use bounded parallel 8-symbol chunk workers');
+must(js.includes("'&validation='+validation")||js.includes("'&validation='"),'deep enrichment must tier expensive setup validation');
 must(js.includes('lastPersistAt<5000')&&js.includes('saveScanSession()')&&js.includes('saveScanSession(true)'),'scan session serialization throttle missing');
 must(js.includes('CLASS_PAGE_SIZE=12')&&js.includes('data-class-more'),'progressive per-class scanner DOM cap missing');
 must(js.includes('state.items=sortItems(decorateDormancy(state.items))'),'deep enrichment must defer full sorting/dormancy finalization until workers complete');
