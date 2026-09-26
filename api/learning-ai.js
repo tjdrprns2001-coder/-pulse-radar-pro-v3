@@ -30,9 +30,9 @@ module.exports=async function handler(req,res){
   try{
     if(await forwardToRuntime(req,res))return;
     const ai=defaultResearchAI();
+    await ai.hydrateRemote(false);
     const action=String(req?.query?.action||'status').toLowerCase();
     if(action==='status'){
-      await ai.hydrateRemote(false);
       return res.status(200).json({status:'ok',mode:'learning-ai',action,statusData:ai.status()});
     }
     if(action==='export'){
