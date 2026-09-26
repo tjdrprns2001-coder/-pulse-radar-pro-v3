@@ -847,5 +847,47 @@
       "balanced_accuracy": 0.74,
       "gate_passed": true
     }
+  },
+  "sampling_v3": {
+    "version": "ASTRA_SAMPLING_V3",
+    "status": "SHADOW_RESEARCH_ACTIVE",
+    "engine": "lib/coin-scan/sampling-v3.js",
+    "contract": "data/samples/SAMPLING_V3_RESEARCH_CONTRACT.json",
+    "scanner_wiring": [
+      "lib/coin-scan/astra-auto-scanner.js",
+      "lib/coin-scan/scan-service.js"
+    ],
+    "samplers": [
+      "CUSUM",
+      "PRICE_THRESHOLD",
+      "RANGE_EXPANSION",
+      "RVOL_IGNITION",
+      "LIQUIDITY_SWEEP",
+      "OI_ACCEL_1H",
+      "OI_BUILD_4H",
+      "TAKER_PULSE"
+    ],
+    "outcome_labeler": "TRIPLE_BARRIER",
+    "sequence_stages": [
+      "QUIET",
+      "ABSORPTION_BUILD",
+      "FLOW_IGNITION",
+      "MULTI_EVENT_IGNITION"
+    ],
+    "ranking_effect": 0,
+    "promotion_gate": "forward/OOS validation required before any ranking weight",
+    "latest_ci": {
+      "workflow": "Sample Dataset v2 Validation",
+      "run_id": 36256117692,
+      "conclusion": "success",
+      "commit": "288cac6d627f1d15e31d418eec8345d0593367b9"
+    },
+    "safeguards": [
+      "closed candles only",
+      "partial resample buckets dropped",
+      "same-bar dual barrier hit remains unresolved",
+      "no extra exchange calls in Astra deep path",
+      "no rank/category override"
+    ]
   }
 }
