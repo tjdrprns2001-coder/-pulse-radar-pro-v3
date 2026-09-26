@@ -19,6 +19,14 @@ on:
       - 'scripts/verify-sampling-v3.js'
       - 'scripts/verify-astra-auto-scan.js'
       - 'scripts/verify-coin-scan-deep.js'
+      - 'lib/coin-scan/sampling-v3-integrity.js'
+      - 'lib/coin-scan/sampling-v3-alt-bars.js'
+      - 'lib/coin-scan/sampling-v3-oos.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'scripts/verify-sampling-v3-integrity.js'
+      - 'scripts/verify-sampling-v3-alt-bars.js'
+      - 'scripts/verify-sampling-v3-oos.js'
+      - 'scripts/verify-coin-scan-provider.js'
       - '.github/workflows/sample-dataset-v2-validation.yml'
   workflow_dispatch:
 
@@ -39,6 +47,14 @@ jobs:
         run: npm run test:sample-blind-validation
       - name: Sampling v3
         run: npm run test:sampling-v3
+      - name: Sampling v3 integrity
+        run: npm run test:sampling-v3-integrity
+      - name: Sampling v3 alternative bars
+        run: npm run test:sampling-v3-alt-bars
+      - name: Sampling v3 OOS
+        run: npm run test:sampling-v3-oos
+      - name: Provider microstructure
+        run: npm run test:coin-scan-provider
       - name: Deep scan wiring
         run: npm run test:coin-scan-deep
       - name: Astra wiring
