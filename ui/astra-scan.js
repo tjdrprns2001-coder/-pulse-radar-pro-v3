@@ -1,8 +1,8 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),state={running:false,controller:null,rows:[],method:'astra'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=(v,d=2)=>Number.isFinite(Number(v))?Number(v).toFixed(d):'-';
-const pct=v=>Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`:'-';
+const fmt=(v,d=2)=>v===null||v===undefined||v===''?'-':Number.isFinite(Number(v))?Number(v).toFixed(d):'-';
+const pct=v=>v===null||v===undefined||v===''?'-':Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`:'-';
 const chunks=(a,n)=>{const out=[];for(let i=0;i<a.length;i+=n)out.push(a.slice(i,i+n));return out};
 const quantile=(a,p=.5)=>{const x=a.map(Number).filter(Number.isFinite).sort((m,n)=>m-n);if(!x.length)return null;const i=(x.length-1)*Math.max(0,Math.min(1,p)),lo=Math.floor(i),hi=Math.ceil(i);return lo===hi?x[lo]:x[lo]+(x[hi]-x[lo])*(i-lo)};
 const MODE={
