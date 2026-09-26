@@ -11,6 +11,7 @@ function node(tag,cls,txt){
 function clear(el){while(el?.firstChild)el.removeChild(el.firstChild)}
 function fmtPct(v,d=1){const n=Number(v);return Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(d)}%`:'—'}
 function fmtNum(v){const n=Number(v);return Number.isFinite(n)?n.toLocaleString('ko-KR'):'—'}
+function fmtMoney(v){const n=Number(v);if(!Number.isFinite(n))return'—';if(Math.abs(n)>=1e9)return'USD '+(n/1e9).toFixed(2)+'B';if(Math.abs(n)>=1e6)return'USD '+(n/1e6).toFixed(1)+'M';if(Math.abs(n)>=1e3)return'USD '+(n/1e3).toFixed(1)+'K';return'USD '+n.toFixed(0)}
 function age(ms){const n=Number(ms);if(!Number.isFinite(n))return'시간 미상';if(n<60000)return'방금';if(n<3600000)return`${Math.max(1,Math.floor(n/60000))}분 전`;return`${Math.floor(n/3600000)}시간 전`}
 function openReport(symbol){
   const s=String(symbol||'').trim().toUpperCase();if(!s)return;
@@ -79,7 +80,13 @@ function renderFocus(f){
   const card=$('focusCard');
   if(!f||!f.found){card.hidden=true;return}
   card.hidden=false;$('focusSymbol').textContent=f.symbol;
-  $('focusMeta').textContent=`${f.category||'관찰'} · ${f.sector||'기타'} · 24H ${fmtPct(f.change24h)} · 후보 ${f.candidateScore??'—'} · 점화전 ${f.preIgnitionScore??'—'}`;
+  const baseMeta=[f.category||'관찰',f.marketScope||f.sector||'기타',`24H ${fmtPct(f.change24h)}`];
+  if(f.candidateScore!=null)baseMeta.push(`후보 ${f.candidateScore}`);
+  if(f.preIgnitionScore!=null)baseMeta.push(`점화전 ${f.preIgnitionScore}`);
+  if(f.derivatives?.exchangeCount!=null)baseMeta.push(`선물 ${f.derivatives.exchangeCount}곳`);
+  if(f.derivatives?.openInterestUsd!=null)baseMeta.push(`OI ${fmtMoney(f.derivatives.openInterestUsd)}`);
+  if(f.derivatives?.fundingRate!=null)baseMeta.push(`펀딩 ${fmtPct(Number(f.derivatives.fundingRate)*100,4)}`);
+  $('focusMeta').textContent=baseMeta.join(' · ');
   $('focusSummary').textContent=f.summary||f.reason||'추가 근거를 확인하는 중입니다.';
   const reasons=$('focusReasons');clear(reasons);for(const r of (f.reasons||[]).slice(0,4))reasons.append(node('span','chip',r));
   $('openReport').onclick=()=>openReport(f.symbol);
@@ -176,4 +183,4 @@ $('quickPrompts').addEventListener('click',e=>{const b=e.target.closest('button[
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastLoadedAt>60000)load(false)});
 setInterval(()=>{if(!document.hidden)load(false)},60000);
 load(false);
-})();
+})()
