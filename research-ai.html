@@ -1,0 +1,18 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar Research AI</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260926-v1"></head><body>
+<main class="rai">
+  <header class="hero"><div><div class="eyebrow">RESEARCH AI · SHADOW LEARNING</div><h1>연구 학습 AI</h1><p>자동스캔 결과 + 급등 역추적 샘플 + 책 규칙 + 실제 6H/24H 결과를 누적해 학습합니다.</p></div><button id="refresh">새로고침</button></header>
+  <section class="notice"><b>현재는 SHADOW_ONLY</b><span>학습 점수는 기존 자동스캐너 순위·진입 신호를 직접 바꾸지 않습니다. 실제 결과 표본이 충분해진 뒤 승격합니다.</span></section>
+  <section class="grid metrics">
+    <article><span>관측 샘플</span><b id="obs">-</b></article>
+    <article><span>실제 라벨</span><b id="labels">-</b></article>
+    <article><span>양성 / 음성</span><b id="pn">-</b></article>
+    <article><span>MLP 상태</span><b id="model">-</b></article>
+  </section>
+  <section class="grid sources">
+    <article><h2>학습 소스</h2><div id="sources">불러오는 중…</div></article>
+    <article><h2>저장 상태</h2><div id="persist">불러오는 중…</div></article>
+  </section>
+  <section class="card"><div class="cardHead"><div><h2>최근 학습 메모리</h2><p>동일 종목이 다시 관측되면 6H/24H 실제 수익률을 붙여 지도학습 라벨로 전환합니다.</p></div><button id="exportBtn">JSON 보기</button></div><div class="tableWrap"><table><thead><tr><th>종목</th><th>시각</th><th>AI</th><th>상태</th><th>6H</th><th>24H</th><th>라벨</th></tr></thead><tbody id="rows"><tr><td colspan="7">데이터 로딩 중…</td></tr></tbody></table></div></section>
+  <section class="card"><h2>학습 방식</h2><div class="flow"><span>자동스캔 정밀검사</span><i>→</i><span>샘플 유사도</span><i>+</i><span>책 규칙 합치도</span><i>+</i><span>기존 스캔 점수</span><i>→</i><span>6H/24H 실제 결과</span><i>→</i><span>2-hidden-layer MLP 재학습</span></div></section>
+  <div id="status" class="status">준비 중…</div>
+</main><script src="/ui/research-ai.js?v=20260926-v1" defer></script></body></html>
