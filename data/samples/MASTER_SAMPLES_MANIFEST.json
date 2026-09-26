@@ -1068,7 +1068,9 @@
       "calibration_fraction": 0.35,
       "evaluation_thresholds_frozen": true,
       "rolling_thresholds": "SHADOW_DIAGNOSTIC_ONLY",
-      "future_data_used_for_thresholds": false
+      "future_data_used_for_thresholds": false,
+      "scope": "PER_SNAPSHOT_CAUSAL_SPLIT",
+      "insufficient_calibration": "NO_PRIMARY_FROZEN_BARS; rolling remains diagnostics only"
     },
     "overshoot_policy": {
       "mode": "INCLUDE_FULL_TRADE",
@@ -1080,6 +1082,11 @@
       "id_prefix": "sampling-v3.1",
       "reason": "stable immutable identity retained across research revision upgrades to prevent duplicate symbol/hour samples",
       "research_revision_field": "samplingRevision"
+    },
+    "tick_definition": "BINANCE_AGGTRADE_EVENT_COUNT",
+    "source_time_semantics": {
+      "event_time": "aggTrade T",
+      "receive_time_available": false
     }
   }
 }
