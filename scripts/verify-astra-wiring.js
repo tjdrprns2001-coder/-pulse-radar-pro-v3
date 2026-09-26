@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('fs'),assert=require('assert');
+const html=fs.readFileSync('astra-scan.html','utf8');
+const js=fs.readFileSync('ui/astra-scan.js','utf8');
+const css=fs.readFileSync('ui/astra-scan.css','utf8');
+const api=fs.readFileSync('api/astra-scan.js','utf8');
+assert(html.includes('Astra 자동스캔'));
+assert(html.includes('id="astraRun"'));
+assert(js.includes("get('universe')")&&js.includes("get('oi'")&&js.includes("get('deep'"));
+assert(js.includes('chunks(filtered.map(x=>x.symbol),16)'));
+assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.includes("stage==='deep'"));
+assert(css.includes('.card.IGNITION_CONFIRMED'));
+console.log('astra wiring verification passed');
