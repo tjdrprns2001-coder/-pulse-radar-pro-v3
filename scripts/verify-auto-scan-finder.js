@@ -24,6 +24,7 @@ must(js.includes('strategyCycle')&&js.includes('strategyMarkup')&&js.includes('b
 must(js.includes('function compactSamplingV3(')&&js.includes('samplingV3:compactSamplingV3(x.samplingV3)'),'Sampling v3.1 session persistence missing');
 must(js.includes('function samplingV3Markup(x)')&&js.includes('OOS 검증 전 Shadow'),'Sampling v3.1 automatic-scan card missing');
 must(js.includes('samplingResearch:m.samplingResearch'),'Sampling v3.1 scan progress metadata missing');
+must(js.includes('samplingSamplesRecorded')&&js.includes('이번 실행 신규 샘플'),'automatic sample count visibility missing');
 must(js.includes('mode=prescan')&&js.includes('prescanLoading'),'progressive prescan stage missing');
 must(js.includes('mode=scan-run')&&js.includes('pollServerRun')&&js.includes('resumeServerRun'),'persistent server scan-run missing');
 must(js.includes('CAN_BACKGROUND_SCAN')&&js.includes("if(!CAN_BACKGROUND_SCAN)return false"),'Render must bypass Netlify-only background scan startup');
