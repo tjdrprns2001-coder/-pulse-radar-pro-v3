@@ -95,6 +95,29 @@ assert.notEqual(postBlocked.level,'매수 후보','POST-SURGE must never show a 
 const distributionBlocked=core.buildTradeSignal({dataState:'live',scanClassKey:'DISTRIBUTION-RISK',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.55,volumeAcceleration:2.4,priceChange1h:2.2,priceChange15m:1.1,momentumSignals:{aligned:true,overheated:false,score:4}});
 assert.notEqual(distributionBlocked.level,'매수 후보','DISTRIBUTION-RISK must never show a buy candidate');
 
+const missingFlow=core.buildTradeSignal({
+  dataState:'live',scanClassKey:'SECTOR-ROTATION',category:'급등 전조 관찰',
+  structure:'neutral',takerRatio:null,volumeAcceleration:null
+});
+assert.equal(missingFlow.level,'관찰','soft sector state with missing optional flow should wait, not hard-exclude');
+assert(!missingFlow.invalidations.some(x=>x.includes('매도 체결 우위')),'missing taker must not become sell dominance');
+
+const nullTakerClass=core.classifyV2({
+  dataState:'live',priceChange24h:-2,structure:'neutral',takerRatio:null,
+  volumeAcceleration15m:.5,sectorRotation:true
+});
+assert.notEqual(nullTakerClass.key,'DISTRIBUTION-RISK','null taker must not fabricate distribution risk');
+
+const splitSummary=core.beginnerSummary({
+  structure:'neutral',dataState:'live',
+  scanClass:{label:'🟣 섹터 순환매'},
+  reasons:['같은 섹터 선도 종목이 먼저 강해짐'],
+  tradeSignal:{level:'관찰',confidence:0,confirmations:0,invalidations:['독립 확인 신호 대기']}
+});
+assert(splitSummary.includes('상태 분류는 🟣 섹터 순환매'),'summary must separate state classification');
+assert(splitSummary.includes('진입 판정은 관찰'),'summary must separate entry decision');
+assert(splitSummary.includes('가격·시간봉 데이터는 정상'),'live data wording must not imply a trade signal');
+
 const weakFlow=core.buildTradeSignal({dataState:'live',category:'급등 전조 강함',structure:'bullish',preSurge:{label:'가능성 높음',confirmations:5},takerRatio:1.03,volumeAcceleration:1.12,priceChange1h:1.8,priceChange15m:.6,reaccumulating:true,alreadySurged:false,momentumSignals:{aligned:true,overheated:false,score:4}});
 assert.notEqual(weakFlow.level,'매수 후보');
 assert(weakFlow.invalidations.some(x=>x.includes('거래량')||x.includes('체결')),'weak market confirmation downgrade must explain volume/flow weakness');
