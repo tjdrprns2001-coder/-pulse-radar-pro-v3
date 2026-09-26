@@ -7,7 +7,7 @@ function finite(v){
 
 function freshnessOf(scan,now){
   const direct=finite(scan?.freshnessMs);
-  const updated=finite(scan?.updatedAt);
+  const updated=finite(scan?.updatedAt)??finite(scan?.scan?.finishedAt)??finite(scan?.finishedAt)??finite(scan?.scan?.asOf);
   const ms=direct!=null?Math.max(0,direct):(updated!=null?Math.max(0,now-updated):null);
   const state=ms==null?'unknown':ms<=120000?'live':ms<=600000?'delayed':'stale';
   return{ms,state};
@@ -93,11 +93,15 @@ module.exports=async function handler(req,res,ctx={}){
       });
     }
 
+    if(String(scan.schemaVersion||'')!=='1.0'){
+      return res.status(502).json({status:'degraded',source:'IGNITION',configured:true,error:'ignition_schema_mismatch',candidates:[]});
+    }
     const candidates=Array.isArray(scan.candidates)?scan.candidates.slice(0,40).map(normalizeCandidate):[];
     const freshness=freshnessOf(scan,now);
+    const scanMeta=scan.scan&&typeof scan.scan==='object'?scan.scan:{};
     const usableCount=candidates.filter(x=>x.usable).length;
     const partialCount=candidates.filter(x=>!x.usable).length;
-    const state=candidates.length?'ready':'empty';
+    const state=String(scan.status||'').toLowerCase()==='empty'?'empty':'ready';
 
     return res.status(200).json({
       status:'ok',
@@ -105,12 +109,13 @@ module.exports=async function handler(req,res,ctx={}){
       source:'IGNITION',
       configured:true,
       schemaVersion:String(scan.schemaVersion||''),
-      id:scan.id??null,
+      id:scan.id??scanMeta.id??null,
       scanStatus:scan.status??null,
-      stage:scan.stage??null,
-      asOf:finite(scan.asOf),
-      updatedAt:finite(scan.updatedAt),
-      finishedAt:finite(scan.finishedAt),
+      stage:scan.stage??(scan.status==='complete'?'complete':null),
+      asOf:finite(scan.asOf)??finite(scanMeta.asOf),
+      updatedAt:finite(scan.updatedAt)??finite(scanMeta.finishedAt),
+      finishedAt:finite(scan.finishedAt)??finite(scanMeta.finishedAt),
+      partialData:Boolean(scanMeta.partialData??scan.partialData),
       freshnessMs:freshness.ms,
       freshnessState:freshness.state,
       counts:scan.counts&&typeof scan.counts==='object'?scan.counts:{},
