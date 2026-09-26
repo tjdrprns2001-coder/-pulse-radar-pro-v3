@@ -35,4 +35,6 @@ jobs:
       - run: node --check lib/learning/metrics.js
       - run: node --check lib/learning/evidence.js
       - run: node --check lib/learning/research-ai-v2.js
+      - run: node --check lib/learning/scanner-adapter.js
+      - run: node --check api/astra-scan.js
       - run: npm run test:research-ai-v2
