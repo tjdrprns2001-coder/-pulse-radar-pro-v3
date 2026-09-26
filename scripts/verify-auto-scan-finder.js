@@ -4,6 +4,7 @@ const js=fs.readFileSync('ui/coin-scan.js','utf8');
 const css=fs.readFileSync('ui/coin-scan.css','utf8');
 const must=(ok,msg)=>{if(!ok)throw new Error(msg)};
 must(html.includes('id="finderResults"'),'finder results mount missing');
+for(const id of ['scanElapsed','stageSummary','stagePrescan','stageDeep','stageValidate'])must(html.includes('id="'+id+'"'),'speed pipeline UI missing '+id);
 must(html.includes('id="finderPreset"'),'finder preset missing');
 must(html.includes('value="derivatives"'),'derivatives preset missing');
 must(js.includes('function finderPass('),'finder filter missing');
@@ -22,6 +23,7 @@ must(js.includes('RE-ENTRY')&&js.includes('PATTERN-SETUP')&&js.includes('FAKEOUT
 must(js.includes('strategyCycle')&&js.includes('strategyMarkup')&&js.includes('bookManualMarkup'),'latest strategy/book card integration missing');
 must(js.includes('mode=prescan')&&js.includes('prescanLoading'),'progressive prescan stage missing');
 must(js.includes('mode=scan-run')&&js.includes('pollServerRun')&&js.includes('resumeServerRun'),'persistent server scan-run missing');
+must(js.includes('CAN_BACKGROUND_SCAN')&&js.includes("if(!CAN_BACKGROUND_SCAN)return false"),'Render must bypass Netlify-only background scan startup');
 must(!js.includes("if(!restored)refresh(false)"),'first-load scan must remain manual');
 must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v5'"),'scan session cache version must invalidate stale scanner strategy/ranking state');
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
