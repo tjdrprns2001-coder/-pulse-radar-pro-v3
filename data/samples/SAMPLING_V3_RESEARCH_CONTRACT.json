@@ -1,0 +1,83 @@
+{
+  "version": "ASTRA_SAMPLING_V3",
+  "status": "SHADOW_RESEARCH_ACTIVE",
+  "principle": "Keep canonical time-bar scan; add information-driven event sampling without changing ranking until OOS validation.",
+  "inputs": {
+    "market": [
+      "closed 5m OHLCV",
+      "closed 15m OHLCV"
+    ],
+    "derivatives": [
+      "1H OI change",
+      "4H OI change",
+      "15m taker ratio",
+      "5m taker ratio"
+    ]
+  },
+  "samplers": [
+    {
+      "type": "CUSUM",
+      "mode": "adaptive log-return CUSUM",
+      "threshold": "max(0.35%, recent return std × 1.35)"
+    },
+    {
+      "type": "PRICE_THRESHOLD",
+      "threshold_pct": 1.25
+    },
+    {
+      "type": "RANGE_EXPANSION",
+      "threshold_pct": 1.8
+    },
+    {
+      "type": "RVOL_IGNITION",
+      "window": 20,
+      "threshold": 3
+    },
+    {
+      "type": "LIQUIDITY_SWEEP",
+      "lookback": 20,
+      "wick_ratio_min": 0.25
+    },
+    {
+      "type": "OI_ACCEL_1H",
+      "threshold_pct": 0.75
+    },
+    {
+      "type": "OI_BUILD_4H",
+      "threshold_pct": 1.5
+    },
+    {
+      "type": "TAKER_PULSE",
+      "threshold_ratio": 1.2
+    }
+  ],
+  "triple_barrier": {
+    "upper": "max(2%, ATR% × 2.0)",
+    "lower": "max(1%, ATR% × 1.0)",
+    "horizon_bars": 24,
+    "labels": {
+      "UPPER_BARRIER_HIT": "SURGE",
+      "LOWER_BARRIER_HIT": "FAILED_BOS",
+      "TIME_EXPIRED": "NO_TRIGGER",
+      "AMBIGUOUS_SAME_BAR": "UNRESOLVED"
+    }
+  },
+  "sequence_stages": [
+    "QUIET",
+    "ABSORPTION_BUILD",
+    "FLOW_IGNITION",
+    "MULTI_EVENT_IGNITION"
+  ],
+  "runtime": {
+    "ranking_effect": 0,
+    "required_mode": "SHADOW",
+    "promotion_requirement": "separate OOS validation using forward outcomes; no promotion from in-sample unit tests"
+  },
+  "safeguards": [
+    "closed candles only",
+    "no extra exchange API calls in Astra deep path",
+    "no ranking/category override",
+    "event provenance retained in output",
+    "ambiguous same-bar barrier hits are not force-labeled"
+  ]
+}
