@@ -948,6 +948,59 @@
       },
       "current_status": "COLLECTING_FORWARD_LABELS",
       "ranking_effect_until_pass": 0
+    },
+    "automatic_scanner": {
+      "status": "WIRED_SHADOW_ACTIVE",
+      "paths": [
+        "api/coin-scan.js",
+        "lib/coin-scan/scan-service.js",
+        "lib/coin-scan/deep-scan.js",
+        "lib/coin-scan/scan-run-service.js",
+        "netlify/functions/coin-scan.mjs",
+        "netlify/functions/coin-scan-run-background.mjs",
+        "ui/coin-scan.js"
+      ],
+      "behavior": {
+        "all_deep_candidates": [
+          "Sampling v3 core events",
+          "candle integrity audit"
+        ],
+        "validated_chunk_top_candidates": [
+          "1m native/synthetic audit",
+          "Binance futures aggTrades",
+          "Dollar/Imbalance/Run bars"
+        ],
+        "microstructure_limit_per_deep_call": 4,
+        "microstructure_workers": 2,
+        "validation_off_extra_microstructure_requests": 0,
+        "microstructure_failure": "NON_BLOCKING",
+        "ranking_effect": 0
+      },
+      "scan_run": {
+        "deep_chunk": 8,
+        "deep_workers": 2,
+        "full_validation_chunks": 2,
+        "sampling_research_progress_aggregated": true
+      },
+      "ui": {
+        "visible": true,
+        "persisted_in_scan_session": true,
+        "fields": [
+          "stage",
+          "evidenceScore",
+          "integrity",
+          "nativeSyntheticAudit",
+          "microstructure status",
+          "Dollar/Imbalance/Run counts",
+          "rankingEffect"
+        ]
+      },
+      "ci": {
+        "sampling_validation_run": 36257704605,
+        "sampling_validation_conclusion": "success",
+        "auto_scanner_speed_run": 36257706851,
+        "auto_scanner_speed_conclusion": "success"
+      }
     }
   }
 }
