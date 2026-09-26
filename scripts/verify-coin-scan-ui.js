@@ -39,7 +39,7 @@ assert(html.includes('class="scanPipeline"')&&css.includes('.scanPipeline'),'spe
 assert(html.includes('전체 상태 분류')&&html.includes('상태 분류 ≠ 진입 신호'),'all-state UI separation required');
 assert(js.includes('fmtElapsed')&&js.includes('scanStartedAt'),'elapsed scan timing required');
 assert(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'bounded global progressive rendering required');
-assert(html.includes('/ui/coin-scan.js?v=20260926-speed3')&&html.includes('/ui/coin-scan.css?v=20260926-speed3'),'official v3 scanner UI must use current cache-bust');
+assert(html.includes('/ui/coin-scan.js?v=20260927-sampling32')&&html.includes('/ui/coin-scan.css?v=20260927-sampling32'),'official v3 scanner UI must use current cache-bust');
 assert(js.includes('preIgnitionScore')&&js.includes('점화전'),'pre-ignition readiness must be visible in scanner UI');
 for(const s of ['RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','preScanMarkup','strategyMarkup','fakeoutMarkup','entryQualityMarkup','bookManualMarkup','tryServerScanRun','mode=prescan'])assert(js.includes(s)||html.includes(s),`restored autoscan UI missing ${s}`);
 assert(html.includes('점화전 OOS')&&html.includes('oosLink'),'autoscan OOS dashboard link missing');
