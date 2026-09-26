@@ -153,7 +153,7 @@
     "test:entry-confirmation": "node scripts/verify-entry-confirmation.js",
     "test:fakeout-state": "node scripts/verify-fakeout-state.js",
     "test:scan-run-service": "node scripts/verify-scan-run-service.js",
-    "test:astra-auto-scan": "node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-astra-wiring.js"
+    "test:astra-auto-scan": "node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-claude-scan.js && node scripts/verify-astra-wiring.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
