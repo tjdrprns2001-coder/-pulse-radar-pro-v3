@@ -1,5 +1,6 @@
 const handlers = {
   backtest: require('../handlers/backtest'),
+  'bowl224-research': require('../handlers/bowl224-research'),
   'dante-backtest': require('../handlers/dante-backtest'),
   'calibration-freeze': require('../handlers/calibration-freeze'),
   'calibration-health': require('../handlers/calibration-health'),
