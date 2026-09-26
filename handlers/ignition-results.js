@@ -101,7 +101,10 @@ module.exports=async function handler(req,res,ctx={}){
     const scanMeta=scan.scan&&typeof scan.scan==='object'?scan.scan:{};
     const usableCount=candidates.filter(x=>x.usable).length;
     const partialCount=candidates.filter(x=>!x.usable).length;
-    const state=String(scan.status||'').toLowerCase()==='empty'?'empty':'ready';
+    const scanStatus=String(scan.status||'').toLowerCase();
+    const sourceStatus=String(scan.sourceStatus||scan.status||'').toLowerCase();
+    const servedFromLastComplete=Boolean(scan.servedFromLastComplete);
+    const state=scanStatus==='empty'?'empty':servedFromLastComplete?'fallback':['queued','running','paused'].includes(scanStatus)?'partial':'ready';
 
     return res.status(200).json({
       status:'ok',
@@ -111,9 +114,12 @@ module.exports=async function handler(req,res,ctx={}){
       schemaVersion:String(scan.schemaVersion||''),
       id:scan.id??scanMeta.id??null,
       scanStatus:scan.status??null,
-      stage:scan.stage??(scan.status==='complete'?'complete':null),
+      sourceStatus:scan.sourceStatus??scan.status??null,
+      servedFromLastComplete,
+      active:['queued','running','paused'].includes(scanStatus),
+      stage:scan.stage??scanMeta.stage??(scan.status==='complete'?'complete':null),
       asOf:finite(scan.asOf)??finite(scanMeta.asOf),
-      updatedAt:finite(scan.updatedAt)??finite(scanMeta.finishedAt),
+      updatedAt:finite(scan.updatedAt)??finite(scanMeta.finishedAt)??finite(scanMeta.asOf),
       finishedAt:finite(scan.finishedAt)??finite(scanMeta.finishedAt),
       partialData:Boolean(scanMeta.partialData??scan.partialData),
       freshnessMs:freshness.ms,
