@@ -67,6 +67,7 @@ export function createHandler({env, latestCompleted, now = Date.now}) {
       const scan = await latestCompleted();
       if (!scan) return response({schemaVersion:'1.0', status:'empty', sourceStatus:'empty', servedFromLastComplete:false, scan:null, counts:{}, timings:{}, metrics:{}, freshnessMs:null, candidates:[]});
       const allowed=new Set(['queued','running','paused','complete']);
+      if (scan.kind!=null&&String(scan.kind)!=='scan') throw new Error('invalid_snapshot');
       if (!allowed.has(String(scan.status))) throw new Error('invalid_snapshot');
       return response(publicScan(scan));
     } catch { return response({error:'results_unavailable'}, 503); }
