@@ -92,9 +92,13 @@
     "ambiguous same-bar barrier hits are not force-labeled",
     "candidate-only microstructure calls are bounded",
     "microstructure failures do not fail the main scan",
-    "no ranking/category override until real forward OOS promotion gate passes"
+    "no ranking/category override until real forward OOS promotion gate passes",
+    "tick and volume bars are derived from trade-level input, not reconstructed from OHLCV",
+    "alternative-bar calibration and evaluation segments are time-ordered and non-overlapping",
+    "threshold-closing trade is not synthetically split across bars",
+    "partial alternative-bar tails are dropped rather than force-closed"
   ],
-  "extension": "ASTRA_SAMPLING_V3.1",
+  "extension": "ASTRA_SAMPLING_V3.2",
   "integrity": {
     "candle_state": [
       "isClosed",
@@ -107,17 +111,33 @@
       "1m→15m"
     ],
     "mtf_rule": "higher-timeframe features are only available when closeTime < decisionTime",
-    "duplicate_policy": "dedupe by openTime for candles and aggregate-trade id/composite key for aggTrades"
+    "duplicate_policy": "dedupe by openTime for candles and aggregate-trade id/composite key for aggTrades",
+    "threshold_guard": "calibrationEndTime must be strictly before evaluationStartTime; evaluation/future trades cannot alter frozen thresholds"
   },
   "alternative_bars": {
     "status": "SHADOW_ONLY",
+    "engine": "lib/coin-scan/sampling-v3-alt-bars.js",
+    "version": "SAMPLING_V3_ALT_BARS_v2",
     "types": [
+      "TICK",
+      "VOLUME",
       "DOLLAR",
       "IMBALANCE",
       "RUN"
     ],
-    "threshold_policy": "lagged rolling median trade notional; current/future trade notional is not used to set its own threshold",
     "source": "Binance USD-M futures aggTrades",
+    "threshold_policy": {
+      "default_mode": "FROZEN_CALIBRATION",
+      "calibration_fraction": 0.35,
+      "rule": "derive thresholds only from the leading calibration segment; freeze them for the later evaluation segment",
+      "rolling_mode": "retained as shadow diagnostic comparison only",
+      "future_evaluation_data_used_for_thresholds": false
+    },
+    "overshoot_policy": {
+      "mode": "INCLUDE_FULL_TRADE",
+      "rule": "the trade that crosses a volume/notional/imbalance threshold remains wholly in the closing bar; excess is measured but not synthetically split or carried",
+      "partial_tail": "DROP_INCOMPLETE_TAIL"
+    },
     "ranking_effect": 0
   },
   "oos_validation": {
