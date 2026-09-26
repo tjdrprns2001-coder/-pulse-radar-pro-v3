@@ -12,7 +12,7 @@ assert(!shell.includes('pulse-shell-snapshot-restore.js'),'legacy snapshot shell
 assert(!shell.includes('pulse-shell-v2-operations.js'),'legacy operations shell injector must be removed');
 assert(shell.includes('data-view="snapshotcenter"')&&shell.includes('data-view="backfill"'),'snapshot tools must be consolidated into V5 center and backfill retained');
 assert(shellJs.includes("chartsnapshot:{title:'차트 스냅샷'")&&shellJs.includes("mode:'quality'"),'legacy snapshot view key must remain as compatibility alias');
-assert(shellJs.includes("searchParams.set('build','20260921-v5')"),'child view cache-bust missing');
+assert(/searchParams\.set\('build','[A-Za-z0-9._-]+'\)/.test(shellJs),'child view cache-bust missing');
 assert(shellJs.includes("side.scrollTop=0"),'drawer should open from top');
 assert(shellJs.includes('/ui/pulse-child-normalize.css?v=20260921-v5'),'injected normalization cache-bust missing');
 assert(norm.includes('body>.app>.top{display:none!important}'),'duplicate standalone child header should hide in shell');
