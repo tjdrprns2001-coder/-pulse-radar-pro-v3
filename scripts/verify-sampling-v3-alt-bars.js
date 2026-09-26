@@ -12,24 +12,67 @@ trades.push({...trades[100]}); // duplicate id must be removed
 
 const n=A.normalizeAggTrades(trades);
 assert.equal(n.length,600,'duplicate aggregate trade id must be removed');
-assert(n.every((x,i)=>i===0||x.time>=n[i-1].time));
+assert(n.every((x,i)=>i===0||x.time>=n[i-1].time),'trades must be chronological');
 
-const d=A.buildDollarBars(trades,{minThresholdUsd:1000,dollarTargetTrades:20});
-const im=A.buildImbalanceBars(trades,{minThresholdUsd:500,imbalanceTargetTrades:8});
-const run=A.buildRunBars(trades,{minThresholdUsd:500,minRunTrades:6});
-assert(d.length>0,'dollar bars required');
-assert(im.length>0,'imbalance bars required');
-assert(run.length>0,'run bars required');
-assert(d.every(x=>x.tradeCount>0&&x.dollarVolume>=x.thresholdUsd));
-assert(im.every(x=>Math.abs(x.signedImbalanceUsd)>=x.thresholdUsd));
-assert(run.every(x=>x.runTrades>=6&&['BUY','SELL'].includes(x.direction)));
+// Explicit bar families.
+const tick=A.buildTickBars(trades,{tickTargetTrades:20});
+const volume=A.buildVolumeBars(trades,{volumeThresholdQty:40});
+const dollar=A.buildDollarBars(trades,{thresholdUsd:4000});
+const imbalance=A.buildImbalanceBars(trades,{imbalanceThresholdUsd:1500});
+const run=A.buildRunBars(trades,{runThresholdUsd:1000,minRunTrades:6});
+assert(tick.length>0&&tick.every(x=>x.tradeCount===20),'tick bars must close on fixed trade count');
+assert(volume.length>0&&volume.every(x=>x.volume>=x.thresholdQty),'volume bars required');
+assert(dollar.length>0&&dollar.every(x=>x.dollarVolume>=x.thresholdUsd),'dollar bars required');
+assert(imbalance.length>0&&imbalance.every(x=>Math.abs(x.signedImbalanceUsd)>=x.thresholdUsd),'imbalance bars required');
+assert(run.length>0&&run.every(x=>x.runTrades>=6&&['BUY','SELL'].includes(x.direction)),'run bars required');
 
-const s=A.summarize(trades,{minThresholdUsd:500,dollarTargetTrades:20,imbalanceTargetTrades:8,minRunTrades:6});
-assert.equal(s.version,'SAMPLING_V3_ALT_BARS_v1');
+// Tail policy: an incomplete tick bar is not force-closed.
+const short=trades.slice(0,45);
+assert.equal(A.buildTickBars(short,{tickTargetTrades:20}).length,2,'partial tick tail must be dropped');
+
+// Overshoot policy is explicit and deterministic: the closing trade is included in the current bar.
+const overshootTrades=[
+  {a:9001,p:'100',q:'3',T:start+700000,m:false},
+  {a:9002,p:'100',q:'3',T:start+701000,m:false},
+  {a:9003,p:'100',q:'3',T:start+702000,m:false},
+  {a:9004,p:'100',q:'3',T:start+703000,m:false}
+];
+const vb=A.buildVolumeBars(overshootTrades,{volumeThresholdQty:5,overshootPolicy:'INCLUDE_FULL_TRADE'});
+assert.equal(vb.length,2);
+assert.equal(vb[0].tradeCount,2);
+assert.equal(vb[0].volume,6);
+assert.equal(vb[0].overshootVolume,1);
+assert.equal(vb[0].overshootPolicy,'INCLUDE_FULL_TRADE');
+const db=A.buildDollarBars(overshootTrades,{thresholdUsd:500,overshootPolicy:'INCLUDE_FULL_TRADE'});
+assert.equal(db[0].dollarVolume,600);
+assert.equal(db[0].overshootUsd,100);
+
+// Calibration must use only the leading train segment and stay frozen in evaluation.
+const cfg={calibrationFraction:.35,minCalibrationTrades:50,tickTargetTrades:20,volumeTargetTrades:20,dollarTargetTrades:20,imbalanceTargetTrades:8,minRunTrades:6,minThresholdUsd:500};
+const cal1=A.calibrateThresholds(trades,cfg);
+assert.equal(cal1.status,'READY');
+assert(cal1.calibrationEndTime<cal1.evaluationStartTime,'calibration must end before evaluation begins');
+const mutated=trades.map((x,i)=>i<210?{...x}:{...x,p:String(Number(x.p)*10),q:String(Number(x.q)*20)});
+const cal2=A.calibrateThresholds(mutated,cfg);
+assert.deepEqual(cal2.thresholds,cal1.thresholds,'future/evaluation trades must not change frozen thresholds');
+assert.equal(cal2.calibrationEndTime,cal1.calibrationEndTime);
+
+// Full v3.2 summary defaults to frozen calibration and exposes all five bar families.
+const s=A.summarize(trades,cfg);
+assert.equal(s.version,'SAMPLING_V3_ALT_BARS_v2');
+assert.equal(s.revision,'3.2');
 assert.equal(s.status,'READY');
 assert.equal(s.tradeCount,600);
+assert.equal(s.policy.thresholdMode,'FROZEN_CALIBRATION');
+assert.equal(s.policy.overshootPolicy,'INCLUDE_FULL_TRADE');
+assert.equal(s.policy.partialBarPolicy,'DROP_INCOMPLETE_TAIL');
+assert.equal(s.calibration.status,'READY');
 assert.equal(s.diagnostics.duplicateSafe,true);
 assert.equal(s.diagnostics.causalThresholds,true);
-assert(s.bars.dollarCount>0&&s.bars.imbalanceCount>0&&s.bars.runCount>0);
+assert.equal(s.diagnostics.frozenEvaluation,true);
+assert.equal(s.diagnostics.futureDataUsedForThresholds,false);
+for(const k of ['tickCount','volumeCount','dollarCount','imbalanceCount','runCount'])assert(s.bars[k]>0,k+' required');
+assert(s.latest.tick&&s.latest.volume&&s.latest.dollar,'latest tick/volume/dollar bars required');
+assert(s.rollingShadow&&typeof s.rollingShadow==='object','rolling thresholds may remain shadow comparison only');
 
-console.log('sampling v3 alternative bars PASS',JSON.stringify(s.bars));
+console.log('sampling v3.2 alternative bars PASS',JSON.stringify({bars:s.bars,calibration:s.calibration.thresholds}));
