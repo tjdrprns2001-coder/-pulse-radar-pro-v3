@@ -1,0 +1,50 @@
+name: Sample Dataset v2 Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/coin-scan/master-samples.js'
+      - 'lib/coin-scan/master-sample-dataset-v2.js'
+      - 'lib/coin-scan/sample-similarity-v2.js'
+      - 'lib/coin-scan/sample-blind-validation.js'
+      - 'lib/coin-scan/astra-auto-scanner.js'
+      - 'lib/coin-scan/deep-scan.js'
+      - 'lib/coin-scan/scan-service.js'
+      - 'data/samples/**'
+      - 'scripts/verify-master-sample-dataset-v2.js'
+      - 'scripts/verify-sample-similarity-v2.js'
+      - 'scripts/verify-sample-blind-validation.js'
+      - 'scripts/verify-astra-auto-scan.js'
+      - 'scripts/verify-coin-scan-deep.js'
+      - '.github/workflows/sample-dataset-v2-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Master dataset
+        run: npm run test:master-samples-v2
+      - name: Similarity engine
+        run: npm run test:sample-similarity-v2
+      - name: Blind validation
+        run: npm run test:sample-blind-validation
+      - name: Deep scan wiring
+        run: npm run test:coin-scan-deep
+      - name: Astra wiring
+        run: node scripts/verify-astra-auto-scan.js
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-v2-validation
+          path: data/samples/SAMPLE_LOO_VALIDATION_latest.json
+          if-no-files-found: ignore
