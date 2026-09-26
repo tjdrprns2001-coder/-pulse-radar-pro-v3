@@ -17,8 +17,15 @@
 - jsdom 통합검사: 새/오래된 결과가 서로 다른 상태로 표시되고, 데이터 출처 패널과 펼침 상태가 유지됨.
 - `npm run verify`는 `test:v4-1-mobile`의 `child view cache-bust missing`에서 중단됨. 테스트는 `20260921-v5`를 기대하지만 기준 커밋의 셸은 이미 `20260926-trader-astra1`을 사용한다. 이번 변경에서 두 파일을 수정하지 않았음을 확인했다. 전체 검증 통과로 보고하지 않는다.
 
-## 운영 확인 대기
+## 운영 실측: 2026-09-26 13:20 KST
 
-알고 있던 `https://pulseradar-pro-v5.netlify.app/api/coin-scan?mode=trader-summary`는 이번 조회에서 `usage_exceeded`를 반환했다. 따라서 사용자가 정상 사용 중이라고 알린 새로운 N사이트/Oregon runtime의 실데이터에는 아직 연결하지 못했다. 527개/105개 및 418·429 미발생은 사용자가 전달한 직전 결과이며 이번 검증의 실측 수치가 아니다.
+사용자가 지정한 운영 주소 `https://pulseradar-pro-v5.onrender.com`에서 읽기 전용 API 조회를 수행했다. 기준 main은 PR 메타데이터에서도 `6192c9f`로 확인했다.
 
-다음 운영 확인은 현재 사이트 URL 또는 runtime URL이 확인되면 순차적으로 실시한다: 전체 요약 1회 → 사전 제외 종목 1개 → 정밀 대상 소수 → 시각·누락·원시 수치 교차검증. 실데이터 수익성 검증과 운영 배포는 이번 코드 검증에 포함되지 않는다.
+- `trader-summary`: HTTP 200, `status: ok`, `universeCount: 527`, `eligibleCount: 0`, `excludedCount: 527`, `excluded: {DATA_GAP: 527}`.
+- 응답 HTTP Date는 `2026-09-26T04:20:00Z`, 시장 `asOf`는 `2026-09-26T04:12:51.534Z`. 약 7분 8초 전 시장 스냅샷을 반환했다. CDN 헤더는 `no-store` / `DYNAMIC`이었다.
+- 이어서 `trader-deep&symbol=BTCUSDT`: HTTP 200, `state: DATA_GAP`, `prefilterReason: DATA_GAP`, `missing: [현재 선물 시세 누락·지연]`, `stats: {}`. 판정 시각은 `2026-09-26T04:20:25.639Z`였다.
+- 운영에서 오래된 시장 스냅샷과 전 종목 데이터 부족 현상이 확인됐다. 기준 코드의 15분 시장 캐시와 2분 시세 유효성 충돌 재현과 일치한다. 운영 응답에는 원시 ticker 시각 감사 정보가 없어 개별 시세 타임스탬프까지 직접 대조한 것은 아니다.
+- 위 두 응답에서 418/429 오류는 노출되지 않았다. 전체 스캔이나 장기 무차단을 검증한 것은 아니다.
+- 수정 브랜치의 `npm run test:trader-scan`을 다시 실행했고 모두 통과했다.
+
+이 조회에서는 모든 종목이 사전 제외되어 실제 6TF/OI/taker/funding 정밀 조회의 정상 여부를 확인할 수 없었다. PR #168의 수정은 아직 운영 미반영이다. 수정 배포 후 전체 요약 → 정밀 대상 소수 → 시각·누락·원시 수치 대조를 재검증해야 한다. 실데이터 수익성 검증은 포함하지 않는다.
