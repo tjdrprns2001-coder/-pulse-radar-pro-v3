@@ -1,3 +1,9 @@
+[[redirects]]
+  from = "/api/bowl224-research*"
+  to = "/.netlify/functions/bowl224-research:splat"
+  status = 200
+  force = true
+
 [build]
   publish = "."
   functions = "netlify/functions"
