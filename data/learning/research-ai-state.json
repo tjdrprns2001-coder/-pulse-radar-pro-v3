@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790430310834,
+  "updatedAt": 1790443464017,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -54,7 +54,7 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": null,
+      "outcome6hPct": -0.05869639349871392,
       "outcome24hPct": null,
       "label": null,
       "source": "trader-deep",
@@ -78,10 +78,10 @@
             "returnPct": -0.1813171993502949
           },
           "h6": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790435212870,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790438399999,
+            "returnPct": -0.05869639349871392
           },
           "h12": {
             "status": "PENDING_OR_GAP",
@@ -103,7 +103,7 @@
           }
         },
         "mfePct": 0,
-        "maePct": -0.2185074243808538,
+        "maePct": -0.4473520678596854,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -151,8 +151,8 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790430310834,
-        "confirmedBars": 3
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 7
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": -0.031605750345453654,
@@ -160,7 +160,7 @@
       "outcome12hPct": null,
       "outcome72hPct": null,
       "mfe72hPct": 0,
-      "mae72hPct": -0.2185074243808538,
+      "mae72hPct": -0.4473520678596854,
       "tpSlOrder": "NONE"
     },
     {
@@ -213,7 +213,7 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": null,
+      "outcome6hPct": 0.4181618782592933,
       "outcome24hPct": null,
       "label": null,
       "source": "trader-deep",
@@ -237,10 +237,10 @@
             "returnPct": 0.2607450070501782
           },
           "h6": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790435630041,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790438399999,
+            "returnPct": 0.4181618782592933
           },
           "h12": {
             "status": "PENDING_OR_GAP",
@@ -261,8 +261,8 @@
             "returnPct": null
           }
         },
-        "mfePct": 0.40809018270799857,
-        "maePct": 0.01566708196867328,
+        "mfePct": 0.5304426323681888,
+        "maePct": 0.0022381545669469816,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -310,17 +310,6989 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790430310834,
-        "confirmedBars": 3
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 7
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": 0.19994180798124095,
       "outcome3hPct": 0.2607450070501782,
       "outcome12hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": 0.40809018270799857,
-      "mae72hPct": 0.01566708196867328,
+      "mfe72hPct": 0.5304426323681888,
+      "mae72hPct": 0.0022381545669469816,
       "tpSlOrder": "NONE"
+    },
+    {
+      "key": "TAOUSDT:497345",
+      "symbol": "TAOUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443324985,
+      "price": 331.07,
+      "scannerState": null,
+      "scannerScore": 54,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.54,
+        1,
+        0.49311366262169043,
+        0.3779620623641211,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.6052859246091998,
+        0.031222953866801958,
+        null,
+        null,
+        0.26065210688388374,
+        -0.23986224286548716,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "TAOUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443324985,
+        "source": "astra-astra",
+        "market": {
+          "price": 331.07,
+          "change24hPct": 8.765,
+          "quoteVolume24h": 93854402.7743,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 3.779620623641211,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 54,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 53.41934765417725,
+            "macd": 6.638838956528485,
+            "rvol": 1.089360822979931,
+            "obvUp": null,
+            "compression": null,
+            "close": 261.71,
+            "bars": 138,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 64.67345379013858,
+            "macd": 7.178221379806741,
+            "rvol": 2.574685772636705,
+            "obvUp": null,
+            "compression": null,
+            "close": 287.25,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 68.16254025932608,
+            "macd": 6.812609316444531,
+            "rvol": 1.2373153215017274,
+            "obvUp": null,
+            "compression": null,
+            "close": 318.03,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 69.91470629316467,
+            "macd": 3.4237177523898765,
+            "rvol": 0.839976044790291,
+            "obvUp": null,
+            "compression": null,
+            "close": 329.89,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 72.33701693433433,
+            "macd": 2.8430776384510796,
+            "rvol": 1.6874188564597845,
+            "obvUp": null,
+            "compression": null,
+            "close": 338.74,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 74.13404357642123,
+            "macd": 2.6786524439767696,
+            "rvol": 1.6644535990434803,
+            "obvUp": null,
+            "compression": null,
+            "close": 338.74,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 68.158577738276,
+            "macd": 1.7002892524605784,
+            "rvol": 1.0904259609512443,
+            "obvUp": null,
+            "compression": null,
+            "close": 333.88,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 57.81956320651651,
+            "macd": -0.18839192731724186,
+            "rvol": 0.5142532917191702,
+            "obvUp": null,
+            "compression": null,
+            "close": 332.44,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 42.47945693644276,
+            "macd": -0.6713760662648729,
+            "rvol": 1.4381555570173914,
+            "obvUp": null,
+            "compression": null,
+            "close": 331.07,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 55,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8384348479392583,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8372897466657871,
+          "overlap": 7
+        },
+        {
+          "symbol": "ARKUSDT",
+          "similarity": 0.7963007638093513,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 331.07,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 347.62350000000004,
+          "sl": 321.1379
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "XPLUSDT:497345",
+      "symbol": "XPLUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443324985,
+      "price": 0.11606,
+      "scannerState": null,
+      "scannerScore": 41,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.41,
+        0.2404,
+        0.4663081460685513,
+        0.15881485751714663,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.1802554943574556,
+        0.053329873038149136,
+        null,
+        null,
+        -0.23625160504391024,
+        -0.12936515503347343,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "XPLUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443324985,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.11606,
+          "change24hPct": 1.9232,
+          "quoteVolume24h": 73321709.8823,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.5881485751714663,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 41,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 45.83241761859467,
+            "macd": 0.0077132652935655785,
+            "rvol": 0.96527980996233,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.08919,
+            "bars": 57,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.76413184142486,
+            "macd": 0.0005331128059699423,
+            "rvol": 2.6674128418524,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.0899,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.96366919880413,
+            "macd": 0.002665191564068009,
+            "rvol": 4.482161863107166,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11459,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 72.17203456211197,
+            "macd": 0.002807892876270782,
+            "rvol": 1.5632420578282018,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.12024,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.81996540945343,
+            "macd": 0.0010435226308759555,
+            "rvol": 0.5455767915284898,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11738,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 62.206745212323405,
+            "macd": -0.000026042971070292312,
+            "rvol": 0.336190756969022,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11738,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.40766483072367,
+            "macd": -0.000096532630914508,
+            "rvol": 1.1593526680212525,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11669,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 42.91245184868269,
+            "macd": -0.0002854620244236826,
+            "rvol": 0.6986004028916756,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11601,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 41.3394765443358,
+            "macd": -0.00007933398131041016,
+            "rvol": 0.39376588650065,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.11602,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 44,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.784439980390881,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.7429346308456597,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.5696005958229707,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 0.11606,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 0.121863,
+          "sl": 0.11257819999999999
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "AVAXUSDT:497345",
+      "symbol": "AVAXUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443325994,
+      "price": 10.875,
+      "scannerState": null,
+      "scannerScore": 41,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.41,
+        0.5897875,
+        0.4420663221677028,
+        0.11029778992251549,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.5256798628728205,
+        -0.12470782391908532,
+        null,
+        null,
+        0.10083053439302295,
+        -0.2949031574564956,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "AVAXUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443325994,
+        "source": "astra-astra",
+        "market": {
+          "price": 10.875,
+          "change24hPct": 4.7183,
+          "quoteVolume24h": 58649631.6236,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.1029778992251549,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 41,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 62.09688551750127,
+            "macd": 0.6372856639620368,
+            "rvol": 1.7466232031070292,
+            "obvUp": null,
+            "compression": null,
+            "close": 11.309,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.3333320749947,
+            "macd": 0.4031520007206595,
+            "rvol": 2.754546424155507,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.254,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.17443734601527,
+            "macd": 0.23440680087910637,
+            "rvol": 1.0545245197316795,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.643,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 67.87268459181823,
+            "macd": -0.03603317374517434,
+            "rvol": 0.6355664430065494,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.939,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 61.40181629912032,
+            "macd": 0.03653187134481056,
+            "rvol": 1.1795809049785693,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.977,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 62.71465235420895,
+            "macd": 0.056938220060609085,
+            "rvol": 1.7195029968367532,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.977,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.77039588618462,
+            "macd": 0.027252271564846803,
+            "rvol": 0.7076798292290521,
+            "obvUp": null,
+            "compression": null,
+            "close": 11.032,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 53.02491603179069,
+            "macd": -0.006178760817568185,
+            "rvol": 0.44147001893903387,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.941,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 33.69234543751409,
+            "macd": -0.015509375652981168,
+            "rvol": 1.3413621991030955,
+            "obvUp": null,
+            "compression": null,
+            "close": 10.867,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 48,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8930473274443145,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8634558339918665,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.6533034759532821,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 10.875,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 11.418750000000001,
+          "sl": 10.54875
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "INJUSDT:497345",
+      "symbol": "INJUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443325994,
+      "price": 7.718,
+      "scannerState": null,
+      "scannerScore": 38,
+      "regime": "RISK_ON",
+      "setupType": "HOLD",
+      "features": [
+        0.38,
+        -0.5792,
+        0.35894876023387207,
+        0.2190177253733694,
+        null,
+        null,
+        0,
+        null,
+        1,
+        0,
+        -0.25110452910889786,
+        -0.11594048797122461,
+        null,
+        null,
+        -0.2717053558910086,
+        -0.24422996617717166,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "INJUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443325994,
+        "source": "astra-astra",
+        "market": {
+          "price": 7.718,
+          "change24hPct": -4.6336,
+          "quoteVolume24h": 27276901.8466,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.190177253733694,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "HOLD",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 38,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.51497936280717,
+            "macd": 0.3130278766259976,
+            "rvol": 0.9957819245628874,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.778,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.02384414312303,
+            "macd": 0.28673405017621956,
+            "rvol": 1.7147140542092618,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.803,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 72.65909952905251,
+            "macd": 0.171979049754593,
+            "rvol": 1.1344666251329139,
+            "obvUp": null,
+            "compression": null,
+            "close": 8.179,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.935822571330476,
+            "macd": -0.020262497943535185,
+            "rvol": 0.7399166644051829,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.806,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 49.42178072536577,
+            "macd": -0.06115266762292551,
+            "rvol": 0.6071890023629436,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.857,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 47.26233450114771,
+            "macd": -0.03210533952300775,
+            "rvol": 0.6366350555093749,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.857,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 42.466864126733064,
+            "macd": 0.0018964370473545378,
+            "rvol": 0.725093048647973,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.774,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 41.84883932326974,
+            "macd": -0.001212976911579485,
+            "rvol": 0.508063291368682,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.748,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 37.25694186698461,
+            "macd": -0.012000728587813782,
+            "rvol": 0.4743881986076053,
+            "obvUp": null,
+            "compression": null,
+            "close": 7.731,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 27,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.3785208556100658,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.36795288943669113,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.29585497476277733,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 7.718,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 8.1039,
+          "sl": 7.48646
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "XLMUSDT:497345",
+      "symbol": "XLMUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443328780,
+      "price": 0.2183,
+      "scannerState": null,
+      "scannerScore": 49,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.49,
+        0.0922875,
+        0.34034587405140365,
+        0.1737470365872218,
+        null,
+        null,
+        0,
+        null,
+        1,
+        0,
+        0.17005447734891277,
+        0.11362852345089547,
+        null,
+        null,
+        0.11745277013486705,
+        -0.13850153786146668,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "XLMUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443328780,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.2183,
+          "change24hPct": 0.7383,
+          "quoteVolume24h": 22981771.178,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.737470365872218,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 49,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.813500221105365,
+            "macd": 0.0030467706532556395,
+            "rvol": 0.8385484643973757,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.1972,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.048173574965375,
+            "macd": 0.002578959554258361,
+            "rvol": 2.1564716648224933,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2019,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.04202188786871,
+            "macd": 0.0033152457767721705,
+            "rvol": 2.194957412160152,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2202,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 61.9904174237469,
+            "macd": 0.0013636823269471054,
+            "rvol": 0.5958595233107173,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2185,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 60.31639081028402,
+            "macd": 0.00006727535034237739,
+            "rvol": 0.40337564962074834,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2203,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 57.3212704236168,
+            "macd": -0.0004206461415886334,
+            "rvol": 0.38459552653785173,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2203,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.10163432046738,
+            "macd": -0.000004172750204818338,
+            "rvol": 1.3703211968888753,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2198,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 53.52358310404601,
+            "macd": 0.0001337629981655964,
+            "rvol": 0.6811261130894628,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2192,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 36.798763318153405,
+            "macd": -0.00023885798613158409,
+            "rvol": 0.9741245460287266,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.2184,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 41,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6408797297105633,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.635480751785985,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5733758856308158,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 0.2183,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 0.229215,
+          "sl": 0.211751
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "DOTUSDT:497345",
+      "symbol": "DOTUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443328780,
+      "price": 1.2741,
+      "scannerState": null,
+      "scannerScore": 41,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.41,
+        1,
+        0.34034420366387336,
+        0.18944034243578267,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.9040742534464831,
+        0.2006323255308114,
+        null,
+        null,
+        0.5275864250515431,
+        0.19223433967385814,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "DOTUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443328780,
+        "source": "astra-astra",
+        "market": {
+          "price": 1.2741,
+          "change24hPct": 8.1578,
+          "quoteVolume24h": 22981417.6099,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.8944034243578267,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 41,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 49.26247172597857,
+            "macd": 0.07942866387377467,
+            "rvol": 0.9436765505683928,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1336,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 57.691961494307805,
+            "macd": 0.03646222487147874,
+            "rvol": 1.2365645562838774,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1006,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.020546707063396,
+            "macd": 0.006160214927819603,
+            "rvol": 0.8314491539615616,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2126,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.605517657116955,
+            "macd": 0.003127381522360695,
+            "rvol": 1.0527100294457177,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2302,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.5210162102716,
+            "macd": 0.010774401135265416,
+            "rvol": 1.2180942582840324,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2846,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 72.69870060859057,
+            "macd": 0.0063053795947091915,
+            "rvol": 2.053308756467838,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2846,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 77.12222760339449,
+            "macd": 0.005602688234203616,
+            "rvol": 1.7441562652089995,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.3001,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.82759275154629,
+            "macd": 0.004165196675960771,
+            "rvol": 1.7040142008540777,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2852,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 48.254810299979766,
+            "macd": -0.002069911601032353,
+            "rvol": 0.8877661268358383,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.2738,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 54,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.9295568351029851,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8405137992994774,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.7635511545981395,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 1.2741,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 1.3378050000000001,
+          "sl": 1.235877
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "VIRTUALUSDT:497345",
+      "symbol": "VIRTUALUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443333687,
+      "price": 0.7983,
+      "scannerState": null,
+      "scannerScore": 66,
+      "regime": "RISK_ON",
+      "setupType": "WATCH_PRIORITY",
+      "features": [
+        0.66,
+        0.301475,
+        0.3038431651882216,
+        0.3019590802509997,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.5747773201776406,
+        0.1728696513053074,
+        null,
+        null,
+        0.18075398087632094,
+        -0.012005898799860644,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "VIRTUALUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443333687,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.7983,
+          "change24hPct": 2.4118,
+          "quoteVolume24h": 16419981.3971,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 3.019590802509997,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WATCH_PRIORITY",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 66,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 50.098410381649096,
+            "macd": 0.01991578140188939,
+            "rvol": 0.5854130420801047,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6747,
+            "bars": 99,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 54.75338425822783,
+            "macd": 0.0033054818816819227,
+            "rvol": 2.0874177288597453,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6979,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.38099848311455,
+            "macd": 0.014900604934384883,
+            "rvol": 1.841833318977675,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7964,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.50317340822481,
+            "macd": 0.011180377670314944,
+            "rvol": 0.7971801851467302,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7868,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.6842913000971,
+            "macd": 0.003166505404174517,
+            "rvol": 0.7893206757361322,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.8126,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.77118534057698,
+            "macd": 0.0006464209709231509,
+            "rvol": 1.2260583437972976,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.8126,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.24331960532922,
+            "macd": 0.0019236935335057246,
+            "rvol": 1.6149378058550667,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.8095,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 55.42261942628963,
+            "macd": 0.0006393244439211829,
+            "rvol": 0.9672605099911896,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.8015,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 39.58795430523119,
+            "macd": -0.0022905617497226017,
+            "rvol": 2.1231618472155236,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7981,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 66,
+      "researchStage": "READY",
+      "sampleTop": [
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.9267450358364607,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.9249369732496295,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.7727843085014765,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 0.7983,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 0.838215,
+          "sl": 0.774351
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "SAGAUSDT:497345",
+      "symbol": "SAGAUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443333687,
+      "price": 0.032958,
+      "scannerState": null,
+      "scannerScore": 23,
+      "regime": "RISK_ON",
+      "setupType": "HOLD",
+      "features": [
+        0.23,
+        -1,
+        0.3058246541327245,
+        0.13089523962330984,
+        null,
+        null,
+        0,
+        null,
+        1,
+        -1,
+        -0.3693639084669899,
+        -0.4665288833930082,
+        null,
+        null,
+        -0.2566142598974354,
+        -0.14155298026458957,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "SAGAUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443333687,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.032958,
+          "change24hPct": -9.4635,
+          "quoteVolume24h": 16722400.3458,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.3089523962330984,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "HOLD",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 23,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 55.185379414769265,
+            "macd": 0.006382361817682439,
+            "rvol": 3.6509722068201147,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.03779,
+            "bars": 128,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 89.44823683300675,
+            "macd": 0.0032021793675512233,
+            "rvol": 3.9528718384864363,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.047861,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 54.26420468366799,
+            "macd": 0.003043049850279576,
+            "rvol": 4.603708652350671,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.035532,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 49.998672104992785,
+            "macd": -0.00051818618398716,
+            "rvol": 1.3064481803357275,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.033803,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 45.106072780145446,
+            "macd": -0.001678445689545576,
+            "rvol": 0.20438421975929813,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.032791,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 41.52848701787834,
+            "macd": -0.0003934827846429241,
+            "rvol": 0.127358435475986,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.032791,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 38.9190827459903,
+            "macd": -0.000055270178475981015,
+            "rvol": 0.2743110162035669,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.032399,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 42.30157220307694,
+            "macd": 0.0000422082629128335,
+            "rvol": 0.675387825585472,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.032885,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.121287574241805,
+            "macd": 0.00004145040878121751,
+            "rvol": 0.597497028352451,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.032807,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 14,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.23475274297313664,
+          "overlap": 7
+        },
+        {
+          "symbol": "MUBARAKUSDT",
+          "similarity": 0.11123720929370376,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.09737978781358779,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 0.032958,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 0.0346059,
+          "sl": 0.03196926
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "ICPUSDT:497345",
+      "symbol": "ICPUSDT",
+      "asOf": 1790443319285,
+      "capturedAt": 1790443334780,
+      "price": 3.289,
+      "scannerState": null,
+      "scannerScore": 56,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.56,
+        0.6728500000000001,
+        0.2673552590904737,
+        0.21318454740128612,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.7329099499308351,
+        0.18382456998357735,
+        null,
+        null,
+        0.44304050050074034,
+        0.14712651974287067,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "ICPUSDT",
+        "asOf": 1790443319285,
+        "capturedAt": 1790443334780,
+        "source": "astra-astra",
+        "market": {
+          "price": 3.289,
+          "change24hPct": 5.3828000000000005,
+          "quoteVolume24h": 11733323.2723,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.131845474012861,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 56,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 56.06918870358347,
+            "macd": 0.12083439104020383,
+            "rvol": 0.5757115607430734,
+            "obvUp": null,
+            "compression": null,
+            "close": 2.894,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.29257004070086,
+            "macd": 0.059307503889884955,
+            "rvol": 2.291299604674457,
+            "obvUp": null,
+            "compression": null,
+            "close": 2.92,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 68.2001127177544,
+            "macd": 0.02805835918848669,
+            "rvol": 1.1486721180806254,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.188,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.505468061424416,
+            "macd": 0.026122296218206248,
+            "rvol": 0.7845807697713719,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.2,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.04055602561218,
+            "macd": 0.011741634495285744,
+            "rvol": 0.9191014387128185,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.299,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.80076851053514,
+            "macd": 0.00479661914911754,
+            "rvol": 2.075283803382411,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.299,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 71.98729849792505,
+            "macd": 0.0117520185572004,
+            "rvol": 1.6647416223305984,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.331,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.29121501502221,
+            "macd": 0.005345774463995284,
+            "rvol": 1.5036888603840544,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.304,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 44.71281169821858,
+            "macd": -0.00663972907494198,
+            "rvol": 0.7461463110055255,
+            "obvUp": null,
+            "compression": null,
+            "close": 3.289,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 62,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.9209360578028367,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.9204915356240084,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8873988840523203,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 3.289,
+        "asOf": 1790443319285,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790446919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454119285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790464919285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486519285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529719285,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702519285,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 3.45345,
+          "sl": 3.19033
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "ZECUSDT:497345",
+      "symbol": "ZECUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443410592,
+      "price": 1560.3,
+      "scannerState": null,
+      "scannerScore": 64,
+      "regime": "RISK_ON",
+      "setupType": "WATCH_PRIORITY",
+      "features": [
+        0.64,
+        0.1338375,
+        0.6231130834022165,
+        0.2506827446475812,
+        null,
+        null,
+        0,
+        null,
+        1,
+        0,
+        0.3917173742505014,
+        0.17009797832925788,
+        null,
+        null,
+        0.8788552796994357,
+        0.3545123128298997,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "ZECUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443410592,
+        "source": "astra-astra",
+        "market": {
+          "price": 1560.3,
+          "change24hPct": 1.0707,
+          "quoteVolume24h": 310779478.5139,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.5068274464758122,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WATCH_PRIORITY",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 64,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 76.62659858601613,
+            "macd": 90.25974406033555,
+            "rvol": 1.3549876025926915,
+            "obvUp": null,
+            "compression": null,
+            "close": 1508.79,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 87.20372492492568,
+            "macd": 79.57371503044814,
+            "rvol": 1.4084844301347583,
+            "obvUp": null,
+            "compression": null,
+            "close": 1497.51,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.55268008017467,
+            "macd": 7.198167439875533,
+            "rvol": 0.7313567607544955,
+            "obvUp": null,
+            "compression": null,
+            "close": 1555.85,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 58.4804904358563,
+            "macd": -12.700222179149279,
+            "rvol": 0.29348765549743777,
+            "obvUp": null,
+            "compression": null,
+            "close": 1541.62,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 52.959109418453764,
+            "macd": -3.7713537893295808,
+            "rvol": 0.46257883239948744,
+            "obvUp": null,
+            "compression": null,
+            "close": 1551.1,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 52.53074090974474,
+            "macd": -1.1107378066464442,
+            "rvol": 0.6074136588080162,
+            "obvUp": null,
+            "compression": null,
+            "close": 1551.1,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 61.75152122751504,
+            "macd": 3.4464912315647993,
+            "rvol": 1.6025750413494766,
+            "obvUp": null,
+            "compression": null,
+            "close": 1568.74,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 76.36565839098307,
+            "macd": 2.4563796374441615,
+            "rvol": 2.6722393812355443,
+            "obvUp": null,
+            "compression": null,
+            "close": 1569.59,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.90051953700235,
+            "macd": 0.3480918828608761,
+            "rvol": 5.0569606944714804,
+            "obvUp": null,
+            "compression": null,
+            "close": 1564.16,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 53,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6808431692750205,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6331413827614174,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.5686308784182337,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v2",
+        "status": "PENDING",
+        "confirmed": false,
+        "entryPrice": 1560.3,
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790447005016,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h3": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790454205016,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h6": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790465005016,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h12": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790486605016,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h24": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790529805016,
+            "closeAt": null,
+            "returnPct": null
+          },
+          "h72": {
+            "status": "PENDING_OR_GAP",
+            "targetAt": 1790702605016,
+            "closeAt": null,
+            "returnPct": null
+          }
+        },
+        "mfePct": null,
+        "maePct": null,
+        "barriers": {
+          "status": "NONE",
+          "at": null,
+          "tp": 1638.315,
+          "sl": 1513.491
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": null,
+        "labelStatus": "UNRESOLVED",
+        "evaluatedAt": 1790443464017,
+        "confirmedBars": 0
+      },
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra",
+      "outcome1hPct": null,
+      "outcome3hPct": null,
+      "outcome6hPct": null,
+      "outcome12hPct": null,
+      "outcome24hPct": null,
+      "outcome72hPct": null,
+      "mfe72hPct": null,
+      "mae72hPct": null,
+      "tpSlOrder": "NONE"
+    },
+    {
+      "key": "SOLUSDT:497345",
+      "symbol": "SOLUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443410592,
+      "price": 121.14,
+      "scannerState": null,
+      "scannerScore": 59,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.59,
+        0.007225,
+        0.6944927675520659,
+        0.21696110212108044,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.28196527386764125,
+        -0.16058842631874007,
+        null,
+        null,
+        0.006547372647749464,
+        0.16509651163040623,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "SOLUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443410592,
+        "source": "astra-astra",
+        "market": {
+          "price": 121.14,
+          "change24hPct": 0.0578,
+          "quoteVolume24h": 599751123.519,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.1696110212108044,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 59,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.98626119556068,
+            "macd": 5.875127058321697,
+            "rvol": 0.9238462987973589,
+            "obvUp": null,
+            "compression": null,
+            "close": 111.12,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 73.92743406932752,
+            "macd": 1.9240520361718323,
+            "rvol": 1.390246559211805,
+            "obvUp": null,
+            "compression": null,
+            "close": 114.96,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.38754496937449,
+            "macd": 1.1846924014361804,
+            "rvol": 1.5626021509795203,
+            "obvUp": null,
+            "compression": null,
+            "close": 122.12,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.92345206185291,
+            "macd": 0.5676783035665061,
+            "rvol": 0.5360202621040595,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.31,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.11578560277874,
+            "macd": 0.2158904686624732,
+            "rvol": 0.555706834035734,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.91,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 61.76678409130809,
+            "macd": -0.03619363177428281,
+            "rvol": 0.5519264469631372,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.91,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 58.45895821602924,
+            "macd": -0.053499911384354726,
+            "rvol": 0.6406668706462759,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.64,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 50.196421179432484,
+            "macd": 0.010834214138524534,
+            "rvol": 1.5805054899617232,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.17,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 37.00109581974805,
+            "macd": -0.09423756170810747,
+            "rvol": 0.5071826690625827,
+            "obvUp": null,
+            "compression": null,
+            "close": 121.06,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 57,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.842653519270966,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.7397930205710619,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6079232934973697,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "LINKUSDT:497345",
+      "symbol": "LINKUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443412304,
+      "price": 14.29,
+      "scannerState": null,
+      "scannerScore": 39,
+      "regime": "RISK_ON",
+      "setupType": "HOLD",
+      "features": [
+        0.39,
+        0.39709999999999995,
+        0.4569334732247275,
+        0.12249610125200983,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.4678620523603361,
+        -0.027023238875044733,
+        null,
+        null,
+        0.09202550652434288,
+        -0.2069264245595962,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "LINKUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443412304,
+        "source": "astra-astra",
+        "market": {
+          "price": 14.29,
+          "change24hPct": 3.1767999999999996,
+          "quoteVolume24h": 67256442.6748,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.2249610125200983,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "HOLD",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 39,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 59.65860187742377,
+            "macd": 0.6438558863542821,
+            "rvol": 0.9025867185826968,
+            "obvUp": null,
+            "compression": null,
+            "close": 12.513,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.83985812500303,
+            "macd": 0.12583273143647222,
+            "rvol": 1.2646173650535204,
+            "obvUp": null,
+            "compression": null,
+            "close": 12.345,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.24654623388669,
+            "macd": 0.13819648363591458,
+            "rvol": 1.6002736966355229,
+            "obvUp": null,
+            "compression": null,
+            "close": 13.925,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.2730911260852,
+            "macd": 0.16495801865258247,
+            "rvol": 1.065714423103664,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.263,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.56906252847406,
+            "macd": 0.08953825497954543,
+            "rvol": 0.978604961412901,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.239,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.49025233479347,
+            "macd": 0.004419243207539947,
+            "rvol": 1.0088258675408608,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.239,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 64.03586157081008,
+            "macd": -0.0008354914074275577,
+            "rvol": 0.9278136937992212,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.324,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 52.760765195730286,
+            "macd": -0.011763459748113117,
+            "rvol": 0.5634245379973634,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.292,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 43.17446640784462,
+            "macd": -0.0014488352079264355,
+            "rvol": 0.514075015249709,
+            "obvUp": null,
+            "compression": null,
+            "close": 14.267,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 47,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.9024895990789262,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.891119639994135,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.6645644796056178,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "SUIUSDT:497345",
+      "symbol": "SUIUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443412304,
+      "price": 1.1783,
+      "scannerState": null,
+      "scannerScore": 35,
+      "regime": "RISK_ON",
+      "setupType": "HOLD",
+      "features": [
+        0.35,
+        0.567825,
+        0.5451874556681642,
+        0.10563107340925137,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.4897059150613809,
+        -0.32508884748481226,
+        null,
+        null,
+        0.11577655564255925,
+        -0.10934182865713558,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "SUIUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443412304,
+        "source": "astra-astra",
+        "market": {
+          "price": 1.1783,
+          "change24hPct": 4.5426,
+          "quoteVolume24h": 151617671.53,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.0563107340925137,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "HOLD",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 35,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 49.08011752452663,
+            "macd": 0.050631604808027225,
+            "rvol": 1.5060324449040678,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.8971,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 64.33004593475755,
+            "macd": 0.02436530397779392,
+            "rvol": 2.8221878947977608,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.9592,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 76.7810742659662,
+            "macd": 0.03867286549308627,
+            "rvol": 1.4748454608560755,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1944,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 75.681333100057,
+            "macd": 0.024024080318042623,
+            "rvol": 0.6486574527770077,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1777,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.85791407936351,
+            "macd": 0.011122685342177988,
+            "rvol": 0.6422485395805904,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1832,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.40678826647397,
+            "macd": 0.0008182584496965392,
+            "rvol": 0.4982748346123827,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1832,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 64.69117745184143,
+            "macd": -0.0034211593369610008,
+            "rvol": 0.4060261663731074,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1854,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 53.47329666927678,
+            "macd": 0.00032268989343500754,
+            "rvol": 0.7384809883057811,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.1793,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 45.065795292947485,
+            "macd": -0.0007617413220205639,
+            "rvol": 1.1871145128929181,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.177,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 44,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8696352265684163,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.845245407256314,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.6344017420394276,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "ARBUSDT:497345",
+      "symbol": "ARBUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443413396,
+      "price": 0.2242,
+      "scannerState": null,
+      "scannerScore": 56,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.56,
+        0.013387499999999998,
+        0.434678154133966,
+        0.2188111563076034,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.191984915172835,
+        -0.0028179915264306666,
+        null,
+        null,
+        -0.01619948671437162,
+        0.12864445690130838,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "ARBUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443413396,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.2242,
+          "change24hPct": 0.10709999999999999,
+          "quoteVolume24h": 54791427.6425,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.188111563076034,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 56,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.34960055840577,
+            "macd": 0.01779132729693961,
+            "rvol": 2.5683451497001033,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.21754,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 73.29602397540086,
+            "macd": 0.012790717153908195,
+            "rvol": 1.7013021899606882,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.21588,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 68.7464827949088,
+            "macd": 0.003259982325547889,
+            "rvol": 0.6185512978470736,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.22657,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 61.64883698644292,
+            "macd": -0.0019403249302543009,
+            "rvol": 0.4471636566335906,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.22199,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.8783350600661,
+            "macd": 0.0001730090772799637,
+            "rvol": 0.6095491256868996,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.23068,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 60.813050387722434,
+            "macd": 0.0005781656433129928,
+            "rvol": 0.9789813337276831,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.23068,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.75954745518505,
+            "macd": 0.0005207972328567684,
+            "rvol": 0.9922173116494633,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.22632,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 49.51401539856885,
+            "macd": -0.00009702098676407861,
+            "rvol": 1.4285760377852883,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.22484,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 35.0156381550169,
+            "macd": -0.0005725573319324914,
+            "rvol": 0.8879033339299663,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.22395,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 52,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8363868238781456,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.7318964379625228,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6215370002494531,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "AAVEUSDT:497345",
+      "symbol": "AAVEUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443413396,
+      "price": 155,
+      "scannerState": null,
+      "scannerScore": 49,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.49,
+        0.1394375,
+        0.4167446147983341,
+        0.17524040254351725,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.36860620205808087,
+        0.0027779358642014435,
+        null,
+        null,
+        0.06124248564744856,
+        -0.05179654829764192,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "AAVEUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443413396,
+        "source": "astra-astra",
+        "market": {
+          "price": 155,
+          "change24hPct": 1.1155,
+          "quoteVolume24h": 46449223.605,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.7524040254351725,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 49,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 57.33896846420451,
+            "macd": 8.7851254706543,
+            "rvol": 0.8904762908796154,
+            "obvUp": null,
+            "compression": null,
+            "close": 137.46,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 68.27927445561444,
+            "macd": 1.73135081499907,
+            "rvol": 1.5105266676978741,
+            "obvUp": null,
+            "compression": null,
+            "close": 138.86,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.18818276474697,
+            "macd": 1.4686590869153697,
+            "rvol": 1.6037119301099132,
+            "obvUp": null,
+            "compression": null,
+            "close": 153.48,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.66344990641733,
+            "macd": 1.0146872529974713,
+            "rvol": 0.7683234897883947,
+            "obvUp": null,
+            "compression": null,
+            "close": 154.26,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.44072762727407,
+            "macd": 0.8320414038954835,
+            "rvol": 0.5470018859860559,
+            "obvUp": null,
+            "compression": null,
+            "close": 154.94,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 64.59784034620549,
+            "macd": 0.14065088443604568,
+            "rvol": 0.5190959383875329,
+            "obvUp": null,
+            "compression": null,
+            "close": 154.94,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 61.058186061742425,
+            "macd": -0.20861433654394013,
+            "rvol": 1.0077318109146096,
+            "obvUp": null,
+            "compression": null,
+            "close": 155.11,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 51.83727456942346,
+            "macd": 0.0006963396877380235,
+            "rvol": 0.8662250547994331,
+            "obvUp": null,
+            "compression": null,
+            "close": 154.81,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 42.288201093613985,
+            "macd": -0.0953640880505178,
+            "rvol": 2.3188997445756807,
+            "obvUp": null,
+            "compression": null,
+            "close": 154.32,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 51,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8872307118982954,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8456141327057705,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6415001883711561,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "OPUSDT:497345",
+      "symbol": "OPUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443415493,
+      "price": 0.14604,
+      "scannerState": null,
+      "scannerScore": 43,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.43,
+        0.74265,
+        0.3315867015294986,
+        0.15802034192260672,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.2759463982462321,
+        0.11890506254922113,
+        null,
+        null,
+        -0.20005555512051978,
+        -0.07290222430465523,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "OPUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443415493,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.14604,
+          "change24hPct": 5.9412,
+          "quoteVolume24h": 21200534.294,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.5802034192260672,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 43,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 47.303642677917225,
+            "macd": 0.01262487342223926,
+            "rvol": 1.7040222445920812,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.12495,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.38938912334734,
+            "macd": 0.0037932962864308155,
+            "rvol": 1.758071588945675,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.12282,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 71.29313893841208,
+            "macd": 0.0036101397346991245,
+            "rvol": 1.0379683022101722,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14629,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.78922110230891,
+            "macd": 0.00168120842577482,
+            "rvol": 0.5974116784558271,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14532,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.76121610818998,
+            "macd": 0.0012680206789302262,
+            "rvol": 0.8971781166693974,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14954,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.9338316987636,
+            "macd": 0.0006201743814508152,
+            "rvol": 1.1346099671103274,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14954,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.278391947386964,
+            "macd": 0.000044423199620769165,
+            "rvol": 1.390515908452909,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14701,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 43.998333346384406,
+            "macd": -0.0004211472754784152,
+            "rvol": 0.8169904404932193,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14628,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 33.5163137069018,
+            "macd": -0.00033493224418122865,
+            "rvol": 0.28634888911118317,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.14589,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 48,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.7761078891185313,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.7665893662055243,
+          "overlap": 7
+        },
+        {
+          "symbol": "ARKUSDT",
+          "similarity": 0.6772728142717643,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "PONSUSDT:497345",
+      "symbol": "PONSUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443416390,
+      "price": 0.6503,
+      "scannerState": null,
+      "scannerScore": 59,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.59,
+        0.4089125,
+        0.329945377188308,
+        0.32757644860053725,
+        null,
+        null,
+        0,
+        null,
+        0,
+        0,
+        0.2756415489004091,
+        -0.12972030181621907,
+        null,
+        null,
+        0.3604278092390508,
+        -0.20354791740003028,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "PONSUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443416390,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.6503,
+          "change24hPct": 3.2713,
+          "quoteVolume24h": 20882452.8143,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 3.2757644860053725,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 59,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": false,
+            "trend": "MIXED",
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": 3,
+            "lastClosedAt": null
+          },
+          "3d": {
+            "available": false,
+            "trend": "MIXED",
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": 8,
+            "lastClosedAt": null
+          },
+          "1d": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 57.28966767561795,
+            "macd": -0.006802915665560828,
+            "rvol": 0.38770981443664904,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6632,
+            "bars": 26,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.092004122339894,
+            "macd": -0.0010061082769954703,
+            "rvol": 0.49399529150308086,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6306,
+            "bars": 53,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 53.21934980810353,
+            "macd": 0.0006768298001986574,
+            "rvol": 0.9456463771979975,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6525,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.54344413303471,
+            "macd": 0.00029387820304209715,
+            "rvol": 1.5734729268112109,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6525,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 58.26924646701227,
+            "macd": 0.0010105298566891927,
+            "rvol": 0.697912846431816,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6525,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.812834277171525,
+            "macd": 0.0016804575537327695,
+            "rvol": 0.56872705054641,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6512,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.89888090156231,
+            "macd": -0.0011585924084257988,
+            "rvol": 1.9394701870168125,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.6523,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 48,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.7063984810332081,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6548594418609841,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.6028936019340939,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "GRAMUSDT:497345",
+      "symbol": "GRAMUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443417785,
+      "price": 1.53,
+      "scannerState": null,
+      "scannerScore": 58,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.58,
+        0.92105,
+        0.2887316731105335,
+        0.4419449182643831,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        1,
+        0.733373885353405,
+        null,
+        null,
+        1,
+        0.4704638656587404,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "GRAMUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443417785,
+        "source": "astra-astra",
+        "market": {
+          "price": 1.53,
+          "change24hPct": 7.3684,
+          "quoteVolume24h": 14286527.8601,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 4.419449182643831,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 58,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": false,
+            "trend": "MIXED",
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": 13,
+            "lastClosedAt": null
+          },
+          "3d": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.844277361093376,
+            "macd": 0.015934716471324967,
+            "rvol": 1.5228582171983758,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.461,
+            "bars": 32,
+            "lastClosedAt": 1790380799999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.99446849256841,
+            "macd": 0.01104895412630557,
+            "rvol": 1.7922075733691942,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.461,
+            "bars": 96,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 62.126180882910354,
+            "macd": 0.005395010693744016,
+            "rvol": 0.7554009787665414,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.464,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 65.83947786331595,
+            "macd": 0.0048721411968143495,
+            "rvol": 1.3017552004910342,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.486,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.67040852894132,
+            "macd": 0.005328597444262645,
+            "rvol": 1.3123068979046184,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.486,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 84.07007130174665,
+            "macd": 0.00592206161071333,
+            "rvol": 7.639591733416072,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.539,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 86.90250591887364,
+            "macd": 0.005961225700318644,
+            "rvol": 3.6854874932753074,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.542,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.26391109294636,
+            "macd": 0.00344611023111872,
+            "rvol": 1.9218863796204806,
+            "obvUp": null,
+            "compression": null,
+            "close": 1.531,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 59,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.9288954759404825,
+          "overlap": 7
+        },
+        {
+          "symbol": "ARKUSDT",
+          "similarity": 0.665172588994931,
+          "overlap": 7
+        },
+        {
+          "symbol": "JTOUSDT",
+          "similarity": 0.6557544791831889,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "XMRUSDT:497345",
+      "symbol": "XMRUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443417785,
+      "price": 554.32,
+      "scannerState": null,
+      "scannerScore": 52,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.52,
+        -0.025875,
+        0.29515088510957876,
+        0.2174156848162112,
+        null,
+        null,
+        0,
+        null,
+        1,
+        0,
+        0.01255095312118589,
+        0.07666061752132912,
+        null,
+        null,
+        0.27559968309476257,
+        -0.2571872388622237,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "XMRUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443417785,
+        "source": "astra-astra",
+        "market": {
+          "price": 554.32,
+          "change24hPct": -0.207,
+          "quoteVolume24h": 15156661.116,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.174156848162112,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 52,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 71.8435472208355,
+            "macd": 23.654742328627016,
+            "rvol": 1.2155252760898256,
+            "obvUp": null,
+            "compression": null,
+            "close": 563.65,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.14261623904646,
+            "macd": 9.530285944087517,
+            "rvol": 1.6796794254946281,
+            "obvUp": null,
+            "compression": null,
+            "close": 554.42,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 57.72151538111037,
+            "macd": -0.7037920509371105,
+            "rvol": 0.972377313202266,
+            "obvUp": null,
+            "compression": null,
+            "close": 557.33,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.87440260105611,
+            "macd": -2.2298381127164486,
+            "rvol": 0.3798414857672547,
+            "obvUp": null,
+            "compression": null,
+            "close": 553.85,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 47.33451558586787,
+            "macd": -0.773656829606055,
+            "rvol": 0.6330486803799339,
+            "obvUp": null,
+            "compression": null,
+            "close": 554.33,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 47.627048446408565,
+            "macd": -0.4958970245122887,
+            "rvol": 1.0263763338763112,
+            "obvUp": null,
+            "compression": null,
+            "close": 554.33,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 50.37652859363558,
+            "macd": 0.06638356763652342,
+            "rvol": 1.2368259294480766,
+            "obvUp": null,
+            "compression": null,
+            "close": 555.82,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.26799049284288,
+            "macd": 0.6030992989780508,
+            "rvol": 0.49013498904350256,
+            "obvUp": null,
+            "compression": null,
+            "close": 555.34,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 52.656962069724734,
+            "macd": -0.07042751438127592,
+            "rvol": 2.395893945216007,
+            "obvUp": null,
+            "compression": null,
+            "close": 554.34,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 42,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6201716655953476,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6131796151968579,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5144090643788438,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "HBARUSDT:497345",
+      "symbol": "HBARUSDT",
+      "asOf": 1790443405016,
+      "capturedAt": 1790443418681,
+      "price": 0.09424,
+      "scannerState": null,
+      "scannerScore": 58,
+      "regime": "RISK_ON",
+      "setupType": "WAIT",
+      "features": [
+        0.58,
+        0.1408375,
+        0.2568706894098579,
+        0.2707050698753344,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.2967131022716702,
+        0.15555132394627216,
+        null,
+        null,
+        0.07192853680017422,
+        -0.10043893659972641,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "HBARUSDT",
+        "asOf": 1790443405016,
+        "capturedAt": 1790443418681,
+        "source": "astra-astra",
+        "market": {
+          "price": 0.09424,
+          "change24hPct": 1.1267,
+          "quoteVolume24h": 10653265.6723,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.707050698753344,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "WAIT",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 58,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 50.620819306904366,
+            "macd": 0.003471734703643283,
+            "rvol": 1.670242863602413,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.08643,
+            "bars": 149,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.97321165757405,
+            "macd": 0.0019297172326331448,
+            "rvol": 2.8924673173431437,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09038,
+            "bars": 49,
+            "lastClosedAt": 1790207999999
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 67.62670522360517,
+            "macd": 0.0017830968213607924,
+            "rvol": 1.0387007997982143,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09559,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 64.2290613601279,
+            "macd": 0.0004697430894518998,
+            "rvol": 0.28621034772751736,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09402,
+            "bars": 149,
+            "lastClosedAt": 1790423999999
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 58.1423035562813,
+            "macd": -0.00012144207791004152,
+            "rvol": 0.610122871565059,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09514,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 56.70230646075608,
+            "macd": 0.000009313465371958035,
+            "rvol": 0.9521510411584294,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09514,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 58.90139306815011,
+            "macd": 0.00004041130535633599,
+            "rvol": 1.5392262367704888,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09521,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 52.157856104005226,
+            "macd": 0.00009121700963419664,
+            "rvol": 0.7569365377897683,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09446,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 39.32844384525425,
+            "macd": -0.0001321682006896724,
+            "rvol": 1.2095933661160896,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.09422,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 60,
+      "researchStage": "WATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8902244816296696,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8284696198596901,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6548350978597909,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-astra"
+    },
+    {
+      "key": "ONDOUSDT:497345",
+      "symbol": "ONDOUSDT",
+      "asOf": 1790443444187,
+      "capturedAt": 1790443451481,
+      "price": 0.5361,
+      "scannerState": null,
+      "scannerScore": 10,
+      "regime": "RISK_ON",
+      "setupType": "DATA_DEGRADED",
+      "features": [
+        0.1,
+        -0.0580125,
+        0.49190248075167603,
+        0.16814142530551024,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.06730191787099903,
+        -0.20051606198748995,
+        null,
+        null,
+        -0.4321587862608335,
+        0.15595670424424435,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "ONDOUSDT",
+        "asOf": 1790443444187,
+        "capturedAt": 1790443451481,
+        "source": "astra-perplexity",
+        "market": {
+          "price": 0.5361,
+          "change24hPct": -0.4641,
+          "quoteVolume24h": 92813237.7273,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.6814142530551024,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "DATA_DEGRADED",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 10,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "VOLUME_PRICE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 55.73714299621955,
+            "macd": 0.012455812999524028,
+            "rvol": 1.2074708464716772,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.4325,
+            "bars": 139,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 74.31126716620666,
+            "macd": 0.017308535455909338,
+            "rvol": 3.0377336176915097,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.5489,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.4796667944643,
+            "macd": 0.0022932920165865886,
+            "rvol": 0.4270015038323756,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.5465,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 52.01905753612997,
+            "macd": -0.0013787410598316199,
+            "rvol": 0.573527970459583,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.5452,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 37.035236412174996,
+            "macd": -0.0007639142063772589,
+            "rvol": 1.5409572270678733,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.5388,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 28.4831466290986,
+            "macd": -0.0008480478174660007,
+            "rvol": 7.057857968383241,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.5365,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 30,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6508490157273225,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5648503719828531,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.4709275196798382,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "VOLUME_PRICE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-perplexity"
+    },
+    {
+      "key": "PHAUSDT:497345",
+      "symbol": "PHAUSDT",
+      "asOf": 1790443444187,
+      "capturedAt": 1790443452815,
+      "price": 0.07873,
+      "scannerState": null,
+      "scannerScore": 10,
+      "regime": "RISK_ON",
+      "setupType": "DATA_DEGRADED",
+      "features": [
+        0.1,
+        0.1494125,
+        0.46129972770806527,
+        0.21423743097998216,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.04000140389567927,
+        -0.2885004460804314,
+        null,
+        null,
+        -0.3559213923333066,
+        0.05053986374485243,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "PHAUSDT",
+        "asOf": 1790443444187,
+        "capturedAt": 1790443452815,
+        "source": "astra-perplexity",
+        "market": {
+          "price": 0.07873,
+          "change24hPct": 1.1953,
+          "quoteVolume24h": 70016260.3432,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 2.1423743097998216,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "DATA_DEGRADED",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 10,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 55.50187374138445,
+            "macd": 0.0017819670544870492,
+            "rvol": 0.570983374200692,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.03755,
+            "bars": 121,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 93.32648908866292,
+            "macd": 0.0045287115460899965,
+            "rvol": 13.891716667169863,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.08679,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 73.099042138189,
+            "macd": 0.0023718612933419404,
+            "rvol": 0.6817708110364554,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.08326,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 51.20004211687038,
+            "macd": -0.0010898489196815042,
+            "rvol": 0.4493770075167788,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.07922,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 39.3223582300008,
+            "macd": -0.0004596242052204226,
+            "rvol": 1.1504190372733676,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.07877,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 32.62494171980882,
+            "macd": -0.0002768891123087541,
+            "rvol": 0.5854697841594407,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.07866,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 27,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.7116580399320367,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5995383169211846,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.4943309134833513,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-perplexity"
+    },
+    {
+      "key": "PENGUUSDT:497345",
+      "symbol": "PENGUUSDT",
+      "asOf": 1790443444187,
+      "capturedAt": 1790443455352,
+      "price": 0.010128,
+      "scannerState": null,
+      "scannerScore": 10,
+      "regime": "RISK_ON",
+      "setupType": "DATA_DEGRADED",
+      "features": [
+        0.1,
+        0.3462625,
+        0.34957565059942797,
+        0.12398525296843488,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.10893316741143408,
+        -0.18594749473470268,
+        null,
+        null,
+        -0.17264585143882888,
+        -0.05800230947819445,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "PENGUUSDT",
+        "asOf": 1790443444187,
+        "capturedAt": 1790443455352,
+        "source": "astra-perplexity",
+        "market": {
+          "price": 0.010128,
+          "change24hPct": 2.7701,
+          "quoteVolume24h": 25020881.2884,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.2398525296843488,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "DATA_DEGRADED",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 10,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 48.92036036102478,
+            "macd": 0.0003985329311015336,
+            "rvol": 0.772042251556812,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.007853,
+            "bars": 92,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 70.52748469296571,
+            "macd": 0.0002990930834979794,
+            "rvol": 1.4689812265031477,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.010277,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.92311919218121,
+            "macd": -0.000027717505544720147,
+            "rvol": 0.4739482542361247,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.010242,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1h": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 53.26799502234302,
+            "macd": -0.000009106136363355141,
+            "rvol": 0.5971685203197006,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.010166,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 44.820624456835134,
+            "macd": -0.000002903853620693532,
+            "rvol": 0.8514482557097539,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.010105,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "DOWN",
+            "rsi": 35.019254107786736,
+            "macd": -0.000016715993236047975,
+            "rvol": 0.32457716268230286,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.010081,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 30,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.7981725470596651,
+          "overlap": 7
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.707879142335863,
+          "overlap": 7
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.5592206889565396,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-perplexity"
+    },
+    {
+      "key": "ETHFIUSDT:497345",
+      "symbol": "ETHFIUSDT",
+      "asOf": 1790443444187,
+      "capturedAt": 1790443460953,
+      "price": 0.7502,
+      "scannerState": null,
+      "scannerScore": 10,
+      "regime": "RISK_ON",
+      "setupType": "DATA_DEGRADED",
+      "features": [
+        0.1,
+        0.8240875,
+        0.28375146245503535,
+        0.15824436993292057,
+        null,
+        null,
+        0,
+        null,
+        1,
+        1,
+        0.5567700582783767,
+        0.09100517550333406,
+        null,
+        null,
+        0.26057750087035175,
+        0.10920480408063224,
+        0,
+        null
+      ],
+      "canonicalSnapshot": {
+        "version": "RESEARCH_CANONICAL_SNAPSHOT_v2",
+        "symbol": "ETHFIUSDT",
+        "asOf": 1790443444187,
+        "capturedAt": 1790443460953,
+        "source": "astra-perplexity",
+        "market": {
+          "price": 0.7502,
+          "change24hPct": 6.5927,
+          "quoteVolume24h": 13646015.1725,
+          "regime": "RISK_ON",
+          "btcState": null,
+          "ethState": null,
+          "sector": null
+        },
+        "derivatives": {
+          "oi4hPct": 1.5824436993292057,
+          "oi8hPct": null,
+          "takerRatio": null,
+          "fundingPct": null
+        },
+        "structure": {
+          "direction": null,
+          "liquidityPattern": null,
+          "bos": null,
+          "choch": null,
+          "mss": null,
+          "fvg": null,
+          "orderBlock": null,
+          "pdArray": null
+        },
+        "pattern": {
+          "setupType": "DATA_DEGRADED",
+          "sampleArchetype": null,
+          "samplePhase": null,
+          "sampleScore": null,
+          "preSurge": null,
+          "samplePattern": null
+        },
+        "evidence": {
+          "scannerScore": 10,
+          "bookScore": null,
+          "bookBias": null,
+          "smartMoneyScore": null,
+          "smcBias": null,
+          "ictBias": null,
+          "bookRuleIds": [
+            "MARKET_STRUCTURE",
+            "RSI",
+            "MACD"
+          ],
+          "rawBookEvidence": {}
+        },
+        "execution": {
+          "setupValid": false,
+          "entry": null,
+          "stop": null,
+          "target": null,
+          "netRR": null
+        },
+        "timeframes": {
+          "1w": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 63.796466706090136,
+            "macd": 0.04754548011921578,
+            "rvol": 1.3015601519332507,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7235,
+            "bars": 131,
+            "lastClosedAt": 1789948799999
+          },
+          "3d": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1d": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 60.13373502242799,
+            "macd": -0.000976843715924089,
+            "rvol": 0.6768081864215613,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7202,
+            "bars": 179,
+            "lastClosedAt": 1790380799999
+          },
+          "12h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "4h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 69.49016388342517,
+            "macd": 0.008388051227327253,
+            "rvol": 1.6647789345130393,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7691,
+            "bars": 149,
+            "lastClosedAt": 1790438399999
+          },
+          "3h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "2h": {
+            "available": null,
+            "trend": null,
+            "rsi": null,
+            "macd": null,
+            "rvol": null,
+            "obvUp": null,
+            "compression": null,
+            "close": null,
+            "bars": null,
+            "lastClosedAt": null
+          },
+          "1h": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 66.7031017483513,
+            "macd": 0.003358702344003227,
+            "rvol": 1.287007715140257,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7562,
+            "bars": 149,
+            "lastClosedAt": 1790441999999
+          },
+          "15m": {
+            "available": true,
+            "trend": "UP",
+            "rsi": 57.81732502611055,
+            "macd": 0.00039423450208447494,
+            "rvol": 1.353616647133419,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7528,
+            "bars": 149,
+            "lastClosedAt": 1790442899999
+          },
+          "5m": {
+            "available": true,
+            "trend": "MIXED",
+            "rsi": 40.86205534896462,
+            "macd": -0.002505623762022179,
+            "rvol": 0.824949454308868,
+            "obvUp": null,
+            "compression": null,
+            "close": 0.7506,
+            "bars": 149,
+            "lastClosedAt": 1790443199999
+          }
+        },
+        "rawRef": {
+          "scannerVersion": null,
+          "dataState": null,
+          "marketSource": null
+        }
+      },
+      "researchScore": 37,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.8730138095351021,
+          "overlap": 7
+        },
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.8689296112045477,
+          "overlap": 7
+        },
+        {
+          "symbol": "RAREUSDT",
+          "similarity": 0.8520482569112526,
+          "overlap": 7
+        }
+      ],
+      "bookRuleIds": [
+        "MARKET_STRUCTURE",
+        "RSI",
+        "MACD"
+      ],
+      "outcomeV2": null,
+      "label": null,
+      "labelStatus": "UNRESOLVED",
+      "source": "astra-perplexity"
     }
   ],
   "model": {
@@ -747,7 +7719,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790430312265,
+  "exportedAt": 1790443468504,
   "featureNames": [
     "scannerScore",
     "change24h",
