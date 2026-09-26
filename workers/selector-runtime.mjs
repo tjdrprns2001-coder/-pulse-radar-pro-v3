@@ -14,6 +14,7 @@ const {createMacroCalendarProvider}=require('../lib/coin-scan/macro-calendar-pro
 const {createTtlCache}=require('../lib/coin-scan/cache.js');
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
+const {createAstraAutoScanner,methodOf:astraMethodOf,VERSION:ASTRA_VERSION}=require('../lib/coin-scan/astra-auto-scanner.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 const {createPostgresSelectorStore}=require('../lib/coin-scan/postgres-selector-store.js');
 const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
@@ -30,6 +31,7 @@ const runtime=createRuntimeWorker({store,journal:createMemoryRawEventJournal({ma
 const selectorStore=createPostgresSelectorStore({query});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
+const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false})});
 const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},errors:[]};
 let evmCollector=null;
 
@@ -285,10 +287,30 @@ async function runSelectorScanner(){
 }
 
 function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,OPTIONS','access-control-allow-headers':'content-type','cache-control':'no-store'}}
+function jsonResponse(res,status,payload){res.writeHead(status,{'content-type':'application/json; charset=utf-8',...corsHeaders()});return res.end(JSON.stringify(payload))}
+function numParam(v){const x=Number(v);return Number.isFinite(x)?x:null}
+function astraMarketFrom(u){return{regime:String(u.searchParams.get('regime')||'NEUTRAL').toUpperCase(),breadthRatio:numParam(u.searchParams.get('breadth')),btc24hChange:numParam(u.searchParams.get('btc')),eth24hChange:numParam(u.searchParams.get('eth')),median24hChange:numParam(u.searchParams.get('median')),positiveVolumeRatio:numParam(u.searchParams.get('positiveVolumeRatio')),volumeWeightedBreadth:numParam(u.searchParams.get('volumeWeightedBreadth')),oiScanDegraded:String(u.searchParams.get('oiDegraded')||'').toLowerCase()==='true',grokOiCut:numParam(u.searchParams.get('grokOiCut'))}}
+function astraSymbols(u){return String(u.searchParams.get('symbols')||'').split(',').map(x=>x.trim()).filter(Boolean)}
+async function serveRepoFile(res,rel,contentType){try{const body=await fs.readFile(new URL('../'+rel,import.meta.url));res.writeHead(200,{'content-type':contentType,'cache-control':'no-cache'});return res.end(body)}catch(e){return jsonResponse(res,404,{status:'error',error:'static file unavailable',file:rel,detail:String(e?.message||e)})}}
 function server(){
   const port=Number(env.PORT||8787);
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
+    const route=new URL(req.url,'http://runtime.local');
+    if(route.pathname==='/api/astra-scan'){
+      const stage=String(route.searchParams.get('stage')||'universe').toLowerCase(),method=astraMethodOf(route.searchParams.get('method'));
+      try{
+        if(stage==='universe')return jsonResponse(res,200,await astraScanner.universe({method}));
+        const symbols=astraSymbols(route);if(!symbols.length)return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'symbols required'});
+        if(stage==='oi')return jsonResponse(res,200,await astraScanner.oi(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
+        if(stage==='deep')return jsonResponse(res,200,await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
+        return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'unknown stage'});
+      }catch(e){return jsonResponse(res,502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)})}
+    }
+    if(req.method==='GET'&&(route.pathname==='/astra-scan'||route.pathname==='/astra-scan.html'))return serveRepoFile(res,'astra-scan.html','text/html; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/astra-scan.js')return serveRepoFile(res,'ui/astra-scan.js','application/javascript; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/astra-scan.css')return serveRepoFile(res,'ui/astra-scan.css','text/css; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/pulse-child-normalize.css')return serveRepoFile(res,'ui/pulse-child-normalize.css','text/css; charset=utf-8');
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
     if(req.url==='/ready'){const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
     if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}

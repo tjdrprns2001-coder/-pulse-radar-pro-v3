@@ -126,7 +126,7 @@
     "test:book-ai-mtf": "node scripts/verify-book-ai-mtf.js",
     "test:recommendation-validation-gate": "node scripts/verify-recommendation-validation-gate.js",
     "test:final99": "node scripts/verify-final99-release.js",
-    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:evidence-context-r02 && npm run test:macro-calendar && npm run test:selector-resilience-r03 && npm run test:raw-event-journal && npm run test:evm-rpc-collector && npm run test:binance-ws-multiplexer && npm run test:address-label-registry && npm run test:verified-news-provider && npm run test:alchemy-webhook && npm run test:selector-outage-scenarios && npm run test:postgres-runtime-store && npm run test:runtime-worker && npm run test:selector-oos && npm run test:selector-ledger && npm run test:source-sequence && npm run test:selector-api",
+    "test:auto-scan-finder": "node scripts/verify-auto-scan-finder.js && npm run test:candidate-screening && npm run test:evidence-context-r02 && npm run test:macro-calendar && npm run test:selector-resilience-r03 && npm run test:raw-event-journal && npm run test:evm-rpc-collector && npm run test:binance-ws-multiplexer && npm run test:address-label-registry && npm run test:verified-news-provider && npm run test:alchemy-webhook && npm run test:selector-outage-scenarios && npm run test:postgres-runtime-store && npm run test:runtime-worker && npm run test:selector-oos && npm run test:selector-ledger && npm run test:source-sequence && npm run test:selector-api && npm run test:astra-auto-scan",
     "test:candidate-screening": "node scripts/verify-candidate-screening-engine.js",
     "test:selector-ledger": "node scripts/verify-selector-ledger.js",
     "test:source-sequence": "node scripts/verify-source-sequence-guard.js",
@@ -152,7 +152,8 @@
     "test:post-breakout-timing": "node scripts/verify-post-breakout-timing.js",
     "test:entry-confirmation": "node scripts/verify-entry-confirmation.js",
     "test:fakeout-state": "node scripts/verify-fakeout-state.js",
-    "test:scan-run-service": "node scripts/verify-scan-run-service.js"
+    "test:scan-run-service": "node scripts/verify-scan-run-service.js",
+    "test:astra-auto-scan": "node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-claude-scan.js && node scripts/verify-astra-wiring.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
