@@ -25,9 +25,9 @@ CORS origin은 `https://pulseradar-pro-unified-0926.onrender.com`과 정확히 �
 
 `upstream.mjs`는 기존 IGNITION의 고정된 `/api/v1/results` URL을 GET으로만 조회한다. 클라이언트가 upstream URL, 메서드, 헤더를 지정할 수 없고 redirect를 따르지 않는다. 기존 gateway 자격증명은 새 Render 서버에만 저장하고 외부 읽기 토큰과 분리한다. 내부 자격증명은 gateway 범위이며 read-only로 발급된 자격증명이 아니다. 최소 권한은 외부 토큰에 대한 서버 라우팅/고정 GET 호출로 강제한다.
 
-인증된 results 요청 시 동기화하며 5초 캐시와 동시 요청 병합을 사용한다. 완료된 scan만 보관하고 진행/실패/취소 작업은 반환하지 않는다. upstream 연결 실패는 503이다. 완료 결과를 관측하지 못했으면 `empty`를 반환한다.
+인증된 results 요청 시 동기화하며 5초 캐시와 동시 요청 병합을 사용한다. `queued`/`running`/`paused` scan은 읽기 전용 부분 결과로 전달하므로 Pulse가 후보를 먼저 표시할 수 있다. `complete`는 최종 결과로 전달한다. `failed`/`cancelled`가 최신 작업이면 같은 프로세스에서 관측한 마지막 완료 결과를 fallback으로 유지하고 `sourceStatus`, `servedFromLastComplete`로 표시한다. upstream 연결 실패는 503이다.
 
-**제약:** 기존 API가 최신 작업 1개만 제공하므로 선택 기준은 `latest observed completed`다. 완료 이력을 모두 조회하거나 아직 읽지 못한 완료 결과를 복원할 수 없다. 메모리 캐시는 Render 재시작 때 사라진다. 새 요청 때 최신 작업이 complete면 재수집하지만, 그때 running/failed이면 과거 완료 결과를 복원하지 못해 empty가 된다. 완전한 완료 이력 동기화에는 원본의 완료 전용 조회 API 또는 지속 저장소 연결이 필요하며 이번에는 기존 사이트 변경 금지 조건으로 구현하지 않는다.
+**제약:** 기존 API가 최신 작업 1개만 제공하므로 Render 재시작 뒤에는 그 시점의 최신 작업부터 다시 관측한다. `running`/`paused`는 부분 결과로 복구할 수 있지만, 재시작 직후 최신 작업이 `failed`/`cancelled`이고 완료 이력을 별도로 읽을 수 없으면 과거 완료 결과를 복원할 수 없다. 완전한 완료 이력 보존에는 원본의 완료 전용 조회 API 또는 영구 저장소 연결이 필요하다.
 
 배포 직전 실제 D1 읽기 확인: failed scan 1개, 완료 결과 0개. 실패 원인은 Binance HTTP 403이었다. 검증용 후보 데이터를 운영 결과로 삽입하지 않았다.
 
@@ -43,6 +43,8 @@ CORS origin은 `https://pulseradar-pro-unified-0926.onrender.com`과 정확히 �
   "candidates":[]
 }
 ```
+
+부분 진행 중에는 `status`가 `queued`/`running`/`paused` 중 하나이며 `candidates`에 현재까지 계산된 후보가 포함될 수 있다. `detailComplete`와 `coverage`를 확인해서 정밀 완료 여부를 구분한다.
 
 완료된 검색이 없는 정상 상태:
 
