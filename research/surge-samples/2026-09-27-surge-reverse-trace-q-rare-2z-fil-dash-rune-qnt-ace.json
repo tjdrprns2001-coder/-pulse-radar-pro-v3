@@ -1,0 +1,49 @@
+{
+  "schema": "ASTRA_SURGE_REVERSE_TRACE_V1",
+  "asOf": "2026-09-27T00:25:00+09:00",
+  "source": "Binance USDT perpetual",
+  "method": "top-gainers reverse traced over 36h of 1H price/volume/OI/taker",
+  "positive": [
+    {
+      "symbol": "FILUSDT",
+      "dna": "OI_TAKER_LEAD_STAIRCASE",
+      "lane": "OI_FIRST"
+    },
+    {
+      "symbol": "RUNEUSDT",
+      "dna": "TAKER_EARLY_OI_LATE",
+      "lane": "TAKER_FIRST"
+    },
+    {
+      "symbol": "QUSDT",
+      "dna": "VOLUME_FIRST_PRICE_LEAD",
+      "lane": "VOLUME_FIRST"
+    },
+    {
+      "symbol": "RAREUSDT",
+      "dna": "DOUBLE_IGNITION_CLEAN_REBUILD",
+      "lane": "REBUILD_REIGNITION"
+    },
+    {
+      "symbol": "2ZUSDT",
+      "dna": "STEALTH_TREND_OI_EXPANSION",
+      "lane": "VOLUME_FIRST"
+    },
+    {
+      "symbol": "DASHUSDT",
+      "dna": "TAKER_FIRST_RANGE_BREAK",
+      "lane": "TAKER_FIRST"
+    }
+  ],
+  "controls": [
+    {
+      "symbol": "QNTUSDT",
+      "dna": "PRICE_LED_CONTROL"
+    },
+    {
+      "symbol": "ACEUSDT",
+      "dna": "PRICE_VOLUME_REIGNITION"
+    }
+  ],
+  "scannerImplication": "4H OI > +1% should remain a strong lane-specific screen, not a universal mandatory gate."
+}
