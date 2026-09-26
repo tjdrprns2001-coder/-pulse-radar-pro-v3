@@ -815,6 +815,19 @@
       "Research AI state",
       "pre-outcome live candidates"
     ],
-    "status": "DATASET_LAYER_READY_SCANNER_WIRING_PENDING"
+    "status": "SCANNER_WIRED_SHADOW_VALIDATION_PENDING",
+    "scanner_wiring_status": "WIRED_SHADOW_EVIDENCE",
+    "similarity_engine": "lib/coin-scan/sample-similarity-v2.js",
+    "similarity_outputs": [
+      "successTop5",
+      "negativeTop3",
+      "ignitionPath",
+      "successScore",
+      "negativeScore",
+      "netEvidenceScore",
+      "conflictEvidence"
+    ],
+    "ranking_effect": "NONE_UNTIL_BLIND_VALIDATION",
+    "next_gate": "blind validation on pre-outcome/OOS candidates before ranking weight"
   }
 }
