@@ -15,6 +15,10 @@ on:
       - 'scripts/verify-auto-scan-finder.js'
       - 'scripts/verify-auto-scan-sampling-v3.js'
       - 'scripts/verify-scan-run-service.js'
+      - 'lib/coin-scan/sampling-v3-oos-service.js'
+      - 'lib/coin-scan/sampling-v3-outcome-resolver.js'
+      - 'netlify/functions/coin-scan-sampling-evaluate.mjs'
+      - 'scripts/verify-sampling-v3-oos-service.js'
       - '.github/workflows/check-auto-scanner-speed-v2.yml'
   pull_request:
     paths:
@@ -49,5 +53,8 @@ jobs:
       - run: npm run test:light-prescan
       - run: npm run test:scan-run-service
       - run: npm run test:auto-scan-sampling-v3
+      - run: npm run test:sampling-v3-outcome-resolver
+      - run: npm run test:sampling-v3-oos-service
+      - run: node --check netlify/functions/coin-scan-sampling-evaluate.mjs
       - run: npm run test:v3-scanner
       - run: node scripts/verify-auto-scan-finder.js
