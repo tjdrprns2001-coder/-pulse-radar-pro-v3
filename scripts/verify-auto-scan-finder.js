@@ -21,6 +21,9 @@ must(js.includes("fresh=1&run=")&&js.includes("persist=0"),'fresh/manual scan to
 must(js.includes('futuresListed===true'),'futures-first display filter missing');
 must(js.includes('RE-ENTRY')&&js.includes('PATTERN-SETUP')&&js.includes('FAKEOUT-RISK'),'restored strategy classes missing');
 must(js.includes('strategyCycle')&&js.includes('strategyMarkup')&&js.includes('bookManualMarkup'),'latest strategy/book card integration missing');
+must(js.includes('function compactSamplingV3(')&&js.includes('samplingV3:compactSamplingV3(x.samplingV3)'),'Sampling v3.1 session persistence missing');
+must(js.includes('function samplingV3Markup(x)')&&js.includes('OOS 검증 전 Shadow'),'Sampling v3.1 automatic-scan card missing');
+must(js.includes('samplingResearch:m.samplingResearch'),'Sampling v3.1 scan progress metadata missing');
 must(js.includes('mode=prescan')&&js.includes('prescanLoading'),'progressive prescan stage missing');
 must(js.includes('mode=scan-run')&&js.includes('pollServerRun')&&js.includes('resumeServerRun'),'persistent server scan-run missing');
 must(js.includes('CAN_BACKGROUND_SCAN')&&js.includes("if(!CAN_BACKGROUND_SCAN)return false"),'Render must bypass Netlify-only background scan startup');
