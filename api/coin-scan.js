@@ -11,12 +11,14 @@ const {createSetupStateTracker}=require('../lib/coin-scan/setup-state-tracker.js
 const {createRecommendationHistoryService}=require('../lib/coin-scan/recommendation-history.js');
 const {createPreIgnitionOosService}=require('../lib/coin-scan/preignition-oos.js');
 const {createPreIgnitionResolver}=require('../lib/coin-scan/preignition-resolver.js');
+const {createSamplingV3OosService}=require('../lib/coin-scan/sampling-v3-oos-service.js');
+const {createSamplingV3OutcomeResolver}=require('../lib/coin-scan/sampling-v3-outcome-resolver.js');
 const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 let singleton=null;
 function defaultService(getStore){
   if(!singleton){
-    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,preIgnitionHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null,scanRunStore=createMemoryStore();
+    let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,preIgnitionHistory=null,samplingOosHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null,scanRunStore=createMemoryStore();
     if(typeof getStore==='function'){
       try{
         const store=createBlobStore({getStore});marketValidationStore=store;scanRunStore=store;
@@ -27,12 +29,14 @@ function defaultService(getStore){
         setupStateTracker=createSetupStateTracker({store});
         recommendationHistory=createRecommendationHistoryService({store,resolver});
         preIgnitionHistory=createPreIgnitionOosService({store,resolver:createPreIgnitionResolver({})});
+        samplingOosHistory=createSamplingV3OosService({store,resolver:createSamplingV3OutcomeResolver({})});
         marketValidationPerformance=createMarketValidationPerformance({store,resolver});
         selectorLedger=createSelectorLedgerService({store,resolver});
-      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;setupStateTracker=null;recommendationHistory=null;preIgnitionHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
+      }catch(_e){performanceRecorder=null;alertRecorder=null;transitionSnapshotRecorder=null;setupStateTracker=null;recommendationHistory=null;preIgnitionHistory=null;samplingOosHistory=null;marketValidationStore=null;marketValidationPerformance=null;selectorLedger=null}
     }
     if(!setupStateTracker)setupStateTracker=createSetupStateTracker({});
-    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,preIgnitionHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
+    if(!samplingOosHistory){const memorySamplingStore=createMemoryStore();samplingOosHistory=createSamplingV3OosService({store:memorySamplingStore,resolver:createSamplingV3OutcomeResolver({})})}
+    singleton=createScanService({provider:createBinanceProvider({}),performanceRecorder,alertRecorder,transitionSnapshotRecorder,setupStateTracker,recommendationHistory,preIgnitionHistory,samplingOosHistory,marketValidationStore,marketValidationPerformance,selectorLedger});
     singleton.scanRun=createScanRunService({scanService:singleton,store:scanRunStore});
   }
   return singleton;
@@ -109,7 +113,7 @@ module.exports=async function handler(req,res,ctx={}){
   const fresh=['1','true','yes'].includes(String(q.fresh||'').toLowerCase());
   const persistObservations=String(q.persist||'1')!=='0';
   const validation=['off','light','full','auto'].includes(String(q.validation||'full').toLowerCase())?String(q.validation||'full').toLowerCase():'full';
-  res.setHeader('Cache-Control',fresh?'no-store, max-age=0':(mode==='deep'||mode==='validation'||mode==='prescan')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='scan-run'||mode==='event-snapshots'||mode==='recommendation-history'||mode==='preignition-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
+  res.setHeader('Cache-Control',fresh?'no-store, max-age=0':(mode==='deep'||mode==='validation'||mode==='prescan')?'s-maxage=30, stale-while-revalidate=90':mode==='intelligence'?'s-maxage=45, stale-while-revalidate=120':(mode==='scan-run'||mode==='event-snapshots'||mode==='recommendation-history'||mode==='preignition-history'||mode==='sampling-history'||mode==='validation-snapshots'||mode==='selector-history')?'no-store, max-age=0':'s-maxage=15, stale-while-revalidate=45');
   try{
     if(String(req?.method||'GET').toUpperCase()==='POST'&&mode==='recommendation-history'&&String(q.action||'').toLowerCase()==='observe'){
       let body=req?.body||{};if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
