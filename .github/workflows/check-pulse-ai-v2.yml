@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check lib/pulse-ai/deterministic-analyst.js
+      - run: node --check lib/pulse-ai/runtime-scan.js
       - run: node --check lib/pulse-ai/context-builder.js
       - run: node --check lib/pulse-ai/event-detector.js
       - run: node --check lib/pulse-ai/event-catalyst.js
