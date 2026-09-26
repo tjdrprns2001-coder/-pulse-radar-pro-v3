@@ -44,6 +44,14 @@ const candidates=Analyst.topCandidates(base,8);
 assert(candidates.some(x=>x.symbol==='AAAUSDT'),'normal candidate should remain');
 assert(!candidates.some(x=>x.symbol==='HOTUSDT'),'already surged coin must be excluded from pre-ignition priority');
 assert.equal(Analyst.marketPulse(base).regime,'MIXED');
+const altBreadth={...JSON.parse(JSON.stringify(base)),marketBreadth:{count:5,up:4,down:1,flat:0,median:1.2,majors:{BTC:-.8,ETH:-1.1,SOL:-.4}}};
+assert.equal(Analyst.marketPulse(altBreadth).regime,'ALT_BREADTH','broad alt strength with weak majors must not be labelled generic risk-on');
+const sectorScan={...JSON.parse(JSON.stringify(base)),items:[
+  ...base.items,
+  {symbol:'E1USDT',category:'급등 전조 관찰',sector:'기타',candidateScore:20,preIgnitionScore:10,priority:20,dataState:'live',futuresListed:true,priceChange24h:1,reasons:['x']},
+  {symbol:'E2USDT',category:'급등 전조 관찰',sector:'기타',candidateScore:20,preIgnitionScore:10,priority:20,dataState:'live',futuresListed:true,priceChange24h:1,reasons:['x']}
+]};
+const sr=Analyst.sectorRows(sectorScan,6);assert.notEqual(sr[0]?.sector,'미분류','unclassified bucket must not dominate named sector flow');
 const futuresOnly={...JSON.parse(JSON.stringify(base)),partial:true,marketCoverage:{spot:0,futures:5,both:0,total:5}};
 assert.equal(Analyst.dataQuality(futuresOnly,2000).state,'LIVE','healthy futures-first summary should not be marked partial merely because spot is absent');
 const spotOnlyQuality={...JSON.parse(JSON.stringify(base)),partial:true,marketCoverage:{spot:5,futures:0,both:0,total:5}};
@@ -54,7 +62,8 @@ const degradedBrief=fallback(spotOnlyQuality,{material:false,events:[],sectorClu
 assert(degradedBrief.dataWarnings.some(x=>/불완전/.test(x)),'spot-only scan should warn about incomplete futures coverage');
 const answer=Analyst.deterministicAnswer({question:'AAA 지금 어때?',selectedSymbol:'AAAUSDT',scan:base,researchStatus});
 assert(answer.answer.includes('AAAUSDT'),'local chat must answer selected symbol');
-const researchAnswer=Analyst.deterministicAnswer({question:'Research AI 학습 상태',scan:base,researchStatus});
+const researchAnswer=Analyst.deterministicAnswer({question:'Research AI 학습 상태',selectedSymbol:'AAAUSDT',scan:base,researchStatus});
+assert.equal(researchAnswer.intent,'research','research intent must beat generic selected-symbol state routing');
 assert(researchAnswer.answer.includes('5개'),'local chat must answer research state');
 
 const eventNow=Date.UTC(2026,8,21,4,0,0);
