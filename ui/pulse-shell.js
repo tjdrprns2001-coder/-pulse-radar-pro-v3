@@ -91,7 +91,7 @@
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
   function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','report','ict','dante','bookai'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
-  function syncChildSymbol(raw){const s=cleanSymbol(raw);$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);history.replaceState(null,'',u);emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
+  function syncChildSymbol(raw){const s=cleanSymbol(raw),prev=symbol();$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);if(u.href!==location.href)history.replaceState(null,'',u);if(s!==prev)emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
   $('menuBtn').onclick=openMenu;shade.onclick=closeMenu;$('go').onclick=applySymbol;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')applySymbol()});$('preset').addEventListener('change',applyPreset);
