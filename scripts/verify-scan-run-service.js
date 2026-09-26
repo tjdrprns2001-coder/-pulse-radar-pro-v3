@@ -13,7 +13,7 @@ const scanService={async run({mode,symbols:requested=[],validation='full',precis
     deepCalls++;activeDeep++;maxActiveDeep=Math.max(maxActiveDeep,activeDeep);validationModes.push(validation);
     await new Promise(r=>setTimeout(r,8));
     activeDeep--;
-    return{status:'ok',updatedAt:3,deepScanCount:requested.length,samplingResearch:validation==='off'?{requested:0,ready:0,partial:0,unavailable:0}:{requested:Math.min(4,requested.length),ready:Math.min(4,requested.length),partial:0,unavailable:0},items:requested.map(s=>({symbol:s,deep:true,strategyCycle:{stage:'PATTERN_READY'}})),autoScreening:{all:requested.map(s=>({symbol:s,classification:'WATCHLIST'})),watchlist:requested.map(s=>({symbol:s,classification:'WATCHLIST'}))}};
+    return{status:'ok',updatedAt:3,deepScanCount:requested.length,samplingOosRecording:{recorded:requested.length,observed:requested.length,duplicates:0,skipped:0,errors:[]},samplingResearch:validation==='off'?{requested:0,ready:0,partial:0,unavailable:0}:{requested:Math.min(4,requested.length),ready:Math.min(4,requested.length),partial:0,unavailable:0},items:requested.map(s=>({symbol:s,deep:true,strategyCycle:{stage:'PATTERN_READY'}})),autoScreening:{all:requested.map(s=>({symbol:s,classification:'WATCHLIST'})),watchlist:requested.map(s=>({symbol:s,classification:'WATCHLIST'}))}};
   }
   throw new Error('unexpected mode '+mode);
 }};
@@ -40,6 +40,7 @@ const scanService={async run({mode,symbols:requested=[],validation='full',precis
   assert.equal(done.autoScreening.all.length,17);
   assert.equal(done.samplingResearch.requested,8,'sampling research counts should accumulate across the first two validated chunks');
   assert.equal(done.samplingResearch.ready,8);
+  assert.equal(done.samplingSamplesRecorded,17,'background scan-run must accumulate newly captured Sampling v3.1 samples');
   const reread=await svc.get(started.id);
   assert.equal(reread.status,'DONE');
 
