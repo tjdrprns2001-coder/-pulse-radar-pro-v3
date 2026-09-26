@@ -1,7 +1,7 @@
 import {getStore} from '@netlify/blobs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const handler=require('../../api/bowl224-research.js');
+const handler=require('../../handlers/bowl224-research.js');
 const {createBowl224Runtime}=require('../../lib/research-backtest-v2/bowl224/runtime.js');
 function bridge(){let code=200,payload={};const headers={};return{res:{setHeader(k,v){headers[k]=String(v)},status(n){code=n;return this},json(v){payload=v;headers['Content-Type']='application/json; charset=utf-8';return v}},response(){return new Response(JSON.stringify(payload),{status:code,headers})}}}
 export default async function bowl224Research(req){
