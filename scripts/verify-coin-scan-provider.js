@@ -26,6 +26,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
     if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>Array.from({length:97},(_,i)=>({sumOpenInterest:String(i===96?103:100),timestamp:i}))};
     if(u.pathname.endsWith('/takerlongshortRatio'))return{ok:true,json:async()=>Array.from({length:32},(_,i)=>({timestamp:i,buyVol:String(120+i),sellVol:'100',buySellRatio:String((120+i)/100)}))};
+    if(u.pathname.endsWith('/aggTrades'))return{ok:true,json:async()=>Array.from({length:100},(_,i)=>({a:i,p:String(1+i*.001),q:'10',T:1000+i,m:i%2===0}))};
     if(u.pathname.endsWith('/klines')){
       const sym=u.searchParams.get('symbol')||'UNKNOWN',n=(klineActive.get(sym)||0)+1;klineActive.set(sym,n);klineMax.set(sym,Math.max(klineMax.get(sym)||0,n));
       await new Promise(r=>setTimeout(r,3));klineActive.set(sym,Math.max(0,(klineActive.get(sym)||1)-1));
@@ -49,6 +50,8 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(calls.filter(x=>x.includes('exchangeInfo')).length,1,'exchangeInfo should cache');
   const ticks=await p.getTickers();assert.equal(ticks.length,1);
   const k=await p.getKlines('XLMUSDT','1h',120);assert.equal(k.length,1);
+  const agg=await p.getFuturesAggTrades('XLMUSDT',{limit:100,endTime:2000});assert.equal(agg.length,100,'bounded futures aggTrades required');
+  assert(calls.some(x=>x.includes('/aggTrades')&&x.includes('limit=100')),'aggTrades endpoint must stay bounded');
   assert.equal(typeof p.scanLightCandidates,'function','light prescan provider required');
   assert(p.klineTtl('1w')>p.klineTtl('1h'),'completed slow timeframes should cache longer than 1h');
   assert(p.klineTtl('1d')>=600000,'daily deep frames should reuse cache across short repeated scans');
