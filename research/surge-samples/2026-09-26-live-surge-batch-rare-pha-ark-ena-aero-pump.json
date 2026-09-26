@@ -1,0 +1,106 @@
+{
+  "sampledAt": "2026-09-26",
+  "source": "Binance USDⓈ-M perpetual",
+  "purpose": "PRE-SURGE surge-sample research",
+  "samples": [
+    {
+      "symbol": "RARE",
+      "price24hPct": 63.491,
+      "oi24hPct": 306.2477,
+      "oiRecent4hPct": 151.3761,
+      "takerMax": 1.3226,
+      "takerRecent": [
+        1.3226,
+        0.9956,
+        0.9525,
+        1.1363,
+        1.0848,
+        1.013
+      ],
+      "h1Rvol20": 6.57,
+      "priceRecent4hPct": 45.46,
+      "priceRecent12hPct": 34.99,
+      "dna": "OI_EXPLOSION_RVOL_DISPLACEMENT"
+    },
+    {
+      "symbol": "PHA",
+      "price24hPct": 35.532,
+      "oi24hPct": 170.4509,
+      "oiRecent4hPct": -5.461,
+      "takerMax": 1.1908,
+      "h1Rvol20": 0.72,
+      "priceRecent4hPct": -5.5,
+      "priceRecent12hPct": -6.94,
+      "dna": "OI_EXPLOSION_POST_SURGE_DELEVERAGING"
+    },
+    {
+      "symbol": "ARK",
+      "price24hPct": 28.681,
+      "oi24hPct": 71.1818,
+      "oiRecent4hPct": 7.6813,
+      "takerMax": 1.2658,
+      "h1Rvol20": 1.25,
+      "priceRecent4hPct": 3.51,
+      "priceRecent12hPct": 19.59,
+      "dna": "PERSISTENT_OI_BUILD_TREND_EXPANSION"
+    },
+    {
+      "symbol": "ENA",
+      "price24hPct": 24.871,
+      "oi24hPct": 28.1045,
+      "oiRecent4hPct": 1.101,
+      "takerMax": 1.2235,
+      "h1Rvol20": 0.73,
+      "priceRecent4hPct": 0.01,
+      "priceRecent12hPct": 3.57,
+      "dna": "GRADUAL_OI_BUILD_CONTROLLED_TREND"
+    },
+    {
+      "symbol": "AERO",
+      "price24hPct": 20.391,
+      "oi24hPct": 31.1075,
+      "oiRecent4hPct": -2.496,
+      "takerMax": 1.2265,
+      "h1Rvol20": 1.64,
+      "priceRecent4hPct": -0.88,
+      "priceRecent12hPct": 5.69,
+      "dna": "OI_BUILD_LATE_STAGE_UNWIND"
+    },
+    {
+      "symbol": "PUMP",
+      "price24hPct": 15.66,
+      "oi24hPct": 12.6772,
+      "oiRecent4hPct": 6.6946,
+      "takerMax": 1.3908,
+      "h1Rvol20": 1.34,
+      "priceRecent4hPct": 5.01,
+      "priceRecent12hPct": 10.09,
+      "dna": "MODERATE_OI_TAKER_IGNITION"
+    }
+  ],
+  "scannerDeductions": {
+    "oiExplosion": {
+      "oi4hMinPct": 3,
+      "oi12to24hMinPct": 10,
+      "pricePreExpansionMaxPct": 5
+    },
+    "volumeIgnition": {
+      "h1RvolMin": 1.5,
+      "m15RvolMinRange": [
+        2,
+        3
+      ]
+    },
+    "quietTaker": {
+      "acceptedRange": [
+        1.1,
+        1.4
+      ],
+      "requiresStrongOiAndVolume": true
+    },
+    "lateStageExclusion": {
+      "price24hMinPct": 15,
+      "excludeFromPresurgeRanking": true
+    }
+  }
+}
