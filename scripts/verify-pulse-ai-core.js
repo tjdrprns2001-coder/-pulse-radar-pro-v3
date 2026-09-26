@@ -112,7 +112,10 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
     confidence:{label:'멀티거래소 선물 시세 관찰'},
     externalMarket:{price:.22,change24:-.8,openInterestUsd:82000000,fundingRate:.0001,exchangeCount:2}
   }:null;
-  const service=createBriefingService({scanService,gateway,researchAI,detailResolver,cacheMs:0,now:()=>2000});
+  const eventResolver=async symbol=>symbol==='AAAUSDT'?{
+    ok:true,events:[{title:'AAA mainnet upgrade',titleKo:'AAA 메인넷 업그레이드',category:'네트워크/전환',source:'Example News',link:'https://example.com/aaa',eventDate:'2026-09-28T00:00:00Z'}]
+  }:null;
+  const service=createBriefingService({scanService,gateway,researchAI,detailResolver,eventResolver,cacheMs:0,now:()=>2000});
   const out=await service.getBrief({selectedSymbol:'AAAUSDT'});
   assert.equal(out.aiGenerated,false);assert.equal(out.aiAvailable,false);
   assert(out.summary.includes('시장 상태'),'fallback should be useful local market analysis');
@@ -120,6 +123,8 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
   assert(!out.candidates.some(x=>x.symbol==='HOTUSDT'));
   assert.equal(out.selectedFocus.symbol,'AAAUSDT');
   assert.equal(out.researchAI.model.state,'SHADOW');
+  assert.equal(out.eventCatalysts.length,1,'local event resolver should populate catalysts without generative AI');
+  assert(out.eventSummary.includes('보조 뉴스 1건'),'local event fallback must be labelled as auxiliary news');
   const chat=await service.chat({question:'AAA 지금 어때?',selectedSymbol:'AAAUSDT'});
   assert.equal(chat.answerMode,'deterministic');assert(chat.answer.includes('AAAUSDT'));
   const xlm=await service.getBrief({selectedSymbol:'XLMUSDT',force:true});
