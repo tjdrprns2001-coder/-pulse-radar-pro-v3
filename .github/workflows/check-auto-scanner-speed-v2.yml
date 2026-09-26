@@ -1,0 +1,50 @@
+name: Auto Scanner Speed v2 checks
+
+on:
+  push:
+    branches:
+      - feature/auto-scanner-speed-v2-20260926
+    paths:
+      - 'lib/coin-scan/**'
+      - 'api/coin-scan.js'
+      - 'coin-scan.html'
+      - 'ui/coin-scan.js'
+      - 'ui/coin-scan.css'
+      - 'scripts/verify-coin-scan-*.js'
+      - 'scripts/verify-auto-scan-finder.js'
+      - 'scripts/verify-scan-run-service.js'
+      - '.github/workflows/check-auto-scanner-speed-v2.yml'
+  pull_request:
+    paths:
+      - 'lib/coin-scan/**'
+      - 'api/coin-scan.js'
+      - 'coin-scan.html'
+      - 'ui/coin-scan.js'
+      - 'ui/coin-scan.css'
+      - 'scripts/verify-coin-scan-*.js'
+      - 'scripts/verify-auto-scan-finder.js'
+      - 'scripts/verify-scan-run-service.js'
+      - '.github/workflows/check-auto-scanner-speed-v2.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/coin-scan/binance-provider.js
+      - run: node --check lib/coin-scan/scan-service.js
+      - run: node --check lib/coin-scan/scan-run-service.js
+      - run: node --check api/coin-scan.js
+      - run: node --check ui/coin-scan.js
+      - run: npm run test:coin-scan-provider
+      - run: npm run test:coin-scan-api
+      - run: npm run test:coin-scan-ui
+      - run: npm run test:light-prescan
+      - run: npm run test:scan-run-service
+      - run: npm run test:v3-scanner
+      - run: node scripts/verify-auto-scan-finder.js
