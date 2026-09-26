@@ -161,7 +161,8 @@
     "build:master-samples-v2": "node scripts/build-master-sample-dataset-v2.js",
     "test:master-samples-v2": "node scripts/verify-master-sample-dataset-v2.js",
     "test:sample-similarity-v2": "node scripts/verify-sample-similarity-v2.js",
-    "test:sample-blind-validation": "node scripts/verify-sample-blind-validation.js"
+    "test:sample-blind-validation": "node scripts/verify-sample-blind-validation.js",
+    "test:sampling-v3": "node scripts/verify-sampling-v3.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
