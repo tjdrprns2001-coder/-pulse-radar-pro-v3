@@ -16,7 +16,7 @@ const resolver={
 const service=createSamplingV3OosService({store,resolver,now:()=>now,maxEventsPerEvaluation:200,evaluationConcurrency:4});
 function item(symbol,stage='QUIET',score=50){
   return{symbol,lastPrice:100,marketScope:'futures',spotListed:false,futuresListed:true,dataState:'live',scanClass:{key:'WATCH'},v2Type:'A-pre',
-    samplingV3:{evidenceScore:score,rankingEffect:0,sequence:{stage,eventTypes:['CUSUM_UP','OI_BUILD_4H'],eventCount:2,bullishEventCount:2},integrity:{status:'PASS'},nativeSyntheticAudit:{status:'PASS'},microstructure:{status:'READY'},alternativeBars:{version:'SAMPLING_V3_ALT_BARS_v2',revision:'3.2',status:'READY',tradeCount:200,evaluationTradeCount:130,policy:{thresholdMode:'FROZEN_CALIBRATION',overshootPolicy:'INCLUDE_FULL_TRADE'},calibration:{status:'READY',calibrationTradeCount:70,evaluationTradeCount:130,calibrationEndTime:1000,evaluationStartTime:1001,thresholds:{tickTrades:20,volumeQty:40,dollarUsd:4000,imbalanceUsd:1500,runUsd:1000}},bars:{tickCount:6,volumeCount:5,dollarCount:4,imbalanceCount:2,runCount:3}},latestOutcomeProbe:{upperPct:2.5,lowerPct:1.2}},
+    samplingV3:{evidenceScore:score,rankingEffect:0,sequence:{stage,eventTypes:['CUSUM_UP','OI_BUILD_4H'],eventCount:2,bullishEventCount:2},integrity:{status:'PASS'},nativeSyntheticAudit:{status:'PASS'},microstructure:{status:'READY'},alternativeBars:{version:'SAMPLING_V3_ALT_BARS_v2',revision:'3.2',status:'READY',tradeCount:200,evaluationTradeCount:130,policy:{thresholdMode:'FROZEN_CALIBRATION',thresholdScope:'PER_SNAPSHOT_CAUSAL_SPLIT',tickDefinition:'BINANCE_AGGTRADE_EVENT_COUNT',overshootPolicy:'INCLUDE_FULL_TRADE'},calibration:{status:'READY',calibrationTradeCount:70,evaluationTradeCount:130,calibrationEndTime:1000,evaluationStartTime:1001,thresholds:{tickTrades:20,volumeQty:40,dollarUsd:4000,imbalanceUsd:1500,runUsd:1000}},bars:{tickCount:6,volumeCount:5,dollarCount:4,imbalanceCount:2,runCount:3}},latestOutcomeProbe:{upperPct:2.5,lowerPct:1.2}},
     sampleSimilarityV2:{successScore:80,negativeScore:40,netEvidenceScore:58,ignitionPath:'OI_BUILD',successTop5:[],negativeTop3:[]},
     priceChange24h:2,oi4hChangePct:3,trueTakerRatio:1.3,v3Rvol:{main1h:{value:2},ignition15m:{value:3}}
   };
@@ -29,6 +29,8 @@ assert(captured.every(x=>x.samplingRevision==='3.2'),'forward snapshots must pre
 assert(captured.every(x=>x.alternativeBars.tickCount===6&&x.alternativeBars.volumeCount===5),'forward snapshots must persist tick/volume counts');
 assert(captured.every(x=>x.alternativeBars.thresholdMode==='FROZEN_CALIBRATION'),'forward snapshots must preserve frozen-threshold policy');
 assert(captured.every(x=>x.alternativeBars.overshootPolicy==='INCLUDE_FULL_TRADE'),'forward snapshots must preserve overshoot policy');
+assert(captured.every(x=>x.alternativeBars.thresholdScope==='PER_SNAPSHOT_CAUSAL_SPLIT'),'forward snapshots must preserve causal split scope');
+assert(captured.every(x=>x.alternativeBars.tickDefinition==='BINANCE_AGGTRADE_EVENT_COUNT'),'forward snapshots must identify aggregate-trade tick semantics');
 const dup=await service.observe(batch,{capturedAt:now+20*60000,sourceScanId:'scan-2'});
 assert.equal(dup.recorded,0);assert.equal(dup.duplicates,3,'same symbol/hour must dedupe');
 
