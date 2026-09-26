@@ -3,6 +3,7 @@ name: Auto Scanner Speed v2 checks
 on:
   push:
     branches:
+      - main
       - feature/auto-scanner-speed-v2-20260926
     paths:
       - 'lib/coin-scan/**'
@@ -12,6 +13,7 @@ on:
       - 'ui/coin-scan.css'
       - 'scripts/verify-coin-scan-*.js'
       - 'scripts/verify-auto-scan-finder.js'
+      - 'scripts/verify-auto-scan-sampling-v3.js'
       - 'scripts/verify-scan-run-service.js'
       - '.github/workflows/check-auto-scanner-speed-v2.yml'
   pull_request:
@@ -46,5 +48,6 @@ jobs:
       - run: npm run test:coin-scan-ui
       - run: npm run test:light-prescan
       - run: npm run test:scan-run-service
+      - run: npm run test:auto-scan-sampling-v3
       - run: npm run test:v3-scanner
       - run: node scripts/verify-auto-scan-finder.js
