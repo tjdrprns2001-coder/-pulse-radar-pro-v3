@@ -166,13 +166,19 @@ const provider={
   assert.equal(forwarded.persistObservations,false,'read-only auto scanner chunks must remain side-effect free');
 
   code=0;body=null;headers={};
+  let scanRunExecuteCalls=0;
   const scanRunStub={scanRun:{
     async start(){return{id:'scan-test-bg',status:'QUEUED',stage:'queued'}},
     async get(id){return{id,status:'RUNNING',stage:'deep',deepDone:6,deepTotal:12}},
-    async execute(id){return{id,status:'DONE',stage:'complete',deepDone:12,deepTotal:12}}
+    async execute(id){scanRunExecuteCalls++;return{id,status:'DONE',stage:'complete',deepDone:12,deepTotal:12}}
   }};
   await handler({method:'POST',query:{mode:'scan-run',action:'start',precision:'1'}},res,{service:scanRunStub});
   assert.equal(code,202);assert.equal(body.run.id,'scan-test-bg');assert.equal(headers['Cache-Control'],'no-store, max-age=0');
+  code=0;body=null;headers={};
+  await handler({method:'POST',query:{mode:'scan-run',action:'start',precision:'0',background:'1'}},res,{service:scanRunStub});
+  assert.equal(code,202);assert.equal(body.backgroundStarted,true,'Render background start must launch scan-run execution');
+  await new Promise(r=>setImmediate(r));
+  assert(scanRunExecuteCalls>=1,'background scan-run must execute asynchronously after start');
   code=0;body=null;headers={};
   await handler({query:{mode:'scan-run',action:'status',id:'scan-test-bg'}},res,{service:scanRunStub});
   assert.equal(code,200);assert.equal(body.run.deepDone,6);
