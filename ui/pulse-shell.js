@@ -1,7 +1,7 @@
 (function(){
   const V={
     home:{title:'시장 데스크',desc:'전체시장 · 1시간 브리핑 · AI 후보',path:'/workspace-home.html'},
-    pulseai:{title:'Pulse AI',desc:'시장 변화 · 이벤트 · 뉴스 한글 브리핑',path:'/pulse-ai.html'},
+    pulseai:{title:'Pulse AI',desc:'시장 폭 · 점화전 후보 · Research AI · 이벤트 · 질의 분석',path:'/pulse-ai.html'},
     bookai:{title:'Book AI',desc:'책 규칙 · 근거 완성도 · 상태 전이 · Canonical Snapshot',path:'/book-ai-analyst.html'},
     researchai:{title:'연구 학습 AI',desc:'급등 샘플 · 책 규칙 · 6H/24H 실제 결과 자동 학습',path:'/research-ai.html'},
     scanner:{title:'확장 시장 탐색',desc:'현물 + 8개 선물거래소 · 기초자산 중복 제거',path:'/index.html'},
