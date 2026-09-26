@@ -29,7 +29,13 @@ module.exports=async function handler(req,res,ctx={}){
     }
     if(stage==='deep'){
       const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
-      return res.status(200).json(await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf)}));
+      const result=await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf)});
+      try{
+        const adapter=require('../lib/learning/scanner-adapter.js');
+        const learned=adapter.ingestScannerItems(result.items||[],{source:'astra-'+method,marketState:result.marketState||marketOf(q),asOf:result.asOf});
+        result.items=learned.items;result.learning=learned.learning;
+      }catch(_learningError){result.learning={shadowOnly:true,status:'degraded',error:String(_learningError?.message||_learningError),source:'astra-'+method}}
+      return res.status(200).json(result);
     }
     return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG},claude:{...CONFIG,...CLAUDE_CONFIG}}});
   }catch(e){return res.status(Number(e?.statusCode)||502).json({status:'error',version:VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)});}
