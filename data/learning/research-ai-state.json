@@ -1,0 +1,25 @@
+{
+  "version": "RESEARCH_AI_v1",
+  "updatedAt": 0,
+  "source": "repository-seed",
+  "model": null,
+  "observations": [],
+  "training": {
+    "labels": 0,
+    "positive": 0,
+    "negative": 0,
+    "lastLoss": null,
+    "lastTrainedAt": null
+  },
+  "memory": {
+    "seedSamples": 10,
+    "bookTechniques": 0,
+    "bookRankingTechniques": 0,
+    "persistence": "github-learning-memory",
+    "notes": [
+      "런타임 관측은 6H/24H 결과와 함께 축적",
+      "모델은 SHADOW_ONLY이며 기존 자동스캐너 랭킹을 직접 변경하지 않음",
+      "learning-memory 브랜치에 주기적으로 체크포인트 저장"
+    ]
+  }
+}
