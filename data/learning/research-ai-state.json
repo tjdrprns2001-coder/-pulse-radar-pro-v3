@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790443464017,
+  "updatedAt": 1790453034983,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -151,8 +151,8 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 7
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 10
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": -0.031605750345453654,
@@ -213,7 +213,7 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": 0.4181618782592933,
+      "outcome6hPct": 0.40920925999148317,
       "outcome24hPct": null,
       "label": null,
       "source": "trader-deep",
@@ -228,19 +228,19 @@
             "status": "CONFIRMED",
             "targetAt": 1790417630041,
             "closeAt": 1790420399999,
-            "returnPct": 0.19994180798124095
+            "returnPct": 0.20926745201022
           },
           "h3": {
             "status": "CONFIRMED",
             "targetAt": 1790424830041,
             "closeAt": 1790427599999,
-            "returnPct": 0.2607450070501782
+            "returnPct": 0.25999895552786256
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790435630041,
             "closeAt": 1790438399999,
-            "returnPct": 0.4181618782592933
+            "returnPct": 0.40920925999148317
           },
           "h12": {
             "status": "PENDING_OR_GAP",
@@ -261,8 +261,8 @@
             "returnPct": null
           }
         },
-        "mfePct": 0.5304426323681888,
-        "maePct": 0.0022381545669469816,
+        "mfePct": 0.5543162810823565,
+        "maePct": -0.00783354098433664,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -310,16 +310,16 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 7
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 10
       },
       "labelStatus": "UNRESOLVED",
-      "outcome1hPct": 0.19994180798124095,
-      "outcome3hPct": 0.2607450070501782,
+      "outcome1hPct": 0.20926745201022,
+      "outcome3hPct": 0.25999895552786256,
       "outcome12hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": 0.5304426323681888,
-      "mae72hPct": 0.0022381545669469816,
+      "mfe72hPct": 0.5543162810823565,
+      "mae72hPct": -0.00783354098433664,
       "tpSlOrder": "NONE"
     },
     {
@@ -566,16 +566,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 331.07,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -2.9721811097350948
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -608,11 +608,11 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": -0.296009907270367,
+        "maePct": -3.2621499984897495,
         "barriers": {
-          "status": "NONE",
-          "at": null,
+          "status": "SL_FIRST",
+          "at": 1790449199999,
           "tp": 347.62350000000004,
           "sl": 321.1379
         },
@@ -641,12 +641,12 @@
           },
           "down": {
             "minus2": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790449199999
             },
             "minus3": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790449199999
             },
             "minus5": {
               "hit": false,
@@ -655,23 +655,23 @@
           }
         },
         "firstSurgeHours": null,
-        "label": null,
-        "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -2.9721811097350948,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
-      "tpSlOrder": "NONE"
+      "mfe72hPct": -0.296009907270367,
+      "mae72hPct": -3.2621499984897495,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "XPLUSDT:497345",
@@ -917,16 +917,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 0.11606,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": 0.3963467172152457
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -959,8 +959,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 1.5595381699121225,
+        "maePct": -1.981733586076162,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -1008,20 +1008,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": 0.3963467172152457,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 1.5595381699121225,
+      "mae72hPct": -1.981733586076162,
       "tpSlOrder": "NONE"
     },
     {
@@ -1268,16 +1268,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 10.875,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -1.0022988505747121
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -1310,8 +1310,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.24827586206896957,
+        "maePct": -1.370114942528733,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -1359,20 +1359,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -1.0022988505747121,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 0.24827586206896957,
+      "mae72hPct": -1.370114942528733,
       "tpSlOrder": "NONE"
     },
     {
@@ -1617,16 +1617,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 7.718,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -0.8940139932624991
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -1659,8 +1659,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.5053122570614077,
+        "maePct": -1.2438455558434813,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -1708,20 +1708,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -0.8940139932624991,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 0.5053122570614077,
+      "mae72hPct": -1.2438455558434813,
       "tpSlOrder": "NONE"
     },
     {
@@ -1966,16 +1966,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 0.2183,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -0.41227668346311974
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -2008,8 +2008,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.22904260192395665,
+        "maePct": -0.5955107650022939,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -2057,20 +2057,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -0.41227668346311974,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 0.22904260192395665,
+      "mae72hPct": -0.5955107650022939,
       "tpSlOrder": "NONE"
     },
     {
@@ -2319,16 +2319,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 1.2741,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -2.0406561494388242
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -2361,8 +2361,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": -0.6200455223294932,
+        "maePct": -2.8255238992229814,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -2394,8 +2394,8 @@
           },
           "down": {
             "minus2": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790449199999
             },
             "minus3": {
               "hit": false,
@@ -2410,20 +2410,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -2.0406561494388242,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": -0.6200455223294932,
+      "mae72hPct": -2.8255238992229814,
       "tpSlOrder": "NONE"
     },
     {
@@ -2672,16 +2672,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 0.7983,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -1.0271827633721586
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -2714,8 +2714,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.42590504822748176,
+        "maePct": -1.37792809720656,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -2763,20 +2763,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -1.0271827633721586,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 0.42590504822748176,
+      "mae72hPct": -1.37792809720656,
       "tpSlOrder": "NONE"
     },
     {
@@ -3021,16 +3021,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 0.032958,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -2.9370714242369145
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -3063,11 +3063,11 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.6553795740032786,
+        "maePct": -5.003337581163924,
         "barriers": {
-          "status": "NONE",
-          "at": null,
+          "status": "SL_FIRST",
+          "at": 1790449199999,
           "tp": 0.0346059,
           "sl": 0.03196926
         },
@@ -3096,37 +3096,37 @@
           },
           "down": {
             "minus2": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790449199999
             },
             "minus3": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790449199999
             },
             "minus5": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790452799999
             }
           }
         },
         "firstSurgeHours": null,
-        "label": null,
-        "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -2.9370714242369145,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
-      "tpSlOrder": "NONE"
+      "mfe72hPct": 0.6553795740032786,
+      "mae72hPct": -5.003337581163924,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "ICPUSDT:497345",
@@ -3374,16 +3374,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 3.289,
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790446919285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": -1.6722408026755953
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -3416,8 +3416,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 0.09121313469138137,
+        "maePct": -2.4323502584372214,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -3449,8 +3449,8 @@
           },
           "down": {
             "minus2": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790452799999
             },
             "minus3": {
               "hit": false,
@@ -3465,20 +3465,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": -1.6722408026755953,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 0.09121313469138137,
+      "mae72hPct": -2.4323502584372214,
       "tpSlOrder": "NONE"
     },
     {
@@ -3725,16 +3725,16 @@
       ],
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v2",
-        "status": "PENDING",
+        "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
         "entryPrice": 1560.3,
         "asOf": 1790443405016,
         "horizons": {
           "h1": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790447005016,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790449199999,
+            "returnPct": 0.07498557969620734
           },
           "h3": {
             "status": "PENDING_OR_GAP",
@@ -3767,8 +3767,8 @@
             "returnPct": null
           }
         },
-        "mfePct": null,
-        "maePct": null,
+        "mfePct": 1.7752996218675987,
+        "maePct": -0.6268025379734699,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -3816,20 +3816,20 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790443464017,
-        "confirmedBars": 0
+        "evaluatedAt": 1790453034983,
+        "confirmedBars": 2
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
-      "outcome1hPct": null,
+      "outcome1hPct": 0.07498557969620734,
       "outcome3hPct": null,
       "outcome6hPct": null,
       "outcome12hPct": null,
       "outcome24hPct": null,
       "outcome72hPct": null,
-      "mfe72hPct": null,
-      "mae72hPct": null,
+      "mfe72hPct": 1.7752996218675987,
+      "mae72hPct": -0.6268025379734699,
       "tpSlOrder": "NONE"
     },
     {
@@ -7689,9 +7689,9 @@
     "updatedAt": 1790430310832
   },
   "training": {
-    "labels": 0,
+    "labels": 2,
     "positive": 0,
-    "negative": 0,
+    "negative": 2,
     "lastLoss": null,
     "lastTrainedAt": null,
     "dataset": {
@@ -7719,7 +7719,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790443468504,
+  "exportedAt": 1790453037516,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -7743,11 +7743,93 @@
   "research": {
     "stats": {
       "version": "RESEARCH_STATS_v2",
-      "scoreBuckets": [],
-      "byRegime": [],
-      "bySetup": [],
-      "bySource": [],
-      "bookRules": [],
+      "scoreBuckets": [
+        {
+          "key": "10-19",
+          "count": 1,
+          "successRate": 0,
+          "avgMfePct": 0.6553795740032786,
+          "avgMaePct": -5.003337581163924
+        },
+        {
+          "key": "50-59",
+          "count": 1,
+          "successRate": 0,
+          "avgMfePct": -0.296009907270367,
+          "avgMaePct": -3.2621499984897495
+        }
+      ],
+      "byRegime": [
+        {
+          "key": "RISK_ON",
+          "count": 2,
+          "success": 0,
+          "failure": 2,
+          "successRate": 0,
+          "avgMfePct": 0.1796848333664558,
+          "avgMaePct": -4.132743789826836
+        }
+      ],
+      "bySetup": [
+        {
+          "key": "HOLD",
+          "count": 1,
+          "success": 0,
+          "failure": 1,
+          "successRate": 0,
+          "avgMfePct": 0.6553795740032786,
+          "avgMaePct": -5.003337581163924
+        },
+        {
+          "key": "WAIT",
+          "count": 1,
+          "success": 0,
+          "failure": 1,
+          "successRate": 0,
+          "avgMfePct": -0.296009907270367,
+          "avgMaePct": -3.2621499984897495
+        }
+      ],
+      "bySource": [
+        {
+          "key": "astra-astra",
+          "count": 2,
+          "success": 0,
+          "failure": 2,
+          "successRate": 0,
+          "avgMfePct": 0.1796848333664558,
+          "avgMaePct": -4.132743789826836
+        }
+      ],
+      "bookRules": [
+        {
+          "ruleId": "RSI",
+          "regime": "RISK_ON",
+          "count": 2,
+          "success": 0,
+          "successRate": 0,
+          "avgMfePct": 0.1796848333664558,
+          "avgMaePct": -4.132743789826836
+        },
+        {
+          "ruleId": "MACD",
+          "regime": "RISK_ON",
+          "count": 2,
+          "success": 0,
+          "successRate": 0,
+          "avgMfePct": 0.1796848333664558,
+          "avgMaePct": -4.132743789826836
+        },
+        {
+          "ruleId": "MARKET_STRUCTURE",
+          "regime": "RISK_ON",
+          "count": 1,
+          "success": 0,
+          "successRate": 0,
+          "avgMfePct": -0.296009907270367,
+          "avgMaePct": -3.2621499984897495
+        }
+      ],
       "derivedRules": []
     },
     "archetypes": []
