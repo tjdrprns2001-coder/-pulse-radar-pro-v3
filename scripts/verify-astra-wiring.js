@@ -10,7 +10,7 @@ const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));
 new Function(js); // syntax-check browser bundle without executing DOM code
 assert(html.includes('Astra 자동스캔'));
 assert(html.includes('id="astraRun"'));
-assert(html.includes('id="scanMethod"')&&html.includes('value="manus"')&&html.includes('value="perplexity"')&&html.includes('value="grok"')&&html.includes('value="gemini"'),'scan method selector missing');
+assert(html.includes('id="scanMethod"')&&html.includes('value="manus"')&&html.includes('value="perplexity"')&&html.includes('value="grok"')&&html.includes('value="gemini"')&&html.includes('value="claude"'),'scan method selector missing');
 assert(html.includes('id="astraAudit"'),'OI audit panel missing');
 assert(js.includes("get('universe')")&&js.includes("get('oi'")&&js.includes("get('deep'"));
 assert(js.includes('chunks(filtered.map(x=>x.symbol),16)'));
@@ -21,14 +21,17 @@ assert(js.includes('정량 반증')&&js.includes('5m 참고 전용'),'Perplexity
 assert(js.includes('GROK_FIRE')&&js.includes('GROK_READY')&&js.includes('GROK_INTEREST'),'Grok classification UI missing');
 assert(js.includes('GEMINI_ALPHA')&&js.includes('GEMINI_READY')&&js.includes('GEMINI_WATCH'),'Gemini classification UI missing');
 assert(js.includes('동적 거래대금 컷')&&js.includes('동적컷'),'Grok/Gemini dynamic threshold UI missing');
+assert(js.includes('CLAUDE_A_PRE')&&js.includes('CLAUDE_A_B')&&js.includes('CLAUDE_NFB_SQ'),'Claude label UI missing');
+assert(js.includes('DIRECTION_CONFIRM')&&js.includes('CLEAN→REBUILD'),'Claude v3 decision UI missing');
 assert(js.includes('OI 조회 감사'),'OI audit rendering missing');
 assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.includes("stage==='deep'"));
 assert(api.includes('methodOf(q.method)'),'API method routing missing');
 assert(api.includes('GROK_CONFIG')&&api.includes('GEMINI_CONFIG'),'Grok/Gemini API config missing');
+assert(api.includes('CLAUDE_CONFIG'),'Claude API config missing');
 assert(css.includes('.card.IGNITION_CONFIRMED')&&css.includes('.card.A_FIRE'));
 assert(legacy.includes('href="/astra-scan.html"')&&legacy.includes('Astra 검색기'));
 assert(netlify.includes('from = "/api/astra-scan*"')&&netlify.includes('to = "/.netlify/functions/astra-scan:splat"'));
 assert(netlify.includes('from = "/astra-scan"')&&netlify.includes('to = "/astra-scan.html"'));
 assert(vercel.functions?.['api/astra-scan.js']?.maxDuration===20);
 assert(vercel.rewrites?.some(x=>x.source==='/astra-scan'&&x.destination==='/astra-scan.html'));
-console.log('astra/manus/perplexity/grok/gemini wiring verification passed');
+console.log('astra/manus/perplexity/grok/gemini/claude wiring verification passed');
