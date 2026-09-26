@@ -169,7 +169,8 @@
     "test:auto-scan-sampling-v3": "node scripts/verify-auto-scan-sampling-v3.js",
     "test:sampling-v3-outcome-resolver": "node scripts/verify-sampling-v3-outcome-resolver.js",
     "test:sampling-v3-oos-service": "node scripts/verify-sampling-v3-oos-service.js",
-    "test:auto-recommender": "node scripts/verify-auto-recommender.js"
+    "test:auto-recommender": "node scripts/verify-auto-recommender.js",
+    "test:ignition-bridge": "node scripts/verify-ignition-bridge.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
