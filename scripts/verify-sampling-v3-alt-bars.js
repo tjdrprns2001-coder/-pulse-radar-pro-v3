@@ -20,7 +20,7 @@ const volume=A.buildVolumeBars(trades,{volumeThresholdQty:40});
 const dollar=A.buildDollarBars(trades,{thresholdUsd:4000});
 const imbalance=A.buildImbalanceBars(trades,{imbalanceThresholdUsd:1500});
 const run=A.buildRunBars(trades,{runThresholdUsd:1000,minRunTrades:6});
-assert(tick.length>0&&tick.every(x=>x.tradeCount===20),'tick bars must close on fixed trade count');
+assert(tick.length>0&&tick.every(x=>x.tradeCount===20&&x.barType==='TICK_AGGTRADE'),'aggTrade tick bars must close on fixed event count');
 assert(volume.length>0&&volume.every(x=>x.volume>=x.thresholdQty),'volume bars required');
 assert(dollar.length>0&&dollar.every(x=>x.dollarVolume>=x.thresholdUsd),'dollar bars required');
 assert(imbalance.length>0&&imbalance.every(x=>Math.abs(x.signedImbalanceUsd)>=x.thresholdUsd),'imbalance bars required');
@@ -74,5 +74,14 @@ assert.equal(s.diagnostics.futureDataUsedForThresholds,false);
 for(const k of ['tickCount','volumeCount','dollarCount','imbalanceCount','runCount'])assert(s.bars[k]>0,k+' required');
 assert(s.latest.tick&&s.latest.volume&&s.latest.dollar,'latest tick/volume/dollar bars required');
 assert(s.rollingShadow&&typeof s.rollingShadow==='object','rolling thresholds may remain shadow comparison only');
+assert.equal(s.policy.tickDefinition,'BINANCE_AGGTRADE_EVENT_COUNT');
+assert.equal(s.policy.thresholdScope,'PER_SNAPSHOT_CAUSAL_SPLIT');
+assert.equal(s.sourceSchema.eventType,'AGG_TRADE');
+assert.equal(s.sourceSchema.receiveTimeAvailable,false);
+
+const tooShort=A.summarize(trades.slice(0,40),cfg);
+assert.notEqual(tooShort.status,'READY','insufficient calibration must not silently roll into a READY primary result');
+assert.equal(tooShort.bars.tickCount,0,'primary frozen bars must stay empty without calibration');
+assert(tooShort.rollingShadow&&typeof tooShort.rollingShadow.tickCount==='number','rolling alternative may remain diagnostics only');
 
 console.log('sampling v3.2 alternative bars PASS',JSON.stringify({bars:s.bars,calibration:s.calibration.thresholds}));
