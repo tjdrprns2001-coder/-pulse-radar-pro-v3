@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+assert(fs.existsSync(require('node:path').join(__dirname,'../ui/trader-result-age.js')),'per-result freshness helper is required');
+const {isStale}=require('../ui/trader-result-age');
+assert.equal(isStale({asOf:100000},220000),false);
+assert.equal(isStale({asOf:100000},220001),true,'finishing another symbol must not renew this result');
+assert.equal(isStale({},220000),true);
+assert.equal(isStale({asOf:300000},220000),true,'future clock drift must not appear fresh');
+console.log('trader per-result freshness PASS');
