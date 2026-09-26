@@ -4,6 +4,7 @@ const html=fs.readFileSync('astra-scan.html','utf8');
 const js=fs.readFileSync('ui/astra-scan.js','utf8');
 const css=fs.readFileSync('ui/astra-scan.css','utf8');
 const api=fs.readFileSync('api/astra-scan.js','utf8');
+const runtime=fs.readFileSync('workers/selector-runtime.mjs','utf8');
 const legacy=fs.readFileSync('coin-scan.html','utf8');
 const netlify=fs.readFileSync('netlify.toml','utf8');
 const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));
@@ -28,6 +29,9 @@ assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.inc
 assert(api.includes('methodOf(q.method)'),'API method routing missing');
 assert(api.includes('GROK_CONFIG')&&api.includes('GEMINI_CONFIG'),'Grok/Gemini API config missing');
 assert(api.includes('CLAUDE_CONFIG'),'Claude API config missing');
+assert(js.includes('pulseradar-selector-runtime.onrender.com/api/astra-scan'),'Render Astra API fallback missing');
+assert(runtime.includes("route.pathname==='/api/astra-scan'")&&runtime.includes("route.pathname==='/astra-scan'"),'Render scanner routes missing');
+assert(runtime.includes('createAstraAutoScanner'),'Render Astra scanner instance missing');
 assert(css.includes('.card.IGNITION_CONFIRMED')&&css.includes('.card.A_FIRE'));
 assert(legacy.includes('href="/astra-scan.html"')&&legacy.includes('Astra 검색기'));
 assert(netlify.includes('from = "/api/astra-scan*"')&&netlify.includes('to = "/.netlify/functions/astra-scan:splat"'));
