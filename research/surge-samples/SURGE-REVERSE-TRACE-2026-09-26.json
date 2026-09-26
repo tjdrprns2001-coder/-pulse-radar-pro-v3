@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "SURGE_REVERSE_TRACE_2026_09_26_v1",
+  "market": "Binance USDⓈ-M Futures",
+  "selection": {
+    "deepCohort": "24h change >=15% and quoteVolume >=10M",
+    "successOnly": true,
+    "count": 13
+  },
+  "samples": [
+    {
+      "symbol": "RAREUSDT",
+      "change24hPct": 61.767,
+      "t0": "2026-09-26T06:00:00Z",
+      "bodyPct": 39.67,
+      "rvol1h": 7.64,
+      "oi24Pct": 47.84,
+      "oi6Pct": 0.91,
+      "oiPost3Pct": 64.32,
+      "takerPreMax": 1.14,
+      "probeAgeH": 14.75,
+      "probeRvol": 54.47,
+      "postProbeVolRatio": 0.303,
+      "route": [
+        "OI_LEAD",
+        "DELAYED_PROBE",
+        "POST_BOS_OI_CASCADE"
+      ]
+    },
+    {
+      "symbol": "PHAUSDT",
+      "change24hPct": 36.784,
+      "t0": "2026-09-25T12:00:00Z",
+      "bodyPct": 12.3,
+      "rvol1h": 12.15,
+      "oi24Pct": 42.19,
+      "oi6Pct": 35.67,
+      "oiPost3Pct": 39.31,
+      "takerPreMax": 1.04,
+      "probeAgeH": 6.5,
+      "probeRvol": 22.91,
+      "postProbeVolRatio": 0.759,
+      "route": [
+        "CONTINUOUS_OI_CASCADE",
+        "DERIVATIVES_LEAD"
+      ]
+    },
+    {
+      "symbol": "2ZUSDT",
+      "change24hPct": 31.867,
+      "t0": "2026-09-26T06:00:00Z",
+      "bodyPct": 14.5,
+      "rvol1h": 32.89,
+      "oi24Pct": 4.22,
+      "oi6Pct": 11.13,
+      "oiPost3Pct": 32.26,
+      "takerPreMax": 1.24,
+      "probeAgeH": 0.75,
+      "probeRvol": 9.92,
+      "postProbeVolRatio": 1.105,
+      "route": [
+        "MICRO_FLOW_ASSISTED",
+        "IMMEDIATE_PROBE",
+        "OI_CHASE_CONFIRM"
+      ]
+    },
+    {
+      "symbol": "ARKUSDT",
+      "change24hPct": 28.875,
+      "t0": "2026-09-25T10:00:00Z",
+      "bodyPct": 10.99,
+      "rvol1h": 2.96,
+      "oi24Pct": 34.26,
+      "oi6Pct": 9.49,
+      "oiPost3Pct": 18.06,
+      "takerPreMax": 1.11,
+      "probeAgeH": 9.5,
+      "probeRvol": 12.97,
+      "postProbeVolRatio": 0.272,
+      "route": [
+        "OI_LEAD",
+        "PROBE_MEMORY"
+      ]
+    },
+    {
+      "symbol": "MUBARAKUSDT",
+      "change24hPct": 26.484,
+      "t0": "2026-09-22T16:00:00Z",
+      "bodyPct": 20.21,
+      "rvol1h": 2.55,
+      "oi24Pct": 36.05,
+      "oi6Pct": 5.32,
+      "oiPost3Pct": 4.28,
+      "takerPreMax": 1.06,
+      "probeAgeH": 11.5,
+      "probeRvol": 9.31,
+      "postProbeVolRatio": 0.852,
+      "route": [
+        "OI_LEAD",
+        "CONTINUOUS_BUILD"
+      ]
+    },
+    {
+      "symbol": "ENAUSDT",
+      "change24hPct": 24.303,
+      "t0": "2026-09-25T11:00:00Z",
+      "bodyPct": 5.52,
+      "rvol1h": 4.47,
+      "oi24Pct": 1.19,
+      "oi6Pct": 0.46,
+      "oiPost3Pct": 2.18,
+      "takerPreMax": 1.2,
+      "probeAgeH": 10.25,
+      "probeRvol": 5.19,
+      "postProbeVolRatio": 0.242,
+      "route": [
+        "DELAYED_PROBE",
+        "VOLUME_DRY",
+        "RVOL_BOS"
+      ]
+    },
+    {
+      "symbol": "VELODROMEUSDT",
+      "change24hPct": 20.276,
+      "t0": "2026-09-25T16:00:00Z",
+      "bodyPct": 7.45,
+      "rvol1h": 8.8,
+      "oi24Pct": 0.47,
+      "oi6Pct": -0.42,
+      "oiPost3Pct": 3.83,
+      "takerPreMax": 1.21,
+      "probeAgeH": 10.5,
+      "probeRvol": 5.06,
+      "postProbeVolRatio": 0.446,
+      "route": [
+        "FLOW_RVOL_FIRST"
+      ]
+    },
+    {
+      "symbol": "AEROUSDT",
+      "change24hPct": 19.861,
+      "t0": "2026-09-25T16:00:00Z",
+      "bodyPct": 5.98,
+      "rvol1h": 3.71,
+      "oi24Pct": 7.53,
+      "oi6Pct": 3.37,
+      "oiPost3Pct": 6.22,
+      "takerPreMax": 1.23,
+      "probeAgeH": 6.75,
+      "probeRvol": 9.54,
+      "postProbeVolRatio": 0.271,
+      "route": [
+        "MIXED_OI_RVOL"
+      ]
+    },
+    {
+      "symbol": "KMNOUSDT",
+      "change24hPct": 16.326,
+      "t0": "2026-09-25T13:00:00Z",
+      "bodyPct": 1.39,
+      "rvol1h": 7.29,
+      "oi24Pct": 6.78,
+      "oi6Pct": 4.99,
+      "oiPost3Pct": 3.38,
+      "takerPreMax": 1.92,
+      "probeAgeH": 1.75,
+      "probeRvol": 4.85,
+      "postProbeVolRatio": 0.706,
+      "route": [
+        "TAKER_PULSE",
+        "OI_BUILD"
+      ]
+    },
+    {
+      "symbol": "REZUSDT",
+      "change24hPct": 16.088,
+      "t0": "2026-09-25T10:00:00Z",
+      "bodyPct": 4.59,
+      "rvol1h": 11.97,
+      "oi24Pct": 2.86,
+      "oi6Pct": 2.89,
+      "oiPost3Pct": 5.48,
+      "takerPreMax": 1.74,
+      "probeAgeH": 0.25,
+      "probeRvol": 12.33,
+      "postProbeVolRatio": null,
+      "route": [
+        "IMMEDIATE_RVOL_TAKER"
+      ]
+    },
+    {
+      "symbol": "PUMPUSDT",
+      "change24hPct": 15.898,
+      "t0": "2026-09-25T10:00:00Z",
+      "bodyPct": 4.09,
+      "rvol1h": 2.23,
+      "oi24Pct": 7.43,
+      "oi6Pct": 0.01,
+      "oiPost3Pct": -4.51,
+      "takerPreMax": 1.29,
+      "probeAgeH": 0.75,
+      "probeRvol": 4.08,
+      "postProbeVolRatio": 0.724,
+      "route": [
+        "BREAKOUT_WITHOUT_OI_CHASE"
+      ]
+    },
+    {
+      "symbol": "PROMUSDT",
+      "change24hPct": 15.856,
+      "t0": "2026-09-22T17:00:00Z",
+      "bodyPct": 11.78,
+      "rvol1h": 7.61,
+      "oi24Pct": 0.9,
+      "oi6Pct": 2.68,
+      "oiPost3Pct": -1.05,
+      "takerPreMax": 1.32,
+      "probeAgeH": 2.5,
+      "probeRvol": 5.39,
+      "postProbeVolRatio": 0.278,
+      "route": [
+        "FLOW_RVOL_FIRST"
+      ]
+    },
+    {
+      "symbol": "CCUSDT",
+      "change24hPct": 15.641,
+      "t0": "2026-09-24T16:00:00Z",
+      "bodyPct": 1.21,
+      "rvol1h": 9.97,
+      "oi24Pct": 4.46,
+      "oi6Pct": 0.67,
+      "oiPost3Pct": 0.72,
+      "takerPreMax": 1.69,
+      "probeAgeH": 1.75,
+      "probeRvol": 4.07,
+      "postProbeVolRatio": 0.571,
+      "route": [
+        "TAKER_PULSE",
+        "RVOL"
+      ]
+    }
+  ],
+  "representativeMicrostructure": {
+    "RARE": {
+      "refHigh": 0.0156,
+      "oneMin": {
+        "n70": 14,
+        "n90": 1,
+        "maxBuy": 0.9,
+        "maxRvol": 8.23
+      },
+      "fiveMinBos": {
+        "time": "2026-09-26T06:00:00Z",
+        "close": 0.01644,
+        "rvol": 12.54,
+        "buyShare": 0.502
+      }
+    },
+    "PHA": {
+      "refHigh": 0.06588,
+      "oneMin": {
+        "n70": 0,
+        "n90": 0,
+        "maxBuy": 0.6931,
+        "maxRvol": 4.14
+      },
+      "fiveMinBos": {
+        "time": "2026-09-25T12:10:00Z",
+        "close": 0.06713,
+        "rvol": 3.74,
+        "buyShare": 0.546
+      }
+    },
+    "2Z": {
+      "refHigh": 0.0613,
+      "oneMin": {
+        "n70": 18,
+        "n90": 7,
+        "n95": 2,
+        "maxBuy": 0.9593,
+        "maxRvol": 40.42
+      },
+      "fiveMinBos": {
+        "time": "2026-09-26T06:00:00Z",
+        "close": 0.06161,
+        "rvol": 6.28,
+        "buyShare": 0.614
+      }
+    },
+    "ENA": {
+      "refHigh": 0.22946,
+      "oneMin": {
+        "n70": 4,
+        "n90": 1,
+        "maxBuy": 0.9005,
+        "maxRvol": 3.63
+      },
+      "fiveMinBos": {
+        "time": "2026-09-25T11:00:00Z",
+        "close": 0.23266,
+        "rvol": 7.13,
+        "buyShare": 0.588
+      }
+    }
+  }
+}
