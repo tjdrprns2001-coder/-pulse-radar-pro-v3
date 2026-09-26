@@ -1,0 +1,48 @@
+name: Persist Research AI Memory
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research-ai-memory
+  cancel-in-progress: false
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout learning memory branch
+        uses: actions/checkout@v4
+        with:
+          ref: learning-memory
+          fetch-depth: 0
+
+      - name: Fetch runtime learning state
+        run: |
+          set -euo pipefail
+          mkdir -p data/learning
+          curl --retry 3 --retry-delay 5 --max-time 120 -fsSL             "https://pulseradar-pro-unified-0926.onrender.com/api/learning-ai?action=export"             -o /tmp/research-ai-export.json
+          node <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/research-ai-export.json','utf8'));
+          if(x.status!=='ok'||!x.state)throw new Error('invalid learning export');
+          fs.writeFileSync('data/learning/research-ai-state.json',JSON.stringify(x.state,null,2)+'\n');
+          NODE
+
+      - name: Commit checkpoint when changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/learning/research-ai-state.json; then
+            echo "No learning-memory change"
+            exit 0
+          fi
+          git config user.name "PulseRadar Learning Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/learning/research-ai-state.json
+          git commit -m "chore: checkpoint research AI memory [skip render]"
+          git push origin learning-memory
