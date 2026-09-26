@@ -13,8 +13,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci --ignore-scripts
       - name: Scanner recovery regressions
         run: |
           npm run test:v2-flow-scanner
