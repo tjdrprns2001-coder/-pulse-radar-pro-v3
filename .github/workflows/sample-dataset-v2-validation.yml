@@ -8,6 +8,7 @@ on:
       - 'lib/coin-scan/master-sample-dataset-v2.js'
       - 'lib/coin-scan/sample-similarity-v2.js'
       - 'lib/coin-scan/sample-blind-validation.js'
+      - 'lib/coin-scan/sampling-v3.js'
       - 'lib/coin-scan/astra-auto-scanner.js'
       - 'lib/coin-scan/deep-scan.js'
       - 'lib/coin-scan/scan-service.js'
@@ -15,6 +16,7 @@ on:
       - 'scripts/verify-master-sample-dataset-v2.js'
       - 'scripts/verify-sample-similarity-v2.js'
       - 'scripts/verify-sample-blind-validation.js'
+      - 'scripts/verify-sampling-v3.js'
       - 'scripts/verify-astra-auto-scan.js'
       - 'scripts/verify-coin-scan-deep.js'
       - '.github/workflows/sample-dataset-v2-validation.yml'
@@ -35,6 +37,8 @@ jobs:
         run: npm run test:sample-similarity-v2
       - name: Blind validation
         run: npm run test:sample-blind-validation
+      - name: Sampling v3
+        run: npm run test:sampling-v3
       - name: Deep scan wiring
         run: npm run test:coin-scan-deep
       - name: Astra wiring
