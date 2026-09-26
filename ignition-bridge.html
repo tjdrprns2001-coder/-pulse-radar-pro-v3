@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IGNITION · PulseRadar</title>
+<link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5">
+<link rel="stylesheet" href="/ui/ignition-bridge.css?v=20260927-v1">
+</head>
+<body>
+<main class="ignitionApp">
+  <header class="top">
+    <div>
+      <p class="eyebrow">READ-ONLY BRIDGE</p>
+      <h1>IGNITION</h1>
+      <p>독립 검색기의 최신 결과만 안전하게 읽습니다. Pulse에서는 스캔 생성·중지·샘플 쓰기를 실행하지 않습니다.</p>
+    </div>
+    <button id="refreshBtn" type="button">결과 새로고침</button>
+  </header>
+
+  <section class="health">
+    <div><span>연결</span><b id="connection">확인 중</b></div>
+    <div><span>검색 상태</span><b id="scanStatus">-</b></div>
+    <div><span>후보</span><b id="candidateCount">-</b></div>
+    <div><span>정밀 완료</span><b id="usableCount">-</b></div>
+    <div><span>신선도</span><b id="freshness">-</b></div>
+    <div><span>단계</span><b id="stage">-</b></div>
+  </section>
+
+  <section class="progressCard">
+    <div class="progressHead"><b>검색 파이프라인</b><span id="updatedAt">-</span></div>
+    <div class="counts" id="counts"></div>
+  </section>
+
+  <div id="notice" class="notice">IGNITION 결과를 불러오는 중…</div>
+
+  <section class="controls">
+    <label>표시
+      <select id="filter">
+        <option value="all">전체 후보</option>
+        <option value="ready">정밀 완료만</option>
+        <option value="partial">분석 중만</option>
+      </select>
+    </label>
+    <input id="symbolSearch" placeholder="심볼 검색">
+    <span class="readonly">서버 간 Bearer 인증 · 프론트 토큰 노출 없음</span>
+  </section>
+
+  <section id="results" class="results"></section>
+</main>
+<script src="/ui/ignition-bridge.js?v=20260927-v1" defer></script>
+</body>
+</html>
