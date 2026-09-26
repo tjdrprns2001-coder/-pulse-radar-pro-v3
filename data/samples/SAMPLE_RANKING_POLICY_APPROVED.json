@@ -1,0 +1,56 @@
+{
+  "schema_version": "sample-ranking-policy-approval.1",
+  "approved": true,
+  "approved_at": "2026-09-27T01:29:07+09:00",
+  "validation_run": {
+    "workflow": "Sample Dataset v2 Validation",
+    "run_id": 36255599159,
+    "conclusion": "success",
+    "commit": "fd59feb0c813b52d71272f2b9da3a637bc01ee68",
+    "artifact_id": 10909594988
+  },
+  "validation": {
+    "version": "SAMPLE_LOO_VALIDATION_v1",
+    "total": 129,
+    "decisions": 102,
+    "decisionCoverage": 0.7906976744186046,
+    "confusion": {
+      "tp": 98,
+      "fn": 2,
+      "tn": 1,
+      "fp": 1,
+      "harmful": 3,
+      "harmfulRate": 0.029411764705882353
+    },
+    "metrics": {
+      "precision": 0.98989898989899,
+      "recall": 0.98,
+      "specificity": 0.5,
+      "balancedAccuracy": 0.74
+    },
+    "gate": {
+      "minEvents": 12,
+      "minDecisions": 4,
+      "maxHarmfulRate": 0.25,
+      "passed": true
+    }
+  },
+  "policy": {
+    "version": "SAMPLE_RANKING_POLICY_v1",
+    "negativePenalty": 0.55,
+    "minCoverage": 0.35,
+    "strongSuccessScore": 72,
+    "strongNegativeScore": 70,
+    "positiveNetThreshold": 34,
+    "maxBonus": 8,
+    "maxPenalty": 8
+  },
+  "runtime": {
+    "mode": "BOUNDED_RANKING_ADJUSTMENT",
+    "scope": "ASTRA_DEEP_RANKING_ONLY",
+    "hardGateOverride": false,
+    "categoryOverride": false,
+    "maxAbsoluteAdjustment": 8,
+    "validationRecomputeAtRuntime": false
+  }
+}
