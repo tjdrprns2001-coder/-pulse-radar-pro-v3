@@ -32,6 +32,15 @@ on:
       - 'scripts/verify-auto-scan-sampling-v3.js'
       - 'scripts/verify-auto-scan-finder.js'
       - 'scripts/verify-scan-run-service.js'
+      - 'lib/coin-scan/sampling-v3-oos-service.js'
+      - 'lib/coin-scan/sampling-v3-outcome-resolver.js'
+      - 'lib/signal-performance/store.js'
+      - 'api/coin-scan.js'
+      - 'netlify/functions/coin-scan-sampling-evaluate.mjs'
+      - 'scripts/verify-sampling-v3-outcome-resolver.js'
+      - 'scripts/verify-sampling-v3-oos-service.js'
+      - 'scripts/verify-signal-performance-store.js'
+      - 'scripts/verify-coin-scan-api.js'
       - '.github/workflows/sample-dataset-v2-validation.yml'
   workflow_dispatch:
 
@@ -60,10 +69,20 @@ jobs:
         run: npm run test:sampling-v3-oos
       - name: Provider microstructure
         run: npm run test:coin-scan-provider
+      - name: Sampling v3 persistent store
+        run: npm run test:signal-performance-store
+      - name: Sampling v3 forward resolver
+        run: npm run test:sampling-v3-outcome-resolver
+      - name: Sampling v3 forward OOS service
+        run: npm run test:sampling-v3-oos-service
+      - name: Sampling scheduled evaluator syntax
+        run: node --check netlify/functions/coin-scan-sampling-evaluate.mjs
       - name: Automatic scanner Sampling v3.1
         run: npm run test:auto-scan-sampling-v3
       - name: Automatic scan run aggregation
         run: npm run test:scan-run-service
+      - name: Coin scan Sampling history API
+        run: npm run test:coin-scan-api
       - name: Automatic scanner UI wiring
         run: node scripts/verify-auto-scan-finder.js
       - name: Deep scan wiring
