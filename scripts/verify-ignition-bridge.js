@@ -41,6 +41,9 @@ function makeRes(){
   assert.equal(s.code,200);
   assert.equal(auth,'Bearer secret');
   assert.equal(s.body.status,'ok');
+  assert.equal(s.body.state,'ready');
+  assert.equal(s.body.sourceStatus,'complete');
+  assert.equal(s.body.servedFromLastComplete,false);
   assert.equal(s.body.candidateCount,2);
   assert.equal(s.body.usableCount,1);
   assert.equal(s.body.partialCount,1);
@@ -49,6 +52,16 @@ function makeRes(){
   assert.equal(s.body.finishedAt,150000);
   assert.equal(s.body.candidates[0].usable,true);
   assert.equal(s.body.candidates[1].usable,false);
+ }
+ {
+  const res=makeRes();
+  await handler({method:'GET'},res,{env:{IGNITION_API_BASE_URL:'https://scanner.example',IGNITION_RESULTS_TOKEN:'secret'},now:()=>200000,fetchImpl:async()=>({ok:true,status:200,json:async()=>({schemaVersion:'1.0',status:'running',sourceStatus:'running',servedFromLastComplete:false,scan:{id:'scan-2',asOf:190000,finishedAt:null,partialData:true,stage:'deep'},counts:{candidates:8,deep:3},candidates:[{symbol:'TESTUSDT',score:55,detailComplete:false,coverage:4}]})})});
+  const s=res.snapshot();assert.equal(s.code,200);assert.equal(s.body.state,'partial');assert.equal(s.body.active,true);assert.equal(s.body.partialCount,1);
+ }
+ {
+  const res=makeRes();
+  await handler({method:'GET'},res,{env:{IGNITION_API_BASE_URL:'https://scanner.example',IGNITION_RESULTS_TOKEN:'secret'},now:()=>200000,fetchImpl:async()=>({ok:true,status:200,json:async()=>({schemaVersion:'1.0',status:'complete',sourceStatus:'failed',servedFromLastComplete:true,scan:{id:'scan-1',asOf:140000,finishedAt:150000,partialData:false,stage:'complete'},candidates:[]})})});
+  const s=res.snapshot();assert.equal(s.code,200);assert.equal(s.body.state,'fallback');assert.equal(s.body.sourceStatus,'failed');assert.equal(s.body.servedFromLastComplete,true);
  }
  {
   const res=makeRes();
