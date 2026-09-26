@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse Scanner Core</title>
+<link rel="stylesheet" href="/ui/scanner-standalone.css?v=1">
+</head>
+<body>
+<main class="app">
+<header class="hero">
+<div><p class="eyebrow">PULSE SCANNER CORE</p><h1>검색기 전용 사이트</h1><p class="sub">Binance USDT 선물 중심 · 빠른 후보 압축 → 선택 후보 8TF 정밀 분석 → 상위 후보 리스크 검증</p></div>
+<div class="actions"><button id="fastBtn">빠른 스캔</button><button id="deepBtn" class="primary">정밀 스캔</button></div>
+</header>
+<section class="health">
+<div><span>상태</span><b id="state">대기</b></div><div><span>전체 유니버스</span><b id="universe">-</b></div><div><span>후보</span><b id="candidates">-</b></div><div><span>소요</span><b id="elapsed">-</b></div>
+</section>
+<section class="pipeline" id="pipeline">
+<div data-stage="universe"><i>1</i><b>전체 1차</b><small>24H/유동성</small></div>
+<div data-stage="prescan"><i>2</i><b>프리스캔</b><small>1H·4H</small></div>
+<div data-stage="deep"><i>3</i><b>8TF 정밀</b><small>선택 후보만</small></div>
+<div data-stage="risk"><i>4</i><b>상위 검증</b><small>체결·이벤트</small></div>
+</section>
+<section class="toolbar">
+<label>표시 <select id="limit"><option>12</option><option>20</option><option>30</option></select></label>
+<label>정밀 검증 <select id="validation"><option value="off">끔 · 최고속</option><option value="light" selected>라이트</option><option value="full">전체</option></select></label>
+<input id="search" placeholder="심볼 검색 (예: AXS)">
+<span id="updated"></span>
+</section>
+<div id="notice" class="notice">빠른 스캔을 먼저 돌리면 전체 시장에서 후보를 압축합니다.</div>
+<section id="results" class="grid"></section>
+</main>
+<script src="/ui/scanner-standalone.js?v=1"></script>
+</body></html>
