@@ -45,7 +45,7 @@ must(js.includes("'&validation='+validation")||js.includes("'&validation='"),'de
 must(js.includes('return validated;')&&js.includes('If external validation was intentionally skipped'),'validated finder must remain strict when screening rows exist');
 must(html.includes('scanPipeline')&&html.includes('scanElapsed'),'renewed scan progress UI missing');
 must(html.includes('전체 상태 분류')&&html.includes('상태 분류 ≠ 진입 신호'),'all-state section separation missing');
-must(html.includes('coin-scan.js?v=20260926-speed3')&&html.includes('coin-scan.css?v=20260926-speed3'),'mobile cache-bust version missing');
+must(html.includes('coin-scan.js?v=20260927-sampling32')&&html.includes('coin-scan.css?v=20260927-sampling32'),'mobile cache-bust version missing');
 must(js.includes('lastPersistAt<5000')&&js.includes('saveScanSession()')&&js.includes('saveScanSession(true)'),'scan session serialization throttle missing');
 must(js.includes('CLASS_PAGE_SIZE=12')&&js.includes('data-class-more'),'progressive per-class scanner DOM cap missing');
 must(js.includes('state.items=sortItems(decorateDormancy(state.items))'),'deep enrichment must defer full sorting/dormancy finalization until workers complete');
