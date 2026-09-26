@@ -21,7 +21,8 @@ const handlers = {
   'signal-calibration': require('../handlers/signal-calibration'),
   'signal-health': require('../handlers/signal-health'),
   'signal-performance': require('../handlers/signal-performance'),
-  'learning-ai': require('../handlers/learning-ai')
+  'learning-ai': require('../handlers/learning-ai'),
+  'ignition-results': require('../handlers/ignition-results')
 };
 
 module.exports = async function handler(req, res) {
