@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v1",
-  "updatedAt": 1790413612875,
+  "updatedAt": 1790414030055,
   "source": "runtime",
   "model": {
     "type": "tiny_mlp_18x12x6x1",
@@ -422,6 +422,61 @@
       "outcome24hPct": null,
       "label": null,
       "source": "trader-deep"
+    },
+    {
+      "key": "ETHUSDT:497337",
+      "symbol": "ETHUSDT",
+      "asOf": 1790414030041,
+      "capturedAt": 1790414030055,
+      "price": 2680.78,
+      "scannerState": "WATCH",
+      "scannerScore": 25,
+      "regime": "MIXED",
+      "setupType": "COMPRESSION",
+      "features": [
+        0.25,
+        -0.06125,
+        0.9671248832214503,
+        0.007136704846355535,
+        -0.14780974284393775,
+        0.10119999999999998,
+        0,
+        0.35,
+        1,
+        0,
+        0.04239113349032948,
+        -0.22124935197657136,
+        0.7777181380968754,
+        -1,
+        0.09838599290942582,
+        0.013654264391004848,
+        0,
+        1
+      ],
+      "researchScore": 31,
+      "researchStage": "LOW_MATCH",
+      "sampleTop": [
+        {
+          "symbol": "ENAUSDT",
+          "similarity": 0.6580749621027452
+        },
+        {
+          "symbol": "PUMPUSDT",
+          "similarity": 0.6056086566664308
+        },
+        {
+          "symbol": "AEROUSDT",
+          "similarity": 0.5847655846626256
+        }
+      ],
+      "bookRuleIds": [
+        "RSI",
+        "MACD"
+      ],
+      "outcome6hPct": null,
+      "outcome24hPct": null,
+      "label": null,
+      "source": "trader-deep"
     }
   ],
   "training": {
@@ -442,7 +497,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790413633430,
+  "exportedAt": 1790414042563,
   "featureNames": [
     "scannerScore",
     "change24h",
