@@ -11,36 +11,17 @@ function parseBody(req){
   if(typeof body==='string'){try{body=JSON.parse(body)}catch{body={}}}
   return body&&typeof body==='object'?body:{};
 }
-async function forwardToRuntime(req,res){
-  const runtime=String(process.env.TRADER_RUNTIME_URL||'').replace(/\/$/,'');
-  if(!runtime||String(req?.query?.local||'')==='1')return false;
-  const params=new URLSearchParams();
-  for(const [k,v] of Object.entries(req.query||{}))if(v!=null)params.set(k,String(v));
-  params.set('local','1');
-  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
-  try{
-    const rr=await fetch(runtime+'/api/learning-ai?'+params.toString(),{
-      method:req.method||'GET',
-      headers:{accept:'application/json','content-type':'application/json'},
-      body:(req.method&&req.method!=='GET'&&req.method!=='HEAD')?JSON.stringify(parseBody(req)):undefined,
-      signal:ctrl.signal
-    });
-    const body=await rr.json().catch(()=>({status:'error',error:'Learning runtime invalid response'}));
-    res.status(rr.status).json(body);return true;
-  }finally{clearTimeout(timer)}
-}
 module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, max-age=0');
   try{
-    if(await forwardToRuntime(req,res))return;
     const ai=defaultResearchAI();
     await ai.hydrateRemote(false);
     const action=String(req?.query?.action||'status').toLowerCase();
     if(action==='status'){
-      return res.status(200).json({status:'ok',mode:'learning-ai',action,statusData:ai.status()});
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',statusData:ai.status()});
     }
     if(action==='export'){
-      return res.status(200).json({status:'ok',mode:'learning-ai',action,state:ai.exportState()});
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',state:ai.exportState()});
     }
     if(action==='resolve'){
       if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
