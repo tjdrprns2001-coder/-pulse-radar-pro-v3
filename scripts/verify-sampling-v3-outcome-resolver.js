@@ -6,6 +6,7 @@ const start=Date.parse('2026-09-27T00:00:00Z');
 const base={symbol:'TESTUSDT',capturedAt:start,entryPrice:100,upperPct:2,lowerPct:1,futuresListed:true,spotListed:false};
 
 const up=[
+(async()=>{
   {openTime:start+60000,high:101,low:99.5,close:100.5},
   {openTime:start+120000,high:102.2,low:100,close:102}
 ];
@@ -37,3 +38,5 @@ assert.equal(pending.status,'pending');assert.equal(requested.length,0);
 const evaluated=await resolver.resolve(base,start+6*3600000,start+7*3600000);
 assert.equal(evaluated.label,'SURGE');assert.equal(evaluated.market,'futures');assert.equal(requested.length,1);
 console.log('sampling v3 outcome resolver PASS');
+
+})().catch(e=>{console.error(e);process.exit(1)});
