@@ -352,7 +352,6 @@ export class Binance{
         for(const b of oneHour)b._source='BINANCE_FUTURES';
         bars=resample3h(oneHour,asOf).slice(-limit);
       }catch(primary){
-        if(primary?.status===429)throw primary;
         try{
           const oneHour=await this.bybitBars(symbol,'1h',asOf,baseLimit,'linear');
           bars=resample3h(oneHour,asOf).slice(-limit);
@@ -374,7 +373,6 @@ export class Binance{
       bars=closedBars(raw,asOf);
       try{Object.defineProperty(bars,'_source',{value:'BINANCE_FUTURES',enumerable:false});}catch{}
     }catch(primary){
-      if(primary?.status===429)throw primary;
       try{bars=await this.bybitBars(symbol,tf,asOf,limit,'linear');}
       catch(fallback){throw new UpstreamError(primary.message+' | '+fallback.message,502);}
     }
