@@ -9,7 +9,17 @@ class RuntimeStore{
   async put(k,data,ttl){this.cache.set(k,{data,expires:this.now()+Math.max(1,Number(ttl)||1)});}
   async gate(k,ttl){if(await this.get(k))return false;await this.put(k,true,ttl);return true;}
   async reserve(k,limit,ms,units){const bucket='rate:'+k+':'+Math.floor(this.now()/ms),used=Number(await this.get(bucket)||0);if(used+units>limit)return false;await this.put(bucket,used+units,ms);return true;}
-  async latest(kind='scan'){const rows=[...this.jobs.values()].filter(x=>x.kind===kind).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));return rows[0]||null;}
+  async latest(kind='scan'){
+    const rows=[...this.jobs.values()].filter(x=>x.kind===kind).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+    const latest=rows[0]||null;
+    if(latest?.status==='paused'&&Number(latest.retryAt||0)-this.now()>3600000){
+      latest.status='failed';
+      latest.errors=[...(latest.errors||[]),{stage:latest.stage,message:'비정상 retryAt 감지로 작업 폐기'}];
+      this.jobs.set(latest.id,structuredClone(latest));
+      return null;
+    }
+    return latest;
+  }
   async job(id){return this.jobs.get(id)||null;}
   async save(job){job.updatedAt=this.now();this.jobs.set(job.id,structuredClone(job));}
   async acquire(id){if(this.locks.has(id))return false;this.locks.add(id);return true;}
@@ -161,7 +171,9 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
     let steps=0;
     while(['running','paused'].includes(job.status)&&steps++<500){
       if(job.status==='paused'){
-        const wait=Math.max(1000,Math.min(300000,Number(job.retryAt||0)-now()));
+        const remaining=Number(job.retryAt||0)-now();
+        if(!Number.isFinite(remaining)||remaining>3600000)throw new Error('invalid_retry_at');
+        const wait=Math.max(1000,Math.min(300000,remaining));
         if(wait>0)await sleep(wait);
       }
       const api=new Binance(store,scannerFetch);
