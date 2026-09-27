@@ -339,7 +339,7 @@ async function fullScanBody(req,limit=65536){
 }
 function fullScanNextBucket(){const now=Date.now();return Math.floor(now/AUTO_INTERVAL_MS)*AUTO_INTERVAL_MS+AUTO_INTERVAL_MS}
 
-function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,OPTIONS','access-control-allow-headers':'content-type','cache-control':'no-store'}}
+function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type','cache-control':'no-store'}}
 function jsonResponse(res,status,payload){res.writeHead(status,{'content-type':'application/json; charset=utf-8',...corsHeaders()});return res.end(JSON.stringify(payload))}
 function numParam(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function astraMarketFrom(u){return{regime:String(u.searchParams.get('regime')||'NEUTRAL').toUpperCase(),breadthRatio:numParam(u.searchParams.get('breadth')),btc24hChange:numParam(u.searchParams.get('btc')),eth24hChange:numParam(u.searchParams.get('eth')),median24hChange:numParam(u.searchParams.get('median')),positiveVolumeRatio:numParam(u.searchParams.get('positiveVolumeRatio')),volumeWeightedBreadth:numParam(u.searchParams.get('volumeWeightedBreadth')),oiScanDegraded:String(u.searchParams.get('oiDegraded')||'').toLowerCase()==='true',grokOiCut:numParam(u.searchParams.get('grokOiCut'))}}
@@ -366,7 +366,8 @@ function server(){
     if(req.method==='POST'&&route.pathname==='/api/v1/manual-scan'){
       if(!String(env.FULL_SCAN_ADMIN_TOKEN||''))return jsonResponse(res,503,{status:'error',error:'manual scan disabled'});
       if(!fullScanAuth(req))return jsonResponse(res,401,{status:'error',error:'unauthorized'});
-      const body=await fullScanBody(req),tiers=normalizeTierSelection(body?.tiers);
+      let body={};try{body=await fullScanBody(req)}catch(e){return jsonResponse(res,Number(e?.statusCode)||400,{status:'error',error:'invalid request body'})}
+      const tiers=normalizeTierSelection(body?.tiers);
       if(!tiers.length)return jsonResponse(res,400,{status:'error',error:'tiers must include small, mid or large'});
       const prepared=await fullScanService.prepare({kind:'manual',tiers,owner:'selector-runtime-admin'});
       fullScanService.executeRun(prepared.run,{tiers}).then(r=>{health.fullScanManual={status:'DONE',runId:r.id,updatedAt:Date.now()}}).catch(e=>{health.fullScanManual={status:'FAILED',runId:prepared.run.id,error:String(e?.message||e),updatedAt:Date.now()}});
