@@ -1,0 +1,1 @@
+{"name":"ignition-binance-proxy","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"node proxy-server.mjs","test":"node --check proxy-server.mjs"}}
