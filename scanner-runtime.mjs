@@ -45,20 +45,22 @@ function proxyBases(env){
   return [...new Set(list)];
 }
 
-export function routedFetcher(env,directFetch=fetch,now=Date.now){
+export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
   const bases=proxyBases(env);
   const token=String(env.IGNITION_BINANCE_PROXY_TOKEN||'');
   const cooldowns=new Map();
   const maxConcurrent=Math.max(1,Math.min(4,Number(env.IGNITION_BINANCE_PROXY_CONCURRENCY)||2));
   const minGapMs=Math.max(0,Math.min(1000,Number(env.IGNITION_BINANCE_PROXY_GAP_MS)||120));
+  const softWeight=Math.max(500,Math.min(2300,Number(env.IGNITION_BINANCE_WEIGHT_SOFT_LIMIT)||1700));
+  const resetSafetyMs=Math.max(250,Math.min(5000,Number(env.IGNITION_BINANCE_WEIGHT_RESET_SAFETY_MS)||1500));
   let active=0,nextStartAt=0;
   const waiters=[];
   const acquire=async()=>{
     if(active>=maxConcurrent)await new Promise(resolve=>waiters.push(resolve));
     active++;
-    const current=Date.now(),startAt=Math.max(current,nextStartAt);
+    const current=now(),startAt=Math.max(current,nextStartAt);
     nextStartAt=startAt+minGapMs;
-    if(startAt>current)await sleep(startAt-current);
+    if(startAt>current)await sleeper(startAt-current);
   };
   const release=()=>{active=Math.max(0,active-1);const next=waiters.shift();if(next)next();};
   if(!bases.length||token.length<43)return directFetch;
@@ -86,7 +88,15 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now){
           redirect:'error'
         });
         lastResponse=response;
-        if(response.ok)return response;
+        if(response.ok){
+          const used=Number(response.headers.get('x-mbx-used-weight-1m')||0);
+          if(Number.isFinite(used)&&used>=softWeight){
+            const current=now();
+            const resetAt=(Math.floor(current/60000)+1)*60000+resetSafetyMs;
+            nextStartAt=Math.max(nextStartAt,resetAt);
+          }
+          return response;
+        }
         if([418,429,403,451].includes(response.status)||response.status>=500){
           const retryAfter=Math.max(60,Number(response.headers.get('retry-after')||0));
           const ttl=[403,451].includes(response.status)?300000:Math.min(300000,retryAfter*1000);
