@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Binance} from './scanner/binance.mjs';
+import {Binance,retryAtFromHeader} from './scanner/binance.mjs';
 import {analyze} from './scanner/indicators.mjs';
 
 class Store{
@@ -113,4 +113,12 @@ test('heavy 1h history is paged below Binance kline weight tier',async()=>{
   assert.equal(calls.length,3);
   assert.ok(calls.every(x=>Number(x.limit)<=499));
   assert.deepEqual(calls.map(x=>Number(x.limit)),[499,499,499]);
+});
+
+
+test('retry-after parser accepts seconds, epoch seconds and epoch milliseconds',()=>{
+  const now=1790480000000;
+  assert.equal(retryAtFromHeader('60',now),now+60000);
+  assert.equal(retryAtFromHeader(String(Math.floor((now+120000)/1000)),now),Math.floor((now+120000)/1000)*1000);
+  assert.equal(retryAtFromHeader(String(now+180000),now),now+180000);
 });
