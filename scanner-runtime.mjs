@@ -41,7 +41,7 @@ function proxyBases(env){
     .map(x=>x.trim().replace(/\/$/,''))
     .filter(Boolean);
   const legacy=String(env.IGNITION_BINANCE_PROXY_URL||'').trim().replace(/\/$/,'');
-  if(legacy)list.unshift(legacy);
+  if(legacy)list.push(legacy);
   return [...new Set(list)];
 }
 
