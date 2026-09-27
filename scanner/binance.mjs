@@ -92,7 +92,7 @@ export class Binance{
   }
 
   async request(path,search,ttl,market,cacheKey){
-    const blocked=await this.store.get('binance:blocked');
+    const blocked=await this.store.get('binance:blocked:'+market);
     if(blocked)throw new UpstreamError(blocked.message,429,blocked.until);
     const stats=path.startsWith('/futures/data/'),funding=path.endsWith('/fundingRate'),spot=market==='spot';
     const ms=stats||funding?300000:60000,limit=stats?900:funding?450:spot?4000:1800;
@@ -119,7 +119,7 @@ export class Binance{
         if(response.status===429||response.status===418){
           const sec=Math.max(60,Number(response.headers.get('retry-after')||60)),until=Date.now()+sec*1000;
           const message='Binance 요청 제한. 재시도 시각 이후 이어서 진행합니다.';
-          await this.store.put('binance:blocked',{until,message},sec*1000);
+          await this.store.put('binance:blocked:'+market,{until,message},sec*1000);
           this.metrics.errors++;
           throw new UpstreamError(message,429,until);
         }
