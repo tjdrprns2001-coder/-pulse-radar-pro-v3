@@ -93,7 +93,7 @@ test('spot proxy cooldown never ejects the Singapore futures route',async()=>{
     IGNITION_BINANCE_PROXY_GAP_MS:'0'
   },fetcher,()=>1000,async()=>{});
   const spot=await routed('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=1');
-  assert.equal(spot.status,451);
+  assert.equal(spot.status,418);
   const futures=await routed('https://fapi.binance.com/fapi/v1/time');
   assert.equal(futures.status,200);
   assert.match(calls.at(-1),/^https:\/\/sg\.test\/fetch\?url=/);
