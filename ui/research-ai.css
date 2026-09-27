@@ -112,3 +112,10 @@ tbody tr:last-child td{border-bottom:0}
 @media(max-width:760px){.noteItem>div{flex-direction:column;gap:4px}.noteItem time{white-space:normal}}
 
 .labRow.provisional{border-color:#7d6330;background:#1e190d}.labRow.provisional b{color:#f2cf79}
+
+.integrityCard{border-color:#315b70;background:linear-gradient(180deg,#0b1a28,#081521)}
+.integrityGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.integrityGrid>div{border:1px solid #29445d;border-radius:12px;padding:10px;background:#091522;display:flex;flex-direction:column;gap:5px}
+.integrityGrid span{font-size:10px;color:#87a4bf}.integrityGrid b{font-size:12px;color:#e6f2ff;overflow-wrap:anywhere}
+.integrityDetail{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.integrityDetail span{font-size:9px;border:1px solid #2b4b64;border-radius:999px;padding:5px 7px;color:#9dc0dc}
+@media(max-width:760px){.integrityGrid{grid-template-columns:1fr 1fr}}
