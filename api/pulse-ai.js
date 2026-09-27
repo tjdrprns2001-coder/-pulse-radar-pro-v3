@@ -4,6 +4,7 @@ const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
 const {createPulseAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {createTypeSafeJudgment}=require('../lib/pulse-ai/typesafe-judgment.js');
 const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
 const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
 const {createMarketIntelService}=require('../lib/market-intel/service.js');
@@ -24,10 +25,11 @@ function defaultService(){
     const localScanService=createScanService({provider:createBinanceProvider({})});
     const scanService=createRuntimeScanService({fallback:localScanService});
     const gateway=createPulseAIGateway({});
+    const typeSafe=createTypeSafeJudgment({});
     const marketIntelService=createMarketIntelService({
       coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
     });
-    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2(),detailResolver:resolveDetail,eventResolver:resolveEventIntel});
+    singleton=createBriefingService({scanService,gateway,marketIntelService,researchAI:defaultResearchAIv2(),typeSafe,detailResolver:resolveDetail,eventResolver:resolveEventIntel});
   }
   return singleton;
 }
