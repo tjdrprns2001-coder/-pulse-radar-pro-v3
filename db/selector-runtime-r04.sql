@@ -150,3 +150,44 @@ CREATE TABLE IF NOT EXISTS selector_state (
   payload JSONB NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+
+-- Chart snapshot v2.2 persistence
+CREATE TABLE IF NOT EXISTS chart_snapshots (
+  snapshot_id TEXT PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  venue TEXT NOT NULL,
+  market_type TEXT NOT NULL,
+  timeframe TEXT NOT NULL,
+  captured_at TIMESTAMPTZ NOT NULL,
+  original_snapshot_id TEXT,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS chart_snapshots_symbol_time_idx
+  ON chart_snapshots(symbol,timeframe,captured_at DESC);
+
+CREATE TABLE IF NOT EXISTS chart_snapshot_revisions (
+  snapshot_id TEXT NOT NULL REFERENCES chart_snapshots(snapshot_id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY(snapshot_id,revision)
+);
+CREATE INDEX IF NOT EXISTS chart_snapshot_revisions_time_idx
+  ON chart_snapshot_revisions(snapshot_id,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS chart_snapshot_outcomes (
+  outcome_id TEXT PRIMARY KEY,
+  snapshot_id TEXT NOT NULL REFERENCES chart_snapshots(snapshot_id) ON DELETE CASCADE,
+  outcome TEXT NOT NULL,
+  event_time TIMESTAMPTZ NOT NULL,
+  price DOUBLE PRECISION,
+  r_multiple DOUBLE PRECISION,
+  source TEXT NOT NULL DEFAULT 'manual',
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS chart_snapshot_outcomes_snapshot_time_idx
+  ON chart_snapshot_outcomes(snapshot_id,event_time DESC);
