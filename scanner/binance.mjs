@@ -68,6 +68,8 @@ export class Binance{
     };
     this.preferred={futures:null,spot:null};
     this.fallbackSources=new Set();
+    this.universeAllowlist=options.universeAllowlist instanceof Set?options.universeAllowlist:BINANCE_USDT_PERPETUALS;
+    this.universeAllowlistAsOf=Number(options.universeAllowlistAsOf||BINANCE_UNIVERSE_AS_OF)||null;
   }
 
   sourceSummary(){return this.fallbackSources.size?['BINANCE_PRIMARY',...this.fallbackSources]:['BINANCE_PRIMARY'];}
