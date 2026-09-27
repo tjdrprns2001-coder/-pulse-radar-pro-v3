@@ -35,7 +35,7 @@ function configFrom(env){
   };
 }
 
-export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date.now}={}){
+export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date.now,autoStart=true}={}){
   const store=new RuntimeStore(now);
   const health={mode:'local-render',state:'INIT',startedAt:now(),lastStartedAt:null,lastFinishedAt:null,lastError:null,lastScanId:null,nextRunAt:null};
   let latestSnapshot=null,lastCompleted=null,loopStarted=false;
@@ -94,7 +94,7 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
     }
   }
 
-  if(!loopStarted){loopStarted=true;loop().catch(e=>{health.lastError=String(e?.message||e);health.state='DEGRADED';});}
+  if(autoStart&&!loopStarted){loopStarted=true;loop().catch(e=>{health.lastError=String(e?.message||e);health.state='DEGRADED';});}
   const source=async()=>latestSnapshot;
   source.health=()=>({...health,hasSnapshot:Boolean(latestSnapshot),hasCompleted:Boolean(lastCompleted)});
   source.runNow=runOne;
