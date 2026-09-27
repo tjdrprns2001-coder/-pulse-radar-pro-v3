@@ -134,3 +134,26 @@ test('futures statistics can prefer a dedicated regional proxy',async()=>{
   assert.equal((await routed('https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1')).status,200);
   assert.match(calls[0],/^https:\/\/eu\.test\/fetch\?url=/);
 });
+
+
+test('kline proxy cooldown stays isolated from futures statistics',async()=>{
+  const token='a'.repeat(43);
+  const calls=[];
+  const fetcher=async url=>{
+    const u=new URL(String(url));
+    calls.push(String(url));
+    const target=new URL(u.searchParams.get('url'));
+    if(target.pathname.endsWith('/klines'))return new Response('rate limited',{status:418,headers:{'retry-after':'60'}});
+    if(target.pathname.startsWith('/futures/data/'))return Response.json([]);
+    return new Response('blocked',{status:451});
+  };
+  const routed=routedFetcher({
+    IGNITION_BINANCE_PROXY_URLS:'https://sg.test',
+    IGNITION_BINANCE_PROXY_TOKEN:token,
+    IGNITION_BINANCE_PROXY_GAP_MS:'0',
+    IGNITION_BINANCE_KLINE_GAP_MS:'0'
+  },fetcher,()=>1000,async()=>{});
+  assert.equal((await routed('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=1')).status,418);
+  assert.equal((await routed('https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1')).status,200);
+  assert.equal(calls.length,2);
+});
