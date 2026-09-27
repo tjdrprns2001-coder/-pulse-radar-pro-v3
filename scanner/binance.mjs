@@ -60,7 +60,7 @@ export class Binance{
   constructor(store,fetcher=fetch,options={}){
     this.store=store;
     this.fetcher=fetcher;
-    this.metrics={requests:0,hits:0,errors:0,weight:0,failovers:0};
+    this.metrics={requests:0,hits:0,errors:0,weight:0,futuresWeight:0,spotWeight:0,failovers:0};
     this.inflight=new Map();
     this.bases={
       futures:Array.isArray(options.futuresBases)&&options.futuresBases.length?options.futuresBases:DEFAULT_FUTURES_BASES,
@@ -115,7 +115,9 @@ export class Binance{
           if(!attempt)continue;
           this.metrics.errors++;lastStatus=502;lastMessage='Binance 연결 시간 초과: '+e.message;moveNext=true;break;
         }
-        this.metrics.weight=Math.max(this.metrics.weight,Number(response.headers.get('x-mbx-used-weight-1m')||0));
+        const observedWeight=Number(response.headers.get('x-mbx-used-weight-1m')||0);
+        this.metrics.weight=Math.max(this.metrics.weight,observedWeight);
+        this.metrics[market+'Weight']=Math.max(Number(this.metrics[market+'Weight']||0),observedWeight);
         if(response.status===429||response.status===418){
           const sec=Math.max(60,Number(response.headers.get('retry-after')||60)),until=Date.now()+sec*1000;
           const message='Binance 요청 제한. 재시도 시각 이후 이어서 진행합니다.';
