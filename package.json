@@ -7,6 +7,6 @@
   },
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test *.test.mjs"
+    "test": "node --check server.mjs && node --check scanner-runtime.mjs && node --check scanner/binance.mjs && node --check scanner/engine.mjs && node --check scanner/indicators.mjs && node --test *.test.mjs"
   }
 }
