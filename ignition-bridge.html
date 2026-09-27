@@ -43,12 +43,25 @@
         <option value="partial">분석 중만</option>
       </select>
     </label>
+    <label>거래대금
+      <select id="volumeFilter">
+        <option value="0" selected>필터 OFF</option>
+        <option value="1000000">100만 USDT+</option>
+        <option value="3000000">300만 USDT+</option>
+        <option value="5000000">500만 USDT+</option>
+        <option value="10000000">1,000만 USDT+</option>
+        <option value="25000000">2,500만 USDT+</option>
+        <option value="50000000">5,000만 USDT+</option>
+        <option value="100000000">1억 USDT+</option>
+      </select>
+    </label>
     <input id="symbolSearch" placeholder="심볼 검색">
+    <span id="volumeScope" class="readonly">거래대금 OFF · 스캔 수집 하한 확인 중</span>
     <span class="readonly">서버 간 Bearer 인증 · 프론트 토큰 노출 없음</span>
   </section>
 
   <section id="results" class="results"></section>
 </main>
-<script src="/ui/ignition-bridge.js?v=20260928-resilience1" defer></script>
+<script src="/ui/ignition-bridge.js?v=20260928-volume2" defer></script>
 </body>
 </html>
