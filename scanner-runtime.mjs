@@ -51,15 +51,17 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
   const cooldowns=new Map();
   const maxConcurrent=Math.max(1,Math.min(4,Number(env.IGNITION_BINANCE_PROXY_CONCURRENCY)||2));
   const minGapMs=Math.max(0,Math.min(1000,Number(env.IGNITION_BINANCE_PROXY_GAP_MS)||120));
-  const softWeight=Math.max(500,Math.min(2300,Number(env.IGNITION_BINANCE_WEIGHT_SOFT_LIMIT)||1700));
+  const futuresSoftWeight=Math.max(500,Math.min(2300,Number(env.IGNITION_BINANCE_FUTURES_WEIGHT_SOFT_LIMIT||env.IGNITION_BINANCE_WEIGHT_SOFT_LIMIT)||1700));
+  const spotSoftWeight=Math.max(500,Math.min(5900,Number(env.IGNITION_BINANCE_SPOT_WEIGHT_SOFT_LIMIT)||5000));
   const resetSafetyMs=Math.max(250,Math.min(5000,Number(env.IGNITION_BINANCE_WEIGHT_RESET_SAFETY_MS)||1500));
-  let active=0,nextStartAt=0;
+  let active=0;
+  const nextStartAt={futures:0,spot:0};
   const waiters=[];
-  const acquire=async()=>{
+  const acquire=async market=>{
     if(active>=maxConcurrent)await new Promise(resolve=>waiters.push(resolve));
     active++;
-    const current=now(),startAt=Math.max(current,nextStartAt);
-    nextStartAt=startAt+minGapMs;
+    const current=now(),startAt=Math.max(current,nextStartAt[market]||0);
+    nextStartAt[market]=startAt+minGapMs;
     if(startAt>current)await sleeper(startAt-current);
   };
   const release=()=>{active=Math.max(0,active-1);const next=waiters.shift();if(next)next();};
@@ -68,14 +70,17 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
   return async(url,options={})=>{
     let parsed=null;try{parsed=new URL(String(url));}catch{}
     const host=parsed?.hostname||'';
-    const isBinance=host==='fapi.binance.com'||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
+    const isFutures=host==='fapi.binance.com';
+    const isBinance=isFutures||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
     if(!isBinance)return directFetch(url,options);
+    const market=isFutures?'futures':'spot';
 
-    await acquire();
+    await acquire(market);
     try{
     let lastResponse=null;
     for(const base of bases){
-      const until=cooldowns.get(base)||0;
+      const cooldownKey=market+'|'+base;
+      const until=cooldowns.get(cooldownKey)||0;
       if(until>now())continue;
       const target=base+'/fetch?url='+encodeURIComponent(String(url));
       const timeout=AbortSignal.timeout(8000);
@@ -90,22 +95,23 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
         lastResponse=response;
         if(response.ok){
           const used=Number(response.headers.get('x-mbx-used-weight-1m')||0);
+          const softWeight=market==='futures'?futuresSoftWeight:spotSoftWeight;
           if(Number.isFinite(used)&&used>=softWeight){
             const current=now();
             const resetAt=(Math.floor(current/60000)+1)*60000+resetSafetyMs;
-            nextStartAt=Math.max(nextStartAt,resetAt);
+            nextStartAt[market]=Math.max(nextStartAt[market]||0,resetAt);
           }
           return response;
         }
         if([418,429,403,451].includes(response.status)||response.status>=500){
           const retryAfter=Math.max(60,Number(response.headers.get('retry-after')||0));
           const ttl=[403,451].includes(response.status)?300000:Math.min(300000,retryAfter*1000);
-          cooldowns.set(base,now()+ttl);
+          cooldowns.set(cooldownKey,now()+ttl);
           continue;
         }
         return response;
       }catch{
-        cooldowns.set(base,now()+60000);
+        cooldowns.set(cooldownKey,now()+60000);
       }
     }
 
