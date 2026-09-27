@@ -19,6 +19,13 @@ const DURATIONS={
 };
 const BYBIT_INTERVAL={'5m':'5','15m':'15','1h':'60','2h':'120','4h':'240','12h':'720','1d':'D','1w':'W'};
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
+export function retryAtFromHeader(value,now=Date.now()){
+  const raw=Number(value);
+  if(!Number.isFinite(raw)||raw<=0)return now+60000;
+  if(raw>1e12)return Math.max(now+1000,raw);
+  if(raw>1e9)return Math.max(now+1000,raw*1000);
+  return now+Math.max(60,Math.min(3600,raw))*1000;
+}
 
 export class UpstreamError extends Error{
   constructor(message,status=502,retryAt=null){super(message);this.status=status;this.retryAt=retryAt;}
@@ -119,9 +126,10 @@ export class Binance{
         this.metrics.weight=Math.max(this.metrics.weight,observedWeight);
         this.metrics[market+'Weight']=Math.max(Number(this.metrics[market+'Weight']||0),observedWeight);
         if(response.status===429||response.status===418){
-          const sec=Math.max(60,Number(response.headers.get('retry-after')||60)),until=Date.now()+sec*1000;
+          const now=Date.now(),until=retryAtFromHeader(response.headers.get('retry-after'),now);
+          const ttl=Math.max(1000,Math.min(3600000,until-now));
           const message='Binance 요청 제한. 재시도 시각 이후 이어서 진행합니다.';
-          await this.store.put('binance:blocked:'+market,{until,message},sec*1000);
+          await this.store.put('binance:blocked:'+market,{until,message},ttl);
           this.metrics.errors++;
           throw new UpstreamError(message,429,until);
         }
