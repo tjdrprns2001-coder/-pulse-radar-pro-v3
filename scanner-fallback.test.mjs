@@ -35,20 +35,33 @@ test('websocket failure falls back to labeled Bybit linear universe',async()=>{
   }finally{if(prior===undefined)delete globalThis.WebSocket;else globalThis.WebSocket=prior;}
 });
 
-test('Binance futures cooldown pauses OI and bars instead of silently switching providers',async()=>{
+test('Binance futures cooldown pauses derivatives while kline can use fallback',async()=>{
   const store=new Store();
   const until=Date.now()+60000;
   await store.put('binance:blocked:futures',{message:'rate limited',until},60000);
-  const api=new Binance(store,async()=>{throw new Error('network should not be reached while cooldown is active');});
-  const asOf=Math.floor(Date.now()/300000)*300000;
+  const asOf=Math.floor(Date.now()/3600000)*3600000;
+  const fetcher=async url=>{
+    const u=new URL(url);
+    if(u.hostname==='api.bybit.com'&&u.pathname.endsWith('/kline')){
+      const end=Number(u.searchParams.get('end')||asOf);
+      const list=Array.from({length:160},(_,i)=>{
+        const ts=end-(i+1)*3600000;
+        return[String(ts),'10','11','9','10.5','100','1000'];
+      });
+      return bybit({list});
+    }
+    throw new Error('unexpected '+url);
+  };
+  const api=new Binance(store,fetcher);
   for(const call of [
     ()=>api.oi('AAAUSDT',asOf),
-    ()=>api.bars('AAAUSDT','1h',asOf,149),
     ()=>api.taker('AAAUSDT',asOf),
     ()=>api.funding('AAAUSDT',asOf)
   ]){
     await assert.rejects(call,e=>e?.status===429&&Number(e?.retryAt)>=until-10);
   }
+  const bars=await api.bars('AAAUSDT','1h',asOf,149);
+  assert.equal(bars._source,'BYBIT_LINEAR_FALLBACK');
 });
 
 test('hard Binance futures access failure still uses labeled Bybit fallback',async()=>{
