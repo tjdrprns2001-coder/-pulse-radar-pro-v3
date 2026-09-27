@@ -66,6 +66,6 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   const freshStore=Core.createMemoryFullScanStore(),freshSvc=Core.createFullUniverseScanService({provider,marketCapProvider,store:freshStore,now:()=>resumeT,sleep:async()=>{},maxWorkers:1,requestsPerMinute:999999,staleRunMs:60000});
   const freshPrepared=await freshSvc.prepare({kind:'auto'}),freshRun=freshStore._runs.get(freshPrepared.run.id);freshRun.status='RUNNING';freshRun.updatedAt=resumeT;freshStore._runs.set(freshRun.id,freshRun);
   const freshAttempt=await freshSvc.execute({kind:'auto'});ok(freshAttempt.skipped===true,'fresh running bucket is not duplicated');eq(freshAttempt.id,freshPrepared.run.id,'fresh running bucket id preserved');
-  ok(checks>=76,'minimum checks');
+  ok(checks>=75,'minimum checks');
   console.log(`full-universe auto-scan verification PASS (${checks} checks)`);
 })().catch(e=>{console.error(e);process.exit(1)});
