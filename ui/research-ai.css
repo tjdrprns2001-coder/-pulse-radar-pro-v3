@@ -64,3 +64,36 @@ tbody tr:last-child td{border-bottom:0}
   .metrics b{font-size:19px}
   .notice{font-size:13px}
 }
+.labMetrics{margin-bottom:12px}
+.labCard{overflow:hidden}
+.techniqueCatalog{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.techniqueChip{display:flex;flex-direction:column;gap:3px;border:1px solid #29445d;border-radius:12px;padding:9px 10px;max-width:280px;background:#0a1724}
+.techniqueChip.seen{border-color:#287e68;background:#0b2824}
+.techniqueChip.unseen{opacity:.66}
+.techniqueChip b{font-size:12px;color:#e8f3ff}
+.techniqueChip small{font-size:10px;color:#89a5c0}
+.hypothesisGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.hypothesisCard{border:1px solid #27435f;border-radius:14px;padding:13px;background:#091522}
+.hypothesisCard h3{font-size:14px;margin:8px 0 9px;line-height:1.45}
+.hypHead,.hypMeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.hypId,.hypScore,.hypMeta span{font-size:10px;border:1px solid #2c4b68;border-radius:999px;padding:4px 7px;color:#9fc1df}
+.hypScore{margin-left:auto;border-color:#306f63;color:#7ee8c6}
+.hypothesisCard p{font-size:12px;margin:9px 0;color:#afc0d2;line-height:1.55}
+.counter{font-size:11px;border-radius:9px;padding:7px 8px;margin-top:8px}
+.counter.has{background:#311c20;color:#ffb7b7;border:1px solid #6a343c}
+.counter.none{background:#13271e;color:#9bdcb7;border:1px solid #2c5f48}
+.next{font-size:11px;color:#8fb4d7;margin-top:8px}
+.miniLabList{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.labRow{display:flex;flex-direction:column;gap:5px;border:1px solid #263f58;border-radius:12px;padding:10px;background:#091522}
+.labRow b{font-size:12px}.labRow span,.labRow small{font-size:11px;color:#9eb2c6;line-height:1.45}.labRow em{font-size:10px;color:#75d9bb;font-style:normal}
+.labRow.experiment{border-color:#4d3f72;background:#151126}
+.emptyLab,.muted{color:#829ab2;font-size:12px}
+.governanceFlow{margin-top:12px}
+.governanceStates{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.governanceStates span{border:1px solid #33516f;border-radius:999px;padding:8px 10px;font-size:11px;color:#aac5df}
+.governanceStates span.active{border-color:#6f58ad;background:#1b1530;color:#cbbcff}
+.governanceStates i{font-style:normal;color:#52789d}
+.gateChecks{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.gateChecks span{font-size:10px;border:1px solid #27445e;border-radius:9px;padding:6px 8px;color:#91b4d4}
+.governanceFlow p{font-size:11px;color:#8ca5bd;margin-top:10px}
+@media(max-width:760px){.hypothesisGrid{grid-template-columns:1fr}.techniqueChip{max-width:100%;width:100%}.governanceStates{gap:5px}.governanceStates i{display:none}}
