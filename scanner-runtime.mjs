@@ -51,17 +51,19 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
   const cooldowns=new Map();
   const maxConcurrent=Math.max(1,Math.min(4,Number(env.IGNITION_BINANCE_PROXY_CONCURRENCY)||2));
   const minGapMs=Math.max(0,Math.min(1000,Number(env.IGNITION_BINANCE_PROXY_GAP_MS)||120));
+  const klineGapMs=Math.max(minGapMs,Math.min(2000,Number(env.IGNITION_BINANCE_KLINE_GAP_MS)||350));
   const futuresSoftWeight=Math.max(500,Math.min(2300,Number(env.IGNITION_BINANCE_FUTURES_WEIGHT_SOFT_LIMIT||env.IGNITION_BINANCE_WEIGHT_SOFT_LIMIT)||1700));
   const spotSoftWeight=Math.max(500,Math.min(5900,Number(env.IGNITION_BINANCE_SPOT_WEIGHT_SOFT_LIMIT)||5000));
   const resetSafetyMs=Math.max(250,Math.min(5000,Number(env.IGNITION_BINANCE_WEIGHT_RESET_SAFETY_MS)||1500));
   let active=0;
   const nextStartAt={futures:0,spot:0};
   const waiters=[];
-  const acquire=async market=>{
+  const acquire=async(market,pathname)=>{
     if(active>=maxConcurrent)await new Promise(resolve=>waiters.push(resolve));
     active++;
+    const gap=market==='futures'&&String(pathname||'').endsWith('/klines')?klineGapMs:minGapMs;
     const current=now(),startAt=Math.max(current,nextStartAt[market]||0);
-    nextStartAt[market]=startAt+minGapMs;
+    nextStartAt[market]=startAt+gap;
     if(startAt>current)await sleeper(startAt-current);
   };
   const release=()=>{active=Math.max(0,active-1);const next=waiters.shift();if(next)next();};
@@ -75,10 +77,13 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
     if(!isBinance)return directFetch(url,options);
     const market=isFutures?'futures':'spot';
 
-    await acquire(market);
+    await acquire(market,parsed?.pathname);
     try{
-    let lastResponse=null;
-    for(const base of bases){
+    let lastResponse=null,rateLimitedResponse=null;
+    const statsBase=String(env.IGNITION_BINANCE_STATS_PROXY_URL||'').trim().replace(/\/$/,'');
+    const isStats=isFutures&&String(parsed?.pathname||'').startsWith('/futures/data/');
+    const orderedBases=isStats&&statsBase&&bases.includes(statsBase)?[statsBase,...bases.filter(x=>x!==statsBase)]:bases;
+    for(const base of orderedBases){
       const cooldownKey=market+'|'+base;
       const until=cooldowns.get(cooldownKey)||0;
       if(until>now())continue;
@@ -107,6 +112,7 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
           const retryAfter=Math.max(60,Number(response.headers.get('retry-after')||0));
           const ttl=[403,451].includes(response.status)?300000:Math.min(300000,retryAfter*1000);
           cooldowns.set(cooldownKey,now()+ttl);
+          if(response.status===418||response.status===429)rateLimitedResponse=response;
           continue;
         }
         return response;
@@ -115,6 +121,7 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
       }
     }
 
+    if(rateLimitedResponse)return rateLimitedResponse;
     try{return await directFetch(url,options);}
     catch(e){if(lastResponse)return lastResponse;throw e;}
     }finally{release();}
