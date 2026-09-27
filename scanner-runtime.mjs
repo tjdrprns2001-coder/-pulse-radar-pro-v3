@@ -35,8 +35,24 @@ function configFrom(env){
   };
 }
 
+function routedFetcher(env,directFetch){
+  const base=String(env.IGNITION_BINANCE_PROXY_URL||'').replace(/\/$/,'');
+  const token=String(env.IGNITION_BINANCE_PROXY_TOKEN||'');
+  if(!base||token.length<43)return directFetch;
+  return async(url,options={})=>{
+    const target=base+'/fetch?url='+encodeURIComponent(String(url));
+    return directFetch(target,{
+      method:'GET',
+      headers:{authorization:'Bearer '+token,accept:'application/json'},
+      signal:options.signal,
+      redirect:'error'
+    });
+  };
+}
+
 export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date.now,autoStart=true}={}){
   const store=new RuntimeStore(now);
+  const scannerFetch=routedFetcher(env,fetcher);
   const health={mode:'local-render',state:'INIT',startedAt:now(),lastStartedAt:null,lastFinishedAt:null,lastError:null,lastScanId:null,nextRunAt:null};
   let latestSnapshot=null,lastCompleted=null,loopStarted=false;
 
@@ -70,7 +86,7 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
         const wait=Math.max(1000,Math.min(300000,Number(job.retryAt||0)-now()));
         if(wait>0)await sleep(wait);
       }
-      const api=new Binance(store,fetcher);
+      const api=new Binance(store,scannerFetch);
       job=await stepJob(store,api,job.id);
       if(job?.busy){await sleep(250);job=await store.job(health.lastScanId);continue;}
       publish(job);
