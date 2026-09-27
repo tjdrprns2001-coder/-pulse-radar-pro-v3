@@ -35,14 +35,27 @@ test('websocket failure falls back to labeled Bybit linear universe',async()=>{
   }finally{if(prior===undefined)delete globalThis.WebSocket;else globalThis.WebSocket=prior;}
 });
 
-test('Binance cooldown uses Bybit OI without fabricating taker volume',async()=>{
+test('Binance futures cooldown pauses OI and bars instead of silently switching providers',async()=>{
   const store=new Store();
-  await store.put('binance:blocked:futures',{message:'rate limited',until:Date.now()+60000},60000);
+  const until=Date.now()+60000;
+  await store.put('binance:blocked:futures',{message:'rate limited',until},60000);
+  const api=new Binance(store,async()=>{throw new Error('network should not be reached while cooldown is active');});
   const asOf=Math.floor(Date.now()/300000)*300000;
-  const oiRows=Array.from({length:100},(_,i)=>({timestamp:asOf-i*300000,openInterest:String(200-i)}));
+  for(const call of [
+    ()=>api.oi('AAAUSDT',asOf),
+    ()=>api.bars('AAAUSDT','1h',asOf,149),
+    ()=>api.taker('AAAUSDT',asOf),
+    ()=>api.funding('AAAUSDT',asOf)
+  ]){
+    await assert.rejects(call,e=>e?.status===429&&Number(e?.retryAt)>=until-10);
+  }
+});
+
+test('hard Binance futures access failure still uses labeled Bybit fallback',async()=>{
+  const asOf=Math.floor(Date.now()/300000)*300000;
   const fetcher=async url=>{
     const u=new URL(url);
-    if(u.pathname.endsWith('/open-interest'))return bybit({list:oiRows});
+    if(u.hostname==='fapi.binance.com')return new Response('region blocked',{status:451});
     if(u.pathname.endsWith('/kline')){
       const end=Number(u.searchParams.get('end')||asOf);
       const list=Array.from({length:160},(_,i)=>{
@@ -53,11 +66,7 @@ test('Binance cooldown uses Bybit OI without fabricating taker volume',async()=>
     }
     throw new Error('unexpected '+url);
   };
-  const api=new Binance(store,fetcher);
-  const oi=await api.oi('AAAUSDT',asOf);
-  assert.equal(oi.source,'BYBIT_LINEAR_FALLBACK');
-  assert.ok(Number.isFinite(oi.change4h));
-
+  const api=new Binance(new Store(),fetcher,{futuresBases:['https://fapi.binance.com']});
   const bars=await api.bars('AAAUSDT','1h',asOf,149);
   assert.equal(bars._source,'BYBIT_LINEAR_FALLBACK');
   assert.equal(bars.at(-1).buy,null);
