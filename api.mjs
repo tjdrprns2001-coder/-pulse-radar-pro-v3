@@ -25,6 +25,9 @@ function publicScan(scan){
     counts:obj(scan?.counts),
     timings:obj(scan?.timings),
     metrics:obj(scan?.metrics),
+    retryAt:finite(scan?.retryAt),
+    errors:arr(scan?.errors).slice(-20).map(x=>({stage:x?.stage??null,symbol:x?.symbol??null,message:String(x?.message||'').slice(0,240)})),
+    excluded:arr(scan?.excluded).slice(-50).map(x=>({symbol:x?.symbol??null,reason:String(x?.reason||'').slice(0,240)})),
     freshnessMs:finite(scan?.freshnessMs),
     candidates:arr(scan?.candidates)
   };
