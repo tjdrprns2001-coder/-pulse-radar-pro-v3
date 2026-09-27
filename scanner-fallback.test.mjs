@@ -37,7 +37,7 @@ test('websocket failure falls back to labeled Bybit linear universe',async()=>{
 
 test('Binance cooldown uses Bybit OI without fabricating taker volume',async()=>{
   const store=new Store();
-  await store.put('binance:blocked',{message:'rate limited',until:Date.now()+60000},60000);
+  await store.put('binance:blocked:futures',{message:'rate limited',until:Date.now()+60000},60000);
   const asOf=Math.floor(Date.now()/300000)*300000;
   const oiRows=Array.from({length:100},(_,i)=>({timestamp:asOf-i*300000,openInterest:String(200-i)}));
   const fetcher=async url=>{
@@ -63,4 +63,23 @@ test('Binance cooldown uses Bybit OI without fabricating taker volume',async()=>
   assert.equal(bars.at(-1).buy,null);
   const frame=analyze(bars,{fast:true});
   assert.equal(frame.takerKline,null);
+});
+
+
+test('spot rate limit does not globally block futures requests',async()=>{
+  const store=new Store();
+  const calls=[];
+  const fetcher=async url=>{
+    calls.push(String(url));
+    const u=new URL(url);
+    if(u.hostname==='api.binance.com')return new Response('rate limited',{status:418,headers:{'retry-after':'60'}});
+    if(u.hostname==='fapi.binance.com')return Response.json({serverTime:123});
+    throw new Error('unexpected '+url);
+  };
+  const api=new Binance(store,fetcher,{spotBases:['https://api.binance.com'],futuresBases:['https://fapi.binance.com']});
+  await assert.rejects(()=>api.get('/api/v3/klines',{symbol:'BTCUSDT',interval:'1h',limit:35},60000,true));
+  const futures=await api.get('/fapi/v1/time',{},10000,false);
+  assert.equal(futures.serverTime,123);
+  assert.equal(await store.get('binance:blocked:futures'),null);
+  assert.ok(await store.get('binance:blocked:spot'));
 });
