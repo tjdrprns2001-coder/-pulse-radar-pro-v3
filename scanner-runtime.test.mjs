@@ -98,3 +98,39 @@ test('spot proxy cooldown never ejects the Singapore futures route',async()=>{
   assert.equal(futures.status,200);
   assert.match(calls.at(-1),/^https:\/\/sg\.test\/fetch\?url=/);
 });
+
+
+test('futures proxy routing preserves rate-limit semantics over later regional 451s',async()=>{
+  const token='a'.repeat(43);
+  const calls=[];
+  const fetcher=async url=>{
+    calls.push(String(url));
+    if(String(url).startsWith('https://sg.test/'))return new Response('rate limited',{status:418,headers:{'retry-after':'60'}});
+    if(String(url).startsWith('https://eu.test/'))return new Response('region blocked',{status:451});
+    if(String(url).startsWith('https://us.test/'))return new Response('region blocked',{status:451});
+    throw new Error('direct Binance should not be called after a proxy rate limit');
+  };
+  const routed=routedFetcher({
+    IGNITION_BINANCE_PROXY_URLS:'https://sg.test,https://eu.test,https://us.test',
+    IGNITION_BINANCE_PROXY_TOKEN:token,
+    IGNITION_BINANCE_PROXY_GAP_MS:'0',
+    IGNITION_BINANCE_KLINE_GAP_MS:'0'
+  },fetcher,()=>1000,async()=>{});
+  const response=await routed('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=149');
+  assert.equal(response.status,418);
+  assert.equal(calls.length,3);
+});
+
+test('futures statistics can prefer a dedicated regional proxy',async()=>{
+  const token='a'.repeat(43);
+  const calls=[];
+  const fetcher=async url=>{calls.push(String(url));return Response.json([]);};
+  const routed=routedFetcher({
+    IGNITION_BINANCE_PROXY_URLS:'https://sg.test,https://eu.test,https://us.test',
+    IGNITION_BINANCE_STATS_PROXY_URL:'https://eu.test',
+    IGNITION_BINANCE_PROXY_TOKEN:token,
+    IGNITION_BINANCE_PROXY_GAP_MS:'0'
+  },fetcher,()=>1000,async()=>{});
+  assert.equal((await routed('https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1')).status,200);
+  assert.match(calls[0],/^https:\/\/eu\.test\/fetch\?url=/);
+});
