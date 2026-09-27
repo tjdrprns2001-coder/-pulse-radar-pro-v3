@@ -15,7 +15,7 @@ This recovers the September 27 scanner design as an isolated worker so the exist
 
 ## Rate-limit and runtime shape
 
-The worker uses a bounded symbol worker pool and a global spacing gate. Defaults are 8 symbol workers and 240 REST requests/minute. Six timeframe requests are themselves bounded to two concurrent timeframe tasks per symbol. Funding is fetched in one bulk request per run. OI uses the existing Binance-first v2 OI provider and therefore retains its current fallback behavior.
+The worker uses a bounded symbol worker pool and a global spacing gate. Defaults are 8 symbol workers and 150 REST requests/minute; if Binance returns 418 while rebuilding the universe, the scanner reuses the last completed Binance-only universe instead of switching venues. Six timeframe requests are themselves bounded to two concurrent timeframe tasks per symbol. Funding is fetched in one bulk request per run. OI uses the existing Binance-first v2 OI provider and therefore retains its current fallback behavior.
 
 A futures `bookTicker` WebSocket layer is sharded at 180 streams per connection. It is supplemental live context only; the 30-minute snapshot remains reproducible from confirmed REST bars, OI, funding, market-cap snapshot, and the persisted run record.
 
@@ -30,7 +30,7 @@ A futures `bookTicker` WebSocket layer is sharded at 180 streams per connection.
 
 Required: `DATABASE_URL`. Recommended: `FULL_SCAN_ADMIN_TOKEN`, `PULSE_ALLOWED_ORIGIN`.
 
-Tuning: `FULL_SCAN_WORKERS=8`, `FULL_SCAN_REQUESTS_PER_MINUTE=240`, `FULL_SCAN_KLINE_ROWS=64`, `FULL_SCAN_WS_SHARD_SIZE=180`, `FULL_SCAN_TICK_MS=60000`, `FULL_SCAN_START_DELAY_MS=5000`, `FULL_SCAN_MARKET_CAP_TTL_MS=1800000`.
+Tuning: `FULL_SCAN_WORKERS=8`, `FULL_SCAN_REQUESTS_PER_MINUTE=150`, `FULL_SCAN_KLINE_ROWS=64`, `FULL_SCAN_WS_SHARD_SIZE=180`, `FULL_SCAN_TICK_MS=60000`, `FULL_SCAN_START_DELAY_MS=5000`, `FULL_SCAN_MARKET_CAP_TTL_MS=1800000`.
 
 ## Deployment boundary
 

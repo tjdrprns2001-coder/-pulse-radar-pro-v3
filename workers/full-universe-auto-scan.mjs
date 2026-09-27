@@ -23,7 +23,7 @@ const marketCapProvider=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARK
 const service=createFullUniverseScanService({
   provider,marketCapProvider,store,
   maxWorkers:Number(env.FULL_SCAN_WORKERS||8),
-  requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||240),
+  requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||150),
   klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)
 });
 const health={startedAt:Date.now(),status:'STARTING',auto:{status:'IDLE'},websocket:{status:'INIT'},errors:[]};

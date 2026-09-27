@@ -32,10 +32,10 @@ async function load(){
  try{
    const h=await j('/api/v1/health'),rid=h?.fullScan?.runId;let run=null,data=null;
    if(rid)run=await j('/api/v1/runs/'+encodeURIComponent(rid)+'?items=1&compact=1&limit=200').catch(()=>null);
-   if(!run||run.status==='DONE')data=await j('/api/v1/results?compact=1&limit=500').catch(()=>null);
+   if(!run||run.status==='DONE'||run.status==='FAILED')data=await j('/api/v1/results?compact=1&limit=500').catch(()=>null);
    const src=data?.items?.length?data:run;items=Array.isArray(src?.items)?src.items:[];
    cards(run||data,h);render();
-   $('resultNote').textContent=data?.items?.length?'최근 완료 회차 결과':'현재 진행 중인 회차의 완료된 일부 종목';
+   $('resultNote').textContent=run?.status==='FAILED'&&data?.items?.length?'현재 회차 실패 · 아래는 최근 완료 회차 결과':data?.items?.length?'최근 완료 회차 결과':'현재 진행 중인 회차의 완료된 일부 종목';
    $('updated').textContent='상태 '+age(run?.updatedAt||h?.fullScan?.updatedAt||Date.now());
  }catch(e){$('status').textContent='연결 오류';$('progressText').textContent=e.message;$('list').innerHTML='<div class="empty">데이터를 불러오지 못했습니다.</div>'}
  finally{$('refresh').disabled=false}

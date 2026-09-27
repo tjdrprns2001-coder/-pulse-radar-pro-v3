@@ -25,6 +25,12 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   eq(Cap.cleanBase('1000PEPE'),'PEPE','market cap symbol normalization');eq(Cap.cleanBase('1000000MOG'),'MOG','million multiplier normalization');eq(Cap.cleanBase('BTC'),'BTC','normal base');
   let capCalls=0;const capProvider=Cap.createMarketCapProvider({now:()=>1,fetchImpl:async url=>{capCalls++;return{ok:true,json:async()=>url.includes('page=1')?[{symbol:'aaa',market_cap:1000},{symbol:'AAA',market_cap:900},{symbol:'bbb',market_cap:2000}]:[]}},pages:2,perPage:3});const capMap=await capProvider.resolve([{baseAsset:'AAA'},{baseAsset:'BBB'}]);eq(capMap.get('AAA'),1000,'largest duplicate cap wins');eq(capMap.get('BBB'),2000,'cap resolves');eq(capCalls,2,'pages fetched once');await capProvider.resolve([{baseAsset:'AAA'}]);eq(capCalls,2,'cap cache reused');
   let fallbackCalls=0;const fallbackCap=Cap.createMarketCapProvider({now:()=>2,fetchImpl:async url=>{fallbackCalls++;if(url.includes('coingecko.com'))return{ok:false,status:429,json:async()=>({})};return{ok:true,json:async()=>[{symbol:'MOG',quotes:{USD:{market_cap:12345}}},{symbol:'BTC',quotes:{USD:{market_cap:99999}}}]}}});const fallbackMap=await fallbackCap.resolve([{baseAsset:'1000000MOG'},{baseAsset:'BTC'}]);eq(fallbackMap.get('1000000MOG'),12345,'CoinPaprika fallback maps multiplier symbol');eq(fallbackCap.state.source,'coinpaprika','fallback source exposed');ok(fallbackCalls===2,'fallback called after CoinGecko failure');
+  const cachedUniverseStore=Core.createMemoryFullScanStore();
+  await cachedUniverseStore.createRun({id:'prior',kind:'auto',bucketKey:'prior',status:'DONE',completedAt:1,createdAt:1,updatedAt:1});
+  await cachedUniverseStore.putItem('prior',{symbol:'BTCUSDT',baseAsset:'BTC',complete:true,tier:'large',marketCapUsd:1,frames:{},errors:[]});
+  const blockedProvider={async getStrictFuturesUniverse(){throw new Error('Futures HTTP 418')},async getFundingMap(){return new Map()},async getFuturesKlines(){return[]},async getV2OiProfile(){return{}}};
+  const cachedUniverseSvc=Core.createFullUniverseScanService({provider:blockedProvider,marketCapProvider:{async resolve(){return new Map([['BTC',100]])}},store:cachedUniverseStore,now:()=>5000,sleep:async()=>{},requestsPerMinute:999999});
+  const cachedUniverse=await cachedUniverseSvc.loadUniverse();eq(cachedUniverse.map(x=>x.symbol),['BTCUSDT'],'418 recovery reuses last completed Binance universe');
   let strictCalls=0,fallbackUniverseCalls=0;
   const strictProvider={
     async getStrictFuturesUniverse(){strictCalls++;return{symbols:[{symbol:'BINANCEONLYUSDT',baseAsset:'BINANCEONLY',quoteAsset:'USDT',contractType:'PERPETUAL',status:'TRADING'}]}},
@@ -60,6 +66,6 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   const freshStore=Core.createMemoryFullScanStore(),freshSvc=Core.createFullUniverseScanService({provider,marketCapProvider,store:freshStore,now:()=>resumeT,sleep:async()=>{},maxWorkers:1,requestsPerMinute:999999,staleRunMs:60000});
   const freshPrepared=await freshSvc.prepare({kind:'auto'}),freshRun=freshStore._runs.get(freshPrepared.run.id);freshRun.status='RUNNING';freshRun.updatedAt=resumeT;freshStore._runs.set(freshRun.id,freshRun);
   const freshAttempt=await freshSvc.execute({kind:'auto'});ok(freshAttempt.skipped===true,'fresh running bucket is not duplicated');eq(freshAttempt.id,freshPrepared.run.id,'fresh running bucket id preserved');
-  ok(checks>=66,'minimum checks');
+  ok(checks>=75,'minimum checks');
   console.log(`full-universe auto-scan verification PASS (${checks} checks)`);
 })().catch(e=>{console.error(e);process.exit(1)});

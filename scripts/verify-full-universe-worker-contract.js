@@ -26,8 +26,8 @@ must(integrated.includes("../db/full-universe-scan-v1.sql"),'integrated migratio
 must(integrated.includes('scheduleFullUniverseScanner()')&&integrated.includes('startFullUniverseWebsocket()'),'integrated scheduler/ws startup missing');
 must(integrated.includes("route.pathname==='/api/v1/results'")&&integrated.includes("route.pathname==='/api/v1/manual-scan'"),'integrated API routes missing');
 must(integrated.includes("'GET,POST,OPTIONS'")&&integrated.includes("'authorization,content-type'"),'manual API CORS contract missing');
-must(wsShards.includes("wss://fstream.binance.com/public/stream"),'current Binance USD-M public stream URL missing');
-must(!wsShards.includes("wss://fstream.binance.com/stream'"),'deprecated Binance USD-M stream URL must not be used by shards');
+must(wsShards.includes("wss://fstream.binance.com/market/stream"),'current Binance USD-M public stream URL missing');
+must(!wsShards.includes("wss://fstream.binance.com/stream'"),'legacy Binance USD-M root stream URL must not be used by shards');
 must(integrated.includes('BINANCE_USDM_PUBLIC_STREAM_URL'),'selector runtime must reuse canonical Binance USD-M public stream URL');
-must(!integrated.includes("'wss://fstream.binance.com/stream'"),'selector runtime must not use deprecated Binance USD-M stream URL');
+must(!integrated.includes("'wss://fstream.binance.com/stream'"),'selector runtime must not use legacy Binance USD-M root stream URL');
 console.log(`full-universe worker contract PASS (${n} checks)`);
