@@ -1,6 +1,6 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar 연구 AI v3</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260928-lab5"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar 연구 AI v4</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260928-integrity1"></head><body>
 <main class="rai">
-  <header class="hero"><div><div class="eyebrow">연구 AI v3 · 가설·반례·혼합기법 연구실</div><h1>🧠 연구 학습 AI</h1><p>자동스캔·급등 역추적 샘플·책 기법을 바탕으로 가설을 만들고, 반례를 찾고, 혼합기법을 실험합니다.</p></div><button id="refresh">새로고침</button></header>
+  <header class="hero"><div><div class="eyebrow">연구 AI v4 · 무결성·가설·반례 연구실</div><h1>🧠 연구 학습 AI</h1><p>자동스캔·급등 역추적 샘플·책 기법을 바탕으로 가설을 만들고, 반례를 찾고, 혼합기법을 실험합니다.</p></div><button id="refresh">새로고침</button></header>
   <section class="notice"><b>🔒 연구 전용 유지</b><span>AI가 새 기법을 만들 수는 있지만 검증 전에는 자동스캐너 운영 순위에 반영하지 않습니다.</span></section>
   <section class="grid metrics">
     <article><span>관측 샘플</span><b id="obs">-</b></article>
@@ -19,6 +19,18 @@
   <section class="grid sources">
     <article><h2>시간순 데이터셋</h2><div id="dataset">불러오는 중…</div></article>
     <article><h2>검증 성능</h2><div id="validation">불러오는 중…</div></article>
+  </section>
+  <section class="card integrityCard">
+    <div class="cardHead"><div><h2>🛡️ 연구 무결성</h2><p>후보 모집·라벨·비용·분할 규칙을 버전화하고 Locked OOS를 가설 생성기에서 격리합니다.</p></div></div>
+    <div class="integrityGrid">
+      <div><span>연구 계약</span><b id="integrityContract">-</b></div>
+      <div><span>데이터셋</span><b id="integrityDataset">-</b></div>
+      <div><span>표본 건강도</span><b id="integrityHealth">-</b></div>
+      <div><span>Purge / Embargo</span><b id="integrityPurge">-</b></div>
+      <div><span>Locked OOS</span><b id="integrityOos">-</b></div>
+      <div><span>역추적 샘플</span><b id="integrityReference">-</b></div>
+    </div>
+    <div id="integrityDetail" class="integrityDetail"></div>
   </section>
 
   <section class="card"><div class="cardHead"><div><h2>점수 보정</h2><p>Research AI 점수 구간별 실제 성공률과 MFE/MAE입니다.</p></div></div><div class="tableWrap"><table><thead><tr><th>점수</th><th>N</th><th>성공률</th><th>평균 MFE</th><th>평균 MAE</th></tr></thead><tbody id="scoreRows"><tr><td colspan="5">데이터 대기</td></tr></tbody></table></div></section>
@@ -73,4 +85,4 @@
 
   <section class="card"><h2>학습 파이프라인</h2><div class="flow"><span>Auto / Astra / Trader</span><i>→</i><span>Canonical Snapshot</span><i>→</i><span>샘플·책 근거</span><i>→</i><span>확정봉 1H~72H</span><i>→</i><span>학습</span><i>→</i><span>검증</span><i>→</i><span>잠금 OOS</span><i>→</i><span>연구 전용 모델 게이트</span></div></section>
   <div id="status" class="status">준비 중…</div>
-</main><script src="/ui/research-ai.js?v=20260928-lab5" defer></script></body></html>
+</main><script src="/ui/research-ai.js?v=20260928-integrity1" defer></script></body></html>
