@@ -15,12 +15,12 @@ function renderTop(state){
   const modelState=(state.registry?.models||[]).find(x=>x.id==='tiny-mlp-v2')?.state||'SHADOW';
   const active=labels.length>=20;
   $('model').innerHTML=active?'<span class="good">'+esc(modelState)+'</span>':'<span class="warn">WARMUP '+labels.length+'/20</span>';
-  const autoCount=rows.filter(x=>x.source==='auto-surge-reverse-trace').length;$('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>🧬 자동 역추적 <b>'+num(autoCount)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(rows.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
+  const autoCount=rows.filter(x=>x.source==='auto-surge-reverse-trace').length,failCount=rows.filter(x=>x.source==='auto-failed-ignition-reverse-trace').length;$('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>🧬 성공 역추적 <b>'+num(autoCount)+'</b>개<br>🟥 실패 역추적 <b>'+num(failCount)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(rows.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
   $('persist').innerHTML='저장소 <b>'+esc(state.memory?.persistence||'—')+'</b><br>모델 <b>'+esc(state.model?.type||'—')+'</b><br>버전 <b>'+esc(state.version||'—')+'</b><br>마지막 학습 '+(state.model?.trainedAt?new Date(state.model.trainedAt).toLocaleString():'대기 중');
   const ds=state.training?.dataset||{};
-  $('dataset').innerHTML='TRAIN <b>'+num(ds.train||0)+'</b><br>VALIDATION <b>'+num(ds.validation||0)+'</b><br>LOCKED OOS <b>'+num(ds.lockedOos||0)+'</b><br>OOS freeze <b>'+esc(state.validation?.lockedOosStart?new Date(state.validation.lockedOosStart).toLocaleString():'미설정')+'</b>';
+  $('dataset').innerHTML='학습 <b>'+num(ds.train||0)+'</b><br>검증 <b>'+num(ds.validation||0)+'</b><br>잠금 OOS <b>'+num(ds.lockedOos||0)+'</b><br>OOS 고정시각 <b>'+esc(state.validation?.lockedOosStart?new Date(state.validation.lockedOosStart).toLocaleString():'미설정')+'</b>';
   const vm=state.training?.metrics?.validation||{},om=state.training?.metrics?.lockedOos||{};
-  $('validation').innerHTML='VAL precision <b>'+rate(vm.precision)+'</b> · recall <b>'+rate(vm.recall)+'</b><br>VAL FPR <b>'+rate(vm.falsePositiveRate)+'</b> · calibration <b>'+rate(vm.calibrationError)+'</b><br>OOS precision <b>'+rate(om.precision)+'</b> · recall <b>'+rate(om.recall)+'</b><br>OOS N <b>'+num(om.count||0)+'</b>';
+  $('validation').innerHTML='검증 정밀도 <b>'+rate(vm.precision)+'</b> · 재현율 <b>'+rate(vm.recall)+'</b><br>검증 오탐률 <b>'+rate(vm.falsePositiveRate)+'</b> · 보정오차 <b>'+rate(vm.calibrationError)+'</b><br>OOS 정밀도 <b>'+rate(om.precision)+'</b> · 재현율 <b>'+rate(om.recall)+'</b><br>OOS 표본 <b>'+num(om.count||0)+'</b>';
 }
 function renderResearch(state){
   const research=state.research||{},stats=research.stats||{},clusters=research.archetypes||[];
@@ -59,6 +59,18 @@ function renderLab(state){
 
   const ideaById=new Map([...(hyp.mutations||[]),...(hyp.crossovers||[])].map(x=>[x.id,x])),experiments=(lab.experiments||[]).slice(0,14);
   $('experimentCards').innerHTML=experiments.length?experiments.map(exp=>{const x=ideaById.get(exp.hypothesisId)||{},ev=exp.evaluation||{},vm=ev.validation||{},om=ev.lockedOos||{};const stateLabel=({'WAITING_FOR_MATCHES':'표본 대기','LOW_SAMPLE':'표본 부족','SHADOW_TESTING':'연구 중','OOS_PROMISING':'OOS 유망'})[exp.state]||exp.state;return '<div class="labRow experiment"><b>'+esc(x.kind==='MUTATION'?'🧪 돌연변이 · ':'🧬 교배 · ')+esc(x.title||exp.hypothesisId)+'</b><span>'+esc(x.thesis||'')+'</span><small>상태 '+esc(stateLabel)+' · 표본 '+num(ev.support||0)+' · 검증 '+rate(vm.successRate)+' · OOS '+rate(om.successRate)+'</small><small>OOS N '+num(om.count||0)+' · 누수검사 '+esc(ev.leakageSafe?'통과':'확인 필요')+'</small><em>운영 가중치 0% · '+esc(x.nextAction||'연구 설계')+'</em></div>'}).join(''):'<div class="emptyLab">충분한 관측 가설이 생기면 자동 실험안이 생성됩니다.</div>';
+
+  const comp=lab.competition||{},champ=comp.champion,chall=comp.challengers||[];
+  $('competitionCards').innerHTML=(champ?'<div class="labRow champion"><b>🏆 '+esc(champ.dna?.name||champ.title||'Champion')+'</b><span>'+esc(champ.dna?.strategyId||'')+' '+esc(champ.dna?.version||'')+' · 연구점수 '+esc(champ.labScore??'-')+'</span><small>OOS '+rate(champ.evaluation?.lockedOos?.successRate)+' · 표본 '+num(champ.evaluation?.support||0)+' · 운영 가중치 0%</small></div>':'<div class="emptyLab">Champion 선정에 필요한 표본이 부족합니다.</div>')+chall.map(x=>'<div class="labRow challenger"><b>🧪 '+esc(x.dna?.name||x.title||'Challenger')+'</b><span>'+esc(x.dna?.strategyId||'')+' '+esc(x.dna?.version||'')+' · 연구점수 '+esc(x.labScore??'-')+'</span><small>OOS '+rate(x.evaluation?.lockedOos?.successRate)+' · 표본 '+num(x.evaluation?.support||0)+' · 운영 가중치 0%</small></div>').join('');
+
+  const dna=(lab.strategyDna||[]).slice(0,18);
+  $('strategyDnaCards').innerHTML=dna.length?dna.map(x=>'<div class="labRow dnaRow"><b>'+esc(x.name)+'</b><span>'+esc(x.strategyId)+' · '+esc(x.version)+' · '+esc(x.regime)+'</span><small>구성 '+esc((x.ruleIds||[]).join(' + '))+'</small><small>부모 '+esc((x.parents||[]).join(', ')||'독립 생성')+'</small><em>'+esc(x.changeReason||'관측 데이터 기반 연구')+'</em></div>').join(''):'<div class="emptyLab">전략 DNA 생성 대기</div>';
+
+  const abs=(lab.ablation||[]).slice(0,10);
+  $('ablationCards').innerHTML=abs.length?abs.map(x=>{const s=x.study||{},imp=s.mostImportant,red=s.redundant;return '<article class="hypothesisCard"><div class="hypHead"><span class="hypId">'+esc(x.dna?.strategyId||x.hypothesisId)+'</span><span class="hypScore">'+esc(x.dna?.version||'v1')+'</span></div><h3>'+esc(x.dna?.name||x.hypothesisId)+'</h3><p>조건을 하나씩 제거해 성능 변화를 비교했습니다.</p><div class="ablationLine goodish">핵심 후보 · '+esc(imp?.removedLabel||'표본 부족')+(imp?.importance!=null?' · 영향 '+esc((imp.importance*100).toFixed(1))+'%p':'')+'</div><div class="ablationLine neutral">중복 후보 · '+esc(red?.removedLabel||'표본 부족')+(red?.importance!=null?' · 영향 '+esc((red.importance*100).toFixed(1))+'%p':'')+'</div><div class="next">'+esc(s.note||'')+'</div></article>'}).join(''):'<div class="emptyLab">조건 기여도 계산에 필요한 표본이 부족합니다.</div>';
+
+  const notes=lab.notes||[];
+  $('researchNotes').innerHTML=notes.length?notes.map(x=>'<article class="noteItem"><div><b>'+esc({'DATASET':'📚','HYPOTHESIS':'🧠','CHAMPION':'🏆','ABLATION':'🧪','IDEA':'💡'}[x.type]||'📓')+' '+esc(x.title)+'</b><time>'+new Date(x.at||Date.now()).toLocaleString()+'</time></div><p>'+esc(x.body)+'</p></article>').join(''):'<div class="emptyLab">연구노트 대기</div>';
 
   const g=lab.governance||{},steps=g.promotionRequires||[];
   $('labGovernance').innerHTML='<div class="governanceStates">'+(g.states||[]).map((s,i)=>'<span class="'+(i===0?'active':'')+'">'+esc({'IDEA':'아이디어','SHADOW':'연구 전용','CANDIDATE':'검증 후보','VALIDATED':'검증 완료','PROMOTED':'운영 승격'}[s]||s)+'</span>').join('<i>→</i>')+'</div><div class="gateChecks">'+steps.map(s=>'<span>✓ '+esc(s)+'</span>').join('')+'</div><p>'+esc(g.note||'')+'</p>';
