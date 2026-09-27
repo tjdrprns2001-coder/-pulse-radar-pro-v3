@@ -159,3 +159,33 @@ test('temporary Binance kline limit falls back without weakening derivatives',as
   assert.equal(bars._source,'BYBIT_LINEAR_FALLBACK');
   assert.equal(api.metrics.failovers,1);
 });
+
+
+test('kline rate limit does not poison futures derivative cooldown',async()=>{
+  const store=new Store();
+  const asOf=Math.floor(Date.now()/3600000)*3600000;
+  const fetcher=async url=>{
+    const u=new URL(url);
+    if(u.hostname==='fapi.binance.com'&&u.pathname.endsWith('/klines')){
+      return new Response('rate limited',{status:418,headers:{'retry-after':'60'}});
+    }
+    if(u.hostname==='fapi.binance.com'&&u.pathname.includes('/takerlongshortRatio')){
+      return Response.json([{timestamp:asOf-3600000,buySellRatio:'1.3'}]);
+    }
+    if(u.hostname==='api.bybit.com'&&u.pathname.endsWith('/kline')){
+      const list=Array.from({length:160},(_,i)=>{
+        const ts=asOf-(i+1)*3600000;
+        return[String(ts),'10','11','9','10.5','100','1000'];
+      });
+      return bybit({list});
+    }
+    throw new Error('unexpected '+url);
+  };
+  const api=new Binance(store,fetcher,{futuresBases:['https://fapi.binance.com']});
+  const bars=await api.bars('AAAUSDT','1h',asOf,149);
+  assert.equal(bars._source,'BYBIT_LINEAR_FALLBACK');
+  assert.equal(await store.get('binance:blocked:futures'),null);
+  const taker=await api.taker('AAAUSDT',asOf);
+  assert.equal(taker.source,'BINANCE_FUTURES');
+  assert.equal(taker.ratio,1.3);
+});
