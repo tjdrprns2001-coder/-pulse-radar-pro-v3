@@ -15,7 +15,7 @@ function renderTop(state){
   const modelState=(state.registry?.models||[]).find(x=>x.id==='tiny-mlp-v2')?.state||'SHADOW';
   const active=labels.length>=20;
   $('model').innerHTML=active?'<span class="good">'+esc(modelState)+'</span>':'<span class="warn">WARMUP '+labels.length+'/20</span>';
-  $('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>랭킹 기법 <b>'+num(state.memory?.bookRankingTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(rows.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
+  const autoCount=rows.filter(x=>x.source==='auto-surge-reverse-trace').length;$('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>🧬 자동 역추적 <b>'+num(autoCount)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(rows.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
   $('persist').innerHTML='저장소 <b>'+esc(state.memory?.persistence||'—')+'</b><br>모델 <b>'+esc(state.model?.type||'—')+'</b><br>버전 <b>'+esc(state.version||'—')+'</b><br>마지막 학습 '+(state.model?.trainedAt?new Date(state.model.trainedAt).toLocaleString():'대기 중');
   const ds=state.training?.dataset||{};
   $('dataset').innerHTML='TRAIN <b>'+num(ds.train||0)+'</b><br>VALIDATION <b>'+num(ds.validation||0)+'</b><br>LOCKED OOS <b>'+num(ds.lockedOos||0)+'</b><br>OOS freeze <b>'+esc(state.validation?.lockedOosStart?new Date(state.validation.lockedOosStart).toLocaleString():'미설정')+'</b>';
@@ -42,7 +42,7 @@ async function refresh(){
   try{
     const d=await get('export'),state=d.state||{};
     renderTop(state);renderResearch(state);renderRows(state);window.__researchAIState=state;
-    $('status').textContent='정상 · '+new Date(state.updatedAt||Date.now()).toLocaleString()+' · SHADOW_ONLY · 실제 미래 확정봉만 라벨 사용';
+    $('status').textContent='정상 · '+new Date(state.updatedAt||Date.now()).toLocaleString()+' · SHADOW_ONLY · 자동 역추적은 급등 확인 뒤 학습 반영';
   }catch(e){$('status').textContent='오류 · '+e.message}
 }
 $('refresh').onclick=refresh;
