@@ -72,3 +72,29 @@ test('Binance proxy router pauses at the next minute when observed IP weight is 
   assert.equal(calls,2);
   assert.deepEqual(sleeps,[60500]);
 });
+
+
+test('spot proxy cooldown never ejects the Singapore futures route',async()=>{
+  const token='a'.repeat(43);
+  const calls=[];
+  const fetcher=async url=>{
+    const u=new URL(String(url));
+    calls.push(String(url));
+    const target=new URL(u.searchParams.get('url'));
+    if(target.hostname==='api.binance.com')return new Response('spot blocked',{status:418,headers:{'retry-after':'60'}});
+    if(target.hostname==='fapi.binance.com')return new Response(JSON.stringify({serverTime:123}),{
+      status:200,headers:{'content-type':'application/json','x-mbx-used-weight-1m':'100'}
+    });
+    return new Response('backup blocked',{status:451});
+  };
+  const routed=routedFetcher({
+    IGNITION_BINANCE_PROXY_URLS:'https://sg.test,https://eu.test',
+    IGNITION_BINANCE_PROXY_TOKEN:token,
+    IGNITION_BINANCE_PROXY_GAP_MS:'0'
+  },fetcher,()=>1000,async()=>{});
+  const spot=await routed('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=1');
+  assert.equal(spot.status,451);
+  const futures=await routed('https://fapi.binance.com/fapi/v1/time');
+  assert.equal(futures.status,200);
+  assert.match(calls.at(-1),/^https:\/\/sg\.test\/fetch\?url=/);
+});
