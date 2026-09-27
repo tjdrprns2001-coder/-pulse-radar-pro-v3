@@ -11,6 +11,7 @@ on:
       - 'lib/coin-scan/postgres-full-scan-store.js'
       - 'lib/coin-scan/binance-ws-shards.js'
       - 'workers/full-universe-auto-scan.mjs'
+      - 'workers/selector-runtime.mjs'
       - 'db/full-universe-scan-v1.sql'
       - 'docs/full-universe-auto-scan-v1.md'
       - 'scripts/verify-full-universe-auto-scan.js'
@@ -28,6 +29,7 @@ jobs:
       - run: node scripts/verify-full-universe-auto-scan.js
       - run: node scripts/verify-full-universe-worker-contract.js
       - run: node --check workers/full-universe-auto-scan.mjs
+      - run: node --check workers/selector-runtime.mjs
       - run: node --check lib/coin-scan/full-universe-auto-scan.js
       - run: node --check lib/coin-scan/market-cap-provider.js
       - run: node --check lib/coin-scan/postgres-full-scan-store.js
