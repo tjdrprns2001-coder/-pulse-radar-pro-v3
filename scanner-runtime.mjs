@@ -49,6 +49,18 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now){
   const bases=proxyBases(env);
   const token=String(env.IGNITION_BINANCE_PROXY_TOKEN||'');
   const cooldowns=new Map();
+  const maxConcurrent=Math.max(1,Math.min(4,Number(env.IGNITION_BINANCE_PROXY_CONCURRENCY)||2));
+  const minGapMs=Math.max(0,Math.min(1000,Number(env.IGNITION_BINANCE_PROXY_GAP_MS)||120));
+  let active=0,nextStartAt=0;
+  const waiters=[];
+  const acquire=async()=>{
+    if(active>=maxConcurrent)await new Promise(resolve=>waiters.push(resolve));
+    active++;
+    const current=Date.now(),startAt=Math.max(current,nextStartAt);
+    nextStartAt=startAt+minGapMs;
+    if(startAt>current)await sleep(startAt-current);
+  };
+  const release=()=>{active=Math.max(0,active-1);const next=waiters.shift();if(next)next();};
   if(!bases.length||token.length<43)return directFetch;
 
   return async(url,options={})=>{
@@ -57,6 +69,8 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now){
     const isBinance=host==='fapi.binance.com'||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
     if(!isBinance)return directFetch(url,options);
 
+    await acquire();
+    try{
     let lastResponse=null;
     for(const base of bases){
       const until=cooldowns.get(base)||0;
@@ -87,6 +101,7 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now){
 
     try{return await directFetch(url,options);}
     catch(e){if(lastResponse)return lastResponse;throw e;}
+    }finally{release();}
   };
 }
 
