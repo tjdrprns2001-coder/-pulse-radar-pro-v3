@@ -1,10 +1,4 @@
 [[redirects]]
-  from = "/api/ignition-binance-proxy"
-  to = "/.netlify/functions/ignition-binance-proxy"
-  status = 200
-  force = true
-
-[[redirects]]
   from = "/api/bowl224-research*"
   to = "/.netlify/functions/bowl224-research:splat"
   status = 200
