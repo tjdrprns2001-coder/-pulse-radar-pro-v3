@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790529206171,
+  "updatedAt": 1790539933644,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -59,10 +59,16 @@
       "label": null,
       "source": "trader-deep",
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 84161.9,
+        "signal_close": 84161.9,
         "entryPrice": 84161.9,
+        "next_open": 84161.9,
+        "entryTime": 1790413612870,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790413612870,
         "horizons": {
           "h1": {
@@ -104,11 +110,16 @@
         },
         "mfePct": 1.1665611161345124,
         "maePct": -0.5185244154421342,
+        "mae_72h_pct": -0.5185244154421342,
+        "mfe_72h_pct": 1.1665611161345124,
         "barriers": {
           "status": "NONE",
           "at": null,
-          "tp": 88369.995,
-          "sl": 81637.04299999999
+          "tp": 89211.614,
+          "sl": 81637.04299999999,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -151,8 +162,23 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 31
+        "sampleLabel": "PENDING",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 34
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": -0.03267511783835442,
@@ -161,7 +187,13 @@
       "outcome72hPct": null,
       "mfe72hPct": 1.1665611161345124,
       "mae72hPct": -0.5185244154421342,
-      "tpSlOrder": "NONE"
+      "tpSlOrder": "NONE",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 84161.9,
+      "next_open": 84161.9,
+      "direction": "LONG",
+      "mae_72h_pct": -0.5185244154421342
     },
     {
       "key": "ETHUSDT:497337",
@@ -218,10 +250,16 @@
       "label": null,
       "source": "trader-deep",
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 2680.78,
+        "signal_close": 2680.78,
         "entryPrice": 2680.78,
+        "next_open": 2680.78,
+        "entryTime": 1790414030041,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790414030041,
         "horizons": {
           "h1": {
@@ -263,11 +301,16 @@
         },
         "mfePct": 1.5842404076425343,
         "maePct": -0.6837562202045788,
+        "mae_72h_pct": -0.6837562202045788,
+        "mfe_72h_pct": 1.5842404076425343,
         "barriers": {
           "status": "NONE",
           "at": null,
-          "tp": 2814.8190000000004,
-          "sl": 2600.3566
+          "tp": 2841.6268000000005,
+          "sl": 2600.3566,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -310,8 +353,23 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 31
+        "sampleLabel": "PENDING",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 34
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": 0.20926745201022,
@@ -320,7 +378,13 @@
       "outcome72hPct": null,
       "mfe72hPct": 1.5842404076425343,
       "mae72hPct": -0.6837562202045788,
-      "tpSlOrder": "NONE"
+      "tpSlOrder": "NONE",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 2680.78,
+      "next_open": 2680.78,
+      "direction": "LONG",
+      "mae_72h_pct": -0.6837562202045788
     },
     {
       "key": "TAOUSDT:497345",
@@ -565,10 +629,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 331.07,
+        "signal_close": 331.07,
         "entryPrice": 331.07,
+        "next_open": 331.07,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -596,10 +666,10 @@
             "returnPct": -1.4256803697103249
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -1.8455311565530041
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -610,11 +680,16 @@
         },
         "mfePct": 1.9361464342888324,
         "maePct": -5.886972543570845,
+        "mae_72h_pct": -5.886972543570845,
+        "mfe_72h_pct": 1.9361464342888324,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790449199999,
-          "tp": 347.62350000000004,
-          "sl": 321.1379
+          "tp": 350.93420000000003,
+          "sl": 321.1379,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -657,8 +732,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -667,11 +757,17 @@
       "outcome3hPct": -4.9415531458604,
       "outcome6hPct": -3.008427220829424,
       "outcome12hPct": -1.4256803697103249,
-      "outcome24hPct": null,
+      "outcome24hPct": -1.8455311565530041,
       "outcome72hPct": null,
       "mfe72hPct": 1.9361464342888324,
       "mae72hPct": -5.886972543570845,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 331.07,
+      "next_open": 331.07,
+      "direction": "LONG",
+      "mae_72h_pct": -5.886972543570845
     },
     {
       "key": "XPLUSDT:497345",
@@ -916,10 +1012,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 0.11606,
+        "signal_close": 0.11606,
         "entryPrice": 0.11606,
+        "next_open": 0.11606,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -947,10 +1049,10 @@
             "returnPct": -2.99844907806307
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -9.57263484404618
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -961,11 +1063,16 @@
         },
         "mfePct": 1.5595381699121225,
         "maePct": -11.14078924694124,
+        "mae_72h_pct": -11.14078924694124,
+        "mfe_72h_pct": 1.5595381699121225,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 0.121863,
-          "sl": 0.11257819999999999
+          "tp": 0.1230236,
+          "sl": 0.11257819999999999,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -1008,8 +1115,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1018,11 +1140,17 @@
       "outcome3hPct": -4.7906255385145595,
       "outcome6hPct": -4.023780803032906,
       "outcome12hPct": -2.99844907806307,
-      "outcome24hPct": null,
+      "outcome24hPct": -9.57263484404618,
       "outcome72hPct": null,
       "mfe72hPct": 1.5595381699121225,
       "mae72hPct": -11.14078924694124,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 0.11606,
+      "next_open": 0.11606,
+      "direction": "LONG",
+      "mae_72h_pct": -11.14078924694124
     },
     {
       "key": "AVAXUSDT:497345",
@@ -1267,10 +1395,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 10.875,
+        "signal_close": 10.875,
         "entryPrice": 10.875,
+        "next_open": 10.875,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -1298,10 +1432,10 @@
             "returnPct": -0.08275862068966022
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": 0.7816091954023108
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -1312,11 +1446,16 @@
         },
         "mfePct": 3.779310344827591,
         "maePct": -3.1172413793103537,
+        "mae_72h_pct": -3.1172413793103537,
+        "mfe_72h_pct": 3.779310344827591,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 11.418750000000001,
-          "sl": 10.54875
+          "tp": 11.5275,
+          "sl": 10.54875,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -1359,8 +1498,23 @@
         "firstSurgeHours": 14.633531666666666,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1369,11 +1523,17 @@
       "outcome3hPct": -2.317241379310353,
       "outcome6hPct": -0.3862068965517218,
       "outcome12hPct": -0.08275862068966022,
-      "outcome24hPct": null,
+      "outcome24hPct": 0.7816091954023108,
       "outcome72hPct": null,
       "mfe72hPct": 3.779310344827591,
       "mae72hPct": -3.1172413793103537,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 10.875,
+      "next_open": 10.875,
+      "direction": "LONG",
+      "mae_72h_pct": -3.1172413793103537
     },
     {
       "key": "INJUSDT:497345",
@@ -1616,10 +1776,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 7.718,
+        "signal_close": 7.718,
         "entryPrice": 7.718,
+        "next_open": 7.718,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -1647,10 +1813,10 @@
             "returnPct": 1.127235034983154
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": 1.0494946877429356
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -1659,13 +1825,18 @@
             "returnPct": null
           }
         },
-        "mfePct": 2.526561285307083,
+        "mfePct": 2.5524747343871557,
         "maePct": -3.187354236848916,
+        "mae_72h_pct": -3.187354236848916,
+        "mfe_72h_pct": 2.5524747343871557,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 8.1039,
-          "sl": 7.48646
+          "tp": 8.18108,
+          "sl": 7.48646,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -1708,8 +1879,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1718,11 +1904,17 @@
       "outcome3hPct": -2.086032650945835,
       "outcome6hPct": 0.6737496760818917,
       "outcome12hPct": 1.127235034983154,
-      "outcome24hPct": null,
+      "outcome24hPct": 1.0494946877429356,
       "outcome72hPct": null,
-      "mfe72hPct": 2.526561285307083,
+      "mfe72hPct": 2.5524747343871557,
       "mae72hPct": -3.187354236848916,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 7.718,
+      "next_open": 7.718,
+      "direction": "LONG",
+      "mae_72h_pct": -3.187354236848916
     },
     {
       "key": "XLMUSDT:497345",
@@ -1965,10 +2157,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 0.2183,
+        "signal_close": 0.2183,
         "entryPrice": 0.2183,
+        "next_open": 0.2183,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -1996,10 +2194,10 @@
             "returnPct": -1.3284470911589463
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -1.0535959688502072
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -2010,11 +2208,16 @@
         },
         "mfePct": 0.5955107650022828,
         "maePct": -2.7027027027026973,
+        "mae_72h_pct": -2.7027027027026973,
+        "mfe_72h_pct": 0.5955107650022828,
         "barriers": {
           "status": "NONE",
           "at": null,
-          "tp": 0.229215,
-          "sl": 0.211751
+          "tp": 0.231398,
+          "sl": 0.211751,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -2057,8 +2260,23 @@
         "firstSurgeHours": null,
         "label": null,
         "labelStatus": "UNRESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "PENDING",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2067,11 +2285,17 @@
       "outcome3hPct": -1.6949152542372836,
       "outcome6hPct": -0.9619789280806201,
       "outcome12hPct": -1.3284470911589463,
-      "outcome24hPct": null,
+      "outcome24hPct": -1.0535959688502072,
       "outcome72hPct": null,
       "mfe72hPct": 0.5955107650022828,
       "mae72hPct": -2.7027027027026973,
-      "tpSlOrder": "NONE"
+      "tpSlOrder": "NONE",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 0.2183,
+      "next_open": 0.2183,
+      "direction": "LONG",
+      "mae_72h_pct": -2.7027027027026973
     },
     {
       "key": "DOTUSDT:497345",
@@ -2318,10 +2542,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 1.2741,
+        "signal_close": 1.2741,
         "entryPrice": 1.2741,
+        "next_open": 1.2741,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -2349,10 +2579,10 @@
             "returnPct": -3.1551683541323317
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -2.174083666902127
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -2363,11 +2593,16 @@
         },
         "mfePct": 0.21191429244171722,
         "maePct": -4.9525155011380555,
+        "mae_72h_pct": -4.9525155011380555,
+        "mfe_72h_pct": 0.21191429244171722,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 1.3378050000000001,
-          "sl": 1.235877
+          "tp": 1.350546,
+          "sl": 1.235877,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -2410,8 +2645,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2420,11 +2670,17 @@
       "outcome3hPct": -3.924338748920808,
       "outcome6hPct": -2.629306961776945,
       "outcome12hPct": -3.1551683541323317,
-      "outcome24hPct": null,
+      "outcome24hPct": -2.174083666902127,
       "outcome72hPct": null,
       "mfe72hPct": 0.21191429244171722,
       "mae72hPct": -4.9525155011380555,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 1.2741,
+      "next_open": 1.2741,
+      "direction": "LONG",
+      "mae_72h_pct": -4.9525155011380555
     },
     {
       "key": "VIRTUALUSDT:497345",
@@ -2671,10 +2927,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 0.7983,
+        "signal_close": 0.7983,
         "entryPrice": 0.7983,
+        "next_open": 0.7983,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -2702,10 +2964,10 @@
             "returnPct": -0.9394964299135777
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": 0.8142302392584178
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -2716,11 +2978,16 @@
         },
         "mfePct": 3.8456720531128585,
         "maePct": -3.144181385444067,
+        "mae_72h_pct": -3.144181385444067,
+        "mfe_72h_pct": 3.8456720531128585,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 0.838215,
-          "sl": 0.774351
+          "tp": 0.846198,
+          "sl": 0.774351,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -2763,8 +3030,23 @@
         "firstSurgeHours": 14.633531666666666,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2773,11 +3055,17 @@
       "outcome3hPct": -2.0543655267443284,
       "outcome6hPct": -1.014656144306647,
       "outcome12hPct": -0.9394964299135777,
-      "outcome24hPct": null,
+      "outcome24hPct": 0.8142302392584178,
       "outcome72hPct": null,
       "mfe72hPct": 3.8456720531128585,
       "mae72hPct": -3.144181385444067,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 0.7983,
+      "next_open": 0.7983,
+      "direction": "LONG",
+      "mae_72h_pct": -3.144181385444067
     },
     {
       "key": "SAGAUSDT:497345",
@@ -3020,10 +3308,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 0.032958,
+        "signal_close": 0.032958,
         "entryPrice": 0.032958,
+        "next_open": 0.032958,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -3051,10 +3345,10 @@
             "returnPct": -12.567510164451722
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -17.19157715880818
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -3065,11 +3359,16 @@
         },
         "mfePct": 0.6553795740032786,
         "maePct": -24.330966684871658,
+        "mae_72h_pct": -24.330966684871658,
+        "mfe_72h_pct": 0.6553795740032786,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790449199999,
-          "tp": 0.0346059,
-          "sl": 0.03196926
+          "tp": 0.034935480000000005,
+          "sl": 0.03196926,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -3112,8 +3411,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3122,11 +3436,17 @@
       "outcome3hPct": -4.2326597487711615,
       "outcome6hPct": -3.3193761757388085,
       "outcome12hPct": -12.567510164451722,
-      "outcome24hPct": null,
+      "outcome24hPct": -17.19157715880818,
       "outcome72hPct": null,
       "mfe72hPct": 0.6553795740032786,
       "mae72hPct": -24.330966684871658,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 0.032958,
+      "next_open": 0.032958,
+      "direction": "LONG",
+      "mae_72h_pct": -24.330966684871658
     },
     {
       "key": "ICPUSDT:497345",
@@ -3373,10 +3693,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 3.289,
+        "signal_close": 3.289,
         "entryPrice": 3.289,
+        "next_open": 3.289,
+        "entryTime": 1790443319285,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443319285,
         "horizons": {
           "h1": {
@@ -3404,10 +3730,10 @@
             "returnPct": -2.918820310124659
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529719285,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": -3.1316509577379192
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -3418,11 +3744,16 @@
         },
         "mfePct": 0.09121313469138137,
         "maePct": -5.290361812100941,
+        "mae_72h_pct": -5.290361812100941,
+        "mfe_72h_pct": 0.09121313469138137,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
-          "tp": 3.45345,
-          "sl": 3.19033
+          "tp": 3.48634,
+          "sl": 3.19033,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -3465,8 +3796,23 @@
         "firstSurgeHours": null,
         "label": 0,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3475,11 +3821,17 @@
       "outcome3hPct": -4.34782608695653,
       "outcome6hPct": -2.888415931894195,
       "outcome12hPct": -2.918820310124659,
-      "outcome24hPct": null,
+      "outcome24hPct": -3.1316509577379192,
       "outcome72hPct": null,
       "mfe72hPct": 0.09121313469138137,
       "mae72hPct": -5.290361812100941,
-      "tpSlOrder": "SL_FIRST"
+      "tpSlOrder": "SL_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 3.289,
+      "next_open": 3.289,
+      "direction": "LONG",
+      "mae_72h_pct": -5.290361812100941
     },
     {
       "key": "ZECUSDT:497345",
@@ -3724,10 +4076,16 @@
         "MACD"
       ],
       "outcomeV2": {
-        "version": "RESEARCH_OUTCOME_v2",
+        "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
         "confirmed": false,
+        "signalPrice": 1560.3,
+        "signal_close": 1560.3,
         "entryPrice": 1560.3,
+        "next_open": 1560.3,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
         "asOf": 1790443405016,
         "horizons": {
           "h1": {
@@ -3755,10 +4113,10 @@
             "returnPct": 6.086650003204519
           },
           "h24": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790529805016,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790531999999,
+            "returnPct": 1.7137729923732525
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -3769,11 +4127,16 @@
         },
         "mfePct": 8.953406396205853,
         "maePct": -0.6268025379734699,
+        "mae_72h_pct": -0.6268025379734699,
+        "mfe_72h_pct": 8.953406396205853,
         "barriers": {
           "status": "TP_FIRST",
           "at": 1790459999999,
-          "tp": 1638.315,
-          "sl": 1513.491
+          "tp": 1653.9180000000001,
+          "sl": 1513.491,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
         },
         "thresholds": {
           "up": {
@@ -3816,8 +4179,23 @@
         "firstSurgeHours": 4.6097175,
         "label": 1,
         "labelStatus": "RESOLVED",
-        "evaluatedAt": 1790529206171,
-        "confirmedBars": 23
+        "sampleLabel": "POSITIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790539933644,
+        "confirmedBars": 26
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -3826,11 +4204,17 @@
       "outcome3hPct": 1.3881945779657734,
       "outcome6hPct": 5.89822470037813,
       "outcome12hPct": 6.086650003204519,
-      "outcome24hPct": null,
+      "outcome24hPct": 1.7137729923732525,
       "outcome72hPct": null,
       "mfe72hPct": 8.953406396205853,
       "mae72hPct": -0.6268025379734699,
-      "tpSlOrder": "TP_FIRST"
+      "tpSlOrder": "TP_FIRST",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "signal_close": 1560.3,
+      "next_open": 1560.3,
+      "direction": "LONG",
+      "mae_72h_pct": -0.6268025379734699
     },
     {
       "key": "SOLUSDT:497345",
@@ -4079,7 +4463,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "LINKUSDT:497345",
@@ -4326,7 +4712,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "SUIUSDT:497345",
@@ -4573,7 +4961,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "ARBUSDT:497345",
@@ -4820,7 +5210,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "AAVEUSDT:497345",
@@ -5067,7 +5459,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "OPUSDT:497345",
@@ -5314,7 +5708,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "PONSUSDT:497345",
@@ -5559,7 +5955,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "GRAMUSDT:497345",
@@ -5808,7 +6206,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "XMRUSDT:497345",
@@ -6053,7 +6453,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "HBARUSDT:497345",
@@ -6302,7 +6704,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-astra"
+      "source": "astra-astra",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "ONDOUSDT:497345",
@@ -6551,7 +6955,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-perplexity"
+      "source": "astra-perplexity",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "PHAUSDT:497345",
@@ -6798,7 +7204,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-perplexity"
+      "source": "astra-perplexity",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "PENGUUSDT:497345",
@@ -7045,7 +7453,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-perplexity"
+      "source": "astra-perplexity",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     },
     {
       "key": "ETHFIUSDT:497345",
@@ -7292,7 +7702,9 @@
       "outcomeV2": null,
       "label": null,
       "labelStatus": "UNRESOLVED",
-      "source": "astra-perplexity"
+      "source": "astra-perplexity",
+      "referenceOnly": true,
+      "legacyReason": "PRE_INTEGRITY_CONTRACT"
     }
   ],
   "model": {
@@ -7689,15 +8101,17 @@
     "updatedAt": 1790430310832
   },
   "training": {
-    "labels": 9,
-    "positive": 1,
-    "negative": 8,
+    "labels": 0,
+    "positive": 0,
+    "negative": 0,
     "lastLoss": null,
     "lastTrainedAt": null,
     "dataset": {
       "train": 0,
       "validation": 0,
-      "lockedOos": 0
+      "lockedOos": 0,
+      "purged": 0,
+      "embargoed": 0
     },
     "metrics": {
       "validation": null,
@@ -7706,20 +8120,105 @@
   },
   "validation": {
     "lockedOosStart": null,
-    "frozenAt": null
+    "frozenAt": null,
+    "oosGeneration": 0
   },
+  "integrity": {
+    "version": "RESEARCH_INTEGRITY_v1",
+    "contract": {
+      "contractVersion": "RC-2026.09-v1",
+      "candidateRuleVersion": "IGNITION_COHORT_v1",
+      "featureSchemaVersion": "RESEARCH_FEATURES_v2",
+      "labelVersion": "OUTCOME_CONTRACT_v3",
+      "entryPolicy": "NEXT_CONFIRMED_OPEN",
+      "horizonsHours": [
+        24,
+        72
+      ],
+      "primaryHorizonHours": 72,
+      "tpR": 2,
+      "slR": -1,
+      "riskPctFallback": 3,
+      "costModelVersion": "COST_v1",
+      "slippageModelVersion": "SLIPPAGE_v1",
+      "fundingModelVersion": "FUNDING_v1",
+      "roundTripCostPct": null,
+      "missingDataPolicy": "AMBIGUOUS_NOT_FORCED",
+      "duplicateWindowMinutes": 60,
+      "purgeHours": 72,
+      "embargoHours": 24,
+      "minAblationSample": 30,
+      "preferredAblationSample": 50,
+      "experimentBudgetPerFamily": 12,
+      "maxMutationsPerGeneration": 4
+    },
+    "datasetSnapshotId": "DS-5674626E9EED1C0A",
+    "lastHealth": {
+      "sampleCount": 0,
+      "validSampleCount": 0,
+      "duplicateCount": 0,
+      "missingCount": 0,
+      "missingRate": 0,
+      "maxSymbolConcentration": 0,
+      "maxEventConcentration": 0,
+      "negativeRate": null,
+      "regimeCoverage": {
+        "count": 0,
+        "regimes": {}
+      },
+      "status": "SAMPLE_INSUFFICIENT"
+    }
+  },
+  "experimentLedger": [],
+  "sealedReviews": [],
   "memory": {
     "seedSamples": 10,
     "bookTechniques": 45,
     "bookRankingTechniques": 14,
     "persistence": "github-learning-memory",
+    "researchNotes": [
+      {
+        "id": "RN-0A8LZU6",
+        "at": 1790539938740,
+        "type": "DATASET",
+        "title": "학습 표본 점검",
+        "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
+        "datasetSnapshotId": "DS-5674626E9EED1C0A",
+        "strategyVersion": null,
+        "experimentId": null,
+        "counterexampleIds": [],
+        "question": "현재 데이터셋이 연구에 충분한가?",
+        "previousObservation": null,
+        "hypothesis": null,
+        "observedResult": "N=0",
+        "conclusion": null,
+        "nextExperiment": "동일 모집단 표본 추가 수집"
+      },
+      {
+        "id": "RN-1X253F3",
+        "at": 1790539933639,
+        "type": "DATASET",
+        "title": "학습 표본 점검",
+        "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
+        "datasetSnapshotId": "NO_DATASET",
+        "strategyVersion": null,
+        "experimentId": null,
+        "counterexampleIds": [],
+        "question": "현재 데이터셋이 연구에 충분한가?",
+        "previousObservation": null,
+        "hypothesis": null,
+        "observedResult": "N=0",
+        "conclusion": null,
+        "nextExperiment": "동일 모집단 표본 추가 수집"
+      }
+    ],
     "notes": [
       "런타임 관측은 6H/24H 결과와 함께 축적",
       "모델은 SHADOW_ONLY이며 기존 자동스캐너 랭킹을 직접 변경하지 않음",
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790529208408,
+  "exportedAt": 1790539938740,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -7743,193 +8242,1039 @@
   "research": {
     "stats": {
       "version": "RESEARCH_STATS_v2",
-      "scoreBuckets": [
-        {
-          "key": "10-19",
-          "count": 1,
-          "successRate": 0,
-          "avgMfePct": 0.6553795740032786,
-          "avgMaePct": -24.330966684871658
-        },
-        {
-          "key": "20-29",
-          "count": 1,
-          "successRate": 0,
-          "avgMfePct": 2.526561285307083,
-          "avgMaePct": -3.187354236848916
-        },
-        {
-          "key": "40-49",
-          "count": 2,
-          "successRate": 0,
-          "avgMfePct": 2.669424257369857,
-          "avgMaePct": -7.129015313125797
-        },
-        {
-          "key": "50-59",
-          "count": 3,
-          "successRate": 0.3333333333333333,
-          "avgMfePct": 3.7004890409788005,
-          "avgMaePct": -3.8220968608941237
-        },
-        {
-          "key": "60-69",
-          "count": 2,
-          "successRate": 0,
-          "avgMfePct": 1.96844259390212,
-          "avgMaePct": -4.217271598772504
-        }
-      ],
-      "byRegime": [
-        {
-          "key": "RISK_ON",
-          "count": 9,
-          "success": 1,
-          "failure": 8,
-          "successRate": 0.1111111111111111,
-          "avgMfePct": 2.6176824094211906,
-          "avgMaePct": -6.8530205920221725
-        }
-      ],
-      "bySetup": [
-        {
-          "key": "WAIT",
-          "count": 5,
-          "success": 0,
-          "failure": 5,
-          "successRate": 0,
-          "avgMfePct": 1.515624475232329,
-          "avgMaePct": -6.077576096612288
-        },
-        {
-          "key": "HOLD",
-          "count": 2,
-          "success": 0,
-          "failure": 2,
-          "successRate": 0,
-          "avgMfePct": 1.5909704296551808,
-          "avgMaePct": -13.759160460860286
-        },
-        {
-          "key": "WATCH_PRIORITY",
-          "count": 2,
-          "success": 1,
-          "failure": 1,
-          "successRate": 0.5,
-          "avgMfePct": 6.399539224659356,
-          "avgMaePct": -1.8854919617087684
-        }
-      ],
-      "bySource": [
-        {
-          "key": "astra-astra",
-          "count": 9,
-          "success": 1,
-          "failure": 8,
-          "successRate": 0.1111111111111111,
-          "avgMfePct": 2.6176824094211906,
-          "avgMaePct": -6.8530205920221725
-        }
-      ],
-      "bookRules": [
-        {
-          "ruleId": "RSI",
-          "regime": "RISK_ON",
-          "count": 9,
-          "success": 1,
-          "successRate": 0.1111111111111111,
-          "avgMfePct": 2.6176824094211906,
-          "avgMaePct": -6.8530205920221725
-        },
-        {
-          "ruleId": "MACD",
-          "regime": "RISK_ON",
-          "count": 9,
-          "success": 1,
-          "successRate": 0.1111111111111111,
-          "avgMfePct": 2.6176824094211906,
-          "avgMaePct": -6.8530205920221725
-        },
-        {
-          "ruleId": "MARKET_STRUCTURE",
-          "regime": "RISK_ON",
-          "count": 6,
-          "success": 0,
-          "successRate": 0,
-          "avgMfePct": 1.903965738212417,
-          "avgMaePct": -5.588676978084251
-        },
-        {
-          "ruleId": "VOLUME_PRICE",
-          "regime": "RISK_ON",
-          "count": 4,
-          "success": 1,
-          "successRate": 0.25,
-          "avgMfePct": 3.2755514691129526,
-          "avgMaePct": -3.5034653091641332
-        }
-      ],
-      "derivedRules": [
-        {
-          "type": "DERIVED_RESEARCH_RULE",
-          "ruleIds": [
-            "MACD",
-            "MARKET_STRUCTURE",
-            "RSI"
-          ],
-          "regime": "RISK_ON",
-          "count": 6,
-          "successRate": 0,
-          "avgMfePct": 1.903965738212417,
-          "avgMaePct": -5.588676978084251,
-          "productionEligible": false
-        }
-      ]
+      "scoreBuckets": [],
+      "byRegime": [],
+      "bySetup": [],
+      "bySource": [],
+      "bookRules": [],
+      "derivedRules": []
     },
-    "archetypes": [
-      {
-        "id": "RC-001",
-        "state": "RESEARCH_CANDIDATE",
-        "productionEligible": false,
-        "count": 1,
-        "symbols": [
-          "ZECUSDT"
+    "archetypes": [],
+    "lab": {
+      "version": "RESEARCH_LAB_v5",
+      "mode": "INTEGRITY_FIRST_RESEARCH",
+      "shadowOnly": true,
+      "productionAutoMutation": false,
+      "integrity": {
+        "contract": {
+          "contractVersion": "RC-2026.09-v1",
+          "candidateRuleVersion": "IGNITION_COHORT_v1",
+          "featureSchemaVersion": "RESEARCH_FEATURES_v2",
+          "labelVersion": "OUTCOME_CONTRACT_v3",
+          "entryPolicy": "NEXT_CONFIRMED_OPEN",
+          "horizonsHours": [
+            24,
+            72
+          ],
+          "primaryHorizonHours": 72,
+          "tpR": 2,
+          "slR": -1,
+          "riskPctFallback": 3,
+          "costModelVersion": "COST_v1",
+          "slippageModelVersion": "SLIPPAGE_v1",
+          "fundingModelVersion": "FUNDING_v1",
+          "roundTripCostPct": null,
+          "missingDataPolicy": "AMBIGUOUS_NOT_FORCED",
+          "duplicateWindowMinutes": 60,
+          "purgeHours": 72,
+          "embargoHours": 24,
+          "minAblationSample": 30,
+          "preferredAblationSample": 50,
+          "experimentBudgetPerFamily": 12,
+          "maxMutationsPerGeneration": 4
+        },
+        "datasetSnapshotId": "DS-5674626E9EED1C0A",
+        "health": {
+          "sampleCount": 0,
+          "labeledCount": 0,
+          "minAblationSample": 30,
+          "preferredAblationSample": 50,
+          "state": "SAMPLE_INSUFFICIENT"
+        },
+        "oosAccess": "SEALED_DENY_HYPOTHESIS_GENERATOR"
+      },
+      "knowledge": {
+        "registryVersion": "BOOK_STRATEGY_REGISTRY_v1",
+        "techniques": [
+          {
+            "id": "MARKET_STRUCTURE",
+            "label": "가격 구조 HH/HL/LH/LL · BOS/전환",
+            "category": "가격 구조",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "SUPPORT_RESISTANCE",
+            "label": "지지·저항 · 역할 전환",
+            "category": "가격 구조",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "Simple Trading Book",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "TRENDLINE_RETEST",
+            "label": "추세선 돌파·리테스트",
+            "category": "추세",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "코린이 입문서"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "CHANNEL",
+            "label": "평행 채널 · 채널 돌파",
+            "category": "추세",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "MA_STRUCTURE",
+            "label": "SMA/EMA 배열·기울기·눌림·재회복",
+            "category": "이평선",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "기술적 차트 분석",
+              "단테 규칙형 엔진"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "GOLDEN_DEAD_CROSS",
+            "label": "골든/데드크로스 + 구조/거래량 확인",
+            "category": "이평선",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "VOLUME_PRICE",
+            "label": "가격·거래량 / RVOL / 조정 거래량 감소",
+            "category": "거래량",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "기술적 차트 분석"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "OBV",
+            "label": "OBV 방향·가격 괴리",
+            "category": "수급",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "AD_LINE",
+            "label": "A/D Line",
+            "category": "수급",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "VWAP",
+            "label": "VWAP 유지·회복·저항",
+            "category": "수급",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "CVD",
+            "label": "CVD / 매수·매도 주도 체결",
+            "category": "수급",
+            "mode": "data-required",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [
+              "true_trade_direction"
+            ],
+            "rankingWeight": null,
+            "researchRole": "데이터 필요"
+          },
+          {
+            "id": "ATR",
+            "label": "ATR 변동성·손절·목표·포지션 거리",
+            "category": "변동성",
+            "mode": "risk",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "리스크 설계"
+          },
+          {
+            "id": "BOLLINGER",
+            "label": "볼린저 밴드 수축·확장",
+            "category": "변동성",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": 0,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "KELTNER",
+            "label": "켈트너 채널 · 변동성 돌파",
+            "category": "변동성",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": 0,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "RSI",
+            "label": "RSI",
+            "category": "모멘텀",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "MACD",
+            "label": "MACD",
+            "category": "모멘텀",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "STOCHASTIC",
+            "label": "Stochastic / Stoch RSI",
+            "category": "모멘텀",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "CCI",
+            "label": "CCI",
+            "category": "모멘텀",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "ADX",
+            "label": "ADX 추세 강도",
+            "category": "추세",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "CANDLESTICKS",
+            "label": "망치·핀바·장악·도지·별형·삼병 등",
+            "category": "캔들",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "Simple Trading Book",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "CLASSIC_PATTERNS",
+            "label": "더블/트리플 · H&S · 쐐기 · 플래그 · 페넌트 · 다이아몬드 · 컵앤핸들",
+            "category": "차트 패턴",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "Simple Trading Book",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "FIBONACCI",
+            "label": "Fib 38.2/50/61.8 되돌림 · 1.618/2/2.618 확장",
+            "category": "피보나치",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "기술적 차트 분석",
+              "코린이 입문서",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "ELLIOTT",
+            "label": "엘리어트 파동 시나리오 · 무효화 우선",
+            "category": "파동",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "WYCKOFF_ACCUMULATION",
+            "label": "Wyckoff 매집 · Spring/Test · SOS · LPS/BU",
+            "category": "와이코프",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "와이코프 매집·분배와 유동성 스윕 사례 연구"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "WYCKOFF_DISTRIBUTION",
+            "label": "Wyckoff 분배 · UT/UTAD · SOW · LPSY",
+            "category": "와이코프",
+            "mode": "context",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "와이코프 매집·분배와 유동성 스윕 사례 연구"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "시장 맥락"
+          },
+          {
+            "id": "VOLUME_PROFILE",
+            "label": "Volume Profile · POC/VAH/VAL · HVN/LVN",
+            "category": "프로파일",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "LIQUIDITY_SWEEP",
+            "label": "전고/전저·EQH/EQL·박스 유동성 스윕 후 회복",
+            "category": "유동성",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "와이코프 매집·분배와 유동성 스윕 사례 연구"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "ORDERBOOK",
+            "label": "호가 깊이·스프레드·체결 반응",
+            "category": "유동성",
+            "mode": "data-required",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [
+              "orderbook"
+            ],
+            "rankingWeight": null,
+            "researchRole": "데이터 필요"
+          },
+          {
+            "id": "GAP",
+            "label": "갭 앤 고 · 갭 메움 · 갭 반전",
+            "category": "갭",
+            "mode": "not-applicable",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "조건부 제외"
+          },
+          {
+            "id": "OPENING_RANGE",
+            "label": "오프닝 레인지 돌파",
+            "category": "세션",
+            "mode": "not-applicable",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "조건부 제외"
+          },
+          {
+            "id": "MEAN_REVERSION",
+            "label": "평균회귀 · 가치영역 복귀",
+            "category": "전략",
+            "mode": "evidence",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "TREND_FOLLOWING",
+            "label": "추세추종 · 눌림·돌파·후행손절",
+            "category": "전략",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "REENTRY_SECOND_WAVE",
+            "label": "재상승·2차 파동",
+            "category": "전략",
+            "mode": "rank",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "ICHIMOKU",
+            "label": "일목균형표 · 시간론/가격론 보조",
+            "category": "일목",
+            "mode": "evidence",
+            "sources": [
+              "All you should know about Forex p.1~406",
+              "기술적 차트 분석"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "DANTE_RICE_BOWL",
+            "label": "단테 밥그릇",
+            "category": "단테",
+            "mode": "rank",
+            "sources": [
+              "단테 규칙형 엔진"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "DANTE_GONGGURI",
+            "label": "단테 공구리",
+            "category": "단테",
+            "mode": "rank",
+            "sources": [
+              "단테 규칙형 엔진"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "DANTE_EMA_STRIKE",
+            "label": "단테 EMA 때리기",
+            "category": "단테",
+            "mode": "rank",
+            "sources": [
+              "단테 규칙형 엔진"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "핵심 신호"
+          },
+          {
+            "id": "DANTE_256",
+            "label": "단테 256",
+            "category": "단테",
+            "mode": "evidence",
+            "sources": [
+              "단테 규칙형 엔진"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "보조 증거"
+          },
+          {
+            "id": "CORRELATION",
+            "label": "상관관계·동조/비동조",
+            "category": "시장 관계",
+            "mode": "context",
+            "sources": [
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "시장 맥락"
+          },
+          {
+            "id": "ECONOMIC_EVENT",
+            "label": "경제 이벤트/뉴스 컨텍스트",
+            "category": "이벤트",
+            "mode": "context",
+            "sources": [
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "시장 맥락"
+          },
+          {
+            "id": "POSITION_SIZING",
+            "label": "포지션 크기·1R·수수료·슬리피지",
+            "category": "리스크",
+            "mode": "risk",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "리스크 설계"
+          },
+          {
+            "id": "INVALIDATION",
+            "label": "무효화 가격 우선",
+            "category": "리스크",
+            "mode": "risk",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "리스크 설계"
+          },
+          {
+            "id": "PARTIAL_EXIT",
+            "label": "부분청산·다중 목표·후행손절",
+            "category": "리스크",
+            "mode": "risk",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "리스크 설계"
+          },
+          {
+            "id": "BACKTEST_RULES",
+            "label": "기계적 규칙·백테스트·복기",
+            "category": "검증",
+            "mode": "context",
+            "sources": [
+              "주식 차트 기법 종합 매매 매뉴얼",
+              "전문 트레이딩 플레이북",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "시장 맥락"
+          },
+          {
+            "id": "FOMO_CHECK",
+            "label": "FOMO/추격 충동 체크",
+            "category": "심리",
+            "mode": "context",
+            "sources": [
+              "Simple Trading Book",
+              "All you should know about Forex p.1~406"
+            ],
+            "requires": [],
+            "rankingWeight": null,
+            "researchRole": "시장 맥락"
+          }
         ],
-        "sources": [
-          "astra-astra"
+        "coverage": {
+          "total": 45,
+          "observed": 0,
+          "unobserved": 45,
+          "byMode": {
+            "rank": 14,
+            "evidence": 18,
+            "risk": 4,
+            "context": 5,
+            "data-required": 2,
+            "not-applicable": 2
+          },
+          "byCategory": {
+            "가격 구조": 2,
+            "추세": 3,
+            "이평선": 2,
+            "거래량": 1,
+            "수급": 4,
+            "변동성": 3,
+            "모멘텀": 4,
+            "캔들": 1,
+            "차트 패턴": 1,
+            "피보나치": 1,
+            "파동": 1,
+            "와이코프": 2,
+            "프로파일": 1,
+            "유동성": 2,
+            "갭": 1,
+            "세션": 1,
+            "전략": 3,
+            "일목": 1,
+            "단테": 4,
+            "시장 관계": 1,
+            "이벤트": 1,
+            "리스크": 3,
+            "검증": 1,
+            "심리": 1
+          },
+          "unobservedTechniques": [
+            {
+              "id": "MARKET_STRUCTURE",
+              "label": "가격 구조 HH/HL/LH/LL · BOS/전환",
+              "category": "가격 구조",
+              "mode": "rank"
+            },
+            {
+              "id": "SUPPORT_RESISTANCE",
+              "label": "지지·저항 · 역할 전환",
+              "category": "가격 구조",
+              "mode": "rank"
+            },
+            {
+              "id": "TRENDLINE_RETEST",
+              "label": "추세선 돌파·리테스트",
+              "category": "추세",
+              "mode": "rank"
+            },
+            {
+              "id": "CHANNEL",
+              "label": "평행 채널 · 채널 돌파",
+              "category": "추세",
+              "mode": "evidence"
+            },
+            {
+              "id": "MA_STRUCTURE",
+              "label": "SMA/EMA 배열·기울기·눌림·재회복",
+              "category": "이평선",
+              "mode": "rank"
+            },
+            {
+              "id": "GOLDEN_DEAD_CROSS",
+              "label": "골든/데드크로스 + 구조/거래량 확인",
+              "category": "이평선",
+              "mode": "evidence"
+            },
+            {
+              "id": "VOLUME_PRICE",
+              "label": "가격·거래량 / RVOL / 조정 거래량 감소",
+              "category": "거래량",
+              "mode": "rank"
+            },
+            {
+              "id": "OBV",
+              "label": "OBV 방향·가격 괴리",
+              "category": "수급",
+              "mode": "evidence"
+            },
+            {
+              "id": "AD_LINE",
+              "label": "A/D Line",
+              "category": "수급",
+              "mode": "evidence"
+            },
+            {
+              "id": "VWAP",
+              "label": "VWAP 유지·회복·저항",
+              "category": "수급",
+              "mode": "evidence"
+            },
+            {
+              "id": "CVD",
+              "label": "CVD / 매수·매도 주도 체결",
+              "category": "수급",
+              "mode": "data-required"
+            },
+            {
+              "id": "ATR",
+              "label": "ATR 변동성·손절·목표·포지션 거리",
+              "category": "변동성",
+              "mode": "risk"
+            },
+            {
+              "id": "BOLLINGER",
+              "label": "볼린저 밴드 수축·확장",
+              "category": "변동성",
+              "mode": "evidence"
+            },
+            {
+              "id": "KELTNER",
+              "label": "켈트너 채널 · 변동성 돌파",
+              "category": "변동성",
+              "mode": "evidence"
+            },
+            {
+              "id": "RSI",
+              "label": "RSI",
+              "category": "모멘텀",
+              "mode": "evidence"
+            },
+            {
+              "id": "MACD",
+              "label": "MACD",
+              "category": "모멘텀",
+              "mode": "evidence"
+            },
+            {
+              "id": "STOCHASTIC",
+              "label": "Stochastic / Stoch RSI",
+              "category": "모멘텀",
+              "mode": "evidence"
+            },
+            {
+              "id": "CCI",
+              "label": "CCI",
+              "category": "모멘텀",
+              "mode": "evidence"
+            },
+            {
+              "id": "ADX",
+              "label": "ADX 추세 강도",
+              "category": "추세",
+              "mode": "evidence"
+            },
+            {
+              "id": "CANDLESTICKS",
+              "label": "망치·핀바·장악·도지·별형·삼병 등",
+              "category": "캔들",
+              "mode": "rank"
+            },
+            {
+              "id": "CLASSIC_PATTERNS",
+              "label": "더블/트리플 · H&S · 쐐기 · 플래그 · 페넌트 · 다이아몬드 · 컵앤핸들",
+              "category": "차트 패턴",
+              "mode": "rank"
+            },
+            {
+              "id": "FIBONACCI",
+              "label": "Fib 38.2/50/61.8 되돌림 · 1.618/2/2.618 확장",
+              "category": "피보나치",
+              "mode": "evidence"
+            },
+            {
+              "id": "ELLIOTT",
+              "label": "엘리어트 파동 시나리오 · 무효화 우선",
+              "category": "파동",
+              "mode": "evidence"
+            },
+            {
+              "id": "WYCKOFF_ACCUMULATION",
+              "label": "Wyckoff 매집 · Spring/Test · SOS · LPS/BU",
+              "category": "와이코프",
+              "mode": "rank"
+            },
+            {
+              "id": "WYCKOFF_DISTRIBUTION",
+              "label": "Wyckoff 분배 · UT/UTAD · SOW · LPSY",
+              "category": "와이코프",
+              "mode": "context"
+            },
+            {
+              "id": "VOLUME_PROFILE",
+              "label": "Volume Profile · POC/VAH/VAL · HVN/LVN",
+              "category": "프로파일",
+              "mode": "evidence"
+            },
+            {
+              "id": "LIQUIDITY_SWEEP",
+              "label": "전고/전저·EQH/EQL·박스 유동성 스윕 후 회복",
+              "category": "유동성",
+              "mode": "rank"
+            },
+            {
+              "id": "ORDERBOOK",
+              "label": "호가 깊이·스프레드·체결 반응",
+              "category": "유동성",
+              "mode": "data-required"
+            },
+            {
+              "id": "GAP",
+              "label": "갭 앤 고 · 갭 메움 · 갭 반전",
+              "category": "갭",
+              "mode": "not-applicable"
+            },
+            {
+              "id": "OPENING_RANGE",
+              "label": "오프닝 레인지 돌파",
+              "category": "세션",
+              "mode": "not-applicable"
+            },
+            {
+              "id": "MEAN_REVERSION",
+              "label": "평균회귀 · 가치영역 복귀",
+              "category": "전략",
+              "mode": "evidence"
+            },
+            {
+              "id": "TREND_FOLLOWING",
+              "label": "추세추종 · 눌림·돌파·후행손절",
+              "category": "전략",
+              "mode": "rank"
+            },
+            {
+              "id": "REENTRY_SECOND_WAVE",
+              "label": "재상승·2차 파동",
+              "category": "전략",
+              "mode": "rank"
+            },
+            {
+              "id": "ICHIMOKU",
+              "label": "일목균형표 · 시간론/가격론 보조",
+              "category": "일목",
+              "mode": "evidence"
+            },
+            {
+              "id": "DANTE_RICE_BOWL",
+              "label": "단테 밥그릇",
+              "category": "단테",
+              "mode": "rank"
+            },
+            {
+              "id": "DANTE_GONGGURI",
+              "label": "단테 공구리",
+              "category": "단테",
+              "mode": "rank"
+            },
+            {
+              "id": "DANTE_EMA_STRIKE",
+              "label": "단테 EMA 때리기",
+              "category": "단테",
+              "mode": "rank"
+            },
+            {
+              "id": "DANTE_256",
+              "label": "단테 256",
+              "category": "단테",
+              "mode": "evidence"
+            },
+            {
+              "id": "CORRELATION",
+              "label": "상관관계·동조/비동조",
+              "category": "시장 관계",
+              "mode": "context"
+            },
+            {
+              "id": "ECONOMIC_EVENT",
+              "label": "경제 이벤트/뉴스 컨텍스트",
+              "category": "이벤트",
+              "mode": "context"
+            },
+            {
+              "id": "POSITION_SIZING",
+              "label": "포지션 크기·1R·수수료·슬리피지",
+              "category": "리스크",
+              "mode": "risk"
+            },
+            {
+              "id": "INVALIDATION",
+              "label": "무효화 가격 우선",
+              "category": "리스크",
+              "mode": "risk"
+            },
+            {
+              "id": "PARTIAL_EXIT",
+              "label": "부분청산·다중 목표·후행손절",
+              "category": "리스크",
+              "mode": "risk"
+            },
+            {
+              "id": "BACKTEST_RULES",
+              "label": "기계적 규칙·백테스트·복기",
+              "category": "검증",
+              "mode": "context"
+            },
+            {
+              "id": "FOMO_CHECK",
+              "label": "FOMO/추격 충동 체크",
+              "category": "심리",
+              "mode": "context"
+            }
+          ]
+        }
+      },
+      "hypotheses": {
+        "observed": [],
+        "archetypes": [],
+        "mutations": [],
+        "crossovers": [],
+        "ideaCount": 0
+      },
+      "strategyDna": [],
+      "ablation": [],
+      "competition": {
+        "champion": null,
+        "provisional": null,
+        "challengers": [],
+        "gate": {
+          "minDiscoverySample": 30,
+          "preferredSample": 50,
+          "lockedOosRequired": true,
+          "oosVisibleToHypothesisGenerator": false,
+          "maxEventOverlapPreferred": 0.7
+        },
+        "policy": "Champion은 sealed Locked OOS 전용 평가에서만 확정. 이벤트 중복 70% 초과 전략은 직교성 페널티 적용"
+      },
+      "notes": [
+        {
+          "id": "RN-0A8LZU6",
+          "at": 1790539938740,
+          "type": "DATASET",
+          "title": "학습 표본 점검",
+          "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
+          "datasetSnapshotId": "DS-5674626E9EED1C0A",
+          "strategyVersion": null,
+          "experimentId": null,
+          "counterexampleIds": [],
+          "question": "현재 데이터셋이 연구에 충분한가?",
+          "previousObservation": null,
+          "hypothesis": null,
+          "observedResult": "N=0",
+          "conclusion": null,
+          "nextExperiment": "동일 모집단 표본 추가 수집"
+        }
+      ],
+      "experiments": [],
+      "governance": {
+        "states": [
+          "HYPOTHESIS_NEW",
+          "DATA_PENDING",
+          "SAMPLE_INSUFFICIENT",
+          "TRAINING",
+          "VALIDATING",
+          "OOS_LOCKED",
+          "SHADOW_RUNNING",
+          "PROMOTION_REVIEW",
+          "CHAMPION",
+          "REJECTED",
+          "RETIRED",
+          "BLOCKED_DATA_QUALITY"
         ],
-        "setupTypes": [
-          "WATCH_PRIORITY"
+        "currentMaxAutoState": "SHADOW_RUNNING",
+        "promotionRequires": [
+          "연구계약 고정",
+          "동일 모집단",
+          "실패/반례 포함",
+          "최소 표본 30",
+          "purge/embargo",
+          "sealed Locked OOS",
+          "조건 기여도",
+          "복잡도 페널티",
+          "실험 예산",
+          "데이터 누수 검사"
         ],
-        "regimes": [
-          "RISK_ON"
-        ],
-        "centroid": [
-          0.64,
-          0.1338375,
-          0.6231130834022165,
-          0.2506827446475812,
-          null,
-          null,
-          0,
-          null,
-          1,
-          0,
-          0.3917173742505014,
-          0.17009797832925788,
-          null,
-          null,
-          0.8788552796994357,
-          0.3545123128298997,
-          0,
-          null
-        ],
-        "avgMfePct": 8.953406396205853,
-        "avgMaePct": -0.6268025379734699,
-        "memberKeys": [
-          "ZECUSDT:497345"
-        ]
+        "note": "가설 생성기는 Locked OOS를 볼 수 없으며 Champion 확정은 별도 sealed 평가에서만 가능."
       }
-    ]
-  }
+    }
+  },
+  "sealedEvaluation": {
+    "locked": false,
+    "lockedOosStart": null,
+    "generation": 0,
+    "count": 0,
+    "metrics": null,
+    "hypothesisGeneratorAccess": false
+  },
+  "referenceSampleCount": 26
 }
