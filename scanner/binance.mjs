@@ -129,7 +129,8 @@ export class Binance{
           const now=Date.now(),until=retryAtFromHeader(response.headers.get('retry-after'),now);
           const ttl=Math.max(1000,Math.min(3600000,until-now));
           const message='Binance 요청 제한. 재시도 시각 이후 이어서 진행합니다.';
-          await this.store.put('binance:blocked:'+market,{until,message},ttl);
+          const isKline=path.endsWith('/klines');
+          if(!isKline)await this.store.put('binance:blocked:'+market,{until,message},ttl);
           this.metrics.errors++;
           throw new UpstreamError(message,429,until);
         }
