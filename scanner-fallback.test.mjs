@@ -20,21 +20,18 @@ test('websocket failure falls back to labeled Bybit linear universe',async()=>{
   const prior=globalThis.WebSocket;globalThis.WebSocket=FailWebSocket;
   const fetcher=async url=>{
     const u=new URL(url);
-    if(u.pathname.endsWith('/instruments-info'))return bybit({list:[
-      {symbol:'AAAUSDT',baseCoin:'AAA',quoteCoin:'USDT',status:'Trading',contractType:'LinearPerpetual'},
-      {symbol:'BBBUSD',baseCoin:'BBB',quoteCoin:'USD',status:'Trading',contractType:'InversePerpetual'}
-    ]});
-    if(u.pathname.endsWith('/tickers'))return bybit({list:[{symbol:'AAAUSDT',lastPrice:'2',price24hPcnt:'0.03',turnover24h:'25000000'}]});
+    if(u.pathname.endsWith('/tickers'))return bybit({list:[{symbol:'BTCUSDT',lastPrice:'70000',price24hPcnt:'0.03',turnover24h:'25000000'},{symbol:'SOXLUSDT',lastPrice:'50',price24hPcnt:'0.10',turnover24h:'50000000'}]});
     throw new Error('unexpected '+url);
   };
   try{
     const api=new Binance(new Store(),fetcher);
     const u=await api.universe();
     assert.equal(u.source,'BYBIT_LINEAR_FALLBACK');
-    assert.equal(u.rows.length,1);
-    assert.equal(u.rows[0].symbol,'AAAUSDT');
-    assert.equal(u.rows[0].change,3);
-    assert.equal(u.rows[0].marketSource,'BYBIT_LINEAR_FALLBACK');
+    assert.equal(u.rows.length,527);
+    const btc=u.rows.find(x=>x.symbol==='BTCUSDT');
+    assert.ok(btc);assert.equal(btc.change,3);assert.equal(btc.marketSource,'BYBIT_LINEAR_FALLBACK');
+    assert.equal(u.coverage.total,527);assert.ok(u.coverage.available>=1);
+    assert.equal(u.rows.some(x=>x.symbol==='SOXLUSDT')&& !u.rows.find(x=>x.symbol==='SOXLUSDT')?.price,false);
   }finally{if(prior===undefined)delete globalThis.WebSocket;else globalThis.WebSocket=prior;}
 });
 
