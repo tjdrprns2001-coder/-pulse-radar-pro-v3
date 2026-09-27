@@ -83,3 +83,25 @@ test('spot rate limit does not globally block futures requests',async()=>{
   assert.equal(await store.get('binance:blocked:futures'),null);
   assert.ok(await store.get('binance:blocked:spot'));
 });
+
+
+test('heavy 1h history is paged below Binance kline weight tier',async()=>{
+  const api=new Binance(new Store(),async()=>{throw new Error('fetcher should be replaced by get stub');});
+  const calls=[];
+  api.get=async(_path,params)=>{
+    calls.push({...params});
+    const interval=3600000;
+    const count=Number(params.limit);
+    const end=Number(params.endTime);
+    const lastOpen=Math.floor((end-1)/interval)*interval;
+    return Array.from({length:count},(_,i)=>{
+      const t=lastOpen-(count-1-i)*interval;
+      return [t,'1','2','0.5','1.5','10',t+interval-1,'15',0,'6'];
+    });
+  };
+  const raw=await api.futuresKlines('AAAUSDT','1h',2000*3600000,1497);
+  assert.equal(raw.length,1497);
+  assert.equal(calls.length,3);
+  assert.ok(calls.every(x=>Number(x.limit)<=499));
+  assert.deepEqual(calls.map(x=>Number(x.limit)),[499,499,499]);
+});
