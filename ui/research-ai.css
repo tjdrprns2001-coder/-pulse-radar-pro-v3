@@ -110,3 +110,5 @@ tbody tr:last-child td{border-bottom:0}
 .ablationLine.goodish{border:1px solid #2f715c;background:#0e2921;color:#8de2c0}
 .ablationLine.neutral{border:1px solid #43546b;background:#111c29;color:#a9bdd0}
 @media(max-width:760px){.noteItem>div{flex-direction:column;gap:4px}.noteItem time{white-space:normal}}
+
+.labRow.provisional{border-color:#7d6330;background:#1e190d}.labRow.provisional b{color:#f2cf79}
