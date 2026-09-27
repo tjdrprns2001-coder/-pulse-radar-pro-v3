@@ -68,6 +68,7 @@ function normalizeCandidate(row={}){
     funding:row.funding&&typeof row.funding==='object'?row.funding:null,
     spot:row.spot&&typeof row.spot==='object'?row.spot:null,
     matches:Array.isArray(row.matches)?row.matches.slice(0,12):[],
+    scanProfile:row.scanProfile&&typeof row.scanProfile==='object'?row.scanProfile:null,
     provenance
   };
 }
