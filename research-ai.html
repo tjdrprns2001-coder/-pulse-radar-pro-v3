@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar 연구 AI v3</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260928-lab3"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar 연구 AI v3</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/research-ai.css?v=20260928-lab4"></head><body>
 <main class="rai">
   <header class="hero"><div><div class="eyebrow">연구 AI v3 · 가설·반례·혼합기법 연구실</div><h1>🧠 연구 학습 AI</h1><p>자동스캔·급등 역추적 샘플·책 기법을 바탕으로 가설을 만들고, 반례를 찾고, 혼합기법을 실험합니다.</p></div><button id="refresh">새로고침</button></header>
   <section class="notice"><b>🔒 연구 전용 유지</b><span>AI가 새 기법을 만들 수는 있지만 검증 전에는 자동스캐너 운영 순위에 반영하지 않습니다.</span></section>
@@ -53,6 +53,15 @@
     <article class="card labCard"><h2>🧪 돌연변이·교배 실험</h2><p>기존 가설에 새로운 카테고리 기법을 추가하거나 서로 다른 가설을 섞어 새 전략 후보를 만듭니다.</p><div id="experimentCards" class="miniLabList">대기 중…</div></article>
   </section>
 
+  <section class="grid researchGrid">
+    <article class="card labCard"><h2>🏆 Champion vs Challenger</h2><p>현재 가장 강한 연구전략과 도전자들을 같은 기준으로 비교합니다. 운영점수 반영은 0%입니다.</p><div id="competitionCards" class="miniLabList">대기 중…</div></article>
+    <article class="card labCard"><h2>🧬 전략 DNA · 버전</h2><p>AI가 만든 전략의 부모, 구성 기법, 세대와 변경 이유를 추적합니다.</p><div id="strategyDnaCards" class="miniLabList">대기 중…</div></article>
+  </section>
+
+  <section class="card labCard"><div class="cardHead"><div><h2>🧪 조건 기여도 실험</h2><p>전략 조건을 하나씩 제거해 어떤 조건이 실제 성능에 기여했는지 비교합니다.</p></div></div><div id="ablationCards" class="hypothesisGrid"><div class="emptyLab">실험 결과 대기</div></div></section>
+
+  <section class="card labCard"><div class="cardHead"><div><h2>📓 AI 연구노트</h2><p>현재 데이터에서 무엇을 발견했고 다음에 무엇을 검증할지 자동 기록합니다.</p></div></div><div id="researchNotes" class="notesList"><div class="emptyLab">연구노트 생성 중…</div></div></section>
+
   <section class="card labCard">
     <div class="cardHead"><div><h2>🔬 연구 프로토콜</h2><p>새 아이디어는 반드시 시간순 검증과 반례 검사를 거칩니다.</p></div></div>
     <div id="labGovernance" class="governanceFlow"></div>
@@ -64,4 +73,4 @@
 
   <section class="card"><h2>학습 파이프라인</h2><div class="flow"><span>Auto / Astra / Trader</span><i>→</i><span>Canonical Snapshot</span><i>→</i><span>샘플·책 근거</span><i>→</i><span>확정봉 1H~72H</span><i>→</i><span>학습</span><i>→</i><span>검증</span><i>→</i><span>잠금 OOS</span><i>→</i><span>연구 전용 모델 게이트</span></div></section>
   <div id="status" class="status">준비 중…</div>
-</main><script src="/ui/research-ai.js?v=20260928-lab3" defer></script></body></html>
+</main><script src="/ui/research-ai.js?v=20260928-lab4" defer></script></body></html>
