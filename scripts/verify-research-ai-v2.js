@@ -13,6 +13,7 @@ const Adapter=require('../lib/learning/scanner-adapter.js');
 const ResearchStats=require('../lib/learning/research-stats.js');
 const ArchetypeLab=require('../lib/learning/archetype-lab.js');
 const ResearchLab=require('../lib/learning/research-lab.js');
+const AutoSample=require('../lib/learning/auto-sample-engine.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -146,6 +147,32 @@ const evalProbe=ResearchLab.evaluateHypothesis(labeledRows,{ruleIds:['MARKET_STR
 assert.equal(evalProbe.leakageSafe,true);
 assert(evalProbe.support>=2);
 assert(['LOW_SAMPLE','SHADOW_TESTING','OOS_PROMISING'].includes(evalProbe.state));
+
+// Research Lab v4: DNA, ablation, champion/challenger and failure-sample research remain shadow-only.
+const lab4=ResearchLab.labSummary(labeledRows);
+assert(Array.isArray(lab4.strategyDna));
+assert(Array.isArray(lab4.ablation));
+assert(lab4.strategyDna.every(x=>x.productionEligible===false));
+const dnaProbe=ResearchLab.strategyDna({id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
+assert(dnaProbe.strategyId.startsWith('LAB-')&&dnaProbe.version==='v1');
+const abl=ResearchLab.ablationStudy(labeledRows,{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
+assert(Array.isArray(abl.tests)&&abl.tests.length===2);
+const competition=ResearchLab.championChallenger(labeledRows,[{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON',title:'probe'}]);
+assert(competition.policy.includes('연구 비교용'));
+assert((competition.challengers||[]).every(x=>x.rankWeight===0));
+
+// Failed ignition detector must only label retrospectively after future failure bars exist.
+const ft0=1_800_000_000_000,failBars=[];
+for(let i=0;i<80;i++){
+  let close=100;
+  if(i===40)close=102;
+  else if(i>40&&i<=48)close=101-(i-40)*.65;
+  else if(i>48)close=95;
+  const vol=i===40?500:100;
+  failBars.push([ft0+i*900000,String(close),String(close+0.5),String(close-0.5),String(close),String(vol),ft0+(i+1)*900000-1,'0',0,'0','0','0']);
+}
+const failEvent=AutoSample.detectFailedIgnition({'15m':failBars},ft0+80*900000);
+assert(failEvent===null||failEvent.knownResolvedAt<=ft0+80*900000,'failure labels must only resolve after future bars exist');
 
 // Research AI central-state wiring: scanners must hydrate persisted memory before mutation,
  // trader runtime must return raw scan data, and learning status must stay on the unified runtime.
