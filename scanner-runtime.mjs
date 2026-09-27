@@ -91,7 +91,7 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
       if(job?.busy){await sleep(250);job=await store.job(health.lastScanId);continue;}
       publish(job);
       if(job?.status==='paused')console.warn('[IGNITION] paused',{stage:job.stage,retryAt:job.retryAt,lastError:job.errors?.at(-1)?.message||null,metrics:job.metrics});
-      else console.log('[IGNITION] step',{stage:job?.stage,status:job?.status,counts:job?.counts,metrics:job?.metrics});
+      else console.log('[IGNITION] step',{stage:job?.stage,status:job?.status,counts:job?.counts,metrics:job?.metrics,lastError:job?.errors?.at(-1)?.message||null});
       await sleep(25);
     }
     if(job?.status==='complete')return job;
