@@ -21,10 +21,15 @@ function resBox(){
   const scanService={async run(){scanCalls++;return JSON.parse(JSON.stringify(scan))}};
   const gateway={available:false,provider:'gemini',model:'gemini-test',async brief(){aiCalls++;throw new Error('must not call')},async chat(){throw new Error('must not call')}};
   const researchAI={hydrateRemote:async()=>true,status:()=>researchStatus};
-  const service=createBriefingService({scanService,gateway,researchAI,now:()=>10000,cacheMs:30000});
+  const typeSafe={available:true,evaluate:async()=>({
+    version:'PULSE_AI_TYPESAFE_v1',status:'ok',available:true,shadowOnly:true,provider:'typesafe',model:'jev-test',
+    market:{mode:'selective',confidence:.8,probabilities:{selective:.8}},
+    candidates:[{symbol:'AAAUSDT',readinessScore:2.4,readinessConfidence:.7,chaseRisk:.2,shadowOnly:true}]
+  }),health:()=>({version:'PULSE_AI_TYPESAFE_v1',available:true,shadowOnly:true,provider:'typesafe',model:'jev-test'})};
+  const service=createBriefingService({scanService,gateway,researchAI,typeSafe,now:()=>10000,cacheMs:30000});
 
   const b1=await service.getBrief({selectedSymbol:'AAAUSDT'});
-  assert.equal(b1.status,'ok');assert.equal(b1.aiAvailable,false);assert.equal(aiCalls,0);assert.equal(b1.selectedFocus.symbol,'AAAUSDT');
+  assert.equal(b1.status,'ok');assert.equal(b1.aiAvailable,false);assert.equal(aiCalls,0);assert.equal(b1.selectedFocus.symbol,'AAAUSDT');assert.equal(b1.typeSafe.status,'ok');assert.equal(b1.typeSafe.candidates[0].symbol,'AAAUSDT');
   const b2=await service.getBrief({selectedSymbol:'AAAUSDT'});assert.equal(b2.status,'ok');assert.equal(scanCalls,1,'brief cache should suppress duplicate scanner work inside cache window');
 
   let res=resBox();
@@ -32,7 +37,7 @@ function resBox(){
   assert.equal(res.code,200);assert.equal(res.body.status,'ok');assert.equal(res.body.selectedFocus.symbol,'AAAUSDT');
 
   res=resBox();await handler({method:'GET',query:{mode:'health'}},res,{service});
-  assert.equal(res.code,200);assert.equal(res.body.status,'ok');assert.equal(res.body.researchAI.model.state,'SHADOW');
+  assert.equal(res.code,200);assert.equal(res.body.status,'ok');assert.equal(res.body.researchAI.model.state,'SHADOW');assert.equal(res.body.typeSafe.available,true);assert.equal(res.body.typeSafe.shadowOnly,true);
 
   res=resBox();await handler({method:'POST',query:{mode:'chat'},body:{question:'AAA 지금 어때?',selectedSymbol:'AAAUSDT'}},res,{service});
   assert.equal(res.code,200);assert.equal(res.body.answerMode,'deterministic');assert(res.body.answer.includes('AAAUSDT'));
