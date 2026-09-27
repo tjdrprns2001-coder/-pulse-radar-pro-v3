@@ -1,0 +1,67 @@
+diff --git a/lib/scanner/api.ts b/lib/scanner/api.ts
+index 91c6eb7..621cad7 100644
+--- a/lib/scanner/api.ts
++++ b/lib/scanner/api.ts
+@@ -8,6 +8,7 @@ export async function handle(request:Request){const url=new URL(request.url),pat
+  if(request.method==='POST'&&origin&&origin!==url.origin)return output({error:'교차 출처 실행 요청 차단'},403,origin);
+  try{if(!env.DB)throw new Error('검색기 저장소 연결 불가');const store=new Store(env.DB);
+  if(request.method==='GET'){
++ if(path.join('/')==='diagnostics/binance')return output({futures:await store.get('binance:diagnostic:fapi.binance.com'),spot:await store.get('binance:diagnostic:api.binance.com')},200,origin);
+  if(path[0]==='health')return output({ok:true,version:'1.0',provider:'Binance',clock:Date.now()},200,origin);
+  if(path[0]==='samples')return output({samples:await store.samples()},200,origin);
+  if(path[0]==='results'){const j=await store.latest('scan');if(!j)return output({schemaVersion:'1.0',status:'empty',candidates:[]},200,origin);const p=publicJob(j);return output(p,200,origin);}
+diff --git a/lib/scanner/binance.mjs b/lib/scanner/binance.mjs
+index b466923..739cab1 100644
+--- a/lib/scanner/binance.mjs
++++ b/lib/scanner/binance.mjs
+@@ -9,13 +9,24 @@ export class Binance {
+  if(this.inflight.has(url))return this.inflight.get(url);
+  const promise=this.request(url,ttl);this.inflight.set(url,promise);try{return await promise;}finally{this.inflight.delete(url);}}
+  async request(url,ttl){const blocked=await this.store.get('binance:blocked');if(blocked)throw new UpstreamError(blocked.message,429,blocked.until);
+- const u=new URL(url),stats=u.pathname.startsWith('/futures/data/'),funding=u.pathname.endsWith('/fundingRate'),spot=u.host==='api.binance.com';
++ const u=new URL(url);const denied=await this.store.get('binance:access-blocked:'+u.host);if(denied)throw new UpstreamError(denied.message,denied.status,denied.until);
++ const stats=u.pathname.startsWith('/futures/data/'),funding=u.pathname.endsWith('/fundingRate'),spot=u.host==='api.binance.com';
+  const ms=stats||funding?300000:60000,limit=stats?900:funding?450:spot?4000:1800;
+  const l=+(u.searchParams.get('limit')||500);const weight=stats||funding?1:u.pathname.endsWith('/klines')?(l<100?1:l<500?2:l<=1000?5:10):u.pathname.endsWith('/ticker/24hr')?40:1;
+  const key=stats?'statistics':funding?'funding':spot?'spot':'futures';
+  let response;for(let attempt=0;attempt<2;attempt++){if(this.store.reserve&&!await this.store.reserve(key,limit,ms,weight)){throw new UpstreamError('요청 예산 대기. 자동으로 이어서 실행합니다.',429,(Math.floor(Date.now()/ms)+1)*ms+1000);}this.metrics.requests++;try{response=await this.fetcher(url,{signal:AbortSignal.timeout(20000),headers:{Accept:'application/json'}});}catch(e){if(!attempt)continue;this.metrics.errors++;throw new UpstreamError('Binance 연결 시간 초과: '+e.message);}
+  this.metrics.weight=Math.max(this.metrics.weight,Number(response.headers.get('x-mbx-used-weight-1m')||0));
+  if(response.status===429||response.status===418){const sec=Math.max(60,Number(response.headers.get('retry-after')||60)),until=Date.now()+sec*1000,message='Binance 요청 제한. 재시도 시각 이후 이어서 진행합니다.';await this.store.put('binance:blocked',{until,message},sec*1000);this.metrics.errors++;throw new UpstreamError(message,429,until);}
++ if(response.status===403||response.status===451){
++ const until=Date.now()+300000;let reason='';
++ try{const reader=response.body?.getReader();if(reader){const decoder=new TextDecoder();let bytes=0;try{while(bytes<4096){const chunk=await reader.read();if(chunk.done)break;const portion=chunk.value.subarray(0,4096-bytes);bytes+=portion.length;reason+=decoder.decode(portion,{stream:true});}}finally{await reader.cancel().catch(()=>{});}}}catch{}
++ reason=reason.replace(/<[^>]*>/g,' ').replace(/[\x00-\x1f\x7f]/g,' ').replace(/\s+/g,' ').trim().slice(0,600);
++ const message=response.status===451?'Binance 지역 접근 제한 (451). 데이터 제공자 접근 정책 확인이 필요합니다.':'Binance 접근 차단 (403). 연속 재요청을 5분간 중단했습니다. 서버 접근 허용 여부를 확인해야 합니다.';
++ const diagnostic={status:response.status,host:u.host,path:u.pathname,reason,server:response.headers.get('server'),contentType:response.headers.get('content-type'),requestId:response.headers.get('x-amz-cf-id')||response.headers.get('cf-ray'),observedAt:Date.now(),until};
++ await this.store.put('binance:diagnostic:'+u.host,diagnostic,86400000);
++ await this.store.put('binance:access-blocked:'+u.host,{status:response.status,until,message},300000);
++ this.metrics.errors++;throw new UpstreamError(message,response.status,until);
++ }
+  if(response.ok){let data;try{data=await response.json();}catch(e){if(!attempt)continue;this.metrics.errors++;throw new UpstreamError('Binance 응답 읽기 실패: '+e.message);} if(u.pathname.endsWith('/exchangeInfo')&&Array.isArray(data.symbols))data={symbols:data.symbols.map(s=>({symbol:s.symbol,baseAsset:s.baseAsset,quoteAsset:s.quoteAsset,contractType:s.contractType,status:s.status}))};if(data?.code<0)throw new UpstreamError('Binance '+data.msg);await this.store.put(url,data,ttl);return data;}
+  if(response.status>=500&&!attempt)continue;this.metrics.errors++;throw new UpstreamError(response.status===451?'Binance 지역 접근 제한 (451)':`Binance HTTP ${response.status}`,response.status);}
+  }
+diff --git a/tests/access-block.test.mjs b/tests/access-block.test.mjs
+new file mode 100644
+index 0000000..f0e1e85
+--- /dev/null
++++ b/tests/access-block.test.mjs
+@@ -0,0 +1,19 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {Binance} from '../lib/scanner/binance.mjs';
++import {MemoryStore} from './memory-store.mjs';
++test('403 preserves bounded diagnostic evidence and blocks repeated requests across instances',async()=>{
++ const store=new MemoryStore();let calls=0;
++ const fetcher=async()=>{calls++;return new Response('<html><h1>403 ERROR</h1>Request blocked by CloudFront</html>',{status:403,headers:{server:'CloudFront','content-type':'text/html'}});};
++ const api=new Binance(store,fetcher);
++ await assert.rejects(()=>api.get('/fapi/v1/time'),e=>e.status===403);
++ const diagnostic=await store.get('binance:diagnostic:fapi.binance.com');
++ assert.equal(diagnostic?.status,403);assert.equal(diagnostic?.path,'/fapi/v1/time');assert.match(diagnostic?.reason||'',/CloudFront/);
++ await assert.rejects(()=>new Binance(store,fetcher).get('/fapi/v1/exchangeInfo'),e=>e.status===403);
++ assert.equal(calls,1);
++});
++test('region denial stays an access failure and is never retried or converted to rate limit',async()=>{
++ const store=new MemoryStore();let calls=0;
++ await assert.rejects(()=>new Binance(store,async()=>{calls++;return new Response('{"msg":"Service unavailable from a restricted location"}',{status:451});}).get('/fapi/v1/time'),e=>e.status===451&&/접근 제한/.test(e.message));
++ assert.equal(calls,1);assert.equal((await store.get('binance:diagnostic:fapi.binance.com'))?.status,451);
++});
