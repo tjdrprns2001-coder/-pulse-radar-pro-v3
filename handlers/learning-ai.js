@@ -23,6 +23,19 @@ module.exports=async function handler(req,res){
     if(action==='export'){
       return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',state:ai.exportState()});
     }
+    if(action==='integrity'){
+      const state=ai.exportState();
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',integrity:state.integrity,sealedEvaluation:state.sealedEvaluation,
+        experimentLedger:(state.experimentLedger||[]).slice(0,50),researchNotes:(state.memory?.researchNotes||[]).slice(0,50)});
+    }
+    if(action==='freeze-oos'){
+      if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
+      const token=String(process.env.LEARNING_WRITE_TOKEN||''),supplied=String(req?.headers?.['x-learning-token']||'');
+      if(!token||supplied!==token)return res.status(403).json({status:'error',error:'protected action'});
+      const body=parseBody(req),startAt=Number(body.startAt||Date.now());
+      const frozen=ai.freezeLockedOos(startAt);
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',frozen});
+    }
     if(action==='resolve'){
       if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
       const state=ai.exportState(),now=Date.now(),max=Math.max(1,Math.min(20,Number(req?.query?.limit)||12));
