@@ -88,16 +88,21 @@ function renderLab(state){
   $('labGovernance').innerHTML='<div class="governanceStates">'+(g.states||[]).map((s,i)=>'<span class="'+(i===0?'active':'')+'">'+esc({'HYPOTHESIS_NEW':'새 가설','DATA_PENDING':'데이터 대기','SAMPLE_INSUFFICIENT':'표본 부족','TRAINING':'학습','VALIDATING':'검증','OOS_LOCKED':'OOS 잠금','SHADOW_RUNNING':'연구 전용','PROMOTION_REVIEW':'승격 심사','CHAMPION':'Champion','REJECTED':'폐기','RETIRED':'은퇴','BLOCKED_DATA_QUALITY':'데이터 차단'}[s]||s)+'</span>').join('<i>→</i>')+'</div><div class="gateChecks">'+steps.map(s=>'<span>✓ '+esc(s)+'</span>').join('')+'</div><p>'+esc(g.note||'')+'</p>';
 }
 
+function renderLedger(state){
+  const rows=(state.experimentLedger||[]).slice(0,30),el=$('experimentLedger');if(!el)return;
+  el.innerHTML=rows.length?rows.map(x=>'<article class="ledgerRow"><div><b>'+esc(x.experimentId||x.hypothesisId||'-')+'</b><span>'+esc(x.state||'-')+'</span></div><small>전략 '+esc(x.strategyId||'-')+' '+esc(x.strategyVersion||'')+' · 데이터셋 '+esc(x.datasetSnapshotId||'-')+'</small><small>중단사유 '+esc(x.stopReason||'없음')+' · 테스트 '+num(x.testCount||1)+'회</small><code>'+esc(x.idempotencyKey||'-')+'</code></article>').join(''):'<div class="emptyLab">아직 등록된 실험이 없습니다.</div>';
+}
+
 function horizon(row,h){return row.outcomeV2?.horizons?.['h'+h]?.returnPct??row['outcome'+h+'hPct']??null}
 function renderRows(state){
   const rows=(state.observations||[]).slice(-40).reverse();
   $('rows').innerHTML=rows.length?rows.map(r=>'<tr><td><b>'+esc(r.symbol)+'</b></td><td>'+new Date(r.asOf||r.capturedAt).toLocaleString()+'</td><td>'+esc(r.researchScore??'—')+'</td><td>'+esc(r.researchStage||r.scannerState||'—')+'</td><td>'+pct(horizon(r,1))+'</td><td>'+pct(horizon(r,6))+'</td><td>'+pct(horizon(r,24))+'</td><td>'+pct(horizon(r,72))+'</td><td>'+pct(r.outcomeV2?.mfePct??r.mfe72hPct)+'</td><td>'+pct(r.outcomeV2?.maePct??r.mae72hPct)+'</td><td>'+(r.label===1?'<span class="good">성공</span>':r.label===0?'<span class="bad">실패</span>':r.labelStatus==='AMBIGUOUS'?'<span class="warn">모호</span>':'대기')+'</td></tr>').join(''):'<tr><td colspan="11">아직 자동스캔 학습 관측이 없습니다.</td></tr>';
 }
 async function refresh(){
-  $('status').textContent='연구 AI v3 상태 불러오는 중…';
+  $('status').textContent='연구 AI v4 상태 불러오는 중…';
   try{
     const d=await get('export'),state=d.state||{};
-    renderTop(state);renderIntegrity(state);renderResearch(state);renderLab(state);renderRows(state);window.__researchAIState=state;
+    renderTop(state);renderIntegrity(state);renderResearch(state);renderLab(state);renderLedger(state);renderRows(state);window.__researchAIState=state;
     $('status').textContent='정상 · '+new Date(state.updatedAt||Date.now()).toLocaleString()+' · 연구 전용 · 자동 역추적은 결과 확인 뒤 학습 반영';
   }catch(e){$('status').textContent='오류 · '+e.message}
 }
