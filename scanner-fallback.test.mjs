@@ -24,7 +24,7 @@ test('websocket failure falls back to labeled Bybit linear universe',async()=>{
     throw new Error('unexpected '+url);
   };
   try{
-    const api=new Binance(new Store(),fetcher);
+    const api=new Binance(new Store(),fetcher,{universeAllowlist:new Set(['AAAUSDT']),universeAllowlistAsOf:123});
     const u=await api.universe();
     assert.equal(u.source,'BYBIT_LINEAR_FALLBACK');
     assert.equal(u.rows.length,527);
