@@ -40,6 +40,10 @@ function routedFetcher(env,directFetch){
   const token=String(env.IGNITION_BINANCE_PROXY_TOKEN||'');
   if(!base||token.length<43)return directFetch;
   return async(url,options={})=>{
+    let parsed=null;try{parsed=new URL(String(url));}catch{}
+    const host=parsed?.hostname||'';
+    const isBinance=host==='fapi.binance.com'||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
+    if(!isBinance)return directFetch(url,options);
     const target=base+'/fetch?url='+encodeURIComponent(String(url));
     return directFetch(target,{
       method:'GET',
