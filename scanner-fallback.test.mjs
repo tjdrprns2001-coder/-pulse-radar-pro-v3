@@ -122,3 +122,27 @@ test('retry-after parser accepts seconds, epoch seconds and epoch milliseconds',
   assert.equal(retryAtFromHeader(String(Math.floor((now+120000)/1000)),now),Math.floor((now+120000)/1000)*1000);
   assert.equal(retryAtFromHeader(String(now+180000),now),now+180000);
 });
+
+
+test('temporary Binance kline limit falls back without weakening derivatives',async()=>{
+  const asOf=Math.floor(Date.now()/3600000)*3600000;
+  const fetcher=async url=>{
+    const u=new URL(url);
+    if(u.hostname==='fapi.binance.com'&&u.pathname.endsWith('/klines')){
+      return new Response('rate limited',{status:418,headers:{'retry-after':'60'}});
+    }
+    if(u.hostname==='api.bybit.com'&&u.pathname.endsWith('/kline')){
+      const end=Number(u.searchParams.get('end')||asOf);
+      const list=Array.from({length:160},(_,i)=>{
+        const ts=end-(i+1)*3600000;
+        return[String(ts),'10','11','9','10.5','100','1000'];
+      });
+      return bybit({list});
+    }
+    throw new Error('unexpected '+url);
+  };
+  const api=new Binance(new Store(),fetcher,{futuresBases:['https://fapi.binance.com']});
+  const bars=await api.bars('AAAUSDT','1h',asOf,149);
+  assert.equal(bars._source,'BYBIT_LINEAR_FALLBACK');
+  assert.equal(api.metrics.failovers,1);
+});
