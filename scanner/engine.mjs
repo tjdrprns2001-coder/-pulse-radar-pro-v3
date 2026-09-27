@@ -23,7 +23,7 @@ export async function stepJob(store,api,id){if(!await store.acquire(id))return {
  if(j.cursor>=j.rows.length){j.rows=j.rows.filter(r=>r.oiPassed);j.cursor=0;j.stage='prescan';}
  }
  else if(j.stage==='prescan'){
- const batch=j.rows.slice(j.cursor,j.cursor+8),results=await pool(batch,4,async row=>{const bars=await Promise.all([api.bars(row.symbol,'1h',j.asOf,149),api.bars(row.symbol,'4h',j.asOf,149)]);const h=analyze(bars[0],{fast:true}),q=analyze(bars[1],{fast:true});return {...row,asOf:j.asOf,frames:{'1h':h,'4h':q},score:rank(h,q,row.oi.change4h),status:'점화전',reasons:['프리스캔 · 정밀검사 대기'],detailComplete:false};});let limited=false;
+ const batch=j.rows.slice(j.cursor,j.cursor+8),results=await pool(batch,4,async row=>{const bars=await Promise.all([api.bars(row.symbol,'1h',j.asOf,149),api.bars(row.symbol,'4h',j.asOf,149)]);const h=analyze(bars[0],{fast:true}),q=analyze(bars[1],{fast:true});h.source=bars[0]?._source||row.marketSource||null;q.source=bars[1]?._source||row.marketSource||null;return {...row,asOf:j.asOf,frames:{'1h':h,'4h':q},score:rank(h,q,row.oi.change4h),status:'점화전',reasons:['프리스캔 · 정밀검사 대기'],detailComplete:false};});let limited=false;
  results.forEach((r,i)=>{if(r.ok){Object.assign(batch[i],r.value);}else{error(j,batch[i].symbol,'prescan',r);if(r.status===429)limited=true;}});if(!limited)j.cursor+=batch.length;j.counts.prescan=j.rows.filter(x=>x.frames).length;
  if(j.cursor>=j.rows.length){j.candidates=j.rows.filter(x=>x.frames?.['1h']?.available&&x.frames?.['4h']?.available).sort((a,b)=>b.score-a.score).slice(0,j.config.top);j.counts.candidates=j.candidates.length;j.cursor=0;j.stage='deep';j.rows=[];}
  }
@@ -54,11 +54,11 @@ export function publicJob(j){if(!j)return null;const {rows,...rest}=j;return {..
 async function detailCandidate(row,j,store,api){const frames={};const errors=[];
  // Shared 1H request yields both 1H and UTC-aligned 3H. Other TF requests are bounded.
  const hour=await api.bars(row.symbol,'1h',j.asOf,1499);
- const result=await pool(TF,4,async tf=>{const bars=tf==='1h'?hour:tf==='3h'?resample3h(hour,j.asOf):await api.bars(row.symbol,tf,j.asOf);return analyze(bars);});
+ const result=await pool(TF,4,async tf=>{const bars=tf==='1h'?hour:tf==='3h'?resample3h(hour,j.asOf):await api.bars(row.symbol,tf,j.asOf);const frame=analyze(bars);frame.source=bars?._source||row.marketSource||null;return frame;});
  result.forEach((r,i)=>{frames[TF[i]]=r.ok?r.value:{available:false,reason:r.error};if(!r.ok){errors.push(TF[i]+': '+r.error);error(j,row.symbol,'deep '+TF[i],r);}});
  if(j.status==='paused')throw Object.assign(new Error('요청 제한'),{status:429,retryAt:j.retryAt});
  const derivatives=await pool(['taker','funding','spot'],3,async type=>{if(type==='taker')return api.taker(row.symbol,j.asOf);if(type==='funding')return api.funding(row.symbol,j.asOf);const map=await api.spotMap();const s=map.find(s=>s.symbol===row.symbol);if(!s)return {available:false,reason:'동일 심볼 현물 없음 (임의 배수 매핑 안 함)'};const b=await api.spot(row.symbol,j.asOf),z=b.at(-1),f=hour.at(-1),metric=analyze(b,{fast:true});if(!z||!f||z.end!==f.end)return {available:false,reason:'현물/선물 확정봉 시각 불일치'};return {available:true,price:z.c,futuresPrice:f.c,asOf:z.end,basisPct:pct(f.c,z.c),quoteVolume1h:z.q,futuresQuoteVolume1h:f.q,volumeRatio:z.q>0?f.q/z.q:null,change24h:pct(+s.lastPrice,+s.openPrice),rvol:metric.rvol,rsi:metric.rsi};});
  const [taker,funding,spot]=derivatives.map((r,i)=>{if(!r.ok){errors.push(['taker','funding','spot'][i]+': '+r.error);error(j,row.symbol,'crosscheck',r);}return r.ok?r.value:null;});if(j.status==='paused')throw Object.assign(new Error('요청 제한'),{status:429,retryAt:j.retryAt});
  if(taker?.ratio!=null&&frames['1h']?.available){taker.klineRatio=frames['1h'].takerKline;const intervalMatch=taker.asOf===hour.at(-1)?.t;taker.aligned=intervalMatch;taker.discrepancy=intervalMatch&&taker.klineRatio!=null?Math.abs(taker.ratio-taker.klineRatio):null;}
- Object.assign(row,{frames,taker,funding,spot,detailComplete:true,coverage:TF.filter(t=>frames[t]?.available).length,errors});Object.assign(row,classify(row));row.matches=matches(row,await store.samples());return row;
+ Object.assign(row,{frames,taker,funding,spot,detailComplete:true,coverage:TF.filter(t=>frames[t]?.available).length,errors,dataSources:api.sourceSummary?.()||[]});Object.assign(row,classify(row));row.matches=matches(row,await store.samples());return row;
 }
