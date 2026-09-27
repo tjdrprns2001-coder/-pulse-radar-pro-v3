@@ -32,16 +32,48 @@ function renderResearch(state){
   const regimes=stats.byRegime||[];
   $('regimeRows').innerHTML=regimes.length?regimes.map(x=>'<tr><td><b>'+esc(x.key)+'</b></td><td>'+num(x.count)+'</td><td>'+num(x.success)+'</td><td>'+num(x.failure)+'</td><td>'+rate(x.successRate)+'</td><td>'+pct(x.avgMfePct)+'</td><td>'+pct(x.avgMaePct)+'</td></tr>').join(''):'<tr><td colspan="7">Regime outcome 대기</td></tr>';
 }
+
+function renderLab(state){
+  const lab=state.research?.lab||{},knowledge=lab.knowledge||{},coverage=knowledge.coverage||{},hyp=lab.hypotheses||{};
+  $('labTechTotal').textContent=num(coverage.total||knowledge.techniques?.length||0);
+  $('labTechSeen').textContent=num(coverage.observed||0);
+  $('labHypotheses').textContent=num(hyp.observed?.length||0);
+  $('labHybrids').textContent=num(hyp.archetypes?.length||0);
+  $('labIdeas').textContent=num(hyp.ideaCount||0);
+
+  const seen=new Set((state.observations||[]).flatMap(r=>r.bookRuleIds||[]));
+  const techniques=knowledge.techniques||[];
+  $('techniqueCatalog').innerHTML=techniques.length?techniques.map(t=>{
+    const active=seen.has(t.id),req=(t.requires||[]).length?' · 필요데이터 '+(t.requires||[]).join(', '):'';
+    return '<span class="techniqueChip '+(active?'seen':'unseen')+'" title="'+esc((t.sources||[]).join(' · ')+req)+'"><b>'+esc(t.label)+'</b><small>'+esc(t.category)+' · '+esc(t.researchRole||t.mode)+'</small></span>';
+  }).join(''):'<span class="muted">등록 기법이 없습니다.</span>';
+
+  const observed=(hyp.observed||[]).slice(0,12);
+  $('hypothesisCards').innerHTML=observed.length?observed.map(x=>{
+    const counter=x.counterexamples||[],rateText=x.successRate==null?'표본 부족':Math.round(x.successRate*100)+'%';
+    return '<article class="hypothesisCard"><div class="hypHead"><span class="hypId">'+esc(x.id)+'</span><span class="hypScore">'+esc(x.confidence)+'점</span></div><h3>'+esc(x.title)+'</h3><div class="hypMeta"><span>시장국면 '+esc(x.regime)+'</span><span>표본 '+num(x.support)+'</span><span>성공률 '+esc(rateText)+'</span><span>MFE '+pct(x.avgMfePct)+'</span></div><p>'+esc(x.thesis)+'</p><div class="counter '+(counter.length?'has':'none')+'">⚠️ 반례 '+counter.length+'개 · '+esc(x.falsification||'')+'</div><div class="next">다음 연구 → '+esc(x.nextAction||'추가 관찰')+'</div></article>';
+  }).join(''):'<div class="emptyLab">라벨 표본이 더 쌓이면 기법 조합 가설이 자동 생성됩니다.</div>';
+
+  const hybrids=(hyp.archetypes||[]).slice(0,10);
+  $('hybridCards').innerHTML=hybrids.length?hybrids.map(x=>'<div class="labRow"><b>'+esc(x.title)+'</b><span>표본 '+num(x.support)+' · '+esc((x.regimes||[]).join(', ')||'시장국면 미분류')+'</span><small>'+esc(x.thesis||'')+'</small><em>'+esc(x.nextAction||'연구 대기')+'</em></div>').join(''):'<div class="emptyLab">성공 군집 표본 대기</div>';
+
+  const experiments=[...(hyp.mutations||[]),...(hyp.crossovers||[])].slice(0,14);
+  $('experimentCards').innerHTML=experiments.length?experiments.map(x=>'<div class="labRow experiment"><b>'+esc(x.kind==='MUTATION'?'🧪 돌연변이 · ':'🧬 교배 · ')+esc(x.title)+'</b><span>'+esc(x.thesis||'')+'</span><small>부모 '+esc(x.parentId||(x.parents||[]).join(' + ')||'독립')+'</small><em>'+esc(x.nextAction||'연구 설계')+'</em></div>').join(''):'<div class="emptyLab">충분한 관측 가설이 생기면 자동 실험안이 생성됩니다.</div>';
+
+  const g=lab.governance||{},steps=g.promotionRequires||[];
+  $('labGovernance').innerHTML='<div class="governanceStates">'+(g.states||[]).map((s,i)=>'<span class="'+(i===0?'active':'')+'">'+esc({'IDEA':'아이디어','SHADOW':'연구 전용','CANDIDATE':'검증 후보','VALIDATED':'검증 완료','PROMOTED':'운영 승격'}[s]||s)+'</span>').join('<i>→</i>')+'</div><div class="gateChecks">'+steps.map(s=>'<span>✓ '+esc(s)+'</span>').join('')+'</div><p>'+esc(g.note||'')+'</p>';
+}
+
 function horizon(row,h){return row.outcomeV2?.horizons?.['h'+h]?.returnPct??row['outcome'+h+'hPct']??null}
 function renderRows(state){
   const rows=(state.observations||[]).slice(-40).reverse();
   $('rows').innerHTML=rows.length?rows.map(r=>'<tr><td><b>'+esc(r.symbol)+'</b></td><td>'+new Date(r.asOf||r.capturedAt).toLocaleString()+'</td><td>'+esc(r.researchScore??'—')+'</td><td>'+esc(r.researchStage||r.scannerState||'—')+'</td><td>'+pct(horizon(r,1))+'</td><td>'+pct(horizon(r,6))+'</td><td>'+pct(horizon(r,24))+'</td><td>'+pct(horizon(r,72))+'</td><td>'+pct(r.outcomeV2?.mfePct??r.mfe72hPct)+'</td><td>'+pct(r.outcomeV2?.maePct??r.mae72hPct)+'</td><td>'+(r.label===1?'<span class="good">성공</span>':r.label===0?'<span class="bad">실패</span>':r.labelStatus==='AMBIGUOUS'?'<span class="warn">모호</span>':'대기')+'</td></tr>').join(''):'<tr><td colspan="11">아직 자동스캔 학습 관측이 없습니다.</td></tr>';
 }
 async function refresh(){
-  $('status').textContent='Research AI v2 상태 불러오는 중…';
+  $('status').textContent='연구 AI v3 상태 불러오는 중…';
   try{
     const d=await get('export'),state=d.state||{};
-    renderTop(state);renderResearch(state);renderRows(state);window.__researchAIState=state;
+    renderTop(state);renderResearch(state);renderLab(state);renderRows(state);window.__researchAIState=state;
     $('status').textContent='정상 · '+new Date(state.updatedAt||Date.now()).toLocaleString()+' · SHADOW_ONLY · 자동 역추적은 급등 확인 뒤 학습 반영';
   }catch(e){$('status').textContent='오류 · '+e.message}
 }
