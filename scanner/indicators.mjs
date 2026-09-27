@@ -7,7 +7,7 @@ export const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a/b-1)*10
 export function closedBars(raw,asOf=Date.now()){return raw.filter(r=>Number(r[6])<asOf).map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],end:+r[6],q:+r[7],buy:+r[9]})).filter(b=>Object.values(b).every(Number.isFinite)).sort((a,b)=>a.t-b.t);}
 export function resample3h(bars,asOf=Date.now()){
  const groups=new Map();for(const b of bars){const t=Math.floor(b.t/10800000)*10800000;if(!groups.has(t))groups.set(t,[]);groups.get(t).push(b);}
- return [...groups].filter(([t,a])=>a.length===3&&a[0].t===t&&a[1].t===t+3600000&&a[2].t===t+7200000&&t+10800000<=asOf).map(([t,a])=>({t,o:a[0].o,h:Math.max(...a.map(b=>b.h)),l:Math.min(...a.map(b=>b.l)),c:a[2].c,v:a.reduce((s,b)=>s+b.v,0),q:a.reduce((s,b)=>s+b.q,0),buy:a.reduce((s,b)=>s+b.buy,0),end:t+10800000-1}));
+ return [...groups].filter(([t,a])=>a.length===3&&a[0].t===t&&a[1].t===t+3600000&&a[2].t===t+7200000&&t+10800000<=asOf).map(([t,a])=>({t,o:a[0].o,h:Math.max(...a.map(b=>b.h)),l:Math.min(...a.map(b=>b.l)),c:a[2].c,v:a.reduce((s,b)=>s+b.v,0),q:a.reduce((s,b)=>s+b.q,0),buy:a.every(b=>Number.isFinite(b.buy))?a.reduce((s,b)=>s+b.buy,0):null,end:t+10800000-1,_source:a.every(b=>b._source===a[0]._source)?a[0]._source:null}));
 }
 export function sma(a,n){return a.length>=n?mean(a.slice(-n)):null;}
 export function emaSeries(a,n){const out=a.map(()=>null);if(a.length<n)return out;let v=mean(a.slice(0,n));out[n-1]=v;for(let i=n;i<a.length;i++){v=a[i]*2/(n+1)+v*(1-2/(n+1));out[i]=v;}return out;}
@@ -27,7 +27,7 @@ export function analyze(b,{fast=false}={}){
  const wasCompressed=b.length>=80?Array.from({length:12},(_,i)=>{const history=c.slice(0,-i-1),m=[5,10,20,60].map(n=>sma(history,n));return m.every(x=>x!=null)&&atr>0&&(Math.max(...m)-Math.min(...m))/atr<=1;}).some(Boolean):null;
  const breakout20=z.c>Math.max(...b.slice(-21,-1).map(x=>x.h));
  const ignitionStructure={wasCompressed,breakout20,trigger:wasCompressed===true&&breakout20&&rvol>=3};
- const buy=z.buy,sell=z.v-buy,taker=sell>0?buy/sell:null;
+ const buy=Number.isFinite(z.buy)?z.buy:null,sell=buy!=null?z.v-buy:null,taker=buy!=null&&sell>0?buy/sell:null;
  const base={ignitionStructure,available:true,bars:b.length,asOf:z.end,price:z.c,rsi:last(rs),macd:{value:last(macd),signal,histogram:hist,delta:hist!=null&&oldHist!=null?hist-oldHist:null},obv:last(os),obvRising:last(os)>os.at(-6),rvol,atr,sma:smas,ema:emas,above20:smas[20]!=null?z.c>smas[20]:null,above60:smas[60]!=null?z.c>smas[60]:null,alignment:smas[60]!=null&&smas[120]!=null?(smas[5]>smas[10]&&smas[10]>smas[20]&&smas[20]>smas[60]&&smas[60]>smas[120]):null,compression,compressed:compression!=null?compression<=1:null,extensionAtr:atr>0?(z.c-smas[20])/atr:null,change20:pct(z.c,c.at(-21)),rangePosition:rangeHigh>rangeLow?(z.c-rangeLow)/(rangeHigh-rangeLow):0.5,takerKline:taker,sparkline:c.slice(-40),ema448Warmup:b.length>=896?'충분':b.length>=448?'최소':'부족'};
  if(fast)return base;
  const sr=rs.map((r,i)=>{const w=rs.slice(Math.max(0,i-13),i+1);if(w.length<14||w.some(x=>x==null))return null;let lo=Math.min(...w),hi=Math.max(...w);return hi>lo?(r-lo)/(hi-lo)*100:50;});
