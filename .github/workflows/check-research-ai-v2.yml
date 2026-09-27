@@ -3,6 +3,7 @@ name: Research AI v2 checks
 on:
   push:
     branches:
+      - main
       - feature/research-ai-v2-continuation-20260926
     paths:
       - 'lib/learning/**'
@@ -31,6 +32,9 @@ jobs:
       - run: node --check lib/learning/similarity.js
       - run: node --check lib/learning/neural.js
       - run: node --check lib/learning/dataset-split.js
+      - run: node --check lib/learning/research-integrity.js
+      - run: node --check lib/learning/research-lab.js
+      - run: node --check lib/learning/auto-sample-engine.js
       - run: node --check lib/learning/model-registry.js
       - run: node --check lib/learning/metrics.js
       - run: node --check lib/learning/evidence.js
