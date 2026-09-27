@@ -5,7 +5,7 @@ const Cap=require('../lib/coin-scan/market-cap-provider.js');
 let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{checks++;assert.deepEqual(a,b,msg)};
 (async()=>{
   eq(Core.VERSION,'FULL_UNIVERSE_AUTO_SCAN_v1','version');
-  eq(Core.AUTO_INTERVAL_MS,1800000,'30m interval');
+  eq(Core.AUTO_INTERVAL_MS,1800000,'30m interval');eq(Core.AUTO_STALE_MS,90000,'stale run recovery threshold');
   eq(Core.TIMEFRAMES,['5m','15m','1h','4h','1d','1w'],'six timeframes');
   eq(Core.TIER_ORDER,['small','mid','large'],'tier order');
   eq(Core.autoBucketStart(0),0,'bucket zero');
@@ -42,6 +42,15 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   eq(Core.frameSummary([],now).available,false,'empty frame unavailable');eq(Core.assignMarketCapTiers([{symbol:'XUSDT',baseAsset:'X'}],{} )[0].tier,'unknown','unknown cap stays unknown');
   const failProvider={...provider,async getV2OiProfile(){throw new Error('oi fail')}};const failStore=Core.createMemoryFullScanStore();const failSvc=Core.createFullUniverseScanService({provider:failProvider,marketCapProvider,store:failStore,now:()=>9999999,sleep:async()=>{},maxWorkers:1,requestsPerMinute:999999});const fail=await failSvc.execute({kind:'manual',tiers:['small']});ok(fail.items.every(x=>x.complete===false),'oi failure marks incomplete');ok(fail.items.every(x=>x.errors.some(e=>e.source==='oi')),'oi failure preserved');
   const unknownCaps=Core.assignMarketCapTiers(rows,new Map([['A',100],['B',200]]));eq(unknownCaps.filter(x=>x.tier==='unknown').length,6,'unresolved caps explicit');eq(Core.selectUniverse(unknownCaps,{kind:'manual',tiers:['mid']}).length,0,'two resolved caps split into edge quartiles');
-  ok(checks>=50,'minimum checks');
+  let resumeT=7200000+1000,resumeKlines=0;
+  const resumeProvider={...provider,async getFuturesKlines(symbol,tf){resumeKlines++;return[[0,1,2,.5,1,10,1],[2,1,2,.5,2,20,3],[4,2,3,1,3,30,5]]}};
+  const resumeStore=Core.createMemoryFullScanStore(),resumeSvc=Core.createFullUniverseScanService({provider:resumeProvider,marketCapProvider,store:resumeStore,now:()=>resumeT,sleep:async()=>{},maxWorkers:2,requestsPerMinute:999999,staleRunMs:60000});
+  const preparedResume=await resumeSvc.prepare({kind:'auto'});await resumeStore.putItem(preparedResume.run.id,{symbol:'AUSDT',tier:'small',complete:true,frames:{},errors:[]});
+  const staleRun=resumeStore._runs.get(preparedResume.run.id);staleRun.status='RUNNING';staleRun.updatedAt=resumeT-120000;resumeStore._runs.set(staleRun.id,staleRun);
+  const recovered=await resumeSvc.execute({kind:'auto'});eq(recovered.id,preparedResume.run.id,'stale run reuses bucket run id');ok(recovered.recovered===true,'stale run marked recovered');eq(recovered.resumedCount,1,'completed symbol resumed');eq(recovered.items.length,8,'recovered run returns full universe');eq(resumeKlines,42,'resumed symbol is not rescanned across six timeframes');
+  const freshStore=Core.createMemoryFullScanStore(),freshSvc=Core.createFullUniverseScanService({provider,marketCapProvider,store:freshStore,now:()=>resumeT,sleep:async()=>{},maxWorkers:1,requestsPerMinute:999999,staleRunMs:60000});
+  const freshPrepared=await freshSvc.prepare({kind:'auto'}),freshRun=freshStore._runs.get(freshPrepared.run.id);freshRun.status='RUNNING';freshRun.updatedAt=resumeT;freshStore._runs.set(freshRun.id,freshRun);
+  const freshAttempt=await freshSvc.execute({kind:'auto'});ok(freshAttempt.skipped===true,'fresh running bucket is not duplicated');eq(freshAttempt.id,freshPrepared.run.id,'fresh running bucket id preserved');
+  ok(checks>=58,'minimum checks');
   console.log(`full-universe auto-scan verification PASS (${checks} checks)`);
 })().catch(e=>{console.error(e);process.exit(1)});

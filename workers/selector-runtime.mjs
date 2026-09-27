@@ -299,12 +299,19 @@ async function runSelectorScanner(){
 
 async function runFullUniverseAutoScan(){
   if(String(env.FULL_SCAN_ENABLED||'1')==='0'||fullScanActive)return;
-  fullScanActive=true;health.fullScan={...health.fullScan,status:'RUNNING',startedAt:Date.now(),updatedAt:Date.now()};
+  fullScanActive=true;
   try{
-    const result=await fullScanService.execute({kind:'auto',owner:'selector-runtime'});
-    health.fullScan={status:result?.skipped?'CACHED':'DONE',runId:result?.id||null,bucketStart:result?.bucketStart||null,universeCount:result?.universeCount||0,selectedCount:result?.selectedCount||0,completedCount:result?.completedCount||0,errorCount:result?.errorCount||0,cacheHit:Boolean(result?.cacheHit),updatedAt:Date.now()};
+    const prepared=await fullScanService.prepare({kind:'auto',owner:'selector-runtime'});
+    if(prepared?.skipped){
+      const prior=prepared.run||{};
+      health.fullScan={status:prior.status==='DONE'?'CACHED':'REMOTE_RUNNING',runId:prior.id||null,bucketStart:prior.bucketStart||null,universeCount:prior.universeCount||0,selectedCount:prior.selectedCount||0,completedCount:prior.completedCount||0,errorCount:prior.errorCount||0,cacheHit:Boolean(prepared.cacheHit),updatedAt:Date.now()};
+      return;
+    }
+    health.fullScan={status:'RUNNING',runId:prepared?.run?.id||null,bucketStart:prepared?.run?.bucketStart||null,recovered:Boolean(prepared?.recovered),startedAt:prepared?.run?.startedAt||Date.now(),updatedAt:Date.now()};
+    const result=await fullScanService.executeRun(prepared.run,{tiers:prepared.tiers});
+    health.fullScan={status:'DONE',runId:result?.id||null,bucketStart:result?.bucketStart||null,universeCount:result?.universeCount||0,selectedCount:result?.selectedCount||0,resumedCount:result?.resumedCount||0,completedCount:result?.completedCount||0,errorCount:result?.errorCount||0,cacheHit:false,recovered:Boolean(prepared?.recovered),updatedAt:Date.now()};
   }catch(e){
-    health.fullScan={status:'FAILED',error:String(e?.message||e),updatedAt:Date.now()};
+    health.fullScan={...health.fullScan,status:'FAILED',error:String(e?.message||e),updatedAt:Date.now()};
     health.errors.push({source:'full-universe-scan',at:Date.now(),error:String(e?.message||e)});
   }finally{fullScanActive=false}
 }
@@ -350,7 +357,7 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
-    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:health.fullScanWs||null});
+    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null});
     if(req.method==='GET'&&route.pathname==='/api/v1/results'){
       const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000));
       const latest=await fullScanStore.latest({tiers,limit});
