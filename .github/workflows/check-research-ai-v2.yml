@@ -33,6 +33,8 @@ jobs:
       - run: node --check lib/learning/neural.js
       - run: node --check lib/learning/dataset-split.js
       - run: node --check lib/learning/research-integrity.js
+      - run: node --check lib/learning/regime-detector.js
+      - run: node --check lib/learning/sealed-oos-evaluator.js
       - run: node --check lib/learning/research-lab.js
       - run: node --check lib/learning/auto-sample-engine.js
       - run: node --check lib/learning/model-registry.js
