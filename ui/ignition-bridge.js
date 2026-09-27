@@ -26,11 +26,20 @@ function candidateCard(x){
  const p=x.provenance||{};
  const frameSource=(p.frames||[]).length===1?src(p.frames[0]):(p.frames||[]).length>1?'혼합':'N/A';
  const takerText=Number.isFinite(Number(taker))?num(taker,2):'N/A';
+ const profile=x.scanProfile||{},vol=profile.volume||{},der=profile.derivatives||{};
+ const profileTags=[
+   profile.stage?'<span class="tag">'+esc(profile.stage)+'</span>':'',
+   Number.isFinite(Number(vol.rvol))?'<span class="tag">RVOL '+num(vol.rvol,2)+'x</span>':'',
+   Number.isFinite(Number(vol.cmf))?'<span class="tag">CMF '+num(vol.cmf,2)+'</span>':'',
+   Number.isFinite(Number(vol.mfi))?'<span class="tag">MFI '+num(vol.mfi,0)+'</span>':'',
+   Number.isFinite(Number(der.oi4h))?'<span class="tag">OI4H '+num(der.oi4h,2)+'%</span>':''
+ ].filter(Boolean).join('');
  return '<article class="card">'+
    '<div class="cardHead"><div><div class="symbol">'+esc(x.symbol)+'</div><div class="meta">'+esc(x.status||'관찰')+' · coverage '+esc(x.coverage??'N/A')+'/10</div></div>'+
    '<div class="score '+(ready?'ready':'partial')+'">'+num(x.score,0)+'</div></div>'+
    '<div class="tags"><span class="tag">24H '+num(x.change,2)+'%</span><span class="tag">가격 '+num(x.price,6)+'</span><span class="tag">거래대금 '+money(x.quoteVolume)+'</span><span class="tag">Taker '+takerText+'</span><span class="tag">Funding '+(Number.isFinite(Number(funding))?num(Number(funding)*100,4)+'%':'N/A')+'</span><span class="tag '+(ready?'ready':'partial')+'">'+(ready?'정밀 완료':'분석 중')+'</span></div>'+
    '<div class="tags"><span class="tag '+modeClass(p.mode)+'">'+modeLabel(p.mode)+'</span><span class="tag">OI '+src(p.oi)+'</span><span class="tag">차트 '+frameSource+'</span><span class="tag '+(p.taker==='UNAVAILABLE'?'sourceNA':'')+'">Taker '+src(p.taker)+'</span><span class="tag">Funding '+src(p.funding)+'</span></div>'+
+   (profileTags?'<div class="tags">'+profileTags+'</div>':'')+
    (x.reasons?.length?'<div class="reason">'+x.reasons.slice(0,3).map(esc).join(' · ')+'</div>':'')+
  '</article>';
 }
