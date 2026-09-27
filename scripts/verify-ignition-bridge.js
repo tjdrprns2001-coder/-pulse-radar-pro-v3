@@ -31,7 +31,7 @@ function makeRes(){
     return{ok:true,status:200,json:async()=>({
       schemaVersion:'1.0',status:'complete',scan:{id:'scan-1',asOf:140000,finishedAt:150000,partialData:false},
       candidates:[
-       {symbol:'AXSUSDT',score:81,detailComplete:true,coverage:10,reasons:['ready']},
+       {symbol:'AXSUSDT',score:81,detailComplete:true,coverage:10,reasons:['ready'],oi:{source:'BINANCE_FUTURES'},frames:{'1h':{source:'BYBIT_LINEAR_FALLBACK'},'4h':{source:'BYBIT_LINEAR_FALLBACK'}},taker:{source:'UNAVAILABLE',ratio:null},funding:{source:'BYBIT_LINEAR_FALLBACK'}},
        {symbol:'KAVAUSDT',score:72,detailComplete:false,coverage:8,reasons:['partial']}
       ]
     })};
@@ -52,6 +52,12 @@ function makeRes(){
   assert.equal(s.body.finishedAt,150000);
   assert.equal(s.body.candidates[0].usable,true);
   assert.equal(s.body.candidates[1].usable,false);
+  assert.equal(s.body.dataMode,'mixed-fallback');
+  assert.equal(s.body.fallbackCandidateCount,1);
+  assert.equal(s.body.candidates[0].provenance.mode,'mixed');
+  assert.deepEqual(s.body.candidates[0].provenance.frames,['BYBIT']);
+  assert.equal(s.body.candidates[0].provenance.oi,'BINANCE');
+  assert.equal(s.body.candidates[0].provenance.taker,'UNAVAILABLE');
  }
  {
   const res=makeRes();

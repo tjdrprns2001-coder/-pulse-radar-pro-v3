@@ -13,9 +13,44 @@ function freshnessOf(scan,now){
   return{ms,state};
 }
 
+function sourceLabel(value){
+  const s=String(value||'').toUpperCase();
+  if(!s)return null;
+  if(s.includes('BYBIT'))return 'BYBIT';
+  if(s.includes('BINANCE'))return 'BINANCE';
+  if(s.includes('UNAVAILABLE'))return 'UNAVAILABLE';
+  return s.slice(0,40);
+}
+
+function sourceSummary(row={}){
+  const all=[];
+  const push=v=>{const x=sourceLabel(v);if(x)all.push(x);};
+  if(Array.isArray(row.dataSources))row.dataSources.forEach(push);
+  push(row.marketSource);
+  push(row.oi?.source);
+  push(row.taker?.source);
+  push(row.funding?.source);
+  push(row.spot?.source);
+  for(const frame of Object.values(row.frames||{}))push(frame?.source);
+  const uniq=[...new Set(all)];
+  const hasBinance=uniq.includes('BINANCE');
+  const hasBybit=uniq.includes('BYBIT');
+  const mode=hasBinance&&hasBybit?'mixed':hasBybit?'bybit-fallback':hasBinance?'binance-primary':'unknown';
+  return{
+    mode,
+    sources:uniq,
+    fallbackUsed:hasBybit,
+    oi:sourceLabel(row.oi?.source),
+    taker:sourceLabel(row.taker?.source),
+    funding:sourceLabel(row.funding?.source),
+    frames:[...new Set(Object.values(row.frames||{}).map(x=>sourceLabel(x?.source)).filter(Boolean))]
+  };
+}
+
 function normalizeCandidate(row={}){
   const coverage=finite(row.coverage);
   const detailComplete=Boolean(row.detailComplete);
+  const provenance=sourceSummary(row);
   return{
     symbol:String(row.symbol||'').toUpperCase(),
     price:finite(row.price),
@@ -32,7 +67,8 @@ function normalizeCandidate(row={}){
     taker:row.taker&&typeof row.taker==='object'?row.taker:null,
     funding:row.funding&&typeof row.funding==='object'?row.funding:null,
     spot:row.spot&&typeof row.spot==='object'?row.spot:null,
-    matches:Array.isArray(row.matches)?row.matches.slice(0,12):[]
+    matches:Array.isArray(row.matches)?row.matches.slice(0,12):[],
+    provenance
   };
 }
 
@@ -101,6 +137,12 @@ module.exports=async function handler(req,res,ctx={}){
     const scanMeta=scan.scan&&typeof scan.scan==='object'?scan.scan:{};
     const usableCount=candidates.filter(x=>x.usable).length;
     const partialCount=candidates.filter(x=>!x.usable).length;
+    const provenanceModes=candidates.map(x=>x.provenance?.mode).filter(Boolean);
+    const fallbackCandidateCount=candidates.filter(x=>x.provenance?.fallbackUsed).length;
+    const hasMixed=provenanceModes.includes('mixed');
+    const hasBybit=provenanceModes.includes('bybit-fallback');
+    const hasPrimary=provenanceModes.includes('binance-primary');
+    const dataMode=hasMixed||(hasBybit&&hasPrimary)?'mixed-fallback':hasBybit?'bybit-fallback':hasPrimary?'binance-primary':fallbackCandidateCount?'fallback':'unknown';
     const scanStatus=String(scan.status||'').toLowerCase();
     const sourceStatus=String(scan.sourceStatus||scan.status||'').toLowerCase();
     const servedFromLastComplete=Boolean(scan.servedFromLastComplete);
@@ -131,6 +173,8 @@ module.exports=async function handler(req,res,ctx={}){
       candidateCount:candidates.length,
       usableCount,
       partialCount,
+      dataMode,
+      fallbackCandidateCount,
       candidates,
       errors:Array.isArray(scan.errors)?scan.errors.slice(0,20):[],
       excluded:Array.isArray(scan.excluded)?scan.excluded.slice(0,50):[],
