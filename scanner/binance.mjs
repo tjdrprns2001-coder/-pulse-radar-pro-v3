@@ -266,6 +266,7 @@ export class Binance{
       if(!Array.isArray(a))throw new Error('OI 응답 오류');
       return this.oiFromRows(a,asOf,'BINANCE_FUTURES');
     }catch(primary){
+      if(primary?.status===429)throw primary;
       try{return await this.bybitOi(symbol,asOf);}
       catch(fallback){return{change4h:null,change8h:null,asOf:null,reason:'OI unavailable: '+primary.message+' | '+fallback.message,source:'UNAVAILABLE'};}
     }
@@ -343,6 +344,7 @@ export class Binance{
         for(const b of oneHour)b._source='BINANCE_FUTURES';
         bars=resample3h(oneHour,asOf).slice(-limit);
       }catch(primary){
+        if(primary?.status===429)throw primary;
         try{
           const oneHour=await this.bybitBars(symbol,'1h',asOf,baseLimit,'linear');
           bars=resample3h(oneHour,asOf).slice(-limit);
@@ -364,6 +366,7 @@ export class Binance{
       bars=closedBars(raw,asOf);
       try{Object.defineProperty(bars,'_source',{value:'BINANCE_FUTURES',enumerable:false});}catch{}
     }catch(primary){
+      if(primary?.status===429)throw primary;
       try{bars=await this.bybitBars(symbol,tf,asOf,limit,'linear');}
       catch(fallback){throw new UpstreamError(primary.message+' | '+fallback.message,502);}
     }
@@ -377,6 +380,7 @@ export class Binance{
       const valid=rows.filter(x=>+x.timestamp+3600000<=asOf),row=valid.at(-1);
       return row?{ratio:+row.buySellRatio,asOf:+row.timestamp,period:'1h',direction:+row.buySellRatio>1.2?'buy':+row.buySellRatio<.8?'sell':'none',source:'BINANCE_FUTURES'}:{ratio:null,reason:'확정 taker 구간 없음',source:'BINANCE_FUTURES'};
     }catch(e){
+      if(e?.status===429)throw e;
       return{ratio:null,asOf:null,period:'1h',direction:'none',available:false,reason:'Binance taker unavailable; 동등하지 않은 대체값 미사용',source:'UNAVAILABLE'};
     }
   }
@@ -386,6 +390,7 @@ export class Binance{
       const a=await this.get('/fapi/v1/fundingRate',{symbol,limit:1,endTime:asOf},300000);
       return a.length?{rate:+a[0].fundingRate,asOf:+a[0].fundingTime,source:'BINANCE_FUTURES'}:null;
     }catch(primary){
+      if(primary?.status===429)throw primary;
       try{
         const body=await this.bybitGet('/v5/market/tickers?category=linear&symbol='+encodeURIComponent(symbol),60000,'funding:'+symbol);
         const row=body?.result?.list?.[0],rate=n(row?.fundingRate);
