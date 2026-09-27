@@ -2,7 +2,7 @@
 const STORE='pulse.snapshot.v2.records',REV='pulse.snapshot.v2.revisions';
 const $=id=>document.getElementById(id);
 const C=()=>window.PulseSnapshotBoardV2Context;
-let tool='select',drawings=[],undo=[],redo=[],liveLayer=false,locked=false,selected=null,start=null;
+let tool='select',drawings=[],undo=[],redo=[],liveLayer=false,selected=null,start=null,lastKey='';
 const canvas=()=>C()?.getCanvas?.(),overlay=()=>$('snapshotOverlay');
 function record(){return C()?.getCurrentRecord?.()||null}
 function candles(){return record()?.candles||[]}
@@ -10,8 +10,10 @@ function bounds(){const rows=candles();if(!rows.length)return null;const lo=Math
 function toChart(px,py){const cv=overlay(),b=bounds();if(!cv||!b)return null;const r=cv.getBoundingClientRect(),x=(px-r.left)/r.width,y=(py-r.top)/r.height;return{time:b.t0+(b.t1-b.t0)*x,price:b.hi-(b.hi-b.lo)*y}}
 function toPixel(p){const cv=overlay(),b=bounds();if(!cv||!b)return null;return{x:(Number(p.time)-b.t0)/(b.t1-b.t0||1)*cv.width,y:(b.hi-Number(p.price))/(b.hi-b.lo||1)*cv.height}}
 function snap(){undo.push(JSON.stringify(drawings));if(undo.length>50)undo.shift();redo=[]}
-function saveLocal(){try{localStorage.setItem(STORE,JSON.stringify(drawings))}catch{}}
-function loadLocal(){try{drawings=JSON.parse(localStorage.getItem(STORE)||'[]');if(!Array.isArray(drawings))drawings=[]}catch{drawings=[]}}
+function storageKey(){const rec=record();return STORE+':'+(rec?.symbol||C()?.getSymbol?.()||'NA')+':'+(rec?.timeframe||C()?.getCurrentTf?.()||'NA')}
+function revisionKey(){const rec=record();return REV+':'+(rec?.symbol||'NA')+':'+(rec?.timeframe||'NA')}
+function saveLocal(){try{localStorage.setItem(storageKey(),JSON.stringify(drawings))}catch{}}
+function loadLocal(){try{drawings=JSON.parse(localStorage.getItem(storageKey())||'[]');if(!Array.isArray(drawings))drawings=[]}catch{drawings=[]}undo=[];redo=[];selected=null;lastKey=storageKey()}
 function newId(){return 'd_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)}
 function render(){
  const cv=overlay();if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
@@ -46,14 +48,14 @@ function snapshotPayload(){
  const rec=record();if(!rec)return null;return{schemaVersion:2,id:'snap_'+Date.now(),createdAt:new Date().toISOString(),capturedAt:rec.confirmedBarTime,market:{venue:'binance',symbol:rec.symbol,marketType:'perpetual',timeframe:rec.timeframe},lastCandleClosed:true,source:{provider:'binance',dataVersion:rec.engineVersion||null,fetchedAt:new Date().toISOString()},candles:rec.candles,indicators:[],drawings:JSON.parse(JSON.stringify(drawings)),markers:[],note:$('snapshotNote')?.value||'',liveLayerEnabled:liveLayer,originalSnapshotId:rec.snapshotId};
 }
 function exportJson(){const p=snapshotPayload();if(!p)return;const a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(p,null,2)],{type:'application/json'}));a.href=u;a.download=p.market.symbol+'-'+p.market.timeframe+'-snapshot-v2.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
-function saveRevision(){const p=snapshotPayload();if(!p)return;let arr=[];try{arr=JSON.parse(localStorage.getItem(REV)||'[]')}catch{};arr.unshift({...p,revision:(arr[0]?.revision||0)+1});arr=arr.slice(0,30);localStorage.setItem(REV,JSON.stringify(arr));$('snapshotV2State').textContent='✅ Revision '+arr[0].revision+' 저장'}
+function saveRevision(){const p=snapshotPayload();if(!p)return;let arr=[];try{arr=JSON.parse(localStorage.getItem(revisionKey())||'[]')}catch{};arr.unshift({...p,revision:(arr[0]?.revision||0)+1});arr=arr.slice(0,30);localStorage.setItem(revisionKey(),JSON.stringify(arr));$('snapshotV2State').textContent='✅ 수정본 '+arr[0].revision+' 저장'}
 async function exportPng(){const base=canvas(),ov=overlay();if(!base||!ov)return;const out=document.createElement('canvas');out.width=base.width;out.height=base.height;const ctx=out.getContext('2d');ctx.drawImage(base,0,0);ctx.drawImage(ov,0,0,out.width,out.height);out.toBlob(blob=>{if(!blob)return;const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=(C()?.getSymbol?.()||'snapshot')+'-'+(C()?.getCurrentTf?.()||'tf')+'-annotated.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),500)},'image/png')}
 function bind(){
  const base=canvas(),ov=overlay();if(!base||!ov)return false;ov.width=base.width;ov.height=base.height;['pointerdown','pointerup'].forEach(ev=>ov.addEventListener(ev,pointer));
  document.querySelectorAll('[data-draw-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.drawTool;document.querySelectorAll('[data-draw-tool]').forEach(x=>x.classList.toggle('active',x===b))});
  $('drawUndo').onclick=undoFn;$('drawRedo').onclick=redoFn;$('drawDelete').onclick=del;$('drawLock').onclick=lock;$('drawHide').onclick=hide;
  $('saveSnapshotJson').onclick=exportJson;$('saveSnapshotRevision').onclick=saveRevision;$('saveAnnotatedPng').onclick=exportPng;$('toggleLiveLayer').onclick=()=>{liveLayer=!liveLayer;render()};
- loadLocal();render();window.addEventListener('resize',render);return true
+ loadLocal();render();window.addEventListener('resize',render);const title=$('chartTitle');if(title)new MutationObserver(()=>{const k=storageKey();if(k!==lastKey){loadLocal();render()}}).observe(title,{childList:true,subtree:true,characterData:true});return true
 }
 function boot(){if(bind())return;setTimeout(boot,300)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
