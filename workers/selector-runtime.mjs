@@ -18,6 +18,10 @@ const {createAstraAutoScanner,methodOf:astraMethodOf,VERSION:ASTRA_VERSION}=requ
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 const {createPostgresSelectorStore}=require('../lib/coin-scan/postgres-selector-store.js');
 const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
+const {createFullUniverseScanService,normalizeTierSelection,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
+const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
+const {createPostgresFullScanStore}=require('../lib/coin-scan/postgres-full-scan-store.js');
+const {createBinanceFuturesWsShards}=require('../lib/coin-scan/binance-ws-shards.js');
 
 const {Pool}=pg;
 const env=process.env;
@@ -32,13 +36,19 @@ const selectorStore=createPostgresSelectorStore({query});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
 const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false})});
-const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},errors:[]};
-let evmCollector=null;
+const fullScanStore=createPostgresFullScanStore({query});
+const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
+const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:true});
+const fullScanService=createFullUniverseScanService({provider:fullScanProvider,marketCapProvider:fullScanMarketCaps,store:fullScanStore,maxWorkers:Number(env.FULL_SCAN_WORKERS||8),requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||240),klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)});
+const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},errors:[]};
+let evmCollector=null,fullScanWs=null,fullScanActive=false;
 
 async function migrate(){
   if(env.RUNTIME_AUTO_MIGRATE==='0')return;
   const sql=await fs.readFile(new URL('../db/selector-runtime-r04.sql',import.meta.url),'utf8');
   await query(sql);
+  const fullScanSql=await fs.readFile(new URL('../db/full-universe-scan-v1.sql',import.meta.url),'utf8');
+  await query(fullScanSql);
 }
 
 function tokens(){
@@ -286,7 +296,50 @@ async function runSelectorScanner(){
   }
 }
 
-function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,OPTIONS','access-control-allow-headers':'content-type','cache-control':'no-store'}}
+
+async function runFullUniverseAutoScan(){
+  if(String(env.FULL_SCAN_ENABLED||'1')==='0'||fullScanActive)return;
+  fullScanActive=true;health.fullScan={...health.fullScan,status:'RUNNING',startedAt:Date.now(),updatedAt:Date.now()};
+  try{
+    const result=await fullScanService.execute({kind:'auto',owner:'selector-runtime'});
+    health.fullScan={status:result?.skipped?'CACHED':'DONE',runId:result?.id||null,bucketStart:result?.bucketStart||null,universeCount:result?.universeCount||0,selectedCount:result?.selectedCount||0,completedCount:result?.completedCount||0,errorCount:result?.errorCount||0,cacheHit:Boolean(result?.cacheHit),updatedAt:Date.now()};
+  }catch(e){
+    health.fullScan={status:'FAILED',error:String(e?.message||e),updatedAt:Date.now()};
+    health.errors.push({source:'full-universe-scan',at:Date.now(),error:String(e?.message||e)});
+  }finally{fullScanActive=false}
+}
+async function startFullUniverseWebsocket(){
+  if(String(env.FULL_SCAN_WS_ENABLED||'1')==='0'){health.fullScanWs={status:'DISABLED',updatedAt:Date.now()};return}
+  try{
+    const universe=await fullScanService.loadUniverse();
+    fullScanWs=createBinanceFuturesWsShards({
+      maxStreamsPerShard:Number(env.FULL_SCAN_WS_SHARD_SIZE||180),
+      onState:s=>{health.fullScanWs={...s,status:s.state||'UNKNOWN',updatedAt:Date.now()}}
+    });
+    health.fullScanWs={status:'STARTED',...fullScanWs.start(universe.map(x=>x.symbol)),updatedAt:Date.now()};
+  }catch(e){
+    health.fullScanWs={status:'DEGRADED',error:String(e?.message||e),updatedAt:Date.now()};
+    health.errors.push({source:'full-universe-ws',at:Date.now(),error:String(e?.message||e)});
+  }
+}
+function scheduleFullUniverseScanner(){
+  if(String(env.FULL_SCAN_ENABLED||'1')==='0'){health.fullScan={status:'DISABLED',updatedAt:Date.now()};return}
+  const tick=Math.max(15000,Number(env.FULL_SCAN_TICK_MS||60000));
+  setTimeout(runFullUniverseAutoScan,Math.max(0,Number(env.FULL_SCAN_START_DELAY_MS||5000))).unref?.();
+  setInterval(runFullUniverseAutoScan,tick).unref?.();
+}
+function fullScanAuth(req){
+  const secret=String(env.FULL_SCAN_ADMIN_TOKEN||'');
+  const raw=String(req.headers.authorization||'');
+  return Boolean(secret&&raw.toLowerCase().startsWith('bearer ')&&raw.slice(7).trim()===secret);
+}
+async function fullScanBody(req,limit=65536){
+  let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Object.assign(new Error('request too large'),{statusCode:413})}
+  return raw?JSON.parse(raw):{};
+}
+function fullScanNextBucket(){const now=Date.now();return Math.floor(now/AUTO_INTERVAL_MS)*AUTO_INTERVAL_MS+AUTO_INTERVAL_MS}
+
+function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type','cache-control':'no-store'}}
 function jsonResponse(res,status,payload){res.writeHead(status,{'content-type':'application/json; charset=utf-8',...corsHeaders()});return res.end(JSON.stringify(payload))}
 function numParam(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function astraMarketFrom(u){return{regime:String(u.searchParams.get('regime')||'NEUTRAL').toUpperCase(),breadthRatio:numParam(u.searchParams.get('breadth')),btc24hChange:numParam(u.searchParams.get('btc')),eth24hChange:numParam(u.searchParams.get('eth')),median24hChange:numParam(u.searchParams.get('median')),positiveVolumeRatio:numParam(u.searchParams.get('positiveVolumeRatio')),volumeWeightedBreadth:numParam(u.searchParams.get('volumeWeightedBreadth')),oiScanDegraded:String(u.searchParams.get('oiDegraded')||'').toLowerCase()==='true',grokOiCut:numParam(u.searchParams.get('grokOiCut'))}}
@@ -297,6 +350,29 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
+    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:health.fullScanWs||null});
+    if(req.method==='GET'&&route.pathname==='/api/v1/results'){
+      const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000));
+      const latest=await fullScanStore.latest({tiers,limit});
+      return jsonResponse(res,200,latest?{status:'ok',source:'cache',...latest,items:(latest.items||[]).map(x=>({...x,live:fullScanWs?.get?.(x.symbol)||null}))}:{status:'empty',source:'cache',items:[]});
+    }
+    if(req.method==='GET'&&route.pathname.startsWith('/api/v1/runs/')){
+      const id=decodeURIComponent(route.pathname.slice('/api/v1/runs/'.length)),run=await fullScanStore.getRun(id);
+      if(!run)return jsonResponse(res,404,{status:'error',error:'run not found'});
+      const include=String(route.searchParams.get('items')||'0')==='1',tiers=normalizeTierSelection(route.searchParams.get('tiers')||'');
+      const items=include?await fullScanStore.getItems(id,{tiers,limit:Number(route.searchParams.get('limit'))||1000}):undefined;
+      return jsonResponse(res,200,{status:'ok',...run,items:include?(items||[]).map(x=>({...x,live:fullScanWs?.get?.(x.symbol)||null})):undefined});
+    }
+    if(req.method==='POST'&&route.pathname==='/api/v1/manual-scan'){
+      if(!String(env.FULL_SCAN_ADMIN_TOKEN||''))return jsonResponse(res,503,{status:'error',error:'manual scan disabled'});
+      if(!fullScanAuth(req))return jsonResponse(res,401,{status:'error',error:'unauthorized'});
+      let body={};try{body=await fullScanBody(req)}catch(e){return jsonResponse(res,Number(e?.statusCode)||400,{status:'error',error:'invalid request body'})}
+      const tiers=normalizeTierSelection(body?.tiers);
+      if(!tiers.length)return jsonResponse(res,400,{status:'error',error:'tiers must include small, mid or large'});
+      const prepared=await fullScanService.prepare({kind:'manual',tiers,owner:'selector-runtime-admin'});
+      fullScanService.executeRun(prepared.run,{tiers}).then(r=>{health.fullScanManual={status:'DONE',runId:r.id,updatedAt:Date.now()}}).catch(e=>{health.fullScanManual={status:'FAILED',runId:prepared.run.id,error:String(e?.message||e),updatedAt:Date.now()}});
+      return jsonResponse(res,202,{status:'accepted',runId:prepared.run.id,tiers,progress:'/api/v1/runs/'+encodeURIComponent(prepared.run.id)});
+    }
     if(route.pathname==='/api/astra-scan'){
       const stage=String(route.searchParams.get('stage')||'universe').toLowerCase(),method=astraMethodOf(route.searchParams.get('method'));
       try{
@@ -393,4 +469,6 @@ runBinance();
 runQueues();
 runEvidencePollers();
 runSelectorScanner();
+startFullUniverseWebsocket();
+scheduleFullUniverseScanner();
 process.on('SIGTERM',()=>{process.exit(0)});
