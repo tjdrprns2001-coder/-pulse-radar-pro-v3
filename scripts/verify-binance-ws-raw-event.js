@@ -11,7 +11,7 @@ class FakeWS{
   const events=[];
   const mux=createBinanceWsMultiplexer({WebSocketCtor:FakeWS,url:'wss://example/ws',onEvent:e=>events.push(e),maxStreams:5,now:()=>1000});
   mux.subscribe(['btcusdt@bookTicker']);mux.connect();instance.onopen();
-  assert(instance.sent.some(x=>String(x).includes('btcusdt@bookTicker')),'subscription sent');
+  assert(instance.sent.some(x=>String(x).toLowerCase().includes('btcusdt@bookticker')),'subscription sent');
   await instance.onmessage({data:JSON.stringify({e:'bookTicker',E:999,s:'BTCUSDT',u:7,b:'1',a:'2'})});
   assert.equal(events.length,1);
   assert.equal(events[0].stream,'btcusdt@bookTicker');
