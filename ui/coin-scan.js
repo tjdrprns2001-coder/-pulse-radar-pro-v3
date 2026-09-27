@@ -50,7 +50,7 @@ function finderRows(){
       .filter(s=>['CANDIDATE','WATCHLIST'].includes(s.classification))
       .map(s=>({s,x:state.items.find(i=>i.symbol===s.symbol)||{symbol:s.symbol}}))
       .filter(({x})=>finderVolumePass(x))
-      .sort((a,b)=>(a,b)=>(order[a.s.classification]??99)-(order[b.s.classification]??99)||(Number(b.s.scores?.final_score)||0)-(Number(a.s.scores?.final_score)||0))
+      .sort((a,b)=>(order[a.s.classification]??99)-(order[b.s.classification]??99)||(Number(b.s.scores?.final_score)||0)-(Number(a.s.scores?.final_score)||0))
       .slice(0,state.finderLimit)
       .map(({s,x})=>({x,score:Math.round(Number(s.scores?.final_score)||0),screening:s}));
     return validated;
