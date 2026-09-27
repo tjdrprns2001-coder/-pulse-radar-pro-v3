@@ -15,6 +15,9 @@ on:
       - 'full-scan.html'
       - 'ui/full-scan.js'
       - 'ui/full-scan.css'
+      - 'lib/coin-scan/binance-ws-multiplexer.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'scripts/verify-binance-ws-raw-event.js'
       - 'db/full-universe-scan-v1.sql'
       - 'docs/full-universe-auto-scan-v1.md'
       - 'scripts/verify-full-universe-auto-scan.js'
@@ -38,6 +41,7 @@ jobs:
       - run: node --check lib/coin-scan/postgres-full-scan-store.js
       - run: node --check lib/coin-scan/binance-ws-shards.js
       - run: node --check ui/full-scan.js
+      - run: node scripts/verify-binance-ws-raw-event.js
 
   scanner-regression:
     runs-on: ubuntu-latest
