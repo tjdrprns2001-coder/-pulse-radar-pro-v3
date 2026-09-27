@@ -5,6 +5,7 @@ const worker=fs.readFileSync('workers/full-universe-auto-scan.mjs','utf8');
 const sql=fs.readFileSync('db/full-universe-scan-v1.sql','utf8');
 const doc=fs.readFileSync('docs/full-universe-auto-scan-v1.md','utf8');
 const integrated=fs.readFileSync('workers/selector-runtime.mjs','utf8');
+const wsShards=fs.readFileSync('lib/coin-scan/binance-ws-shards.js','utf8');
 must(worker.includes("'/api/v1/results'"),'cache GET route missing');
 must(worker.includes("'/api/v1/manual-scan'"),'manual route missing');
 must(worker.includes('FULL_SCAN_ADMIN_TOKEN'),'manual auth missing');
@@ -25,4 +26,8 @@ must(integrated.includes("../db/full-universe-scan-v1.sql"),'integrated migratio
 must(integrated.includes('scheduleFullUniverseScanner()')&&integrated.includes('startFullUniverseWebsocket()'),'integrated scheduler/ws startup missing');
 must(integrated.includes("route.pathname==='/api/v1/results'")&&integrated.includes("route.pathname==='/api/v1/manual-scan'"),'integrated API routes missing');
 must(integrated.includes("'GET,POST,OPTIONS'")&&integrated.includes("'authorization,content-type'"),'manual API CORS contract missing');
+must(wsShards.includes("wss://fstream.binance.com/public/stream"),'current Binance USD-M public stream URL missing');
+must(!wsShards.includes("wss://fstream.binance.com/stream'"),'deprecated Binance USD-M stream URL must not be used by shards');
+must(integrated.includes('BINANCE_USDM_PUBLIC_STREAM_URL'),'selector runtime must reuse canonical Binance USD-M public stream URL');
+must(!integrated.includes("'wss://fstream.binance.com/stream'"),'selector runtime must not use deprecated Binance USD-M stream URL');
 console.log(`full-universe worker contract PASS (${n} checks)`);

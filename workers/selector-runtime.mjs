@@ -21,7 +21,7 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
 const {createFullUniverseScanService,normalizeTierSelection,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
 const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
 const {createPostgresFullScanStore}=require('../lib/coin-scan/postgres-full-scan-store.js');
-const {createBinanceFuturesWsShards}=require('../lib/coin-scan/binance-ws-shards.js');
+const {createBinanceFuturesWsShards,BINANCE_USDM_PUBLIC_STREAM_URL}=require('../lib/coin-scan/binance-ws-shards.js');
 
 const {Pool}=pg;
 const env=process.env;
@@ -106,7 +106,7 @@ function createBinanceRuntime({market='spot'}={}){
   const streams=symbols().map(s=>s.toLowerCase()+'@bookTicker');
   const source=isSpot?'binance-spot-ws':'binance-futures-ws';
   const mux=createBinanceWsMultiplexer({
-    url:isSpot?'wss://stream.binance.com:9443/stream':'wss://fstream.binance.com/stream',
+    url:isSpot?'wss://stream.binance.com:9443/stream':BINANCE_USDM_PUBLIC_STREAM_URL,
     restSnapshot:null,
     onEvent:async({stream,data,receivedAt})=>{
       const symbol=stream.split('@')[0].toUpperCase();
