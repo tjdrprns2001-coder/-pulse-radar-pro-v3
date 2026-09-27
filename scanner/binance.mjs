@@ -306,8 +306,49 @@ export class Binance{
     return rows;
   }
 
+  async futuresKlines(symbol,tf,asOf,limit){
+    const target=Math.max(1,Math.floor(Number(limit)||1));
+    if(target<=499)return this.get('/fapi/v1/klines',{symbol,interval:tf,limit:target,endTime:asOf},60000);
+    const byTime=new Map();
+    let cursor=asOf,pages=0;
+    while(byTime.size<target&&pages<10){
+      const pageLimit=Math.min(499,target-byTime.size);
+      const page=await this.get('/fapi/v1/klines',{symbol,interval:tf,limit:pageLimit,endTime:cursor},60000);
+      if(!Array.isArray(page)||!page.length)break;
+      let oldest=Infinity;
+      for(const row of page){
+        const t=Number(row?.[0]);
+        if(!Number.isFinite(t))continue;
+        oldest=Math.min(oldest,t);
+        byTime.set(t,row);
+      }
+      if(!Number.isFinite(oldest)||page.length<pageLimit)break;
+      cursor=oldest-1;pages++;
+    }
+    return [...byTime.values()].sort((a,b)=>Number(a[0])-Number(b[0])).slice(-target);
+  }
+
   async bars(symbol,tf,asOf,limit=499){
-    if(tf==='3h')return resample3h(await this.bars(symbol,'1h',asOf,1499),asOf);
+    if(tf==='3h'){
+      const duration=DURATIONS['3h'],window=Math.floor(asOf/duration),key='bars:'+symbol+':3h:'+limit+':'+window;
+      const cached=await this.store.get(key);
+      if(cached&&asOf<cached.nextClose){this.metrics.hits++;return cached.bars.filter(b=>b.end<asOf);}
+      const baseLimit=Math.min(1497,Math.max(105,Math.floor(limit)*3));
+      let bars;
+      try{
+        const raw=await this.futuresKlines(symbol,'1h',asOf,baseLimit);
+        const oneHour=closedBars(raw,asOf);
+        for(const b of oneHour)b._source='BINANCE_FUTURES';
+        bars=resample3h(oneHour,asOf).slice(-limit);
+      }catch(primary){
+        try{
+          const oneHour=await this.bybitBars(symbol,'1h',asOf,baseLimit,'linear');
+          bars=resample3h(oneHour,asOf).slice(-limit);
+        }catch(fallback){throw new UpstreamError(primary.message+' | '+fallback.message,502);}
+      }
+      await this.store.put(key,{bars,nextClose:(bars.at(-1)?.end??0)+duration+1},Math.min(duration,3600000));
+      return bars;
+    }
     const duration=DURATIONS[tf];
     if(!duration)throw new Error('지원하지 않는 TF');
     const offset=tf==='1w'?345600000:0,window=Math.floor((asOf-offset)/duration);
@@ -316,7 +357,7 @@ export class Binance{
     if(cached&&asOf<cached.nextClose){this.metrics.hits++;return cached.bars.filter(b=>b.end<asOf);}
     let bars;
     try{
-      const raw=await this.get('/fapi/v1/klines',{symbol,interval:tf,limit,endTime:asOf},60000);
+      const raw=await this.futuresKlines(symbol,tf,asOf,limit);
       if(!Array.isArray(raw))throw new Error('캔들 응답 오류');
       bars=closedBars(raw,asOf);
       try{Object.defineProperty(bars,'_source',{value:'BINANCE_FUTURES',enumerable:false});}catch{}
