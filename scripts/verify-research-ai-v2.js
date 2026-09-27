@@ -15,6 +15,8 @@ const ArchetypeLab=require('../lib/learning/archetype-lab.js');
 const ResearchLab=require('../lib/learning/research-lab.js');
 const AutoSample=require('../lib/learning/auto-sample-engine.js');
 const Integrity=require('../lib/learning/research-integrity.js');
+const Regime=require('../lib/learning/regime-detector.js');
+const Sealed=require('../lib/learning/sealed-oos-evaluator.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -83,6 +85,13 @@ assert.equal(nextOpenOut.costModel.configured,false);
 const integrityMeta=Integrity.integrityMeta({item:{symbol:'TESTUSDT',setup:{type:'WATCH'}},canonical:snap,asOf:t0,source:'test'});
 assert.equal(integrityMeta.contract.labelVersion,'OUTCOME_CONTRACT_v3');
 assert(integrityMeta.featureSnapshotHash.length===64);
+const unknownRegime=Regime.detect({});
+assert.equal(unknownRegime.regime,'UNKNOWN');
+const riskOn=Regime.detect({marketContext:{btc:{change24hPct:2},alts:{median24hPct:3}},altBreadthUpRatio:.7});
+assert.equal(riskOn.regime,'RISK_ON');
+
+const sealedBlocked=Sealed.compare({rows:[],champion:{ruleIds:[]},challenger:{ruleIds:[]},lockedOosStart:null});
+assert.equal(sealedBlocked.promotionEligible,false);
 
 
 // Locked OOS boundary is immutable once frozen in Research AI v2.
