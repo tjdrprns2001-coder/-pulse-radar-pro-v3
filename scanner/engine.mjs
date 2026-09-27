@@ -1,7 +1,7 @@
 import {TF,analyze,rank,classify,vector,similarity,pct,resample3h} from './indicators.mjs';
 import {pool} from './binance.mjs';
-export const DEFAULTS={maxChange:10,minVolume:10000000,minOi:1,top:30};
-export function options(input={}){const o={...DEFAULTS};for(const [k,lo,hi] of [['maxChange',1,20],['minVolume',1000000,1000000000],['minOi',0,10],['top',20,40]]){if(input[k]!=null){const n=Number(input[k]);if(!Number.isFinite(n)||n<lo||n>hi)throw new Error(`${k} 범위 ${lo}~${hi}`);o[k]=k==='top'?Math.round(n):n;}}return o;}
+export const DEFAULTS={maxChange:10,minVolume:1000000,minOi:1,top:30};
+export function options(input={}){const o={...DEFAULTS};for(const [k,lo,hi] of [['maxChange',1,20],['minVolume',0,1000000000],['minOi',0,10],['top',20,40]]){if(input[k]!=null){const n=Number(input[k]);if(!Number.isFinite(n)||n<lo||n>hi)throw new Error(`${k} 범위 ${lo}~${hi}`);o[k]=k==='top'?Math.round(n):n;}}return o;}
 export async function createJob(store,kind,input){const previous=await store.latest(kind);if(previous&&['running','paused'].includes(previous.status)&&Date.now()-previous.updatedAt<900000)return previous;
  if(!await store.gate('create:'+kind,30000))throw new Error('새 작업은 30초 간격으로 시작할 수 있습니다.');
  const job={id:crypto.randomUUID(),kind,status:'running',stage:'universe',createdAt:Date.now(),updatedAt:Date.now(),asOf:null,config:options(input),counts:{universe:0,filtered:0,oi:0,prescan:0,candidates:0,deep:0},cursor:0,rows:[],candidates:[],errors:[],excluded:[],metrics:{requests:0,hits:0,errors:0,weight:0,futuresWeight:0,spotWeight:0,failovers:0},timings:{},samplesAdded:0};await store.save(job);return job;}
