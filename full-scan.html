@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>PulseRadar · 전종목 자동검색기</title>
+  <link rel="stylesheet" href="/ui/full-scan.css?v=20260927-1">
+</head>
+<body>
+<main class="app">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">PULSE RADAR · BINANCE USDT PERPETUAL</div>
+      <h1>전종목 자동검색기</h1>
+      <p>5m → 15m → 1H → 4H → 1D → 1W · OI · Funding. 30분마다 자동 실행되며 페이지 새로고침은 스캔을 다시 시작하지 않습니다.</p>
+    </div>
+    <div class="heroActions">
+      <button id="refresh" class="primary">지금 상태 새로고침</button>
+      <button id="manual" class="secondary" hidden>수동 스캔</button>
+    </div>
+  </header>
+
+  <section class="cards">
+    <article><span>상태</span><b id="status">불러오는 중</b><small id="runId">-</small></article>
+    <article><span>전체 선물</span><b id="universe">-</b><small>USDT PERPETUAL</small></article>
+    <article><span>완료</span><b id="completed">-</b><small id="remaining">-</small></article>
+    <article><span>오류 종목</span><b id="errors">-</b><small>결측 숨기지 않음</small></article>
+    <article><span>시총 분류</span><b id="capSource">-</b><small id="capCoverage">-</small></article>
+    <article><span>WebSocket</span><b id="ws">-</b><small id="wsDetail">-</small></article>
+  </section>
+
+  <section class="panel progressPanel">
+    <div class="panelHead">
+      <div>
+        <h2>현재 검색 진행률</h2>
+        <p id="progressText">스캔 상태 확인 중…</p>
+      </div>
+      <div class="next">다음 자동 슬롯 <b id="nextAuto">-</b></div>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="tierRow">
+      <span>소형 <b id="smallCount">-</b></span>
+      <span>중형 <b id="midCount">-</b></span>
+      <span>대형 <b id="largeCount">-</b></span>
+      <span>미분류 <b id="unknownCount">-</b></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelHead resultsHead">
+      <div>
+        <h2>검색 결과</h2>
+        <p id="resultNote">첫 회차 진행 중에는 완료된 일부 종목을 미리 보여줍니다.</p>
+      </div>
+      <input id="query" type="search" placeholder="종목 검색 (예: XLM)">
+    </div>
+    <div class="filters" id="filters">
+      <button data-filter="all" class="active">전체</button>
+      <button data-filter="small">소형</button>
+      <button data-filter="mid">중형</button>
+      <button data-filter="large">대형</button>
+      <button data-filter="errors">오류</button>
+    </div>
+    <div id="list" class="resultList"><div class="empty">결과를 불러오는 중…</div></div>
+  </section>
+
+  <footer>
+    <span id="updated">업데이트 대기</span>
+    <a href="/api/v1/health" target="_blank" rel="noopener">원본 상태 JSON</a>
+    <a href="/api/v1/results?compact=1&limit=2000" target="_blank" rel="noopener">원본 결과 JSON</a>
+  </footer>
+</main>
+<script src="/ui/full-scan.js?v=20260927-1"></script>
+</body>
+</html>
