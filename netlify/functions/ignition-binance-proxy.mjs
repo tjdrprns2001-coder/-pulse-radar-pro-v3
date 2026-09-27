@@ -1,34 +1,40 @@
 import {createHash,timingSafeEqual} from 'node:crypto';
 
-const allowedHosts=new Set([
-  'fapi.binance.com',
-  'api.binance.com',
-  'api-gcp.binance.com',
-  'api1.binance.com',
-  'api2.binance.com',
-  'api3.binance.com',
-  'api4.binance.com',
-  'data-api.binance.vision'
-]);
-const allowedPaths=[
-  /^\/fapi\/v1\/(?:exchangeInfo|ticker\/24hr|time|klines|fundingRate)$/,
-  /^\/futures\/data\/(?:openInterestHist|takerlongshortRatio)$/,
-  /^\/api\/v3\/(?:exchangeInfo|ticker\/24hr|time|klines)$/
-];
 const digest=v=>createHash('sha256').update(String(v||'')).digest();
 
+function targetAllowed(target){
+  const allowedHosts=new Set([
+    'fapi.binance.com',
+    'api.binance.com',
+    'api-gcp.binance.com',
+    'api1.binance.com',
+    'api2.binance.com',
+    'api3.binance.com',
+    'api4.binance.com',
+    'data-api.binance.vision'
+  ]);
+  const allowedPaths=[
+    /^\/fapi\/v1\/(?:exchangeInfo|ticker\/24hr|time|klines|fundingRate)$/,
+    /^\/futures\/data\/(?:openInterestHist|takerlongshortRatio)$/,
+    /^\/api\/v3\/(?:exchangeInfo|ticker\/24hr|time|klines)$/
+  ];
+  return target.protocol==='https:'&&!target.username&&!target.password&&!target.port&&allowedHosts.has(target.hostname)&&allowedPaths.some(r=>r.test(target.pathname));
+}
+
 function validToken(req){
-  const secret=String(process.env.IGNITION_PROXY_TOKEN||'');
+  const secret=String(Netlify.env.get('IGNITION_PROXY_TOKEN')||'');
   if(secret.length<43)return false;
   const match=/^Bearer ([A-Za-z0-9_-]{43,256})$/.exec(req.headers.get('authorization')||'');
   if(!match)return false;
   return timingSafeEqual(digest(match[1]),digest(secret));
 }
 
-const json=(body,status=200,extra={})=>new Response(JSON.stringify(body),{
-  status,
-  headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...extra}
-});
+function json(body,status=200,extra={}){
+  return new Response(JSON.stringify(body),{
+    status,
+    headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...extra}
+  });
+}
 
 export default async function ignitionBinanceProxy(req){
   if(req.method!=='GET')return json({error:'method_not_allowed'},405,{allow:'GET'});
@@ -39,7 +45,7 @@ export default async function ignitionBinanceProxy(req){
   if(!raw)return json({error:'url_required'},400);
   let target;
   try{target=new URL(raw);}catch{return json({error:'invalid_url'},400);}
-  if(target.protocol!=='https:'||target.username||target.password||target.port||!allowedHosts.has(target.hostname)||!allowedPaths.some(r=>r.test(target.pathname)))return json({error:'target_forbidden'},403);
+  if(!targetAllowed(target))return json({error:'target_forbidden'},403);
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
   try{
     const upstream=await fetch(target.toString(),{
@@ -59,3 +65,5 @@ export default async function ignitionBinanceProxy(req){
     return json({error:'proxy_upstream_error',message:String(e?.message||e).slice(0,180)},502);
   }finally{clearTimeout(timer);}
 }
+
+export const config={path:'/api/ignition-binance-proxy'};
