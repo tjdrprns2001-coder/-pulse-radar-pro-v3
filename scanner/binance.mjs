@@ -47,7 +47,35 @@ export class Binance {
  }
  throw new UpstreamError(attempted?lastMessage:'사용 가능한 Binance 호스트 없음',lastStatus);
  }
- async universe(){const [exchange,tickers,time]=await Promise.all([this.get('/fapi/v1/exchangeInfo',{},3600000),this.get('/fapi/v1/ticker/24hr',{},30000),this.get('/fapi/v1/time',{},10000)]);if(!Array.isArray(exchange.symbols)||!Array.isArray(tickers)||!time.serverTime)throw new Error('Binance 유니버스 응답 형식 오류');const map=new Map(tickers.map(x=>[x.symbol,x]));return {asOf:time.serverTime,rows:exchange.symbols.filter(s=>s.quoteAsset==='USDT'&&s.contractType==='PERPETUAL'&&s.status==='TRADING').map(s=>{const t=map.get(s.symbol);return {symbol:s.symbol,base:s.baseAsset,price:t?+t.lastPrice:null,change:t?+t.priceChangePercent:null,quoteVolume:t?+t.quoteVolume:null,tickerAsOf:t?+t.closeTime:null};})};}
+ async futuresTickerSnapshot(timeoutMs=10000){
+  const WS=globalThis.WebSocket;
+  if(typeof WS!=='function')throw new UpstreamError('Binance WebSocket 클라이언트 사용 불가',502);
+  return await new Promise((resolve,reject)=>{
+    let settled=false,ws,timer;
+    const finish=(err,value)=>{if(settled)return;settled=true;clearTimeout(timer);try{ws?.close();}catch{}err?reject(err):resolve(value);};
+    try{ws=new WS('wss://fstream.binance.com/ws/!ticker@arr');}catch(e){return finish(new UpstreamError('Binance ticker WebSocket 연결 실패: '+e.message,502));}
+    timer=setTimeout(()=>finish(new UpstreamError('Binance ticker WebSocket 시간 초과',502)),timeoutMs);
+    ws.addEventListener('message',event=>{
+      try{
+        const payload=JSON.parse(typeof event.data==='string'?event.data:String(event.data));
+        const list=Array.isArray(payload)?payload:Array.isArray(payload?.data)?payload.data:null;
+        if(!list?.length)return;
+        const rows=list.map(x=>({
+          symbol:x.s,
+          lastPrice:x.c,
+          priceChangePercent:x.P,
+          quoteVolume:x.q,
+          closeTime:+x.E||Date.now()
+        })).filter(x=>x.symbol);
+        if(!rows.length)return;
+        const asOf=Math.max(...rows.map(x=>+x.closeTime||0));
+        finish(null,{rows,asOf});
+      }catch{}
+    });
+    ws.addEventListener('error',()=>finish(new UpstreamError('Binance ticker WebSocket 오류',502)));
+  });
+ }
+ async universe(){const [exchange,tickerSnapshot]=await Promise.all([this.get('/fapi/v1/exchangeInfo',{},3600000),this.futuresTickerSnapshot()]);const tickers=tickerSnapshot?.rows,asOf=+tickerSnapshot?.asOf;if(!Array.isArray(exchange.symbols)||!Array.isArray(tickers)||!asOf)throw new Error('Binance 유니버스 응답 형식 오류');const map=new Map(tickers.map(x=>[x.symbol,x]));return {asOf,rows:exchange.symbols.filter(s=>s.quoteAsset==='USDT'&&s.contractType==='PERPETUAL'&&s.status==='TRADING').map(s=>{const t=map.get(s.symbol);return {symbol:s.symbol,base:s.baseAsset,price:t?+t.lastPrice:null,change:t?+t.priceChangePercent:null,quoteVolume:t?+t.quoteVolume:null,tickerAsOf:t?+t.closeTime:null};})};}
  async oi(symbol,asOf){const a=await this.get('/futures/data/openInterestHist',{symbol,period:'5m',limit:100,endTime:Math.floor(asOf/300000)*300000},60000);if(!Array.isArray(a))throw new Error('OI 응답 오류');const rows=a.filter(x=>+x.timestamp<=asOf).sort((a,b)=>+a.timestamp-+b.timestamp),end=rows.at(-1);if(!end||asOf-end.timestamp>15*60000)return {change4h:null,change8h:null,asOf:null,reason:'OI 최신 자료 없음'};const calc=hours=>{const target=+end.timestamp-hours*3600000;const start=rows.find(x=>Math.abs(+x.timestamp-target)<=60000);return start?pct(+end.sumOpenInterest,+start.sumOpenInterest):null;};return {change4h:calc(4),change8h:calc(8),asOf:+end.timestamp,value:+end.sumOpenInterest};}
  async bars(symbol,tf,asOf,limit=499){if(tf==='3h')return resample3h(await this.bars(symbol,'1h',asOf,1499),asOf);const durations={'5m':300000,'15m':900000,'1h':3600000,'2h':7200000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000};const duration=durations[tf];if(!duration)throw new Error('지원하지 않는 TF');const offset=tf==='1w'?345600000:0,window=Math.floor((asOf-offset)/duration);const key=`bars:${symbol}:${tf}:${limit}:${window}`;const cached=await this.store.get(key);if(cached&&asOf<cached.nextClose){this.metrics.hits++;return cached.bars.filter(b=>b.end<asOf);}const raw=await this.get('/fapi/v1/klines',{symbol,interval:tf,limit,endTime:asOf},60000);if(!Array.isArray(raw))throw new Error('캔들 응답 오류');const bars=closedBars(raw,asOf);await this.store.put(key,{bars,nextClose:(bars.at(-1)?.end??0)+duration+1},Math.min(duration,3600000));return bars;}
  async taker(symbol,asOf){const rows=await this.get('/futures/data/takerlongshortRatio',{symbol,period:'1h',limit:4,endTime:asOf},60000);const valid=rows.filter(x=>+x.timestamp+3600000<=asOf),row=valid.at(-1);return row?{ratio:+row.buySellRatio,asOf:+row.timestamp,period:'1h',direction:+row.buySellRatio>1.2?'buy':+row.buySellRatio<.8?'sell':'none'}:{ratio:null,reason:'확정 taker 구간 없음'};}
