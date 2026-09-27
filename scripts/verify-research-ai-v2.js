@@ -14,6 +14,7 @@ const ResearchStats=require('../lib/learning/research-stats.js');
 const ArchetypeLab=require('../lib/learning/archetype-lab.js');
 const ResearchLab=require('../lib/learning/research-lab.js');
 const AutoSample=require('../lib/learning/auto-sample-engine.js');
+const Integrity=require('../lib/learning/research-integrity.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -67,6 +68,22 @@ assert.equal(split.train.length,6);
 assert.equal(split.validation.length,2);
 assert.equal(split.lockedOos.length,2);
 assert.equal(Split.assertNoLeakage(split).ok,true);
+const dense=Array.from({length:40},(_,i)=>({asOf:t0+i*24*3600000,label:i%2,features:Array(18).fill(0)}));
+const purged=Split.purgedChronological(dense,{trainRatio:.6,validationRatio:.2,purgeHours:72,embargoHours:24});
+assert.equal(purged.leakage.ok,true);
+assert(purged.purge.purged>=0&&purged.purge.embargoed>=0);
+
+const nextOpenRows=[candle(t0,100,101,99,100.2),candle(t0+3600000,103,104,102,103.5),candle(t0+2*3600000,104,105,103,104.5)];
+const nextOpenObs={price:100,signalClose:100,asOf:t0+1000,entryPolicy:'NEXT_CONFIRMED_OPEN',integrity:{contract:{entryPolicy:'NEXT_CONFIRMED_OPEN',costModelVersion:'COST_v1',roundTripCostPct:null}}};
+const nextOpenOut=Outcome.resolveObservation(nextOpenObs,nextOpenRows,{now:t0+4*3600000});
+assert.equal(nextOpenOut.entryPrice,103);
+assert.equal(nextOpenOut.entryPolicy,'NEXT_CONFIRMED_OPEN');
+assert.equal(nextOpenOut.costModel.configured,false);
+
+const integrityMeta=Integrity.integrityMeta({item:{symbol:'TESTUSDT',setup:{type:'WATCH'}},canonical:snap,asOf:t0,source:'test'});
+assert.equal(integrityMeta.contract.labelVersion,'OUTCOME_CONTRACT_v3');
+assert(integrityMeta.featureSnapshotHash.length===64);
+
 
 // Locked OOS boundary is immutable once frozen in Research AI v2.
 const state=V2.initialState();
@@ -134,32 +151,40 @@ const clusters=ArchetypeLab.buildClusters(labeledRows,{similarityThreshold:.8,mi
 assert(clusters.length>=1);
 assert(clusters.every(x=>x.state==='RESEARCH_CANDIDATE'&&x.productionEligible===false));
 
-// Research Lab v3: all registered techniques become research knowledge; generated hypotheses remain shadow-only.
-const lab=ResearchLab.labSummary(labeledRows);
+// Research Integrity / Lab v5: hypothesis generation never consumes sealed OOS.
+const integrityState={contract:{...Integrity.CONTRACT},datasetSnapshotId:'DS-TEST'};
+const lab=ResearchLab.labSummary(labeledRows,{integrity:integrityState});
 assert.equal(lab.shadowOnly,true);
+assert.equal(lab.integrity.oosAccess,'SEALED_DENY_HYPOTHESIS_GENERATOR');
 assert.equal(lab.knowledge.coverage.total,ResearchLab.techniqueCatalog().length);
-assert(lab.knowledge.coverage.total>=30,'technique registry should expose the full strategy library');
-assert(Array.isArray(lab.hypotheses.observed));
-assert(Array.isArray(lab.hypotheses.mutations));
 assert(Array.isArray(lab.experiments));
-assert(lab.experiments.every(x=>x.rankWeight===0&&x.requiresLockedOos===true));
+assert(lab.experiments.every(x=>x.rankWeight===0&&x.requiresLockedOos===true&&x.split==='TRAIN_VALIDATION_ONLY'));
 const evalProbe=ResearchLab.evaluateHypothesis(labeledRows,{ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
 assert.equal(evalProbe.leakageSafe,true);
-assert(evalProbe.support>=2);
-assert(['LOW_SAMPLE','SHADOW_TESTING','OOS_PROMISING'].includes(evalProbe.state));
+assert.equal(evalProbe.lockedOos,null);
+assert.equal(evalProbe.state,'SAMPLE_INSUFFICIENT');
 
-// Research Lab v4: DNA, ablation, champion/challenger and failure-sample research remain shadow-only.
-const lab4=ResearchLab.labSummary(labeledRows);
-assert(Array.isArray(lab4.strategyDna));
-assert(Array.isArray(lab4.ablation));
-assert(lab4.strategyDna.every(x=>x.productionEligible===false));
-const dnaProbe=ResearchLab.strategyDna({id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
-assert(dnaProbe.strategyId.startsWith('LAB-')&&dnaProbe.version==='v1');
-const abl=ResearchLab.ablationStudy(labeledRows,{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
-assert(Array.isArray(abl.tests)&&abl.tests.length===2);
-const competition=ResearchLab.championChallenger(labeledRows,[{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON',title:'probe'}]);
-assert(competition.policy.includes('연구 비교용'));
-assert((competition.challengers||[]).every(x=>x.rankWeight===0));
+const dnaProbe=ResearchLab.strategyDna({id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'},{integrity:integrityState});
+assert(dnaProbe.strategyId.startsWith('LAB-')&&dnaProbe.version==='v1.0.0');
+assert.equal(dnaProbe.provenance.datasetSnapshotId,'DS-TEST');
+const childDna=ResearchLab.strategyDna({id:'child',kind:'MUTATION',parentId:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE','RSI'],regime:'RISK_ON'},{integrity:integrityState,parentRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE']});
+assert.equal(childDna.version,'v1.1.0');
+assert.deepEqual(childDna.diff.addedConditions,['RSI']);
+
+const abl=ResearchLab.ablationStudy(labeledRows,{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'},{minSample:30});
+assert.equal(abl.state,'SAMPLE_INSUFFICIENT');
+assert.equal(abl.tests.length,0);
+const competition=ResearchLab.championChallenger(labeledRows,[{id:'probe',ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON',title:'probe'}],{integrity:integrityState});
+assert.equal(competition.champion,null);
+assert(competition.policy.includes('sealed Locked OOS'));
+
+const ledger=V2.mergeExperimentLedger([],lab.experiments,'DS-TEST');
+const ledger2=V2.mergeExperimentLedger(ledger,lab.experiments,'DS-TEST');
+assert.equal(ledger2.length,ledger.length,'idempotency keys must prevent duplicate experiment rows');
+
+const refState=V2.initialState();
+V2.ingestLabeledSample(refState,{symbol:'REFUSDT',lastPrice:1,stats:{},tfState:{}},{label:1,source:'reference-test',knownAt:t0,metadata:{referenceOnly:true}});
+assert.equal(V2.trainingRows(refState.observations).length,0,'reference-only reverse traces must never become training labels');
 
 // Failed ignition detector must only label retrospectively after future failure bars exist.
 const ft0=1_800_000_000_000,failBars=[];
