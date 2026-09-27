@@ -61,6 +61,15 @@ export function analyze(b,{fast=false}={}){
  let bowl=null;if(b.length>=224){const early=b.slice(-224,-112),middle=b.slice(-112,-20);const high=Math.max(...early.map(x=>x.h)),low=Math.min(...middle.map(x=>x.l));const drop=pct(low,high),reclaim=z.c>emas[224],acc=middle.filter(x=>x.c<emas[224]).length/middle.length>.6;bowl={drawdown:drop,stage:drop<-20?(reclaim?(base.change20>15?'4번 진행':'3번 회복'):acc?'2번 축적':'1번 하락'):'미형성',heuristic:true};}
  return {...base,stochRsi:{k:last(ks),d:last(ds)},kdj:{k,d,j:3*k-2*d},structure:{bias,bos,choch,mss:choch&&displacement?choch:null,bsl:hh?.p??null,ssl:ll?.p??null,sweep,fvg:fvgs.slice(-4),ob,trendline,bowl},divergence:{rsiBull:divergence(lows,b,rs,'bull'),rsiBear:divergence(highs,b,rs,'bear'),macdBull:divergence(lows,b,macd,'bull'),macdBear:divergence(highs,b,macd,'bear'),obvBull:divergence(lows,b,os,'bull'),obvBear:divergence(highs,b,os,'bear')}};
 }
+export function galleryValidationProfile(row){
+ const f=row.frames||{},h1=f['1h'],h4=f['4h'],d=f['1d'],d3=f['3d'];
+ const trend=Boolean(d3?.available&&d?.available&&h4?.available&&h1?.available&&d3.price>(d3.ema?.[57]??Infinity)&&h4.above20&&((Math.abs(pct(h1.price,h1.ema?.[20]))<=2.5)||(Math.abs(pct(h1.price,h1.ema?.[60]))<=2.5)));
+ const retest=Boolean(h1?.structure?.trendline?.retest&&Number(h1?.rvol)>=1.5);
+ const rsiDiv=Boolean(h1?.divergence?.rsiBull&&(h1?.structure?.bos==='bull'||h1?.structure?.choch==='bull'||h1?.structure?.mss==='bull'));
+ const points=(trend?30:0)+(retest?30:0)+(rsiDiv?20:0),availableMax=80,score=Math.round(points/availableMax*100);
+ const confirmed=[];if(trend)confirmed.push('상위추세+이평 눌림');if(retest)confirmed.push('돌파+거래량+리테스트');if(rsiDiv)confirmed.push('RSI 다이버전스+구조확인');
+ return{version:'GALLERY_VALIDATION_v1',score,label:score>=70?'강한 합치':score>=45?'관심 합치':'추가 확인',confirmedCount:confirmed.length,confirmed,setups:{trendPullback:{available:true,confirmed:trend},breakoutRetest:{available:true,confirmed:retest},rsiDivergence:{available:true,confirmed:rsiDiv},avwap:{available:false,confirmed:false,reason:'IGNITION 공개 프레임에 고정 앵커 원시 거래량 경로 없음'}},role:'후보 검증 레이어 · 후보 생성/매수 명령 아님'};
+}
 export function higherFrameProfile(row){
  const f=row.frames||{},w=f['1w'],d3=f['3d'],d=f['1d'],h4=f['4h'],h1=f['1h'];
  const dist=(frame,n)=>frame?.available&&Number.isFinite(frame?.ema?.[n])&&frame.ema[n]!==0?pct(frame.price,frame.ema[n]):null;
@@ -90,7 +99,8 @@ export function higherFrameProfile(row){
    volume:{score:volumeScore,cmf:d?.cmf??null,mfi:d?.mfi??null,obvRising:Boolean(d?.obvRising),adRising:Boolean(d?.adRising),rvol:d?.rvol??null},
    derivatives:{oi4h:Number.isFinite(oi)?oi:null,taker:Number.isFinite(taker)?taker:null,funding:Number.isFinite(funding)?funding:null,score:derivativeScore},
    pullbackSupport:pullback,
-   notOverheated
+   notOverheated,
+   galleryValidation:galleryValidationProfile(row)
  };
 }
 export function classify(row){const f=row.frames||{},h=f['1h'],q=f['4h'],m=f['15m'],s=f['5m'];const scanProfile=higherFrameProfile(row);if(!h?.available||!q?.available)return {status:'제외',reasons:['1H/4H 데이터 부족'],scanProfile};
