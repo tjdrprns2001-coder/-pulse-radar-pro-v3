@@ -34,7 +34,9 @@ function candidateCard(x){
   const meta=node('div','candidateMeta',`${x.sector||'기타'} · 24H ${fmtPct(x.change24h)}`);
   const cls=node('div','candidateClass',x.scanClass?.label||x.category||'관찰');
   const reason=node('div','candidateReason',x.reason||'추가 근거 대기');
-  d.append(top,meta,cls,reason);return d;
+  const ts=x.typeSafe||null;
+  const tsLine=ts?node('div','candidateMeta',`TypeSafe 준비도 ${Number.isFinite(Number(ts.readinessScore))?Number(ts.readinessScore).toFixed(2)+'/4':'—'} · 추격위험 ${Number.isFinite(Number(ts.chaseRisk))?(Number(ts.chaseRisk)*100).toFixed(0)+'%':'—'} · SHADOW`):null;
+  d.append(top,meta,cls,reason);if(tsLine)d.append(tsLine);return d;
 }
 function eventRow(x){
   const d=node('div','eventItem'),head=node('div','eventHead'),b=node('b','',`${text(x.symbol||'코인')} · ${text(x.eventTypeKo||'이벤트')}`);
@@ -65,7 +67,7 @@ function renderList(id,items,mapper,empty='없음'){
   const el=$(id);clear(el);if(!Array.isArray(items)||!items.length){el.append(node('div','empty',empty));return}
   for(const x of items)el.append(mapper(x));
 }
-function renderResearch(r){
+function renderResearch(r,t=null){
   const el=$('researchPanel');clear(el);
   if(!r){el.append(node('div','empty','Research AI 상태를 불러오지 못했습니다.'));return}
   const labels=Number(r.labels)||0,min=Number(r.model?.minimumLabels)||20,pct=Math.min(100,min?labels/min*100:0);
@@ -75,6 +77,11 @@ function renderResearch(r){
   const bar=node('div','progress'),fill=node('span','progressFill');fill.style.width=`${pct}%`;bar.append(fill);
   const detail=node('div','researchDetail',`확정 결과: 성공 ${fmtNum(r.positive)} · 실패 ${fmtNum(r.negative)} · 모델 ${r.model?.active?'활성':'워밍업'}`);
   el.append(line,bar,detail);
+  if(t){
+    const stateText=t.available?(t.status==='ok'?'연결됨':'대기/오류'):'비활성';
+    const mode=t.market?.mode?` · 시장 ${t.market.mode}`:'';
+    el.append(node('div','researchDetail',`TypeSafe ${stateText} · ${t.shadowOnly===false?'ACTIVE':'SHADOW_ONLY'}${mode}`));
+  }
 }
 function renderFocus(f){
   const card=$('focusCard');
@@ -93,7 +100,7 @@ function renderFocus(f){
 }
 function render(data){
   current=data;
-  const m=data.marketPulse||{},q=data.dataQuality||{},r=data.researchAI||null,candidates=data.candidates||[];
+  const m=data.marketPulse||{},q=data.dataQuality||{},r=data.researchAI||null,t=data.typeSafe||null,tsMap=new Map((t?.candidates||[]).map(x=>[String(x.symbol||'').toUpperCase(),x])),candidates=(data.candidates||[]).map(x=>({...x,typeSafe:tsMap.get(String(x.symbol||'').toUpperCase())||null}));
   $('summary').textContent=text(data.summary||'요약이 없습니다.');
   $('updated').textContent=data.scanUpdatedAt?`스캔 ${new Date(data.scanUpdatedAt).toLocaleString('ko-KR')} · ${age(Date.now()-Number(data.scanUpdatedAt))}`:'업데이트 시간 없음';
   $('aiBadge').textContent=data.aiGenerated?'생성형 AI':'로컬 분석';$('aiBadge').dataset.mode=data.aiGenerated?'ai':'fallback';
@@ -112,7 +119,7 @@ function render(data){
   renderFocus(data.selectedFocus);
   renderList('candidates',candidates,candidateCard,'현재 과진행을 제외한 우선 후보가 없습니다.');
   renderList('sectors',data.sectors,x=>itemRow(`${x.sector} · 후보 ${x.candidates}개`,`평균 ${fmtPct(x.avgChange24h)} · ${(x.leaders||[]).join(', ')}`));
-  renderResearch(r);
+  renderResearch(r,t);
   $('eventSummary').textContent=text(data.eventSummary||'현재 확인된 이벤트 요약이 없습니다.');
   $('eventCount').textContent=fmtNum((data.eventCatalysts||[]).length);
   renderList('eventCatalysts',data.eventCatalysts,eventRow,'현재 확인된 공식·신뢰 이벤트가 없습니다.');
@@ -125,7 +132,7 @@ function render(data){
   const sources=data.sources||[];$('sourceCount').textContent=fmtNum(sources.length);
   const src=$('sources');clear(src);if(!sources.length)src.append(node('div','empty','표시할 외부 출처가 없습니다.'));
   for(const x of sources){const a=node('a','source',x.title||x.url);a.rel='noopener noreferrer';a.target='_blank';a.href=x.url;src.append(a)}
-  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
+  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':t?.available?'로컬 분석 · Research AI + TypeSafe SHADOW':'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
 }
 async function fetchJson(url,options={},timeout=45000){
   const controller=new AbortController(),external=options.signal,relay=()=>controller.abort(),timer=setTimeout(()=>controller.abort(),timeout);
