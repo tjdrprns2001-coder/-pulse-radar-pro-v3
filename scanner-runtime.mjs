@@ -35,28 +35,64 @@ function configFrom(env){
   };
 }
 
-function routedFetcher(env,directFetch){
-  const base=String(env.IGNITION_BINANCE_PROXY_URL||'').replace(/\/$/,'');
+function proxyBases(env){
+  const list=String(env.IGNITION_BINANCE_PROXY_URLS||'')
+    .split(',')
+    .map(x=>x.trim().replace(/\/$/,''))
+    .filter(Boolean);
+  const legacy=String(env.IGNITION_BINANCE_PROXY_URL||'').trim().replace(/\/$/,'');
+  if(legacy)list.unshift(legacy);
+  return [...new Set(list)];
+}
+
+export function routedFetcher(env,directFetch=fetch,now=Date.now){
+  const bases=proxyBases(env);
   const token=String(env.IGNITION_BINANCE_PROXY_TOKEN||'');
-  if(!base||token.length<43)return directFetch;
+  const cooldowns=new Map();
+  if(!bases.length||token.length<43)return directFetch;
+
   return async(url,options={})=>{
     let parsed=null;try{parsed=new URL(String(url));}catch{}
     const host=parsed?.hostname||'';
     const isBinance=host==='fapi.binance.com'||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
     if(!isBinance)return directFetch(url,options);
-    const target=base+'/fetch?url='+encodeURIComponent(String(url));
-    return directFetch(target,{
-      method:'GET',
-      headers:{authorization:'Bearer '+token,accept:'application/json'},
-      signal:options.signal,
-      redirect:'error'
-    });
+
+    let lastResponse=null;
+    for(const base of bases){
+      const until=cooldowns.get(base)||0;
+      if(until>now())continue;
+      const target=base+'/fetch?url='+encodeURIComponent(String(url));
+      const timeout=AbortSignal.timeout(8000);
+      const signal=options.signal&&typeof AbortSignal.any==='function'?AbortSignal.any([options.signal,timeout]):timeout;
+      try{
+        const response=await directFetch(target,{
+          method:'GET',
+          headers:{authorization:'Bearer '+token,accept:'application/json'},
+          signal,
+          redirect:'error'
+        });
+        lastResponse=response;
+        if(response.ok)return response;
+        if([418,429,403,451].includes(response.status)||response.status>=500){
+          const retryAfter=Math.max(60,Number(response.headers.get('retry-after')||0));
+          const ttl=[403,451].includes(response.status)?300000:Math.min(300000,retryAfter*1000);
+          cooldowns.set(base,now()+ttl);
+          continue;
+        }
+        return response;
+      }catch{
+        cooldowns.set(base,now()+60000);
+      }
+    }
+
+    try{return await directFetch(url,options);}
+    catch(e){if(lastResponse)return lastResponse;throw e;}
   };
 }
 
 export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date.now,autoStart=true}={}){
   const store=new RuntimeStore(now);
-  const scannerFetch=routedFetcher(env,fetcher);
+  const scannerFetch=routedFetcher(env,fetcher,now);
   const health={mode:'local-render',state:'INIT',startedAt:now(),lastStartedAt:null,lastFinishedAt:null,lastError:null,lastScanId:null,nextRunAt:null};
   let latestSnapshot=null,lastCompleted=null,loopStarted=false;
 
