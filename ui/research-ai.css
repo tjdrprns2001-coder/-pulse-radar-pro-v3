@@ -97,3 +97,16 @@ tbody tr:last-child td{border-bottom:0}
 .gateChecks span{font-size:10px;border:1px solid #27445e;border-radius:9px;padding:6px 8px;color:#91b4d4}
 .governanceFlow p{font-size:11px;color:#8ca5bd;margin-top:10px}
 @media(max-width:760px){.hypothesisGrid{grid-template-columns:1fr}.techniqueChip{max-width:100%;width:100%}.governanceStates{gap:5px}.governanceStates i{display:none}}
+
+.notesList{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.noteItem{border:1px solid #29445d;background:#091522;border-radius:13px;padding:11px 12px}
+.noteItem>div{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.noteItem b{font-size:12px}.noteItem time{font-size:9px;color:#718da7;white-space:nowrap}
+.noteItem p{margin:7px 0 0;font-size:11px;line-height:1.6;color:#aebfd0}
+.labRow.champion{border-color:#8b6d25;background:#211b0c}
+.labRow.challenger{border-color:#4a4775;background:#121329}
+.labRow.dnaRow{border-color:#2b5965}
+.ablationLine{font-size:11px;border-radius:9px;padding:7px 8px;margin-top:6px}
+.ablationLine.goodish{border:1px solid #2f715c;background:#0e2921;color:#8de2c0}
+.ablationLine.neutral{border:1px solid #43546b;background:#111c29;color:#a9bdd0}
+@media(max-width:760px){.noteItem>div{flex-direction:column;gap:4px}.noteItem time{white-space:normal}}
