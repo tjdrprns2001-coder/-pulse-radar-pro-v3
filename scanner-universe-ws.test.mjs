@@ -15,7 +15,8 @@ class FakeWebSocket{
       const fn=this.handlers.get('message');
       fn?.({data:JSON.stringify([
         {s:'AAAUSDT',c:'1.23',P:'4.5',q:'20000000',E:1234567890000},
-        {s:'BBBUSDT',c:'2.34',P:'-1.2',q:'30000000',E:1234567890100}
+        {s:'BBBUSDT',c:'2.34',P:'-1.2',q:'30000000',E:1234567890100},
+        {s:'BTCUSDT_261225',c:'70000',P:'1.0',q:'50000000',E:1234567890200}
       ])});
     });
   }
@@ -23,26 +24,19 @@ class FakeWebSocket{
   close(){}
 }
 
-test('universe uses futures websocket ticker snapshot instead of 24h ticker REST',async()=>{
+test('universe is built entirely from futures websocket ticker snapshot',async()=>{
   const prior=globalThis.WebSocket;
   globalThis.WebSocket=FakeWebSocket;
   const calls=[];
   try{
-    const api=new Binance(new Store(),async url=>{
-      calls.push(String(url));
-      return Response.json({symbols:[
-        {symbol:'AAAUSDT',baseAsset:'AAA',quoteAsset:'USDT',contractType:'PERPETUAL',status:'TRADING'},
-        {symbol:'BBBUSDT',baseAsset:'BBB',quoteAsset:'USDT',contractType:'PERPETUAL',status:'TRADING'}
-      ]});
-    },{futuresBases:['https://fapi.binance.com']});
+    const api=new Binance(new Store(),async url=>{calls.push(String(url));throw new Error('REST must not be called for universe');},{futuresBases:['https://fapi.binance.com']});
     const u=await api.universe();
     assert.equal(u.rows.length,2);
-    assert.equal(u.asOf,1234567890100);
+    assert.equal(u.asOf,1234567890200);
     assert.equal(u.rows[0].change,4.5);
     assert.equal(u.rows[1].quoteVolume,30000000);
-    assert.equal(calls.length,1);
-    assert.match(calls[0],/exchangeInfo/);
-    assert.ok(!calls.some(x=>x.includes('ticker\/24hr')));
+    assert.equal(calls.length,0);
+    assert.ok(u.rows.every(x=>!x.symbol.includes('_')));
   }finally{
     if(prior===undefined)delete globalThis.WebSocket;else globalThis.WebSocket=prior;
   }
