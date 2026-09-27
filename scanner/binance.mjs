@@ -1,4 +1,5 @@
 import {closedBars,resample3h,pct} from './indicators.mjs';
+import {BINANCE_USDT_PERPETUALS,BINANCE_UNIVERSE_AS_OF} from './binance-universe-snapshot.mjs';
 
 const DEFAULT_FUTURES_BASES=['https://fapi.binance.com'];
 const DEFAULT_SPOT_BASES=[
@@ -193,21 +194,31 @@ export class Binance{
   }
 
   async bybitUniverse(){
-    const [inst,tickers]=await Promise.all([
-      this.bybitGet('/v5/market/instruments-info?category=linear&limit=1000',300000,'linear:instruments'),
-      this.bybitGet('/v5/market/tickers?category=linear',30000,'linear:tickers')
-    ]);
-    const allowed=new Map((inst?.result?.list||[])
-      .filter(x=>String(x?.quoteCoin)==='USDT'&&String(x?.status)==='Trading'&&/Perpetual/i.test(String(x?.contractType||'')))
-      .map(x=>[String(x.symbol||'').toUpperCase(),String(x.baseCoin||'')]));
+    const tickers=await this.bybitGet('/v5/market/tickers?category=linear',30000,'linear:tickers');
+    const tickerMap=new Map((tickers?.result?.list||[]).map(x=>[String(x?.symbol||'').toUpperCase(),x]));
     const now=Date.now();
-    const rows=(tickers?.result?.list||[]).flatMap(x=>{
-      const symbol=String(x?.symbol||'').toUpperCase(),base=allowed.get(symbol);
-      if(!base)return[];
-      return[{symbol,base,price:n(x.lastPrice),change:n(x.price24hPcnt)!=null?n(x.price24hPcnt)*100:null,quoteVolume:n(x.turnover24h),tickerAsOf:now,marketSource:'BYBIT_LINEAR_FALLBACK'}];
-    }).filter(x=>x.price!=null&&x.quoteVolume!=null);
-    if(!rows.length)throw new UpstreamError('Bybit 선물 유니버스 없음',502);
-    return{asOf:now,rows,source:'BYBIT_LINEAR_FALLBACK'};
+    let covered=0;
+    const rows=[...BINANCE_USDT_PERPETUALS].map(symbol=>{
+      const x=tickerMap.get(symbol);
+      if(x)covered++;
+      return{
+        symbol,
+        base:String(symbol).endsWith('USDT')?String(symbol).slice(0,-4):String(symbol),
+        price:x?n(x.lastPrice):null,
+        change:x&&n(x.price24hPcnt)!=null?n(x.price24hPcnt)*100:null,
+        quoteVolume:x?n(x.turnover24h):null,
+        tickerAsOf:x?now:null,
+        marketSource:x?'BYBIT_LINEAR_FALLBACK':'UNAVAILABLE'
+      };
+    });
+    if(!covered)throw new UpstreamError('Bybit에서 Binance 유니버스 가격 데이터를 찾지 못했습니다.',502);
+    return{
+      asOf:now,
+      rows,
+      source:'BYBIT_LINEAR_FALLBACK',
+      universeSnapshotAsOf:BINANCE_UNIVERSE_AS_OF,
+      coverage:{total:rows.length,available:covered,ratio:covered/rows.length}
+    };
   }
 
   async universe(){
