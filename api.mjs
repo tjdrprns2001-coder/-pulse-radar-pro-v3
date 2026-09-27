@@ -30,7 +30,7 @@ function publicScan(scan){
   };
 }
 
-export function createHandler({env, latestCompleted, now = Date.now}) {
+export function createHandler({env, latestCompleted, sourceHealth = null, now = Date.now}) {
   function keys() {
     return ['', '_PREVIOUS'].flatMap(suffix => {
       const token = env['IGNITION_READ_TOKEN' + suffix];
@@ -62,7 +62,7 @@ export function createHandler({env, latestCompleted, now = Date.now}) {
     for (const key of active) valid = timingSafeEqual(supplied, key.hash) || valid;
     if (!match || !valid) { headers['WWW-Authenticate'] = 'Bearer realm="ignition-results"'; return response({error:'unauthorized'}, 401); }
     if (url.search) return response({error:'query_not_supported'}, 400);
-    if (url.pathname === '/api/v1/health') return response({ok:true, schemaVersion:'1.0', scope:'results:read', clock:now()});
+    if (url.pathname === '/api/v1/health') return response({ok:true, schemaVersion:'1.0', scope:'results:read', clock:now(), scanner:typeof sourceHealth==='function'?sourceHealth():null});
     try {
       const scan = await latestCompleted();
       if (!scan) return response({schemaVersion:'1.0', status:'empty', sourceStatus:'empty', servedFromLastComplete:false, scan:null, counts:{}, timings:{}, metrics:{}, freshnessMs:null, candidates:[]});
