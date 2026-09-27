@@ -86,15 +86,17 @@ export function routedFetcher(env,directFetch=fetch,now=Date.now,sleeper=sleep){
     const isBinance=isFutures||host==='api.binance.com'||host==='api-gcp.binance.com'||/^api[1-4]\.binance\.com$/.test(host)||host==='data-api.binance.vision';
     if(!isBinance)return directFetch(url,options);
     const market=isFutures?'futures':'spot';
+    const pathname=String(parsed?.pathname||'');
+    const endpointFamily=market==='spot'?'spot':pathname.endsWith('/klines')?'kline':pathname.startsWith('/futures/data/')?'stats':pathname.endsWith('/fundingRate')?'funding':'core';
 
-    await acquire(market,parsed?.pathname);
+    await acquire(market,pathname);
     try{
     let lastResponse=null,rateLimitedResponse=null;
     const statsBase=String(env.IGNITION_BINANCE_STATS_PROXY_URL||'').trim().replace(/\/$/,'');
     const isStats=isFutures&&String(parsed?.pathname||'').startsWith('/futures/data/');
     const orderedBases=isStats&&statsBase&&bases.includes(statsBase)?[statsBase,...bases.filter(x=>x!==statsBase)]:bases;
     for(const base of orderedBases){
-      const cooldownKey=market+'|'+base;
+      const cooldownKey=market+'|'+endpointFamily+'|'+base;
       const until=cooldowns.get(cooldownKey)||0;
       if(until>now())continue;
       const target=base+'/fetch?url='+encodeURIComponent(String(url));
