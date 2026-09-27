@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feature/auto-scanner-speed-v2-20260926
+      - feature/auto-scanner-speed-v3-20260927
     paths:
       - 'lib/coin-scan/**'
       - 'api/coin-scan.js'

@@ -16,6 +16,12 @@ const {createSamplingV3OutcomeResolver}=require('../lib/coin-scan/sampling-v3-ou
 const {createMarketValidationPerformance}=require('../lib/coin-scan/market-validation-performance.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 let singleton=null;
+const backgroundScanRuns=new Map();
+function launchBackgroundScanRun(service,id){
+  const key=String(id||'');if(!key||!service?.scanRun||backgroundScanRuns.has(key))return false;
+  const task=Promise.resolve().then(()=>service.scanRun.execute(key)).catch(()=>null).finally(()=>backgroundScanRuns.delete(key));
+  backgroundScanRuns.set(key,task);return true;
+}
 function defaultService(getStore){
   if(!singleton){
     let performanceRecorder=null,alertRecorder=null,transitionSnapshotRecorder=null,setupStateTracker=null,recommendationHistory=null,preIgnitionHistory=null,samplingOosHistory=null,marketValidationStore=null,marketValidationPerformance=null,selectorLedger=null,scanRunStore=createMemoryStore();
@@ -139,10 +145,23 @@ module.exports=async function handler(req,res,ctx={}){
     if(mode==='scan-run'){
       const action=String(q.action||'status').toLowerCase();
       if(!service.scanRun)return res.status(503).json({status:'error',error:'scan run service unavailable'});
-      if(action==='start'){const run=await service.scanRun.start({precision});return res.status(202).json({status:'ok',mode:'scan-run',action:'start',run})}
+      if(action==='start'){
+        const run=await service.scanRun.start({precision});
+        const background=['1','true','yes'].includes(String(q.background||'').toLowerCase());
+        const backgroundStarted=background?launchBackgroundScanRun(service,run.id):false;
+        return res.status(202).json({status:'ok',mode:'scan-run',action:'start',backgroundStarted,run});
+      }
       const id=String(q.id||q.run||'').trim();if(!id)return res.status(400).json({status:'error',error:'scan run id required'});
       if(action==='execute'){const run=await service.scanRun.execute(id);return res.status(200).json({status:'ok',mode:'scan-run',action:'execute',run})}
       const run=await service.scanRun.get(id);if(!run)return res.status(404).json({status:'error',error:'scan run not found'});
+      const progressOnly=['1','true','yes'].includes(String(q.progress||'').toLowerCase());
+      if(progressOnly){
+        const {items,autoScreening,candidateSymbols,...progressRun}=run;
+        progressRun.itemCount=Array.isArray(items)?items.length:0;
+        progressRun.screeningCount=Array.isArray(autoScreening?.all)?autoScreening.all.length:0;
+        progressRun.candidateCount=Array.isArray(candidateSymbols)?candidateSymbols.length:0;
+        return res.status(200).json({status:'ok',mode:'scan-run',action:'status',progressOnly:true,run:progressRun});
+      }
       return res.status(200).json({status:'ok',mode:'scan-run',action:'status',run});
     }
     if(mode==='runtime-health'){
