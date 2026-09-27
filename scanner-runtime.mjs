@@ -40,7 +40,7 @@ function configFrom(env){
   return{
     top:Math.round(n('IGNITION_SCAN_TOP',20,20,40)),
     maxChange:n('IGNITION_MAX_CHANGE',10,1,20),
-    minVolume:n('IGNITION_MIN_VOLUME',10000000,1000000,1000000000),
+    minVolume:n('IGNITION_MIN_VOLUME',1000000,0,1000000000),
     minOi:n('IGNITION_MIN_OI',1,0,10)
   };
 }
