@@ -5,11 +5,11 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function(){
   const STORAGE_KEY = 'pulse_workspace_preset_v2';
   const PRESETS = Object.freeze({
-    clean: Object.freeze({ id:'clean', label:'Clean', maxZones:3, plugins:['structure'], panes:[] }),
-    structure: Object.freeze({ id:'structure', label:'Structure', maxZones:5, plugins:['structure'], panes:[] }),
+    clean: Object.freeze({ id:'clean', label:'클린', maxZones:3, plugins:['structure'], panes:[] }),
+    structure: Object.freeze({ id:'structure', label:'구조', maxZones:5, plugins:['structure'], panes:[] }),
     smc: Object.freeze({ id:'smc', label:'SMC/ICT', maxZones:8, plugins:['structure','smc','ict','liquidity'], panes:[] }),
-    dante: Object.freeze({ id:'dante', label:'Dante', maxZones:5, plugins:['structure','moving-average','dante','volume-profile'], panes:[] }),
-    full: Object.freeze({ id:'full', label:'Full', maxZones:15, plugins:['structure','smc','ict','liquidity','volume-profile','moving-average','dante','pattern'], panes:['rsi','macd','stoch','kdj','obv'] })
+    dante: Object.freeze({ id:'dante', label:'단테', maxZones:5, plugins:['structure','moving-average','dante','volume-profile'], panes:[] }),
+    full: Object.freeze({ id:'full', label:'전체', maxZones:15, plugins:['structure','smc','ict','liquidity','volume-profile','moving-average','dante','pattern'], panes:['rsi','macd','stoch','kdj','obv'] })
   });
 
   const STATE_RANK = Object.freeze({ active:0, approaching:1, touched:2, mitigated:3, violated:4, expired:5 });
