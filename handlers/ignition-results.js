@@ -93,27 +93,44 @@ module.exports=async function handler(req,res,ctx={}){
   }
 
   const fetchImpl=ctx.fetchImpl||globalThis.fetch;
-  const timeoutMs=Math.max(1000,Math.min(30000,Number(ctx.timeoutMs)||10000));
-  const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+  const timeoutMs=Math.max(1000,Math.min(30000,Number(ctx.timeoutMs)||12000));
   const now=typeof ctx.now==='function'?ctx.now():Date.now();
+  const headers={authorization:'Bearer '+token,accept:'application/json'};
+  const transient=new Set([502,503,504]);
+  let upstream=null,lastStatus=null,lastError=null;
+
+  async function fetchWithTimeout(path,ms){
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),ms);
+    try{return await fetchImpl(base+path,{headers,cache:'no-store',signal:ctrl.signal})}
+    finally{clearTimeout(timer)}
+  }
 
   try{
-    const upstream=await fetchImpl(base+'/api/v1/results',{
-      headers:{
-        authorization:'Bearer '+token,
-        accept:'application/json'
-      },
-      cache:'no-store',
-      signal:ctrl.signal
-    });
-    if(!upstream.ok){
+    const attempts=3;
+    for(let attempt=0;attempt<attempts;attempt++){
+      try{
+        upstream=await fetchWithTimeout('/api/v1/results',Math.max(2500,Math.floor(timeoutMs/attempts)));
+        lastStatus=upstream.status;
+        if(upstream.ok)break;
+        if(!transient.has(upstream.status))break;
+      }catch(error){
+        lastError=error;
+      }
+      // Free/sleeping upstreams can return a transient gateway error during wake-up.
+      try{await fetchWithTimeout('/api/v1/health',2500)}catch{}
+      if(attempt<attempts-1)await new Promise(r=>setTimeout(r,350*(attempt+1)));
+    }
+    if(!upstream||!upstream.ok){
+      const status=upstream?.status??lastStatus;
+      const aborted=lastError&&lastError.name==='AbortError';
       return res.status(502).json({
         status:'degraded',
         source:'IGNITION',
         configured:true,
-        upstreamStatus:upstream.status,
-        error:'ignition_upstream_http_'+upstream.status,
+        upstreamStatus:status??null,
+        retryable:status==null||transient.has(status),
+        error:aborted?'ignition_upstream_timeout':status?'ignition_upstream_http_'+status:'ignition_upstream_unavailable',
         candidates:[]
       });
     }
@@ -189,7 +206,5 @@ module.exports=async function handler(req,res,ctx={}){
       error:aborted?'ignition_upstream_timeout':'ignition_upstream_unavailable',
       candidates:[]
     });
-  }finally{
-    clearTimeout(timer);
   }
 };
