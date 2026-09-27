@@ -12,7 +12,7 @@ function num(v,d=2){const n=Number(v);return Number.isFinite(n)?n.toFixed(d):'N/
 function money(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';return n.toLocaleString('ko-KR')}
 function age(ms){const n=Number(ms);if(!Number.isFinite(n))return'알 수 없음';if(n<60000)return Math.round(n/1000)+'초';if(n<3600000)return Math.round(n/60000)+'분';return(n/3600000).toFixed(1)+'시간'}
 function date(v){const n=Number(v);return Number.isFinite(n)?new Date(n).toLocaleString('ko-KR'):'-'}
-function modeLabel(mode){return mode==='binance-primary'?'Binance 원본':mode==='bybit-fallback'?'Bybit fallback':mode==='mixed-fallback'||mode==='mixed'?'혼합 · fallback':'확인 필요'}
+function modeLabel(mode){return mode==='binance-primary'?'🟢 Binance 원본':mode==='bybit-fallback'?'🟡 Bybit 대체 데이터':mode==='mixed-fallback'||mode==='mixed'?'🧩 혼합 · 대체 데이터':'⚪ 확인 필요'}
 function modeClass(mode){return mode==='binance-primary'?'sourcePrimary':mode==='bybit-fallback'?'sourceFallback':mode==='mixed-fallback'||mode==='mixed'?'sourceMixed':'sourceNA'}
 function src(v){return v==='BINANCE'?'Binance':v==='BYBIT'?'Bybit':v==='UNAVAILABLE'?'N/A':(v||'N/A')}
 function volumeLabel(v){const n=Math.max(0,Number(v)||0);if(!n)return'OFF';if(n>=100000000)return'1억+';if(n>=10000000)return(n/10000000).toLocaleString('ko-KR',{maximumFractionDigits:1})+'천만+';return Math.round(n/1000000).toLocaleString('ko-KR')+'백만+'}
@@ -45,10 +45,10 @@ function candidateCard(x){
    Number.isFinite(Number(gallery.score))?'<span class="tag">갤러리 '+num(gallery.score,0)+'/100</span>':''
  ].filter(Boolean).join('');
  return '<article class="card">'+
-   '<div class="cardHead"><div><div class="symbol">'+esc(x.symbol)+'</div><div class="meta">'+esc(x.status||'관찰')+' · coverage '+esc(x.coverage??'N/A')+'/10</div></div>'+
+   '<div class="cardHead"><div><div class="symbol">'+esc(x.symbol)+'</div><div class="meta">'+esc(({'준비중':'🌱 준비중','관심구간':'👀 관심구간','점화대기':'🔥 점화대기','점화초기':'🚀 점화초기','재축적':'🔄 재축적','과열':'⚠️ 과열','이미 진행':'📉 이미 진행','리테스트':'🧪 리테스트','제외':'⛔ 제외'}[x.status]||x.status||'👀 관찰'))+' · 📚 데이터 '+esc(x.coverage??'N/A')+'/10</div></div>'+
    '<div class="score '+(ready?'ready':'partial')+'">'+num(x.score,0)+'</div></div>'+
-   '<div class="tags"><span class="tag">24H '+num(x.change,2)+'%</span><span class="tag">가격 '+num(x.price,6)+'</span><span class="tag">거래대금 '+money(x.quoteVolume)+'</span><span class="tag">Taker '+takerText+'</span><span class="tag">Funding '+(Number.isFinite(Number(funding))?num(Number(funding)*100,4)+'%':'N/A')+'</span><span class="tag '+(ready?'ready':'partial')+'">'+(ready?'정밀 완료':'분석 중')+'</span></div>'+
-   '<div class="tags"><span class="tag '+modeClass(p.mode)+'">'+modeLabel(p.mode)+'</span><span class="tag">OI '+src(p.oi)+'</span><span class="tag">차트 '+frameSource+'</span><span class="tag '+(p.taker==='UNAVAILABLE'?'sourceNA':'')+'">Taker '+src(p.taker)+'</span><span class="tag">Funding '+src(p.funding)+'</span></div>'+
+   '<div class="tags"><span class="tag">24H '+num(x.change,2)+'%</span><span class="tag">가격 '+num(x.price,6)+'</span><span class="tag">거래대금 '+money(x.quoteVolume)+'</span><span class="tag">⚖️ 체결비 '+takerText+'</span><span class="tag">💰 펀딩비 '+(Number.isFinite(Number(funding))?num(Number(funding)*100,4)+'%':'N/A')+'</span><span class="tag '+(ready?'ready':'partial')+'">'+(ready?'✅ 정밀 완료':'⏳ 분석 중')+'</span></div>'+
+   '<div class="tags"><span class="tag '+modeClass(p.mode)+'">'+modeLabel(p.mode)+'</span><span class="tag">📦 미결제약정 '+src(p.oi)+'</span><span class="tag">📈 차트 '+frameSource+'</span><span class="tag '+(p.taker==='UNAVAILABLE'?'sourceNA':'')+'">Taker '+src(p.taker)+'</span><span class="tag">💰 펀딩비 '+src(p.funding)+'</span></div>'+
    (profileTags?'<div class="tags">'+profileTags+'</div>':'')+
    (x.reasons?.length?'<div class="reason">'+x.reasons.slice(0,3).map(esc).join(' · ')+'</div>':'')+
  '</article>';
@@ -110,7 +110,7 @@ async function load(){
    if(j.state==='empty')$('notice').textContent='연결은 정상입니다. 아직 검색 결과가 없습니다.';
    else if(j.state==='fallback')$('notice').textContent='최신 작업이 '+(j.sourceStatus||'실패/취소')+' 상태라 마지막 완료 결과를 안전하게 표시 중입니다.';
    else if(j.state==='partial')$('notice').textContent='부분 결과 수신 중 · 후보 '+j.candidateCount+'개 · 정밀 완료 '+j.usableCount+'개 · 분석 중 '+j.partialCount+'개';
-   else $('notice').textContent='정밀 검색 완료 · 후보 '+j.candidateCount+'개 · 10TF 완료 '+j.usableCount+'개'+(j.fallbackCandidateCount?' · fallback '+j.fallbackCandidateCount+'개':'');
+   else $('notice').textContent='정밀 검색 완료 · 후보 '+j.candidateCount+'개 · 10TF 완료 '+j.usableCount+'개'+(j.fallbackCandidateCount?' · 🧩 대체 데이터 '+j.fallbackCandidateCount+'개':'');
    render();
    timer=setTimeout(load,j.active?10000:(j.state==='fallback'?30000:60000));
  }catch(e){
