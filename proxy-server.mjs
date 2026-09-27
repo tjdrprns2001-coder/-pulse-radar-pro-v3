@@ -24,7 +24,9 @@ const probes=[
   ['time','https://fapi.binance.com/fapi/v1/time'],
   ['klines','https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=1'],
   ['oi','https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1'],
-  ['taker','https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=1h&limit=1']
+  ['taker','https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=1h&limit=1'],
+  ['funding','https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1'],
+  ['spotKlines','https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=1']
 ];
 
 function digest(v){return createHash('sha256').update(v).digest();}
