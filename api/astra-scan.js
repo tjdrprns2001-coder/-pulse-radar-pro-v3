@@ -22,7 +22,7 @@ module.exports=async function handler(req,res,ctx={}){
   const q=req?.query||{},stage=String(q.stage||'universe').toLowerCase(),method=methodOf(q.method),scanner=ctx.scanner||defaultScanner();
   res.setHeader('Cache-Control','no-store, max-age=0');
   try{
-    if(stage==='universe')return res.status(200).json(await scanner.universe({method}));
+    if(stage==='universe')return res.status(200).json(await scanner.universe({method,minQuoteVolume:n(q.minQuoteVolume)}));
     if(stage==='oi'){
       const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
       return res.status(200).json(await scanner.oi(symbols,{method,asOf:n(q.asOf),market:marketOf(q)}));
