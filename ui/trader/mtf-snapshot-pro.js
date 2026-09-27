@@ -66,7 +66,14 @@ window.PulseSnapshotBoardV2Context={
  getCurrentTf:()=>currentTf,
  getSymbol:()=>clean($('symbol')?.value||'BTCUSDT'),
  getCanvas:()=>$('snapshot'),
- refresh:()=>run(true)
+ refresh:()=>run(true),
+ restorePayload:(payload)=>{
+   const rec=payload?.boardRecord||null;if(!rec)return false;
+   const data=RR.replayData(rec);
+   SR.draw($('snapshot'),{symbol:rec.symbol||payload?.market?.symbol||clean($('symbol').value),timeframe:rec.timeframe||payload?.market?.timeframe||currentTf,candles:data.candles,analysis:data.analysis,smc:data.smc,liquidity:data.liquidity,ict:data.ict,show:show()});
+   $('chartTitle').textContent=(rec.symbol||payload?.market?.symbol||'SNAPSHOT')+' · '+String(rec.timeframe||payload?.market?.timeframe||'').toUpperCase()+' · 저장본';
+   return true;
+ }
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
