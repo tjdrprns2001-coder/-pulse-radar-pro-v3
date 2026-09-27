@@ -345,6 +345,10 @@ async function fullScanBody(req,limit=65536){
   return raw?JSON.parse(raw):{};
 }
 function fullScanNextBucket(){const now=Date.now();return Math.floor(now/AUTO_INTERVAL_MS)*AUTO_INTERVAL_MS+AUTO_INTERVAL_MS}
+function compactFullScanItem(x){
+  if(!x)return x;const frames=x.frames||{},pick=tf=>{const f=frames[tf]||{};return{available:Boolean(f.available),barChangePct:f.barChangePct??null,rvol20:f.rvol20??null,close:f.close??null}};
+  return{symbol:x.symbol,baseAsset:x.baseAsset,tier:x.tier,marketCapUsd:x.marketCapUsd??null,fundingPct:x.fundingPct??null,oi:x.oi||{},complete:Boolean(x.complete),errors:Array.isArray(x.errors)?x.errors:[],updatedAt:x.updatedAt||null,frames:{'5m':pick('5m'),'15m':pick('15m'),'1h':pick('1h'),'4h':pick('4h'),'1d':pick('1d'),'1w':pick('1w')}};
+}
 
 function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type','cache-control':'no-store'}}
 function jsonResponse(res,status,payload){res.writeHead(status,{'content-type':'application/json; charset=utf-8',...corsHeaders()});return res.end(JSON.stringify(payload))}
@@ -357,18 +361,20 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
-    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null});
+    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null,marketCaps:fullScanMarketCaps.state,manualEnabled:Boolean(env.FULL_SCAN_ADMIN_TOKEN)});
     if(req.method==='GET'&&route.pathname==='/api/v1/results'){
-      const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000));
+      const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000)),compact=String(route.searchParams.get('compact')||'0')==='1';
       const latest=await fullScanStore.latest({tiers,limit});
-      return jsonResponse(res,200,latest?{status:'ok',source:'cache',...latest,items:(latest.items||[]).map(x=>({...x,live:fullScanWs?.get?.(x.symbol)||null}))}:{status:'empty',source:'cache',items:[]});
+      const list=(latest?.items||[]).map(x=>compact?compactFullScanItem(x):({...x,live:fullScanWs?.get?.(x.symbol)||null}));
+      return jsonResponse(res,200,latest?{status:'ok',source:'cache',...latest,items:list}:{status:'empty',source:'cache',items:[]});
     }
     if(req.method==='GET'&&route.pathname.startsWith('/api/v1/runs/')){
       const id=decodeURIComponent(route.pathname.slice('/api/v1/runs/'.length)),run=await fullScanStore.getRun(id);
       if(!run)return jsonResponse(res,404,{status:'error',error:'run not found'});
-      const include=String(route.searchParams.get('items')||'0')==='1',tiers=normalizeTierSelection(route.searchParams.get('tiers')||'');
+      const include=String(route.searchParams.get('items')||'0')==='1',tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),compact=String(route.searchParams.get('compact')||'0')==='1';
       const items=include?await fullScanStore.getItems(id,{tiers,limit:Number(route.searchParams.get('limit'))||1000}):undefined;
-      return jsonResponse(res,200,{status:'ok',...run,items:include?(items||[]).map(x=>({...x,live:fullScanWs?.get?.(x.symbol)||null})):undefined});
+      const list=include?(items||[]).map(x=>compact?compactFullScanItem(x):({...x,live:fullScanWs?.get?.(x.symbol)||null})):undefined;
+      return jsonResponse(res,200,{status:'ok',...run,items:list});
     }
     if(req.method==='POST'&&route.pathname==='/api/v1/manual-scan'){
       if(!String(env.FULL_SCAN_ADMIN_TOKEN||''))return jsonResponse(res,503,{status:'error',error:'manual scan disabled'});
@@ -390,6 +396,9 @@ function server(){
         return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'unknown stage'});
       }catch(e){return jsonResponse(res,502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)})}
     }
+    if(req.method==='GET'&&(route.pathname==='/full-scan'||route.pathname==='/full-scan.html'))return serveRepoFile(res,'full-scan.html','text/html; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/full-scan.js')return serveRepoFile(res,'ui/full-scan.js','application/javascript; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/full-scan.css')return serveRepoFile(res,'ui/full-scan.css','text/css; charset=utf-8');
     if(req.method==='GET'&&(route.pathname==='/astra-scan'||route.pathname==='/astra-scan.html'))return serveRepoFile(res,'astra-scan.html','text/html; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/astra-scan.js')return serveRepoFile(res,'ui/astra-scan.js','application/javascript; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/astra-scan.css')return serveRepoFile(res,'ui/astra-scan.css','text/css; charset=utf-8');
