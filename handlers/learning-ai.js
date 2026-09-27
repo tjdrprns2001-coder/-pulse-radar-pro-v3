@@ -36,6 +36,15 @@ module.exports=async function handler(req,res){
       const frozen=ai.freezeLockedOos(startAt);
       return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',frozen});
     }
+    if(action==='sealed-review'){
+      if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
+      const token=String(process.env.LEARNING_WRITE_TOKEN||''),supplied=String(req?.headers?.['x-learning-token']||'');
+      if(!token||supplied!==token)return res.status(403).json({status:'error',error:'protected action'});
+      const body=parseBody(req);
+      if(!body.champion||!body.challenger)return res.status(400).json({status:'error',error:'champion and challenger required'});
+      const review=ai.sealedReview({champion:body.champion,challenger:body.challenger});
+      return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',review});
+    }
     if(action==='resolve'){
       if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
       const state=ai.exportState(),now=Date.now(),max=Math.max(1,Math.min(20,Number(req?.query?.limit)||12));
