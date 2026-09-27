@@ -1,6 +1,9 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
+const CACHE_KEY='pulse.ignition.last-good.v1';
 let payload=null,timer=null;
+function saveLastGood(v){try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),payload:v}))}catch{}}
+function readLastGood(){try{const x=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!x?.payload)return null;const age=Date.now()-Number(x.savedAt||0);return age<=24*3600000?{...x,age}:null}catch{return null}}
 
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function num(v,d=2){const n=Number(v);return Number.isFinite(n)?n.toFixed(d):'N/A'}
@@ -48,11 +51,30 @@ async function load(){
    const j=await r.json().catch(()=>({status:'degraded',error:'invalid_response'}));
    payload=j;
    if(!r.ok||j.status!=='ok'){
-     $('connection').textContent='연결 이상';$('connection').className='degraded';
-     $('notice').textContent='IGNITION 결과를 읽지 못했습니다: '+(j.error||('HTTP '+r.status));
-     $('results').innerHTML='<div class="empty">IGNITION은 독립 서비스이므로 오류가 나도 Pulse Radar의 다른 기능은 계속 사용할 수 있습니다.</div>';
-     timer=setTimeout(load,30000);return;
+     const cached=readLastGood();
+     if(cached){
+       payload={...cached.payload,state:'fallback',sourceStatus:j.error||('HTTP '+r.status),bridgeCached:true,fetchedAt:Date.now()};
+       $('connection').textContent='이전 정상 결과';$('connection').className='delayed';
+       $('notice').textContent='IGNITION 연결이 일시적으로 불안정해 마지막 정상 결과를 표시합니다 · 캐시 '+age(cached.age)+' 전';
+       $('scanStatus').textContent='재연결 중';
+       $('candidateCount').textContent=String(payload.candidateCount??payload.candidates?.length??0);
+       $('usableCount').textContent=String(payload.usableCount??0);
+       $('freshness').textContent=age((payload.freshnessMs||0)+cached.age);
+       $('freshness').className='delayed';
+       $('stage').textContent=payload.stage||'-';
+       $('dataMode').textContent=modeLabel(payload.dataMode);
+       $('dataMode').className=modeClass(payload.dataMode);
+       $('updatedAt').textContent='마지막 정상 '+date(payload.updatedAt||cached.savedAt);
+       renderCounts(payload.counts||{});
+       render();
+       timer=setTimeout(load,12000);return;
+     }
+     $('connection').textContent='재연결 중';$('connection').className='degraded';
+     $('notice').textContent='IGNITION 상류 서비스 재연결 중 · '+(j.error||('HTTP '+r.status));
+     $('results').innerHTML='<div class="empty">잠시 후 자동으로 다시 연결합니다. Pulse Radar의 다른 기능은 계속 사용할 수 있습니다.</div>';
+     timer=setTimeout(load,12000);return;
    }
+   saveLastGood(j);
    $('connection').textContent=j.state==='fallback'?'이전 완료본':'연결됨';$('connection').className=j.state==='fallback'?'delayed':'live';
    $('scanStatus').textContent=j.sourceStatus&&j.sourceStatus!==j.scanStatus?(j.scanStatus+' / '+j.sourceStatus):(j.scanStatus||j.state||'-');
    $('candidateCount').textContent=String(j.candidateCount??0);
@@ -71,9 +93,17 @@ async function load(){
    render();
    timer=setTimeout(load,j.active?10000:(j.state==='fallback'?30000:60000));
  }catch(e){
-   $('connection').textContent='연결 이상';$('connection').className='degraded';
-   $('notice').textContent='Pulse 서버 프록시 조회 실패';
-   timer=setTimeout(load,30000);
+   const cached=readLastGood();
+   if(cached){
+     payload={...cached.payload,state:'fallback',sourceStatus:'bridge_unavailable',bridgeCached:true,fetchedAt:Date.now()};
+     $('connection').textContent='이전 정상 결과';$('connection').className='delayed';
+     $('notice').textContent='Pulse 브리지 재연결 중 · 마지막 정상 결과를 표시합니다 · 캐시 '+age(cached.age)+' 전';
+     renderCounts(payload.counts||{});render();
+   }else{
+     $('connection').textContent='재연결 중';$('connection').className='degraded';
+     $('notice').textContent='Pulse 서버 프록시 재연결 중';
+   }
+   timer=setTimeout(load,12000);
  }
 }
 $('refreshBtn').onclick=load;$('filter').onchange=render;$('symbolSearch').oninput=render;
