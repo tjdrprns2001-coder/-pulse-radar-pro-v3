@@ -1,7 +1,9 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const CACHE_KEY='pulse.ignition.last-good.v1';
-let payload=null,timer=null;
+const VOLUME_KEY='pulse.ignition.volume-filter.v1';
+let payload=null,timer=null,volumeMin=0;
+try{volumeMin=Math.max(0,Number(localStorage.getItem(VOLUME_KEY)||0)||0)}catch{}
 function saveLastGood(v){try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),payload:v}))}catch{}}
 function readLastGood(){try{const x=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!x?.payload)return null;const age=Date.now()-Number(x.savedAt||0);return age<=24*3600000?{...x,age}:null}catch{return null}}
 
@@ -13,6 +15,13 @@ function date(v){const n=Number(v);return Number.isFinite(n)?new Date(n).toLocal
 function modeLabel(mode){return mode==='binance-primary'?'Binance 원본':mode==='bybit-fallback'?'Bybit fallback':mode==='mixed-fallback'||mode==='mixed'?'혼합 · fallback':'확인 필요'}
 function modeClass(mode){return mode==='binance-primary'?'sourcePrimary':mode==='bybit-fallback'?'sourceFallback':mode==='mixed-fallback'||mode==='mixed'?'sourceMixed':'sourceNA'}
 function src(v){return v==='BINANCE'?'Binance':v==='BYBIT'?'Bybit':v==='UNAVAILABLE'?'N/A':(v||'N/A')}
+function volumeLabel(v){const n=Math.max(0,Number(v)||0);if(!n)return'OFF';if(n>=100000000)return'1억+';if(n>=10000000)return(n/10000000).toLocaleString('ko-KR',{maximumFractionDigits:1})+'천만+';return Math.round(n/1000000).toLocaleString('ko-KR')+'백만+'}
+function updateVolumeScope(){
+ const el=$('volumeScope');if(!el)return;
+ const base=Math.max(0,Number(payload?.config?.minVolume)||0);
+ el.textContent='거래대금 '+volumeLabel(volumeMin)+' · 스캔 수집 하한 '+(base?money(base):'없음');
+}
+
 
 function renderCounts(counts={}){
  const keys=[['universe','전체'],['filtered','1차'],['oi','OI'],['prescan','프리스캔'],['candidates','후보'],['deep','정밀']];
@@ -48,7 +57,7 @@ function render(){
  if(!payload)return;
  const q=$('symbolSearch').value.trim().toUpperCase(),f=$('filter').value;
  let rows=Array.isArray(payload.candidates)?payload.candidates:[];
- rows=rows.filter(x=>(!q||x.symbol.includes(q))&&(f==='all'||(f==='ready'&&x.usable)||(f==='partial'&&!x.usable)));
+ rows=rows.filter(x=>(!q||x.symbol.includes(q))&&(f==='all'||(f==='ready'&&x.usable)||(f==='partial'&&!x.usable))&&(volumeMin<=0||Number(x.quoteVolume)>=volumeMin));
  $('results').innerHTML=rows.length?rows.map(candidateCard).join(''):'<div class="empty">조건에 맞는 후보가 없습니다.</div>';
 }
 
@@ -75,6 +84,7 @@ async function load(){
        $('dataMode').className=modeClass(payload.dataMode);
        $('updatedAt').textContent='마지막 정상 '+date(payload.updatedAt||cached.savedAt);
        renderCounts(payload.counts||{});
+       updateVolumeScope();
        render();
        timer=setTimeout(load,12000);return;
      }
@@ -95,6 +105,7 @@ async function load(){
    $('dataMode').className=modeClass(j.dataMode);
    $('updatedAt').textContent='업데이트 '+date(j.updatedAt||j.fetchedAt);
    renderCounts(j.counts||{});
+   updateVolumeScope();
    if(j.state==='empty')$('notice').textContent='연결은 정상입니다. 아직 검색 결과가 없습니다.';
    else if(j.state==='fallback')$('notice').textContent='최신 작업이 '+(j.sourceStatus||'실패/취소')+' 상태라 마지막 완료 결과를 안전하게 표시 중입니다.';
    else if(j.state==='partial')$('notice').textContent='부분 결과 수신 중 · 후보 '+j.candidateCount+'개 · 정밀 완료 '+j.usableCount+'개 · 분석 중 '+j.partialCount+'개';
@@ -107,7 +118,7 @@ async function load(){
      payload={...cached.payload,state:'fallback',sourceStatus:'bridge_unavailable',bridgeCached:true,fetchedAt:Date.now()};
      $('connection').textContent='이전 정상 결과';$('connection').className='delayed';
      $('notice').textContent='Pulse 브리지 재연결 중 · 마지막 정상 결과를 표시합니다 · 캐시 '+age(cached.age)+' 전';
-     renderCounts(payload.counts||{});render();
+     renderCounts(payload.counts||{});updateVolumeScope();render();
    }else{
      $('connection').textContent='재연결 중';$('connection').className='degraded';
      $('notice').textContent='Pulse 서버 프록시 재연결 중';
@@ -116,6 +127,12 @@ async function load(){
  }
 }
 $('refreshBtn').onclick=load;$('filter').onchange=render;$('symbolSearch').oninput=render;
+const volumeFilter=$('volumeFilter');
+if(volumeFilter){
+  volumeFilter.value=String(volumeMin);
+  volumeFilter.onchange=e=>{volumeMin=Math.max(0,Number(e.target.value)||0);try{localStorage.setItem(VOLUME_KEY,String(volumeMin))}catch{}updateVolumeScope();render();};
+}
 window.addEventListener('beforeunload',()=>clearTimeout(timer));
+updateVolumeScope();
 load();
 })();
