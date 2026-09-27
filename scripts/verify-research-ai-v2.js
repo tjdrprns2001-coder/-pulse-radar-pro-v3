@@ -12,6 +12,7 @@ const V2=require('../lib/learning/research-ai-v2.js');
 const Adapter=require('../lib/learning/scanner-adapter.js');
 const ResearchStats=require('../lib/learning/research-stats.js');
 const ArchetypeLab=require('../lib/learning/archetype-lab.js');
+const ResearchLab=require('../lib/learning/research-lab.js');
 
 function candle(openTime,open,high,low,close){
   return [openTime,String(open),String(high),String(low),String(close),'100',openTime+3599999,'0',0,'0','0','0'];
@@ -131,6 +132,20 @@ assert(rs.byRegime.some(x=>x.key==='RISK_ON'&&x.count===2));
 const clusters=ArchetypeLab.buildClusters(labeledRows,{similarityThreshold:.8,minOverlap:6});
 assert(clusters.length>=1);
 assert(clusters.every(x=>x.state==='RESEARCH_CANDIDATE'&&x.productionEligible===false));
+
+// Research Lab v3: all registered techniques become research knowledge; generated hypotheses remain shadow-only.
+const lab=ResearchLab.labSummary(labeledRows);
+assert.equal(lab.shadowOnly,true);
+assert.equal(lab.knowledge.coverage.total,ResearchLab.techniqueCatalog().length);
+assert(lab.knowledge.coverage.total>=30,'technique registry should expose the full strategy library');
+assert(Array.isArray(lab.hypotheses.observed));
+assert(Array.isArray(lab.hypotheses.mutations));
+assert(Array.isArray(lab.experiments));
+assert(lab.experiments.every(x=>x.rankWeight===0&&x.requiresLockedOos===true));
+const evalProbe=ResearchLab.evaluateHypothesis(labeledRows,{ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
+assert.equal(evalProbe.leakageSafe,true);
+assert(evalProbe.support>=2);
+assert(['LOW_SAMPLE','SHADOW_TESTING','OOS_PROMISING'].includes(evalProbe.state));
 
 // Research AI central-state wiring: scanners must hydrate persisted memory before mutation,
  // trader runtime must return raw scan data, and learning status must stay on the unified runtime.
