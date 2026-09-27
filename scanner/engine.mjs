@@ -12,7 +12,7 @@ export async function stepJob(store,api,id){if(!await store.acquire(id))return {
  j=await store.job(id);if(!j)throw new Error('작업 없음');if(['complete','failed','cancelled'].includes(j.status))return j;
  if(j.status==='paused'&&j.retryAt>Date.now())return j;j.status='running';stage=j.stage;
  if(j.stage==='universe'){
- const u=await api.universe();j.asOf=u.asOf;j.counts.universe=u.rows.length;
+ const u=await api.universe();j.asOf=u.asOf;j.counts.universe=u.rows.length;j.providerMeta={universeSource:u.source||null,universeSnapshotAsOf:u.universeSnapshotAsOf||null,universeCoverage:u.coverage||null};
  if(j.kind==='sample'){j.rows=u.rows.filter(r=>r.change>=10&&r.quoteVolume>=j.config.minVolume).sort((a,b)=>b.change-a.change).slice(0,12);j.counts.filtered=j.rows.length;j.stage='sample';}
  else {j.rows=u.rows.filter(r=>r.change!=null&&Math.abs(r.change)<=j.config.maxChange&&r.quoteVolume>=j.config.minVolume);j.counts.filtered=j.rows.length;j.stage='oi';}
  }
