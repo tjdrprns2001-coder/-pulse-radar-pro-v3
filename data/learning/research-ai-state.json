@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790539933644,
+  "updatedAt": 1790550314172,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -177,8 +177,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 34
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 37
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": -0.03267511783835442,
@@ -368,8 +368,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 34
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 37
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": 0.20926745201022,
@@ -747,8 +747,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1130,8 +1130,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1513,8 +1513,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1894,8 +1894,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2275,8 +2275,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2660,8 +2660,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2976,10 +2976,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 3.8456720531128585,
+        "mfePct": 4.710008768633345,
         "maePct": -3.144181385444067,
         "mae_72h_pct": -3.144181385444067,
-        "mfe_72h_pct": 3.8456720531128585,
+        "mfe_72h_pct": 4.710008768633345,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
@@ -3045,8 +3045,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3057,7 +3057,7 @@
       "outcome12hPct": -0.9394964299135777,
       "outcome24hPct": 0.8142302392584178,
       "outcome72hPct": null,
-      "mfe72hPct": 3.8456720531128585,
+      "mfe72hPct": 4.710008768633345,
       "mae72hPct": -3.144181385444067,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -3426,8 +3426,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3743,8 +3743,8 @@
           }
         },
         "mfePct": 0.09121313469138137,
-        "maePct": -5.290361812100941,
-        "mae_72h_pct": -5.290361812100941,
+        "maePct": -7.0842201276983925,
+        "mae_72h_pct": -7.0842201276983925,
         "mfe_72h_pct": 0.09121313469138137,
         "barriers": {
           "status": "SL_FIRST",
@@ -3811,8 +3811,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3824,14 +3824,14 @@
       "outcome24hPct": -3.1316509577379192,
       "outcome72hPct": null,
       "mfe72hPct": 0.09121313469138137,
-      "mae72hPct": -5.290361812100941,
+      "mae72hPct": -7.0842201276983925,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "signal_close": 3.289,
       "next_open": 3.289,
       "direction": "LONG",
-      "mae_72h_pct": -5.290361812100941
+      "mae_72h_pct": -7.0842201276983925
     },
     {
       "key": "ZECUSDT:497345",
@@ -4194,8 +4194,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790539933644,
-        "confirmedBars": 26
+        "evaluatedAt": 1790550314172,
+        "confirmedBars": 29
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -8179,7 +8179,7 @@
     "researchNotes": [
       {
         "id": "RN-0A8LZU6",
-        "at": 1790539938740,
+        "at": 1790550316674,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -8218,7 +8218,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790539938740,
+  "exportedAt": 1790550316675,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -9219,7 +9219,7 @@
       "notes": [
         {
           "id": "RN-0A8LZU6",
-          "at": 1790539938740,
+          "at": 1790550316674,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
