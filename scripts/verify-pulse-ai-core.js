@@ -6,6 +6,7 @@ const {createBriefingService,fallback}=require('../lib/pulse-ai/briefing-service
 const {enrichCatalysts,summarizeCatalysts}=require('../lib/pulse-ai/event-catalyst.js');
 const Analyst=require('../lib/pulse-ai/deterministic-analyst.js');
 const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
+const {createTypeSafeJudgment,buildQuestions}=require('../lib/pulse-ai/typesafe-judgment.js');
 
 const base={status:'ok',updatedAt:1000,scanCount:5,partial:false,dataHealth:{live:5,delayed:0,blocked:0,errors:0},marketCoverage:{spot:2,futures:4,both:1,total:5},
  marketBreadth:{count:5,up:3,down:2,flat:0,median:.7,majors:{BTC:-.5,ETH:-.8,SOL:1.2}},
@@ -39,6 +40,10 @@ assert.equal(ctx.selected.symbol,'AAAUSDT');
 assert.equal(ctx.researchAI.labels,0);
 assert(!JSON.stringify(ctx).includes('GEMINI_API_KEY'));
 assert(!JSON.stringify(ctx).includes('OPENAI_API_KEY'));
+const typeSafeQuestions=buildQuestions(ctx.symbols);
+assert.equal(typeSafeQuestions.marketMode.type,'choice');
+assert(Object.values(typeSafeQuestions).some(x=>x.type==='score'),'TypeSafe readiness must use score');
+assert(Object.values(typeSafeQuestions).some(x=>x.type==='noul'),'TypeSafe chase risk must use noul');
 
 const candidates=Analyst.topCandidates(base,8);
 assert(candidates.some(x=>x.symbol==='AAAUSDT'),'normal candidate should remain');
@@ -76,6 +81,31 @@ assert.equal(enriched[0].eventTypeKo,'메인넷');assert.equal(enriched[0].timin
 assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건'));
 
 (async()=>{
+  let capturedTypeSafe=null;
+  const directTypeSafe=createTypeSafeJudgment({
+    apiKey:'test-typesafe-key',timeoutMs:100,maxCandidates:2,
+    fetchImpl:async(url,options)=>{
+      capturedTypeSafe={url,options,body:JSON.parse(options.body)};
+      const answers={};
+      for(const [key,q] of Object.entries(capturedTypeSafe.body.questions)){
+        if(q.type==='choice')answers[key]={type:'choice',choice:'selective',confidence:.82,probabilities:{risk_on:.08,selective:.82,defensive:.05,insufficient:.05}};
+        else if(q.type==='score')answers[key]={type:'score',score:2.5,confidence:.74,legend:{0:'a',1:'b',2:'c',3:'d',4:'e'},probabilities:{0:.05,1:.1,2:.3,3:.45,4:.1}};
+        else answers[key]={type:'noul',noul:.2};
+      }
+      return{ok:true,status:200,json:async()=>({model:'jev-test',answers,usage:{input_tokens:10,output_tokens:4}})};
+    }
+  });
+  const directTs=await directTypeSafe.evaluate(ctx);
+  assert.equal(directTs.status,'ok');assert.equal(directTs.market.mode,'selective');
+  assert(directTs.candidates.length>0&&directTs.candidates.length<=2);
+  assert.equal(directTs.candidates[0].readinessScore,2.5);assert.equal(directTs.candidates[0].chaseRisk,.2);
+  assert.equal(capturedTypeSafe.url,'https://api.typesafe.ai/v1/systemone');
+  assert.equal(capturedTypeSafe.options.headers.Authorization,'Bearer test-typesafe-key');
+  assert.equal(capturedTypeSafe.body.model,'jev-latest');
+  assert(!JSON.stringify(directTs).includes('test-typesafe-key'),'TypeSafe key must never be returned');
+  const disabledTs=await createTypeSafeJudgment({apiKey:''}).evaluate(ctx);
+  assert.equal(disabledTs.status,'disabled');assert.equal(disabledTs.available,false);
+
   let runtimeCalls=0;
   const runtime=createRuntimeScanService({
     runtimeUrl:'https://runtime.example',
@@ -106,6 +136,11 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
   const scanService={run:async()=>JSON.parse(JSON.stringify(base))};
   const researchAI={hydrateRemote:async()=>true,status:()=>researchStatus};
   const gateway={available:false,provider:'gemini',model:'gemini-test',brief:async()=>{throw new Error('must not call')},chat:async()=>{throw new Error('must not call')}};
+  const typeSafe={available:true,evaluate:async()=>({
+    version:'PULSE_AI_TYPESAFE_v1',status:'ok',available:true,shadowOnly:true,provider:'typesafe',model:'jev-test',
+    market:{mode:'selective',confidence:.8,probabilities:{selective:.8}},
+    candidates:[{symbol:'AAAUSDT',readinessScore:2.5,readinessConfidence:.7,chaseRisk:.2,shadowOnly:true}]
+  }),health:()=>({version:'PULSE_AI_TYPESAFE_v1',available:true,shadowOnly:true,provider:'typesafe',model:'jev-test'})};
   const detailResolver=async symbol=>symbol==='XLMUSDT'?{
     ok:true,symbol:'XLMUSDT',market:'futures',externalFuturesOnly:true,sourceExchanges:['bybit','okx'],
     preSurge:{score:0,stage:'외부 선물 관찰',reasons:['2개 선물 거래소 교차 확인']},
@@ -115,7 +150,7 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
   const eventResolver=async symbol=>symbol==='AAAUSDT'?{
     ok:true,events:[{title:'AAA mainnet upgrade',titleKo:'AAA 메인넷 업그레이드',category:'네트워크/전환',source:'Example News',link:'https://example.com/aaa',eventDate:'2026-09-28T00:00:00Z'}]
   }:null;
-  const service=createBriefingService({scanService,gateway,researchAI,detailResolver,eventResolver,cacheMs:0,now:()=>2000});
+  const service=createBriefingService({scanService,gateway,researchAI,typeSafe,detailResolver,eventResolver,cacheMs:0,now:()=>2000});
   const out=await service.getBrief({selectedSymbol:'AAAUSDT'});
   assert.equal(out.aiGenerated,false);assert.equal(out.aiAvailable,false);
   assert(out.summary.includes('시장 상태'),'fallback should be useful local market analysis');
@@ -123,6 +158,7 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
   assert(!out.candidates.some(x=>x.symbol==='HOTUSDT'));
   assert.equal(out.selectedFocus.symbol,'AAAUSDT');
   assert.equal(out.researchAI.model.state,'SHADOW');
+  assert.equal(out.typeSafe.status,'ok');assert.equal(out.typeSafe.market.mode,'selective');assert.equal(out.typeSafe.shadowOnly,true);
   assert.equal(out.eventCatalysts.length,1,'local event resolver should populate catalysts without generative AI');
   assert(out.eventSummary.includes('보조 뉴스 1건'),'local event fallback must be labelled as auxiliary news');
   const chat=await service.chat({question:'AAA 지금 어때?',selectedSymbol:'AAAUSDT'});
@@ -133,6 +169,6 @@ assert(summarizeCatalysts(enriched,true).includes('공식·신뢰 이벤트 1건
   assert.equal(xlm.selectedFocus.derivatives.exchangeCount,2);
   const xlmChat=await service.chat({question:'XLM 지금 어때?',selectedSymbol:'XLMUSDT'});
   assert.equal(xlmChat.answerMode,'deterministic');assert(xlmChat.answer.includes('XLMUSDT'));
-  const health=await service.health();assert.equal(health.status,'ok');assert.equal(health.aiAvailable,false);
+  const health=await service.health();assert.equal(health.status,'ok');assert.equal(health.aiAvailable,false);assert.equal(health.typeSafe.available,true);assert.equal(health.typeSafe.shadowOnly,true);
   console.log('pulse ai core PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
