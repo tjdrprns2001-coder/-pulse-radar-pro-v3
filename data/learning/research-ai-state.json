@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790550314172,
+  "updatedAt": 1790559613938,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -54,8 +54,8 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": -0.0497849977246112,
-      "outcome24hPct": 0.9043284431554,
+      "outcome6hPct": -0.05869639349871392,
+      "outcome24hPct": 0.8893572982549003,
       "label": null,
       "source": "trader-deep",
       "outcomeV2": {
@@ -75,31 +75,31 @@
             "status": "CONFIRMED",
             "targetAt": 1790417212870,
             "closeAt": 1790420399999,
-            "returnPct": -0.03267511783835442
+            "returnPct": -0.031605750345453654
           },
           "h3": {
             "status": "CONFIRMED",
             "targetAt": 1790424412870,
             "closeAt": 1790427599999,
-            "returnPct": -0.1889215904108621
+            "returnPct": -0.1813171993502949
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790435212870,
             "closeAt": 1790438399999,
-            "returnPct": -0.0497849977246112
+            "returnPct": -0.05869639349871392
           },
           "h12": {
             "status": "CONFIRMED",
             "targetAt": 1790456812870,
             "closeAt": 1790459999999,
-            "returnPct": -0.04990381633493968
+            "returnPct": -0.05144845826910993
           },
           "h24": {
             "status": "CONFIRMED",
             "targetAt": 1790500012870,
             "closeAt": 1790503199999,
-            "returnPct": 0.9043284431554
+            "returnPct": 0.8893572982549003
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -108,10 +108,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 1.1665611161345124,
-        "maePct": -0.5185244154421342,
-        "mae_72h_pct": -0.5185244154421342,
-        "mfe_72h_pct": 1.1665611161345124,
+        "mfePct": 1.1697692186131814,
+        "maePct": -0.45566937058217905,
+        "mae_72h_pct": -0.45566937058217905,
+        "mfe_72h_pct": 1.1697692186131814,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -177,23 +177,23 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 37
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 39
       },
       "labelStatus": "UNRESOLVED",
-      "outcome1hPct": -0.03267511783835442,
-      "outcome3hPct": -0.1889215904108621,
-      "outcome12hPct": -0.04990381633493968,
+      "outcome1hPct": -0.031605750345453654,
+      "outcome3hPct": -0.1813171993502949,
+      "outcome12hPct": -0.05144845826910993,
       "outcome72hPct": null,
-      "mfe72hPct": 1.1665611161345124,
-      "mae72hPct": -0.5185244154421342,
+      "mfe72hPct": 1.1697692186131814,
+      "mae72hPct": -0.45566937058217905,
       "tpSlOrder": "NONE",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "signal_close": 84161.9,
       "next_open": 84161.9,
       "direction": "LONG",
-      "mae_72h_pct": -0.5185244154421342
+      "mae_72h_pct": -0.45566937058217905
     },
     {
       "key": "ETHUSDT:497337",
@@ -368,8 +368,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 37
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 39
       },
       "labelStatus": "UNRESOLVED",
       "outcome1hPct": 0.20926745201022,
@@ -747,8 +747,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1130,8 +1130,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1513,8 +1513,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1894,8 +1894,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2275,8 +2275,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2591,10 +2591,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 0.21191429244171722,
+        "mfePct": 0.5023153598618713,
         "maePct": -4.9525155011380555,
         "mae_72h_pct": -4.9525155011380555,
-        "mfe_72h_pct": 0.21191429244171722,
+        "mfe_72h_pct": 0.5023153598618713,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
@@ -2660,8 +2660,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2672,7 +2672,7 @@
       "outcome12hPct": -3.1551683541323317,
       "outcome24hPct": -2.174083666902127,
       "outcome72hPct": null,
-      "mfe72hPct": 0.21191429244171722,
+      "mfe72hPct": 0.5023153598618713,
       "mae72hPct": -4.9525155011380555,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -2976,10 +2976,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 4.710008768633345,
+        "mfePct": 6.927220343229368,
         "maePct": -3.144181385444067,
         "mae_72h_pct": -3.144181385444067,
-        "mfe_72h_pct": 4.710008768633345,
+        "mfe_72h_pct": 6.927220343229368,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
@@ -2996,8 +2996,8 @@
               "at": 1790495999999
             },
             "plus5": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790553599999
             },
             "plus8": {
               "hit": false,
@@ -3045,8 +3045,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3057,7 +3057,7 @@
       "outcome12hPct": -0.9394964299135777,
       "outcome24hPct": 0.8142302392584178,
       "outcome72hPct": null,
-      "mfe72hPct": 4.710008768633345,
+      "mfe72hPct": 6.927220343229368,
       "mae72hPct": -3.144181385444067,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -3426,8 +3426,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3811,8 +3811,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -4194,8 +4194,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790550314172,
-        "confirmedBars": 29
+        "evaluatedAt": 1790559613938,
+        "confirmedBars": 31
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -8179,7 +8179,7 @@
     "researchNotes": [
       {
         "id": "RN-0A8LZU6",
-        "at": 1790550316674,
+        "at": 1790559617303,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -8218,7 +8218,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790550316675,
+  "exportedAt": 1790559617304,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -9219,7 +9219,7 @@
       "notes": [
         {
           "id": "RN-0A8LZU6",
-          "at": 1790550316674,
+          "at": 1790559617303,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
