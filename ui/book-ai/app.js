@@ -5,6 +5,9 @@ const Journal=window.PulseLiquidityEventJournal,Gate=window.PulseSampleReadiness
 const RULE_LABEL={BREAKOUT_RETEST:'돌파 후 리테스트',SUPPORT_RESISTANCE_FLIP:'지지·저항 역할 전환',TRENDLINE_REACTION:'추세선 반응',LIQUIDITY_SWEEP_RECLAIM:'유동성 스윕 후 회복',VOLUME_CONTRACTION_BREAK:'거래량 수축 후 돌파',MOVING_AVERAGE_COMPRESSION:'이평 압축'};
 const MINI_TFS=['1d','4h','1h','15m'];
 const AI_DEEP_CANDIDATE_LIMIT=30;
+const BOOK_AI_CANDIDATE_DEEP_LIMIT=8;
+const STRUCTURE_TIMEOUT_MS=12000;
+const ANALYSIS_SCAN_TIMEOUT_MS=24000;
 const KO_ENGINE={scanner:'스캐너',presurge:'급등 전조',ict:'ICT 분석',causalIct:'인과성 ICT',structure:'구조 분석',forexBook:'책 데이터',journal:'이벤트 원장',gate:'표본 검증 게이트',trendline:'추세선'};
 const KO_STATUS={AVAILABLE:'정상',MISSING:'누락',STALE:'오래됨',ERROR:'오류',CONFIRMED:'확정',CANDIDATE:'후보',NOT_CONFIRMED:'미확정',READY:'준비',WATCH:'관찰',WAIT:'대기',RECOMMEND:'자동 추천',EXCLUDE:'제외',EXCLUDED:'제외'};
 const KO_STAGE={WAIT_RECLAIM:'재회복 대기',WAIT_MSS:'MSS 확인 대기',WAIT_FVG:'FVG 확인 대기',WAIT_REVISIT:'FVG 재방문 대기',REVISIT:'재방문 확인',INTENT:'진입 의도 확인',FILLED:'가상 체결 완료',INSUFFICIENT_BARS:'봉 부족',NO_SETUP:'조건 없음',PARTIAL:'부분 정렬',MIXED:'혼조'};
@@ -15,7 +18,14 @@ let last=null,runSeq=0;
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return'BTCUSDT';if(!v.endsWith('USDT')&&v.length<=12)v+='USDT';return v}
 function fmtTime(ms){return Number.isFinite(Number(ms))?new Date(Number(ms)).toLocaleString('ko-KR',{hour12:false}):'-'}
 function fmtPrice(v){const n=Number(v);if(!Number.isFinite(n))return'N/A';const d=n>=100?2:n>=1?4:n>=.01?5:8;return n.toLocaleString('en-US',{maximumFractionDigits:d})}
-async function json(url){const r=await fetch(url,{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}
+function friendlyError(e,fallback='요청 실패'){const raw=String(e?.message||e||fallback);if(e?.name==='AbortError'||/aborted|aborterror|signal is aborted/i.test(raw))return'요청 시간 초과';return raw}
+async function timedFetch(url,opts={},ms=12000){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),ms);
+  try{return await fetch(url,{...opts,signal:ctrl.signal})}
+  catch(e){throw new Error(friendlyError(e))}
+  finally{clearTimeout(timer)}
+}
+async function json(url,ms=15000){const r=await timedFetch(url,{cache:'no-store'},ms),d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}
 function lastClosedTime(raw){const c=raw?.candles||[],x=c.at(-1);return Number(raw?.lastClosedCloseTime??raw?.lastClosedTime??x?.closeTime??x?.closedAt??x?.time)||null}
 function gateReadOnly(){
   if(!Gate)return null;
@@ -43,10 +53,11 @@ function causalSource(chart,computedAt,sourceBarClosedAt,symbol){
 const TF_MS=Object.freeze({'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000});
 function freshnessLimit(tf){const base=TF_MS[String(tf||'').toLowerCase()]||3600000;return Math.max(30*60*1000,base+30*60*1000)}
 async function fetchStructureFresh({symbol,interval,limit=560,analysisAsOf=Date.now()}={}){
-  let raw=await CD.fetchStructure({symbol,interval,limit});
+  const fetchImpl=(url,opts={})=>timedFetch(url,opts,STRUCTURE_TIMEOUT_MS);
+  let raw=await CD.fetchStructure({symbol,interval,limit,fetchImpl});
   const observed=lastClosedTime(raw),maxAge=freshnessLimit(interval);
   if(Number.isFinite(observed)&&analysisAsOf-observed>maxAge){
-    raw=await CD.fetchStructure({symbol,interval,limit,cacheBust:analysisAsOf});
+    raw=await CD.fetchStructure({symbol,interval,limit,cacheBust:analysisAsOf,fetchImpl});
     raw.__bookAiFreshRetry=true;
   }
   return raw;
@@ -367,9 +378,10 @@ function presurgeFallbackRows(data){
     .slice(0,8)
     .map(x=>({symbol:x.symbol,watchScore:Number(x.score)||0,scanClass:x.state||'SPOT',v2Type:'SPOT PRE-SURGE',v3Tier:'Spot fallback',priceChange24h:Number.isFinite(Number(x.price24))?Number(x.price24):null,reasons:(x.reasons||[]).slice(0,4)}));
 }
-function jsonTimeout(url,ms=8000,opts={}){
-  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),ms),headers={...(opts.headers||{})};if(opts.body&&!headers['Content-Type'])headers['Content-Type']='application/json';
-  return fetch(url,{cache:'no-store',...opts,headers,signal:ctrl.signal}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d}).finally(()=>clearTimeout(timer));
+async function jsonTimeout(url,ms=8000,opts={}){
+  const headers={...(opts.headers||{})};if(opts.body&&!headers['Content-Type'])headers['Content-Type']='application/json';
+  const r=await timedFetch(url,{cache:'no-store',...opts,headers},ms),d=await r.json().catch(()=>({}));
+  if(!r.ok||d.status==='error')throw new Error(d.error||('HTTP '+r.status));return d;
 }
 async function verifyPromotionRow(row,marketSource='스캐너 v3'){
   if(!Promotion||!row?.item||!A||!R||!Live)return row;
@@ -404,9 +416,10 @@ async function scannerWatchRows(){
   const rows=Array.isArray(summary.items)?summary.items:[];
   const eligible=rows.filter(x=>x.dataState!=='failed'&&!['POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'].includes(String(x.scanClass?.key||''))).sort((a,b)=>(Number(b.candidateScore)||0)-(Number(a.candidateScore)||0)||Math.abs(Number(a.priceChange24h)||0)-Math.abs(Number(b.priceChange24h)||0));const futures=eligible.filter(x=>x.futuresListed||x.marketScope==='futures'||x.marketScope==='spot+futures'),spotOnly=eligible.filter(x=>!futures.includes(x));const seed=[...futures,...spotOnly].slice(0,AI_DEEP_CANDIDATE_LIMIT).map(x=>x.symbol);
   if(!seed.length)throw new Error('스캐너 후보 없음');
-  const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit='+AI_DEEP_CANDIDATE_LIMIT+'&precision=1&symbols='+encodeURIComponent(seed.join(',')),20000);
+  const deepSeed=seed.slice(0,BOOK_AI_CANDIDATE_DEEP_LIMIT);
+  const deep=await jsonTimeout('/api/coin-scan?mode=deep&limit='+BOOK_AI_CANDIDATE_DEEP_LIMIT+'&precision=1&symbols='+encodeURIComponent(deepSeed.join(',')),24000);
   if(deep.autoRecommendations){const sourceName=deep.marketSource==='spot-fallback'?'스캐너 v3 · 현물 대체':'스캐너 v3',promoted=applyPromotionCache(deep.autoRecommendations);renderAutoRecommendations(promoted,sourceName);saveAutoCache(promoted,deep.marketSource||'scanner');refreshAutoHistory();refreshAutoStats();backgroundPromoteReady(promoted,deep.marketSource||sourceName).catch(()=>{})}
-  const selected=futuresFirst(WL.select(deep.items||[],AI_DEEP_CANDIDATE_LIMIT));
+  const selected=futuresFirst(WL.select(deep.items||[],BOOK_AI_CANDIDATE_DEEP_LIMIT));
   if(!selected.length)throw new Error('스캐너 정밀 후보 없음');
   return selected;
 }
@@ -450,7 +463,7 @@ async function refreshWatchlist(){
     return rows;
   }).catch(e=>{spotError=e;return[]});
   const scannerPromise=scannerWatchRows().then(rows=>{
-    if(rows.length){renderWatchlist(rows);setWatchMeta('현물+선물 AI 정밀 후보 · '+rows.length+'/'+AI_DEEP_CANDIDATE_LIMIT+'개','ok');saveWatchCache(rows,'스캐너 v3');rendered=true;bestRows=rows}
+    if(rows.length){renderWatchlist(rows);setWatchMeta('현물+선물 AI 정밀 후보 · '+rows.length+'/'+BOOK_AI_CANDIDATE_DEEP_LIMIT+'개','ok');saveWatchCache(rows,'스캐너 v3');rendered=true;bestRows=rows}
     return rows;
   }).catch(e=>{scannerError=e;return[]});
   const [structureRows,spotRows,scannerRows]=await Promise.all([structurePromise,spotPromise,scannerPromise]);
@@ -459,7 +472,7 @@ async function refreshWatchlist(){
   if(structureRows.length)return structureRows;
   if(rendered)return bestRows;
   if(box)box.innerHTML='<div class="watchEmpty">추천 후보를 불러오지 못했습니다. 새로고침을 눌러 다시 시도하세요.</div>';
-  setWatchMeta('후보 데이터 제한 · '+String(scannerError?.message||spotError?.message||structureError?.message||'source unavailable'),'warn');
+  setWatchMeta('후보 데이터 제한 · '+friendlyError(scannerError||spotError||structureError,'데이터 소스 제한'),'warn');
   return[];
 }
 function renderAggregate(symbol,charts={}){
@@ -593,7 +606,7 @@ async function run(){
     const requestStartedAt=Date.now();renderIntelLoading(symbol);renderValidationLoading(symbol);
     const validationPromise=jsonTimeout('/api/coin-scan?mode=validation&symbol='+encodeURIComponent(symbol),30000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const intelPromise=jsonTimeout('/api/coin-scan?mode=intelligence&symbol='+encodeURIComponent(symbol),22000).then(data=>({data,error:null})).catch(error=>({data:null,error}));
-    const scanPromise=json('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol)).then(data=>({data,error:null})).catch(error=>({data:null,error}));
+    const scanPromise=jsonTimeout('/api/coin-scan?mode=deep&limit=1&precision=1&symbols='+encodeURIComponent(symbol),ANALYSIS_SCAN_TIMEOUT_MS).then(data=>({data,error:null})).catch(error=>({data:null,error}));
     const raw=await fetchStructureFresh({symbol,interval:'4h',limit:560,analysisAsOf:requestStartedAt});if(token!==runSeq)return;
     const chart=buildChart(raw,'4h',requestStartedAt);
     const scanResult=await scanPromise;if(token!==runSeq)return;
@@ -641,14 +654,22 @@ async function run(){
     $('status').textContent=symbol+' · '+fusion.setupState+(bookPromotion?' · 승격 '+bookPromotion.label:'')+' · 완료';
     try{parent.postMessage({type:'pulse-symbol-sync',symbol},'*')}catch{}
     const u=new URL(location.href);u.searchParams.set('symbol',symbol);history.replaceState(null,'',u);
-  }catch(e){if(token===runSeq){$('status').textContent='오류 · '+(e.message||e);$('status').classList.add('error')}}finally{if(token===runSeq)$('run').disabled=false}
+  }catch(e){if(token===runSeq){
+    const msg=friendlyError(e);
+    $('status').textContent='오류 · '+msg;$('status').classList.add('error');
+    renderMarketIntelligence(null,new Error(msg),null);
+    renderValidation(null,new Error(msg));
+    if($('mtfStatus')&&$('mtfStatus').textContent==='대기')$('mtfStatus').textContent='분석 제한';
+  }}finally{if(token===runSeq)$('run').disabled=false}
 }
 function save(){
   if(!last)return;
   const symbol=last.fusion?.symbol||last.symbol||'BOOK-AI',agg=$('aggregateSnapshot'),useAgg=agg?.dataset?.bookAiMtfRendered==='1';const a=document.createElement('a');a.href=useAgg?MTF.pngDataUrl(agg):C.pngDataUrl($('snapshot'));a.download=symbol+(useAgg?'-book-ai-mtf.png':'-book-ai-4h-overview.png');document.body.append(a);a.click();a.remove();
 }
 $('run').onclick=run;$('savePng').onclick=save;$('replayValidation').onclick=replayValidation;$('refreshCandidates').onclick=refreshWatchlist;$('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');run();refreshWatchlist();refreshAutoHistory();refreshAutoStats();
+const q=new URLSearchParams(location.search);$('symbol').value=clean(q.get('symbol')||'BTCUSDT');
+(async()=>{await run();setTimeout(()=>refreshWatchlist().catch(()=>{}),250);})();
+refreshAutoHistory();refreshAutoStats();
 let autoRefreshTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshWatchlist()},300000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(readAutoCache()?.ts||0)>300000)refreshWatchlist()});
 })();
