@@ -94,7 +94,34 @@ async function load(){
      $('results').innerHTML='<div class="empty">잠시 후 자동으로 다시 연결합니다. Pulse Radar의 다른 기능은 계속 사용할 수 있습니다.</div>';
      timer=setTimeout(load,12000);return;
    }
-   saveLastGood(j);
+   if(j.state==='stale-active'||j.staleActive){
+     const cached=readLastGood();
+     if(cached&&cached.payload?.state!=='partial'&&cached.payload?.state!=='stale-active'){
+       payload={...cached.payload,state:'fallback',sourceStatus:'stale_active_discarded',bridgeCached:true,fetchedAt:Date.now()};
+       $('connection').textContent='이전 정상 결과';$('connection').className='delayed';
+       $('scanStatus').textContent='오래된 작업 폐기';
+       $('candidateCount').textContent=String(payload.candidateCount??payload.candidates?.length??0);
+       $('usableCount').textContent=String(payload.usableCount??0);
+       $('freshness').textContent=age((payload.freshnessMs||0)+cached.age);$('freshness').className='delayed';
+       $('stage').textContent=payload.stage||'-';
+       $('dataMode').textContent=modeLabel(payload.dataMode);$('dataMode').className=modeClass(payload.dataMode);
+       $('updatedAt').textContent='마지막 정상 '+date(payload.updatedAt||cached.savedAt);
+       $('notice').textContent='오래된 활성 검색을 폐기하고 마지막 정상 완료 결과를 표시합니다 · 상류 단계 '+(j.stage||'-')+' · 신선도 '+age(j.freshnessMs);
+       renderCounts(payload.counts||{});updateVolumeScope();render();
+       timer=setTimeout(load,15000);return;
+     }
+     payload=j;
+     $('connection').textContent='오래된 작업';$('connection').className='degraded';
+     $('scanStatus').textContent='작업 폐기 대기';
+     $('candidateCount').textContent=String(j.candidateCount??0);$('usableCount').textContent=String(j.usableCount??0);
+     $('freshness').textContent=age(j.freshnessMs);$('freshness').className='stale';
+     $('stage').textContent=j.stage||'-';$('dataMode').textContent=modeLabel(j.dataMode);$('dataMode').className=modeClass(j.dataMode);
+     $('updatedAt').textContent='마지막 갱신 '+date(j.updatedAt||j.fetchedAt);
+     $('notice').textContent='IGNITION 검색 작업이 장시간 진행되지 않아 폐기 대상으로 분류했습니다. 새 작업 재시작을 기다리는 중입니다.';
+     renderCounts(j.counts||{});updateVolumeScope();render();
+     timer=setTimeout(load,15000);return;
+   }
+   if(j.state==='ready'||(j.state==='fallback'&&(j.candidateCount||0)>0))saveLastGood(j);
    $('connection').textContent=j.state==='fallback'?'이전 완료본':'연결됨';$('connection').className=j.state==='fallback'?'delayed':'live';
    $('scanStatus').textContent=j.sourceStatus&&j.sourceStatus!==j.scanStatus?(j.scanStatus+' / '+j.sourceStatus):(j.scanStatus||j.state||'-');
    $('candidateCount').textContent=String(j.candidateCount??0);
