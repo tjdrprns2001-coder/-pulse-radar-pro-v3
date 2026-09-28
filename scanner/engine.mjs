@@ -23,12 +23,12 @@ export async function stepJob(store,api,id){if(!await store.acquire(id))return {
  if(j.cursor>=j.rows.length){j.rows=j.rows.filter(r=>r.oiPassed);j.cursor=0;j.stage='prescan';}
  }
  else if(j.stage==='prescan'){
- const batch=j.rows.slice(j.cursor,j.cursor+8),results=await pool(batch,4,async row=>{const bars=await Promise.all([api.bars(row.symbol,'1h',j.asOf,149),api.bars(row.symbol,'4h',j.asOf,149)]);const h=analyze(bars[0],{fast:true}),q=analyze(bars[1],{fast:true});h.source=bars[0]?._source||row.marketSource||null;q.source=bars[1]?._source||row.marketSource||null;return {...row,asOf:j.asOf,frames:{'1h':h,'4h':q},score:rank(h,q,row.oi.change4h),status:'점화전',reasons:['프리스캔 · 정밀검사 대기'],detailComplete:false};});let limited=false;
+ const batch=j.rows.slice(j.cursor,j.cursor+4),results=await pool(batch,2,async row=>{const bars=await Promise.all([api.bars(row.symbol,'1h',j.asOf,149),api.bars(row.symbol,'4h',j.asOf,149)]);const h=analyze(bars[0],{fast:true}),q=analyze(bars[1],{fast:true});h.source=bars[0]?._source||row.marketSource||null;q.source=bars[1]?._source||row.marketSource||null;return {...row,asOf:j.asOf,frames:{'1h':h,'4h':q},score:rank(h,q,row.oi.change4h),status:'점화전',reasons:['프리스캔 · 정밀검사 대기'],detailComplete:false};});let limited=false;
  results.forEach((r,i)=>{if(r.ok){Object.assign(batch[i],r.value);}else{error(j,batch[i].symbol,'prescan',r);if(r.status===429)limited=true;}});if(!limited)j.cursor+=batch.length;j.counts.prescan=j.rows.filter(x=>x.frames).length;
  if(j.cursor>=j.rows.length){j.candidates=j.rows.filter(x=>x.frames?.['1h']?.available&&x.frames?.['4h']?.available).sort((a,b)=>b.score-a.score).slice(0,j.config.top);j.counts.candidates=j.candidates.length;j.cursor=0;j.stage='deep';j.rows=[];}
  }
  else if(j.stage==='deep'){
- const batch=j.candidates.slice(j.cursor,j.cursor+3);const result=await pool(batch,3,row=>detailCandidate(row,j,store,api));let limited=false;
+ const batch=j.candidates.slice(j.cursor,j.cursor+2);const result=await pool(batch,2,row=>detailCandidate(row,j,store,api));let limited=false;
  result.forEach((r,i)=>{if(!r.ok){error(j,batch[i].symbol,'deep',r);if(r.status===429)limited=true;else Object.assign(batch[i],{status:'제외',reasons:['정밀 데이터 연결 실패'],detailComplete:false,errors:[r.error]});}});
  if(!limited)j.cursor+=batch.length;j.counts.deep=j.candidates.filter(r=>r.detailComplete).length;
  if(j.cursor>=j.candidates.length){j.stage='done';j.status='complete';}
