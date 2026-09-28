@@ -164,7 +164,9 @@ module.exports=async function handler(req,res,ctx={}){
     const scanStatus=String(scan.status||'').toLowerCase();
     const sourceStatus=String(scan.sourceStatus||scan.status||'').toLowerCase();
     const servedFromLastComplete=Boolean(scan.servedFromLastComplete);
-    const state=scanStatus==='empty'?'empty':servedFromLastComplete?'fallback':['queued','running','paused'].includes(scanStatus)?'partial':'ready';
+    const activeStatus=['queued','running','paused'].includes(scanStatus);
+    const staleActive=activeStatus&&freshness.ms!=null&&freshness.ms>20*60*1000;
+    const state=scanStatus==='empty'?'empty':servedFromLastComplete?'fallback':staleActive?'stale-active':activeStatus?'partial':'ready';
 
     return res.status(200).json({
       status:'ok',
@@ -176,7 +178,9 @@ module.exports=async function handler(req,res,ctx={}){
       scanStatus:scan.status??null,
       sourceStatus:scan.sourceStatus??scan.status??null,
       servedFromLastComplete,
-      active:['queued','running','paused'].includes(scanStatus),
+      active:activeStatus&&!staleActive,
+      staleActive,
+      staleActiveThresholdMs:20*60*1000,
       stage:scan.stage??scanMeta.stage??(scan.status==='complete'?'complete':null),
       asOf:finite(scan.asOf)??finite(scanMeta.asOf),
       updatedAt:finite(scan.updatedAt)??finite(scanMeta.finishedAt)??finite(scanMeta.asOf),
