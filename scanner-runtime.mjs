@@ -171,7 +171,17 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
     let job=await createJob(store,'scan',configFrom(env));
     health.lastScanId=job.id;publish(job);
     let steps=0;
+    const scanStartedAt=now();
+    const stepTimeoutMs=Math.max(30000,Math.min(180000,Number(env.IGNITION_STEP_TIMEOUT_MS)||90000));
+    const scanTimeoutMs=Math.max(300000,Math.min(1800000,Number(env.IGNITION_SCAN_TIMEOUT_MS)||720000));
+    const withTimeout=(promise,ms,label)=>Promise.race([
+      promise,
+      sleep(ms).then(()=>{throw new Error(label+'_timeout')})
+    ]);
     while(['running','paused'].includes(job.status)&&steps++<500){
+      if(now()-scanStartedAt>scanTimeoutMs){
+        job.status='failed';job.errors=[...(job.errors||[]),{stage:job.stage,message:'scan_watchdog_timeout'}];await store.save(job);publish(job);throw new Error('scan_watchdog_timeout');
+      }
       if(job.status==='paused'){
         const remaining=Number(job.retryAt||0)-now();
         if(!Number.isFinite(remaining)||remaining>3600000)throw new Error('invalid_retry_at');
@@ -179,7 +189,14 @@ export function createLocalScannerSource({env=process.env,fetcher=fetch,now=Date
         if(wait>0)await sleep(wait);
       }
       const api=new Binance(store,scannerFetch);
-      job=await stepJob(store,api,job.id);
+      try{job=await withTimeout(stepJob(store,api,job.id),stepTimeoutMs,'stage_'+String(job.stage||'unknown'));}
+      catch(e){
+        const current=await store.job(job.id)||job;
+        current.status='failed';
+        current.errors=[...(current.errors||[]),{stage:current.stage,message:String(e?.message||e)}];
+        await store.release(job.id);
+        await store.save(current);job=current;publish(job);throw e;
+      }
       if(job?.busy){await sleep(250);job=await store.job(health.lastScanId);continue;}
       publish(job);
       if(job?.status==='paused')console.warn('[IGNITION] paused',{stage:job.stage,retryAt:job.retryAt,lastError:job.errors?.at(-1)?.message||null,metrics:job.metrics});
