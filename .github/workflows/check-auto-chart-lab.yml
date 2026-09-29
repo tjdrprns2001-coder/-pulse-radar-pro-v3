@@ -28,6 +28,8 @@ jobs:
       - run: node -c ui/auto-chart/state.js
       - run: node -c ui/auto-chart/data/normalize.js
       - run: node -c ui/auto-chart/data/market-data.js
+      - run: node -c lib/futures-data.js
+      - run: node -c api/index.js
       - run: node -c ui/auto-chart/analysis/volume.js
       - run: node -c ui/auto-chart/analysis/replay.js
       - run: node -c ui/auto-chart/analysis/core.js
@@ -36,3 +38,4 @@ jobs:
       - run: node -c ui/auto-chart/ui/analysis-card.js
       - run: node -c ui/auto-chart/app.js
       - run: npm run test:auto-chart-lab
+      - run: npm run test:auto-chart-transport
