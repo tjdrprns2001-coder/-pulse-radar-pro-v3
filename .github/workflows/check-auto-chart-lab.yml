@@ -30,6 +30,7 @@ jobs:
       - run: node -c ui/auto-chart/data/market-data.js
       - run: node -c lib/futures-data.js
       - run: node -c api/index.js
+      - run: node -c ui/auto-chart/analysis/level-state.js
       - run: node -c ui/auto-chart/analysis/volume.js
       - run: node -c ui/auto-chart/analysis/replay.js
       - run: node -c ui/auto-chart/analysis/core.js
