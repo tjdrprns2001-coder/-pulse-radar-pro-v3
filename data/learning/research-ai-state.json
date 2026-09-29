@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790667088348,
+  "updatedAt": 1790691713327,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -54,14 +54,14 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": -0.05869639349871392,
-      "outcome24hPct": 0.8893572982549003,
+      "outcome6hPct": -0.0497849977246112,
+      "outcome24hPct": 0.9043284431554,
       "label": null,
       "source": "trader-deep",
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
-        "confirmed": false,
+        "confirmed": true,
         "signalPrice": 84161.9,
         "signal_close": 84161.9,
         "entryPrice": 84161.9,
@@ -75,43 +75,43 @@
             "status": "CONFIRMED",
             "targetAt": 1790417212870,
             "closeAt": 1790420399999,
-            "returnPct": -0.031605750345453654
+            "returnPct": -0.03267511783835442
           },
           "h3": {
             "status": "CONFIRMED",
             "targetAt": 1790424412870,
             "closeAt": 1790427599999,
-            "returnPct": -0.1813171993502949
+            "returnPct": -0.1889215904108621
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790435212870,
             "closeAt": 1790438399999,
-            "returnPct": -0.05869639349871392
+            "returnPct": -0.0497849977246112
           },
           "h12": {
             "status": "CONFIRMED",
             "targetAt": 1790456812870,
             "closeAt": 1790459999999,
-            "returnPct": -0.05144845826910993
+            "returnPct": -0.04990381633493968
           },
           "h24": {
             "status": "CONFIRMED",
             "targetAt": 1790500012870,
             "closeAt": 1790503199999,
-            "returnPct": 0.8893572982549003
+            "returnPct": 0.9043284431554
           },
           "h72": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790672812870,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790675999999,
+            "returnPct": 0.0762815478262846
           }
         },
-        "mfePct": 1.1697692186131814,
-        "maePct": -1.9745276663193034,
-        "mae_72h_pct": -1.9745276663193034,
-        "mfe_72h_pct": 1.1697692186131814,
+        "mfePct": 1.1665611161345124,
+        "maePct": -2.0126684402324457,
+        "mae_72h_pct": -2.0126684402324457,
+        "mfe_72h_pct": 1.1665611161345124,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -146,8 +146,8 @@
           },
           "down": {
             "minus2": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790607599999
             },
             "minus3": {
               "hit": false,
@@ -161,8 +161,8 @@
         },
         "firstSurgeHours": null,
         "label": null,
-        "labelStatus": "UNRESOLVED",
-        "sampleLabel": "PENDING",
+        "labelStatus": "AMBIGUOUS",
+        "sampleLabel": "AMBIGUOUS_SAMPLE",
         "costModel": {
           "version": null,
           "roundTripCostPct": null,
@@ -176,24 +176,28 @@
           "h24": null,
           "h72": null
         },
-        "failureType": null,
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 69
+        "failureType": "AMBIGUOUS_SAMPLE",
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 71
       },
-      "labelStatus": "UNRESOLVED",
-      "outcome1hPct": -0.031605750345453654,
-      "outcome3hPct": -0.1813171993502949,
-      "outcome12hPct": -0.05144845826910993,
-      "outcome72hPct": null,
-      "mfe72hPct": 1.1697692186131814,
-      "mae72hPct": -1.9745276663193034,
+      "labelStatus": "AMBIGUOUS",
+      "outcome1hPct": -0.03267511783835442,
+      "outcome3hPct": -0.1889215904108621,
+      "outcome12hPct": -0.04990381633493968,
+      "outcome72hPct": 0.0762815478262846,
+      "mfe72hPct": 1.1665611161345124,
+      "mae72hPct": -2.0126684402324457,
       "tpSlOrder": "NONE",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "signal_close": 84161.9,
       "next_open": 84161.9,
       "direction": "LONG",
-      "mae_72h_pct": -1.9745276663193034
+      "mae_72h_pct": -2.0126684402324457,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ETHUSDT:497337",
@@ -245,14 +249,14 @@
         "RSI",
         "MACD"
       ],
-      "outcome6hPct": 0.4181618782592933,
-      "outcome24hPct": 1.281343489581377,
+      "outcome6hPct": 0.40920925999148317,
+      "outcome24hPct": 1.2798513865367456,
       "label": null,
       "source": "trader-deep",
       "outcomeV2": {
         "version": "RESEARCH_OUTCOME_v3",
         "status": "PARTIAL_OR_CONFIRMED",
-        "confirmed": false,
+        "confirmed": true,
         "signalPrice": 2680.78,
         "signal_close": 2680.78,
         "entryPrice": 2680.78,
@@ -266,43 +270,43 @@
             "status": "CONFIRMED",
             "targetAt": 1790417630041,
             "closeAt": 1790420399999,
-            "returnPct": 0.19994180798124095
+            "returnPct": 0.20926745201022
           },
           "h3": {
             "status": "CONFIRMED",
             "targetAt": 1790424830041,
             "closeAt": 1790427599999,
-            "returnPct": 0.2607450070501782
+            "returnPct": 0.25999895552786256
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790435630041,
             "closeAt": 1790438399999,
-            "returnPct": 0.4181618782592933
+            "returnPct": 0.40920925999148317
           },
           "h12": {
             "status": "CONFIRMED",
             "targetAt": 1790457230041,
             "closeAt": 1790459999999,
-            "returnPct": 0.15741687120911507
+            "returnPct": 0.16040107729837771
           },
           "h24": {
             "status": "CONFIRMED",
             "targetAt": 1790500430041,
             "closeAt": 1790503199999,
-            "returnPct": 1.281343489581377
+            "returnPct": 1.2798513865367456
           },
           "h72": {
-            "status": "PENDING_OR_GAP",
+            "status": "CONFIRMED",
             "targetAt": 1790673230041,
-            "closeAt": null,
-            "returnPct": null
+            "closeAt": 1790675999999,
+            "returnPct": 1.3544565387685559
           }
         },
-        "mfePct": 1.5495490118547561,
-        "maePct": -1.7450145107021142,
-        "mae_72h_pct": -1.7450145107021142,
-        "mfe_72h_pct": 1.5495490118547561,
+        "mfePct": 2.0221726512432703,
+        "maePct": -1.7636657987600723,
+        "mae_72h_pct": -1.7636657987600723,
+        "mfe_72h_pct": 2.0221726512432703,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -352,8 +356,8 @@
         },
         "firstSurgeHours": null,
         "label": null,
-        "labelStatus": "UNRESOLVED",
-        "sampleLabel": "PENDING",
+        "labelStatus": "AMBIGUOUS",
+        "sampleLabel": "AMBIGUOUS_SAMPLE",
         "costModel": {
           "version": null,
           "roundTripCostPct": null,
@@ -367,24 +371,28 @@
           "h24": null,
           "h72": null
         },
-        "failureType": null,
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 69
+        "failureType": "AMBIGUOUS_SAMPLE",
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 71
       },
-      "labelStatus": "UNRESOLVED",
-      "outcome1hPct": 0.19994180798124095,
-      "outcome3hPct": 0.2607450070501782,
-      "outcome12hPct": 0.15741687120911507,
-      "outcome72hPct": null,
-      "mfe72hPct": 1.5495490118547561,
-      "mae72hPct": -1.7450145107021142,
+      "labelStatus": "AMBIGUOUS",
+      "outcome1hPct": 0.20926745201022,
+      "outcome3hPct": 0.25999895552786256,
+      "outcome12hPct": 0.16040107729837771,
+      "outcome72hPct": 1.3544565387685559,
+      "mfe72hPct": 2.0221726512432703,
+      "mae72hPct": -1.7636657987600723,
       "tpSlOrder": "NONE",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "signal_close": 2680.78,
       "next_open": 2680.78,
       "direction": "LONG",
-      "mae_72h_pct": -1.7450145107021142
+      "mae_72h_pct": -1.7636657987600723,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "TAOUSDT:497345",
@@ -747,8 +755,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -767,7 +775,11 @@
       "signal_close": 331.07,
       "next_open": 331.07,
       "direction": "LONG",
-      "mae_72h_pct": -11.136617633733048
+      "mae_72h_pct": -11.136617633733048,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "XPLUSDT:497345",
@@ -1130,8 +1142,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1150,7 +1162,11 @@
       "signal_close": 0.11606,
       "next_open": 0.11606,
       "direction": "LONG",
-      "mae_72h_pct": -19.119420989143542
+      "mae_72h_pct": -19.119420989143542,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "AVAXUSDT:497345",
@@ -1444,10 +1460,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 3.779310344827591,
+        "mfePct": 10.4183908045977,
         "maePct": -6.850574712643676,
         "mae_72h_pct": -6.850574712643676,
-        "mfe_72h_pct": 3.779310344827591,
+        "mfe_72h_pct": 10.4183908045977,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
@@ -1464,16 +1480,16 @@
               "at": 1790495999999
             },
             "plus5": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790668799999
             },
             "plus8": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790683199999
             },
             "plus10": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790686799999
             },
             "plus15": {
               "hit": false,
@@ -1513,8 +1529,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1525,7 +1541,7 @@
       "outcome12hPct": -0.08275862068966022,
       "outcome24hPct": 0.7816091954023108,
       "outcome72hPct": null,
-      "mfe72hPct": 3.779310344827591,
+      "mfe72hPct": 10.4183908045977,
       "mae72hPct": -6.850574712643676,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -1533,7 +1549,11 @@
       "signal_close": 10.875,
       "next_open": 10.875,
       "direction": "LONG",
-      "mae_72h_pct": -6.850574712643676
+      "mae_72h_pct": -6.850574712643676,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "INJUSDT:497345",
@@ -1894,8 +1914,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -1914,7 +1934,11 @@
       "signal_close": 7.718,
       "next_open": 7.718,
       "direction": "LONG",
-      "mae_72h_pct": -7.307592640580463
+      "mae_72h_pct": -7.307592640580463,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "XLMUSDT:497345",
@@ -2206,10 +2230,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 7.466788822721027,
+        "mfePct": 8.520384791571246,
         "maePct": -5.313788364635819,
         "mae_72h_pct": -5.313788364635819,
-        "mfe_72h_pct": 7.466788822721027,
+        "mfe_72h_pct": 8.520384791571246,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790567999999,
@@ -2230,8 +2254,8 @@
               "at": 1790600399999
             },
             "plus8": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790683199999
             },
             "plus10": {
               "hit": false,
@@ -2275,8 +2299,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2287,7 +2311,7 @@
       "outcome12hPct": -1.3284470911589463,
       "outcome24hPct": -1.0535959688502072,
       "outcome72hPct": null,
-      "mfe72hPct": 7.466788822721027,
+      "mfe72hPct": 8.520384791571246,
       "mae72hPct": -5.313788364635819,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -2295,7 +2319,11 @@
       "signal_close": 0.2183,
       "next_open": 0.2183,
       "direction": "LONG",
-      "mae_72h_pct": -5.313788364635819
+      "mae_72h_pct": -5.313788364635819,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "DOTUSDT:497345",
@@ -2660,8 +2688,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -2680,7 +2708,11 @@
       "signal_close": 1.2741,
       "next_open": 1.2741,
       "direction": "LONG",
-      "mae_72h_pct": -10.619260654579698
+      "mae_72h_pct": -10.619260654579698,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "VIRTUALUSDT:497345",
@@ -3045,8 +3077,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3065,7 +3097,11 @@
       "signal_close": 0.7983,
       "next_open": 0.7983,
       "direction": "LONG",
-      "mae_72h_pct": -3.4322936239508883
+      "mae_72h_pct": -3.4322936239508883,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "SAGAUSDT:497345",
@@ -3426,8 +3462,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3446,7 +3482,11 @@
       "signal_close": 0.032958,
       "next_open": 0.032958,
       "direction": "LONG",
-      "mae_72h_pct": -24.330966684871658
+      "mae_72h_pct": -24.330966684871658,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ICPUSDT:497345",
@@ -3742,10 +3782,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 1.8850714502888444,
+        "mfePct": 5.5640012161751295,
         "maePct": -12.252964426877465,
         "mae_72h_pct": -12.252964426877465,
-        "mfe_72h_pct": 1.8850714502888444,
+        "mfe_72h_pct": 5.5640012161751295,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790456399999,
@@ -3758,12 +3798,12 @@
         "thresholds": {
           "up": {
             "plus3": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790668799999
             },
             "plus5": {
-              "hit": false,
-              "at": null
+              "hit": true,
+              "at": 1790690399999
             },
             "plus8": {
               "hit": false,
@@ -3793,7 +3833,7 @@
             }
           }
         },
-        "firstSurgeHours": null,
+        "firstSurgeHours": 62.63353166666667,
         "label": 0,
         "labelStatus": "RESOLVED",
         "sampleLabel": "NEGATIVE_SAMPLE",
@@ -3811,8 +3851,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -3823,7 +3863,7 @@
       "outcome12hPct": -2.918820310124659,
       "outcome24hPct": -3.1316509577379192,
       "outcome72hPct": null,
-      "mfe72hPct": 1.8850714502888444,
+      "mfe72hPct": 5.5640012161751295,
       "mae72hPct": -12.252964426877465,
       "tpSlOrder": "SL_FIRST",
       "referenceOnly": true,
@@ -3831,7 +3871,11 @@
       "signal_close": 3.289,
       "next_open": 3.289,
       "direction": "LONG",
-      "mae_72h_pct": -12.252964426877465
+      "mae_72h_pct": -12.252964426877465,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ZECUSDT:497345",
@@ -4194,8 +4238,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1790667088348,
-        "confirmedBars": 61
+        "evaluatedAt": 1790691713327,
+        "confirmedBars": 68
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -4214,7 +4258,11 @@
       "signal_close": 1560.3,
       "next_open": 1560.3,
       "direction": "LONG",
-      "mae_72h_pct": -13.116708325322046
+      "mae_72h_pct": -13.116708325322046,
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "SOLUSDT:497345",
@@ -4465,7 +4513,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "LINKUSDT:497345",
@@ -4714,7 +4766,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "SUIUSDT:497345",
@@ -4963,7 +5019,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ARBUSDT:497345",
@@ -5212,7 +5272,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "AAVEUSDT:497345",
@@ -5461,7 +5525,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "OPUSDT:497345",
@@ -5710,7 +5778,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "PONSUSDT:497345",
@@ -5957,7 +6029,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "GRAMUSDT:497345",
@@ -6208,7 +6284,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "XMRUSDT:497345",
@@ -6455,7 +6535,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "HBARUSDT:497345",
@@ -6706,7 +6790,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ONDOUSDT:497345",
@@ -6957,7 +7045,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "PHAUSDT:497345",
@@ -7206,7 +7298,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "PENGUUSDT:497345",
@@ -7455,7 +7551,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     },
     {
       "key": "ETHFIUSDT:497345",
@@ -7704,7 +7804,11 @@
       "labelStatus": "UNRESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
-      "legacyReason": "PRE_INTEGRITY_CONTRACT"
+      "legacyReason": "PRE_INTEGRITY_CONTRACT",
+      "preIgnitionStage": null,
+      "preIgnitionSubtypes": [],
+      "preIgnitionProgressPct": null,
+      "preIgnitionEvidenceScore": null
     }
   ],
   "model": {
@@ -8179,7 +8283,7 @@
     "researchNotes": [
       {
         "id": "RN-0A8LZU6",
-        "at": 1790667091506,
+        "at": 1790691716723,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -8218,7 +8322,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790667091506,
+  "exportedAt": 1790691716723,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -8246,6 +8350,8 @@
       "byRegime": [],
       "bySetup": [],
       "bySource": [],
+      "byPreIgnitionStage": [],
+      "byPreIgnitionSubtype": [],
       "bookRules": [],
       "derivedRules": []
     },
@@ -9196,6 +9302,7 @@
       },
       "hypotheses": {
         "observed": [],
+        "phasePatterns": [],
         "archetypes": [],
         "mutations": [],
         "crossovers": [],
@@ -9219,7 +9326,7 @@
       "notes": [
         {
           "id": "RN-0A8LZU6",
-          "at": 1790667091506,
+          "at": 1790691716723,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
