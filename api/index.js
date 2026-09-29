@@ -25,6 +25,35 @@ const handlers = {
   'ignition-results': require('../handlers/ignition-results')
 };
 
+const structureEdgeCache=new Map();
+function isHistoricalStructureQuery(q){
+  return String(q?.market||'spot').toLowerCase()==='futures'&&String(q?.live||'')!=='1'&&String(q?.derivatives||'')!=='1'&&String(q?.meta||'')!=='1';
+}
+async function fetchStructureEdge(req){
+  if(process.env.VERCEL||String(req.query?.edge||'')==='1'||!isHistoricalStructureQuery(req.query))return null;
+  const base=String(process.env.STRUCTURE_EDGE_URL||'https://pulse-radar-pro-v3.vercel.app').replace(/\/$/,'');
+  const params=new URLSearchParams();
+  for(const [k,v] of Object.entries(req.query||{})){
+    if(k==='route'||k==='local'||k==='edge'||v==null)continue;
+    params.set(k,String(v));
+  }
+  params.set('local','1');params.set('edge','1');
+  const key=params.toString(),now=Date.now(),hit=structureEdgeCache.get(key);
+  if(hit&&hit.expiresAt>now)return hit.body;
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),12000);
+  try{
+    const rr=await fetch(base+'/api/structure?'+key,{signal:ctrl.signal,headers:{accept:'application/json','user-agent':'PulseRadar-Structure-Edge/1.0'}});
+    const body=await rr.json().catch(()=>null);
+    if(rr.ok&&body?.ok&&String(body?.market||'').toLowerCase()==='futures'){
+      const tf=String(req.query?.interval||'1h').toLowerCase(),ttl=/^(1d|1w)$/.test(tf)?120000:/^(4h|1h)$/.test(tf)?60000:30000;
+      structureEdgeCache.set(key,{body,expiresAt:now+ttl});
+      if(structureEdgeCache.size>120){for(const [k,v] of structureEdgeCache)if(v.expiresAt<=now)structureEdgeCache.delete(k)}
+      return body;
+    }
+    return null;
+  }catch{return null}finally{clearTimeout(timer)}
+}
+
 module.exports = async function handler(req, res) {
   const route = String(req.query?.route || '').trim();
   const fn = handlers[route];
@@ -48,11 +77,13 @@ module.exports = async function handler(req, res) {
           const requestedMarket=String(req.query?.market||'spot').toLowerCase()==='futures'?'futures':'spot';
           const marketMatches=requestedMarket!=='futures'||String(body?.market||'').toLowerCase()==='futures';
           if(rr.ok&&body?.ok&&marketMatches)return res.status(200).json({...body,structureRuntime:'oregon'});
-          if(rr.status<500&&marketMatches)return res.status(rr.status).json(body);
+          if(rr.status<500&&rr.status!==418&&rr.status!==429&&marketMatches)return res.status(rr.status).json(body);
         }catch(_e){
           // Fall through to the local handler. Spot data may still be available even if the runtime is not.
         }finally{clearTimeout(timer)}
       }
+      const edge=await fetchStructureEdge(req);
+      if(edge)return res.status(200).json({...edge,structureRuntime:'vercel-edge',edgeFallback:true});
     }
     return await fn(req, res);
   } catch (error) {

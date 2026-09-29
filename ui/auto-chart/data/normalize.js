@@ -21,7 +21,7 @@ function normalizeStructure(raw,{exchange='binance',market='spot',symbol,interva
   const updatedAt=num(raw?.snapshotTime)??num(raw?.lastClosedCloseTime)??last?.closeTime??Date.now();
   return{
     schemaVersion:SCHEMA,
-    market:{exchange,marketType:market,symbol:String(symbol||raw?.symbol||'').toUpperCase(),interval:String(interval||raw?.interval||''),tickSize:num(meta?.tickSize),dataSource:raw?.dataSource||null},
+    market:{exchange,requestedExchange:exchange,sourceExchange:raw?.exchange||exchange,marketType:market,symbol:String(symbol||raw?.symbol||'').toUpperCase(),interval:String(interval||raw?.interval||''),tickSize:num(meta?.tickSize),dataSource:raw?.dataSource||null,fallback:Boolean(raw?.fallback),fallbackReason:raw?.fallbackReason||null,structureRuntime:raw?.structureRuntime||null},
     candles,
     rawStructure:raw,
     structureInput:{canonicalSwings:Array.isArray(raw?.canonicalSwings)?raw.canonicalSwings:[],provisionalPivots:Array.isArray(raw?.provisionalPivots)?raw.provisionalPivots:[]},
