@@ -128,7 +128,8 @@ const target=state.observations.find(x=>x.symbol==='ABCUSDT');
 assert.equal(target.label,null);
 const outcomeRows=[
   candle(t0,1,1.06,.995,1.04),
-  ...Array.from({length:75},(_,i)=>candle(t0+(i+1)*3600000,1.04,1.05,1.02,1.04))
+  candle(t0+3600000,1.04,1.12,1.02,1.11),
+  ...Array.from({length:74},(_,i)=>candle(t0+(i+2)*3600000,1.11,1.12,1.08,1.11))
 ];
 const resolved=V2.resolveSymbol(state,'ABCUSDT',outcomeRows,{now:t0+80*3600000});
 assert(resolved.changed>=1);
@@ -140,6 +141,7 @@ const astra=Adapter.normalizeScannerItem({
   oi4hPct:2.4,taker15m:1.35,fundingRatePct:.01,
   tf:{'1h':{available:true,bars:100,closeTime:t0,close:2,rsi14:57,rvol:1.8,stack:true,above20:true,above60:true},
       '15m':{available:true,bars:100,closeTime:t0,close:2,rsi14:61,rvol:2.2,stack:true,above20:true,above60:true}},
+  commonPreignition:{version:'COMMON_PREIGNITION_STAGE_v1',shadowOnly:true,stage:'COOLDOWN_COMPRESSION',progressPct:60,evidenceScore:74,subtypes:['A · OI_BUILD','B · FLOW_LEAD','COMP · MA/MACD_COMPRESSION'],evidence:['volume lead'],counterEvidence:[],baseStable:true,compression:{compressed:true,oneHour:{ribbonRatio:.72}},volume:{hadSpike:true,cooled:true,currentRvol:1.1},taker:{improving:true,last:1.35},oi:{build:true,oi4hPct:2.4}},
   verdict:{key:'WATCH_PRIORITY',label:'watch',score:68}
 },{source:'astra-astra',marketState:{regime:'RISK_ON'},asOf:t0});
 assert.equal(astra.regime,'RISK_ON');
@@ -147,18 +149,25 @@ assert.equal(astra.flow.oi4hPct,2.4);
 assert.equal(astra.flow.takerRatio,1.35);
 assert.equal(astra.stats['1h'].rvol,1.8);
 assert.equal(astra.setup.type,'WATCH_PRIORITY');
+assert.equal(astra.researchContext.commonPreignition.stage,'COOLDOWN_COMPRESSION');
+assert.deepEqual(astra.researchContext.commonPreignition.subtypeCodes,['A','B','COMP']);
+assert(astra.patternTags.includes('COMP'));
 
 // Research statistics must keep derived rules research-only.
 const labeledRows=[
-  {key:'a',symbol:'A',asOf:1,label:1,features:Array(18).fill(.2),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'astra',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],outcomeV2:{mfePct:9,maePct:-1}},
-  {key:'b',symbol:'B',asOf:2,label:1,features:Array(18).fill(.22),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'trader',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],outcomeV2:{mfePct:8,maePct:-1.2}},
-  {key:'c',symbol:'C',asOf:3,label:0,features:Array(18).fill(-.3),regime:'RISK_OFF',setupType:'COMPRESSION',source:'auto',bookRuleIds:['RSI'],outcomeV2:{mfePct:1,maePct:-4}}
+  {key:'a',symbol:'A',asOf:1,label:1,features:Array(18).fill(.2),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'astra',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],preIgnitionStage:'RECLAIM',preIgnitionSubtypes:['A','COMP'],preIgnitionEvidenceScore:78,preIgnitionProgressPct:80,outcomeV2:{mfePct:9,maePct:-1}},
+  {key:'b',symbol:'B',asOf:2,label:1,features:Array(18).fill(.22),regime:'RISK_ON',setupType:'SWEEP_RECLAIM',source:'trader',bookRuleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],preIgnitionStage:'RECLAIM',preIgnitionSubtypes:['B','COMP'],preIgnitionEvidenceScore:82,preIgnitionProgressPct:80,outcomeV2:{mfePct:8,maePct:-1.2}},
+  {key:'c',symbol:'C',asOf:3,label:0,features:Array(18).fill(-.3),regime:'RISK_OFF',setupType:'COMPRESSION',source:'auto',bookRuleIds:['RSI'],preIgnitionStage:'COOLDOWN_COMPRESSION',preIgnitionSubtypes:['COMP'],preIgnitionEvidenceScore:54,preIgnitionProgressPct:60,outcomeV2:{mfePct:1,maePct:-4}}
 ];
 const rs=ResearchStats.summary(labeledRows);
 assert(rs.byRegime.some(x=>x.key==='RISK_ON'&&x.count===2));
+assert(rs.byPreIgnitionStage.some(x=>x.key==='RECLAIM'&&x.observed===2&&x.labeled===2&&x.successRate===1));
+assert(rs.byPreIgnitionSubtype.some(x=>x.key==='COMP'&&x.observed===3&&x.labeled===3));
 const clusters=ArchetypeLab.buildClusters(labeledRows,{similarityThreshold:.8,minOverlap:6});
 assert(clusters.length>=1);
 assert(clusters.every(x=>x.state==='RESEARCH_CANDIDATE'&&x.productionEligible===false));
+assert(clusters.some(x=>x.preIgnitionStages.includes('RECLAIM')),'archetypes must preserve common-stage context');
+assert(clusters.some(x=>x.preIgnitionSubtypes.includes('COMP')),'archetypes must preserve subtype DNA');
 
 // Research Integrity / Lab v5: hypothesis generation never consumes sealed OOS.
 const integrityState={contract:{...Integrity.CONTRACT},datasetSnapshotId:'DS-TEST'};
@@ -166,6 +175,8 @@ const lab=ResearchLab.labSummary(labeledRows,{integrity:integrityState});
 assert.equal(lab.shadowOnly,true);
 assert.equal(lab.integrity.oosAccess,'SEALED_DENY_HYPOTHESIS_GENERATOR');
 assert.equal(lab.knowledge.coverage.total,ResearchLab.techniqueCatalog().length);
+assert(Array.isArray(lab.hypotheses.phasePatterns),'common-stage hypothesis list required');
+assert(lab.hypotheses.phasePatterns.some(x=>x.kind==='COMMON_PHASE_PATTERN'&&x.phaseStage==='RECLAIM'),'phase lab must build RECLAIM hypothesis from labeled phase data');
 assert(Array.isArray(lab.experiments));
 assert(lab.experiments.every(x=>x.rankWeight===0&&x.requiresLockedOos===true&&x.split==='TRAIN_VALIDATION_ONLY'));
 const evalProbe=ResearchLab.evaluateHypothesis(labeledRows,{ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});

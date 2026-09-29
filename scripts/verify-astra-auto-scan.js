@@ -81,6 +81,10 @@ const provider={
   assert(d.items[0].samplingV3.alternativeBars.bars.tickCount>0&&d.items[0].samplingV3.alternativeBars.bars.volumeCount>0,'Astra tick/volume bars required');
   assert.equal(d.items[0].samplingV3.alternativeBars.policy.thresholdMode,'FROZEN_CALIBRATION','Astra alternative-bar thresholds must be train/eval separated');
   assert.equal(d.items[0].samplingV3.alternativeBars.diagnostics.futureDataUsedForThresholds,false,'Astra thresholds must not use evaluation/future trades');
+  assert(d.items[0].commonPreignition&&d.items[0].commonPreignition.version==='COMMON_PREIGNITION_STAGE_v1','common pre-ignition stage must be attached');
+  assert.equal(d.items[0].commonPreignition.shadowOnly,true,'common stage must stay shadow-only');
+  assert.equal(d.items[0].commonPreignition.rankingEffect,0,'common stage must not change ranking before validation');
+  assert.equal(d.items[0].verdict.commonStage,d.items[0].commonPreignition.stage,'verdict must expose common stage');
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
   const m=await scan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});

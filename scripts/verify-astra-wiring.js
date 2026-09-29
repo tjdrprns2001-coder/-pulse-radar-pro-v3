@@ -25,10 +25,14 @@ assert(js.includes('동적 거래대금 컷')&&js.includes('동적컷'),'Grok/Ge
 assert(js.includes('CLAUDE_A_PRE')&&js.includes('CLAUDE_A_B')&&js.includes('CLAUDE_NFB_SQ'),'Claude label UI missing');
 assert(js.includes('DIRECTION_CONFIRM')&&js.includes('CLEAN→REBUILD'),'Claude v3 decision UI missing');
 assert(js.includes('OI 조회 감사'),'OI audit rendering missing');
+assert(js.includes('commonStageBar')&&js.includes('COOLDOWN_COMPRESSION')&&js.includes('SHADOW'),'common five-stage UI missing');
+assert(html.includes('공통 5단계')&&html.includes('SHADOW'),'common stage disclosure missing');
 assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.includes("stage==='deep'"));
 assert(api.includes('methodOf(q.method)'),'API method routing missing');
 assert(api.includes('GROK_CONFIG')&&api.includes('GEMINI_CONFIG'),'Grok/Gemini API config missing');
 assert(api.includes('CLAUDE_CONFIG'),'Claude API config missing');
+const astraCore=fs.readFileSync('lib/coin-scan/astra-auto-scanner.js','utf8');
+assert(astraCore.includes("require('./common-preignition-stage.js')")&&astraCore.includes('commonPreignition'),'common stage engine wiring missing');
 assert(js.includes('pulseradar-selector-runtime.onrender.com/api/astra-scan'),'Render Astra API fallback missing');
 assert(runtime.includes("route.pathname==='/api/astra-scan'")&&runtime.includes("route.pathname==='/astra-scan'"),'Render scanner routes missing');
 assert(runtime.includes('createAstraAutoScanner'),'Render Astra scanner instance missing');
