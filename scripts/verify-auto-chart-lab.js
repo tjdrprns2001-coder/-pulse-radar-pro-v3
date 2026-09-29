@@ -6,6 +6,8 @@ const Swings=require('../ui/auto-chart/analysis/swings.js');
 const Levels=require('../ui/auto-chart/analysis/levels.js');
 const Ranges=require('../ui/auto-chart/analysis/ranges.js');
 const Setup=require('../ui/auto-chart/analysis/setup-state.js');
+const Volume=require('../ui/auto-chart/analysis/volume.js');
+const Replay=require('../ui/auto-chart/analysis/replay.js');
 const Core=require('../ui/auto-chart/analysis/core.js');
 
 function candles(n=120){
@@ -39,24 +41,63 @@ for(const z of levels)assert(z.knownAt>=Math.max(...z.sourceIds.map(id=>swings.f
 
 const range=Ranges.detect(ds.candles,levels,{atrNow:A.at(-1),timeframe:'1h',minWidthAtr:1,minInsideRatio:.5,lookback:100});
 assert(range&&range.low<range.high,'range expected');
+assert(range.support&&range.resistance,'range must preserve original source zones');
 
 function bar(i,close,low=close-.2,high=close+.2){return{openTime:i*3600000,closeTime:i*3600000+3599999,open:close-.05,high,low,close,volume:1000,closed:true}}
 const top=100,bottom=95,ar=1,box={id:'R',kind:'range',timeframe:'1h',low:bottom,high:top,knownAt:bar(0,97).closeTime,status:'valid',generation:'automatic'};
-let seq=[bar(0,97),bar(1,98),bar(2,99.7,99.4,100.2)];
-let st=Setup.derive(seq,box,{atrNow:ar});assert.equal(st.state,'BOX_WATCH');
-seq.push(bar(3,100.3,100.05,100.5));st=Setup.derive(seq,box,{atrNow:ar});assert.equal(st.state,'BREAKOUT_CONFIRMED');assert(st.range.frozen&&st.range.high===top,'breakout freezes original boundary');
-seq.push(bar(4,100.05,99.9,100.22));st=Setup.derive(seq,box,{atrNow:ar});assert.equal(st.state,'RETEST_IN_PROGRESS');
-seq.push(bar(5,100.25,100.0,100.4));st=Setup.derive(seq,box,{atrNow:ar});assert.equal(st.state,'RETEST_CONFIRMED');
-seq.push(bar(6,99.6,99.45,100.0));st=Setup.derive(seq,box,{atrNow:ar});assert.equal(st.state,'INVALIDATED');
+let seq=[bar(0,97),bar(1,99.9,99.75,100.12),bar(2,99.8,99.7,100.08)];
+let st=Setup.derive(seq,box,{atrNow:ar,atrSeries:[1,1,1]});assert.equal(st.state,'BOX_WATCH');
+seq.push(bar(3,100.3,100.12,100.5));st=Setup.derive(seq,box,{atrNow:ar,atrSeries:Array(seq.length).fill(1)});assert.equal(st.state,'BREAKOUT_CONFIRMED','pre-breakout touches must not count as retest');
+seq.push(bar(4,100.05,99.9,100.22));st=Setup.derive(seq,box,{atrNow:ar,atrSeries:Array(seq.length).fill(1)});assert.equal(st.state,'RETEST_IN_PROGRESS');
+seq.push(bar(5,100.25,100.0,100.4));st=Setup.derive(seq,box,{atrNow:ar,atrSeries:Array(seq.length).fill(1)});assert.equal(st.state,'RETEST_CONFIRMED');
+seq.push(bar(6,99.6,99.45,100.0));st=Setup.derive(seq,box,{atrNow:ar,atrSeries:Array(seq.length).fill(1)});assert.equal(st.state,'INVALIDATED');
+assert(st.range.frozen&&st.range.high===top,'breakout must preserve original range boundary');
+
+// RVOL: current confirmed bar is excluded from its own denominator.
+const rvBars=[];for(let i=0;i<21;i++)rvBars.push(bar(i,100,99.8,100.2));rvBars.forEach((b,i)=>b.volume=i===20?300:100);
+assert.equal(Volume.rvol20(rvBars,20),3,'RVOL20 must be current / previous 20 average');
+
+// Timestamp windows: 72h means 72 real hours on every timeframe, not a fixed bar count.
+const fourH=[];for(let i=0;i<40;i++){const b={openTime:i*4*3600000,closeTime:(i+1)*4*3600000-1,open:100,high:101,low:99,close:100,volume:100,closed:true};fourH.push(b)}
+fourH[18].volume=500; // ~84h before final close -> exclude from 72h
+fourH[22].volume=700; // ~68h before final close -> include; remains >=3x even with older spike in denominator
+const s72=Volume.spikes(fourH,{hours:72,threshold:3,period:5});
+assert(!s72.some(x=>x.index===18),'72h search must exclude a 4H spike older than 72 real hours');
+assert(s72.some(x=>x.index===22),'72h search must include a 4H spike inside 72 real hours');
+
+// Missing values must remain N/A/null, never implicit zero.
+assert.equal(Normalize.finite(null),false);assert.equal(Normalize.finite(undefined),false);assert.equal(Normalize.finite(''),false);assert.equal(MathX.finite(null),false);
+const nd=Normalize.normalizeDerivatives({available:true,openInterestContracts:null,openInterestUsdApprox:null,openInterestChange1hPct:null,openInterestChange4hPct:null,openInterestChange24hPct:null,takerBuySellRatio:null,takerBuySellRatio4h:null,takerBuySellRatio24h:null,fundingRatePct:null});
+assert.equal(nd.oi.available,false);assert.equal(nd.oi.change4hPct,null);assert.equal(nd.taker.available,false);assert.equal(nd.taker.ratio4h,null);assert.equal(nd.funding.available,false);assert.equal(nd.funding.ratePct,null);
+
+// Replay must reconstruct the pre-breakout box and keep it locked even if a later higher resistance becomes known.
+const rc=[];for(let i=0;i<30;i++){const close=i<20?97.5+(i%3)*.2:101.0+(i%2)*.1;rc.push({openTime:i*3600000,closeTime:i*3600000+3599999,open:close-.1,high:close+.25,low:close-.25,close,volume:100,closed:true})}
+rc[20]={...rc[20],open:99.8,low:99.7,high:100.8,close:100.6};
+for(let i=21;i<30;i++)rc[i]={...rc[i],open:101.0,low:100.75,high:i===22?105:101.5,close:101.2};
+const rs=[
+ {id:'RL',type:'L',label:'L',price:95,pivotIndex:2,confirmedAt:5,occurredAt:rc[2].openTime,knownAt:rc[5].closeTime},
+ {id:'RH',type:'H',label:'H',price:100,pivotIndex:4,confirmedAt:7,occurredAt:rc[4].openTime,knownAt:rc[7].closeTime},
+ {id:'FUTURE-H',type:'H',label:'HH',price:105,pivotIndex:22,confirmedAt:25,occurredAt:rc[22].openTime,knownAt:rc[25].closeTime}
+];
+const ra=MathX.atr(rc),settings={minTouches:1,zoneAtr:.2,minWidthAtr:1,minInsideRatio:.5,rangeLookback:80,rangeExcludeTail:0,breakoutAtr:.1,retestAtr:.25};
+const replay=Replay.track({candles:rc,swings:rs,atrSeries:ra,timeframe:'1h',settings});
+const breakoutEvent=replay.history.find(x=>x.state==='BREAKOUT_CONFIRMED');
+assert(breakoutEvent&&breakoutEvent.range,'replay should reconstruct a breakout event');
+assert(breakoutEvent.range.high<101,'breakout must lock the original ~100 resistance, not future 105 resistance');
+assert(replay.setup.range&&Math.abs(replay.setup.range.high-breakoutEvent.range.high)<1e-9,'later resistance discovery must not move active setup boundary');
+const rcPrefix=rc.slice(0,21),prefixReplay=Replay.track({candles:rcPrefix,swings:rs,atrSeries:MathX.atr(rcPrefix),timeframe:'1h',settings});
+assert.equal(prefixReplay.setup.state,'BREAKOUT_CONFIRMED');
+assert(Math.abs(prefixReplay.setup.range.high-breakoutEvent.range.high)<1e-9,'full replay and bar-by-bar prefix must agree at breakout time');
 
 const a1=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3}),a2=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3});
 assert.deepStrictEqual(a1,a2,'same data/settings must produce same analysis');
-assert.equal(a1.version,'AUTO_CHART_CORE_v1');
+assert.equal(a1.version,'AUTO_CHART_CORE_v1_1');
+assert(a1.volume&&a1.volume.definition.includes('previous 20'),'core must expose strict RVOL definition');
 
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
 const html=fs.readFileSync('auto-chart-lab.html','utf8'),app=fs.readFileSync('ui/auto-chart/app.js','utf8');
-for(const k of['AUTO CHART LAB · CORE v1','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','data-layer="sr"','data-layer="box"'])assert(html.includes(k),'missing core UI '+k);
+for(const k of['AUTO CHART LAB · CORE v1','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','data-layer="sr"','data-layer="box"','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing core UI '+k);
 for(const k of['beginRequest','isCurrent','fetchHistorical','fetchAuxiliary','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
 assert(app.indexOf('fetchHistorical')<app.indexOf('fetchAuxiliary'),'historical data must be handled before auxiliary/live');
-console.log('auto chart core skeleton PASS');
+console.log('auto chart core replay/RVOL/N-A PASS');

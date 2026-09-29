@@ -1,5 +1,5 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartAnalysisCard=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){'use strict';
-const $=id=>document.getElementById(id),finite=v=>Number.isFinite(Number(v));
+const $=id=>document.getElementById(id),missing=v=>v==null||(typeof v==='string'&&v.trim()===''),finite=v=>!missing(v)&&Number.isFinite(Number(v));
 function price(v){if(!finite(v))return'N/A';const n=Number(v);if(Math.abs(n)>=100)return n.toLocaleString('en-US',{maximumFractionDigits:2});if(Math.abs(n)>=1)return n.toFixed(4);return n.toPrecision(5)}
 function localTime(ms){if(!finite(ms))return'-';return new Date(Number(ms)).toLocaleString('ko-KR',{hour12:false,month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function setText(id,v){const e=$(id);if(e)e.textContent=v??'-'}
@@ -8,6 +8,7 @@ function render(analysis,{aux=null}={}){
   setText('cardStructure',analysis.structure.label+(analysis.structure.evidence?.length?' · '+analysis.structure.evidence.join('/'):''));
   setText('cardStage',analysis.setup.label);
   const s=analysis.keyLevels.support,r=analysis.keyLevels.resistance;setText('cardSupport',s?price(s.low)+'–'+price(s.high)+' · '+String(s.timeframe).toUpperCase():'N/A');setText('cardResistance',r?price(r.low)+'–'+price(r.high)+' · '+String(r.timeframe).toUpperCase():'N/A');
+  const vol=analysis.volume||{};setText('cardVolume',vol.rvol20==null?'N/A':(Number(vol.rvol20).toFixed(2)+'x · 24h spike '+(vol.spikes24h?.length||0)+' / 72h '+(vol.spikes72h?.length||0)));
   const inv=analysis.setup.invalidation;setText('cardInvalidation',inv?.price!=null?price(inv.price)+' · '+(inv.type==='range-low'?'박스 하단 이탈':'돌파 실패 기준'):'N/A');
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
   setText('cardKnownAt','현재 상태 알려진 시각 · '+localTime(analysis.setup.knownAt));
