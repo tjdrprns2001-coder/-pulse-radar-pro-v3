@@ -9,7 +9,7 @@ function render(analysis,{aux=null}={}){
   if(!analysis?.available)return;
   setText('cardStructure',analysis.structure.label+(analysis.structure.evidence?.length?' · '+analysis.structure.evidence.join('/'):''));
   setText('cardStage',analysis.setup.label);
-  const s=analysis.keyLevels.support,r=analysis.keyLevels.resistance;setText('cardSupport',zoneText(s));setText('cardResistance',zoneText(r));setText('cardHtf',analysis.higherTimeframes?.length?analysis.higherTimeframes.map(x=>String(x).toUpperCase()).join(' · ')+' 핵심 구간 중첩':'선택 TF 단독');
+  const s=analysis.keyLevels.support,r=analysis.keyLevels.resistance;setText('cardSupport',zoneText(s));setText('cardResistance',zoneText(r));const hs=analysis.htfKeyLevels?.support,hr=analysis.htfKeyLevels?.resistance;setText('cardHtf',analysis.higherTimeframes?.length?('지지 '+zoneText(hs)+' / 저항 '+zoneText(hr)):'선택 TF 단독');
   const vol=analysis.volume||{};setText('cardVolume',vol.rvol20==null?'N/A':(Number(vol.rvol20).toFixed(2)+'x · 24h spike '+(vol.spikes24h?.length||0)+' / 72h '+(vol.spikes72h?.length||0)));
   const inv=analysis.setup.invalidation;setText('cardInvalidation',inv?.price!=null?price(inv.price)+' · '+(inv.type==='range-low'?'박스 하단 이탈':'돌파 실패 기준'):'N/A');
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
