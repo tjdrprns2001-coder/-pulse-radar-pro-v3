@@ -47,9 +47,17 @@ function attachHigherFrames(base,frames=[]){
     for(const z of[local,pureHtf])if(z&&!out.some(x=>x.id===z.id))out.push(z);
     return out;
   }
-  const support=sparse('support'),resistance=sparse('resistance'),transition=merged.filter(x=>x.effectiveRole==='transition'&&x.hasLocal&&Math.abs(x.mid-p)<=a*1.5).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p)).slice(0,1);
-  const display=[...support,...resistance,...transition];
-  const keys=keyLevels(display,p),htfMerged=LevelState.mergeGroup(htf,{atrNow:base.atrNow,currentPrice:p}),htfKeys=keyLevels(htfMerged,p);
+  const majorMap={'1w':[],'1d':['1w'],'4h':['1d','1w'],'1h':['4h','1d'],'15m':['4h','1d'],'5m':['4h','1d']},majorTfs=majorMap[baseTf]||[];
+  function sparseMajor(role){
+    const xs=validRole(role),local=xs.find(x=>x.hasLocal)||xs[0]||null;
+    const major=xs.find(x=>x.scope==='htf'&&(x.timeframes||[]).some(tf=>majorTfs.includes(String(tf).toLowerCase())))||xs.find(x=>x.scope==='htf')||null,out=[];
+    for(const z of[local,major])if(z&&!out.some(x=>x.id===z.id))out.push(z);
+    return out;
+  }
+  const support=sparseMajor('support'),resistance=sparseMajor('resistance'),transition=merged.filter(x=>x.effectiveRole==='transition'&&x.hasLocal&&Math.abs(x.mid-p)<=a*1.5).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p)).slice(0,1);
+  const display=[...support,...resistance,...transition],localDisplay=display.filter(x=>x.hasLocal);
+  const localKeys=keyLevels(localDisplay,p),fallbackKeys=keyLevels(display,p),keys={support:localKeys.support||fallbackKeys.support,resistance:localKeys.resistance||fallbackKeys.resistance};
+  const majorHtf=htf.filter(z=>majorTfs.includes(String(z.timeframe).toLowerCase())),htfMerged=LevelState.mergeGroup(majorHtf.length?majorHtf:htf,{atrNow:base.atrNow,currentPrice:p}),htfKeys=keyLevels(htfMerged,p);
   return{...base,htfLevels:htf,htfKeyLevels:htfKeys,displayLevels:display,keyLevels:{...keys,invalidation:base.setup?.invalidation||null},higherTimeframes:(frames||[]).filter(x=>x?.available).map(x=>x.timeframe)};
 }
 return{VERSION,analyze,attachHigherFrames,tfRank};

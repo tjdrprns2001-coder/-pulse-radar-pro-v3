@@ -134,8 +134,10 @@ assert(attached.higherTimeframes.includes('4h')&&attached.higherTimeframes.inclu
 assert(attached.displayLevels.some(x=>x.scope==='htf'||x.scope==='mixed'),'at least one higher-TF overlay must be present');
 assert(attached.displayLevels.length<=5,'default chart must stay sparse: local+HTF per side plus optional transition');
 assert(attached.htfKeyLevels&&attached.htfKeyLevels.support&&attached.htfKeyLevels.resistance,'HTF key support/resistance must be available for the card');
-if(attached.keyLevels.support)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.support.id),'HTF support card must use chart display zone object');
-if(attached.keyLevels.resistance)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.resistance.id),'HTF resistance card must use chart display zone object');
+if(attached.keyLevels.support){assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.support.id),'selected-TF support card must use chart display zone object');assert(attached.keyLevels.support.hasLocal,'selected-TF support card must prefer a zone containing the selected timeframe')}
+if(attached.keyLevels.resistance){assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.resistance.id),'selected-TF resistance card must use chart display zone object');assert(attached.keyLevels.resistance.hasLocal,'selected-TF resistance card must prefer a zone containing the selected timeframe')}
+assert((attached.htfKeyLevels.support.timeframes||[]).every(tf=>['4h','1d'].includes(String(tf).toLowerCase())),'1H view HTF support context must come from 4H/1D');
+assert((attached.htfKeyLevels.resistance.timeframes||[]).every(tf=>['4h','1d'].includes(String(tf).toLowerCase())),'1H view HTF resistance context must come from 4H/1D');
 
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
