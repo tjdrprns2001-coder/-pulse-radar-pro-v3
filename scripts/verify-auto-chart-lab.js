@@ -131,8 +131,9 @@ const htf1d={available:true,timeframe:'1d',localDisplayLevels:[
 ]};
 const attached=Core.attachHigherFrames({...a1,currentPrice:100,atrNow:1},[htf4,htf1d]);
 assert(attached.higherTimeframes.includes('4h')&&attached.higherTimeframes.includes('1d'),'higher timeframe sources must be recorded');
-assert(attached.displayLevels.some(x=>x.timeframes?.includes('4h')),'4H overlay must be present');
-assert(attached.displayLevels.some(x=>x.timeframes?.includes('1d')),'1D overlay must be present');
+assert(attached.displayLevels.some(x=>x.scope==='htf'||x.scope==='mixed'),'at least one higher-TF overlay must be present');
+assert(attached.displayLevels.length<=5,'default chart must stay sparse: local+HTF per side plus optional transition');
+assert(attached.htfKeyLevels&&attached.htfKeyLevels.support&&attached.htfKeyLevels.resistance,'HTF key support/resistance must be available for the card');
 if(attached.keyLevels.support)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.support.id),'HTF support card must use chart display zone object');
 if(attached.keyLevels.resistance)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.resistance.id),'HTF resistance card must use chart display zone object');
 
