@@ -1,4 +1,5 @@
-(function(root,factory){const dep=typeof module==='object'&&module.exports?{Normalize:require('./normalize.js')}: {Normalize:root.PulseAutoChartNormalize};const api=factory(dep);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartMarketData=api;})(typeof globalThis!=='undefined'?globalThis:this,function({Normalize}){'use strict';
+(function(root,factory){const dep=typeof module==='object'&&module.exports?{Normalize:require('./normalize.js')}: {Normalize:root.PulseAutoChartNormalize};const api=factory(dep);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartMarketData=api;})(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
+const Normalize=dep.Normalize;
 const getCD=()=>typeof window!=='undefined'?window.PulseChartData:null;
 async function json(url,fetchImpl){const f=fetchImpl||(typeof fetch==='function'?fetch:null);if(!f)throw new Error('fetch unavailable');const r=await f(url,{cache:'no-store',headers:{accept:'application/json'}}),j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error||('HTTP '+r.status));return j}
 async function fetchHistorical({exchange='binance',market='futures',symbol='BTCUSDT',interval='4h',limit=600,refresh=false,fetchImpl}={}){
