@@ -1,0 +1,68 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Auto Chart Lab · PulseRadar</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/auto-chart/auto-chart-lab.css?v=20260929-v1"></head><body><main class="aclApp">
+<header class="hero"><div><span class="eyebrow">AUTO CHART LAB · SETUP ANALYSIS</span><h1>보는 순간 셋업이 보이는 자동 차트</h1><p>심볼 선택 → 확정봉 분석 → 핵심 구간 → 확인 조건 → 무효화 → 조건부 경로. 실시간 연결은 과거 차트 표시의 선행조건이 아닙니다.</p></div><div class="heroState"><span id="historyState" class="statePill">과거봉 대기</span><span id="liveState" class="statePill muted">실시간 대기</span></div></header>
+<section class="controls">
+ <input id="symbol" value="BTCUSDT" autocomplete="off" spellcheck="false" aria-label="심볼">
+ <select id="market" aria-label="시장"><option value="futures" selected>선물</option><option value="spot">현물</option></select>
+ <select id="mainTf" aria-label="메인 시간봉"><option value="1d">1D</option><option value="4h" selected>4H</option><option value="1h">1H</option><option value="15m">15m</option><option value="5m">5m</option></select>
+ <select id="scale" aria-label="가격 축"><option value="linear" selected>Linear</option><option value="log">Log</option></select>
+ <button id="run" class="primary">자동 분석</button>
+</section>
+<section class="tfStory" aria-label="멀티 타임프레임 요약">
+ <div><span>시장 환경</span><b id="envLine">주봉·일봉 분석 대기</b><small id="envDetail">-</small></div>
+ <div><span>셋업</span><b id="setupLine">4H·1H 분석 대기</b><small id="setupDetail">-</small></div>
+ <div><span>실행 확인</span><b id="execLine">15m·5m 분석 대기</b><small id="execDetail">-</small></div>
+</section>
+<section class="mainLayout">
+ <div class="chartCol">
+  <section class="card chartCard">
+   <div class="chartHead"><div><h2 id="chartTitle">BTCUSDT · 4H</h2><p id="chartSub">확정봉 기준 · 자동 분석 준비</p></div><div class="chartStatus"><span id="setupBadge" class="badge wait">셋업 대기</span><span id="updatedAt" class="updated">-</span></div></div>
+   <div class="chartWrap"><canvas id="chart" width="1400" height="820" aria-label="자동 분석 차트"></canvas><button id="fitChart" class="miniAction" type="button">전체 보기</button></div>
+   <div id="zoneHint" class="zoneHint">차트의 자동 구간은 확정 스윙과 ATR 기반입니다. 미래 경로는 조건부 시나리오입니다.</div>
+  </section>
+  <section class="card quickBar"><div><span>현재 구조</span><b id="qStructure">-</b></div><div><span>가격 위치</span><b id="qPosition">-</b></div><div><span>현재 셋업</span><b id="qSetup">-</b></div><div><span>기다리는 것</span><b id="qWait">-</b></div></section>
+  <details class="card layers"><summary><div><b>레이어 설정</b><span>처음에는 핵심만 표시</span></div><span>열기</span></summary>
+   <div class="layerGrid">
+    <label><input type="checkbox" data-layer="sr" checked> 핵심 SR</label>
+    <label><input type="checkbox" data-layer="structure" checked> 주요 구조</label>
+    <label><input type="checkbox" data-layer="box" checked> 셋업 박스</label>
+    <label><input type="checkbox" data-layer="scenario" checked> 조건부 경로</label>
+    <label><input type="checkbox" data-layer="trend"> 추세선·채널</label>
+    <label><input type="checkbox" data-layer="ma"> EMA 14·28·57·92</label>
+    <label><input type="checkbox" data-layer="vp"> VPVR 추정</label>
+    <label><input type="checkbox" data-layer="fib"> Fibonacci</label>
+    <label><input type="checkbox" data-layer="ichimoku"> 일목 9·26·52</label>
+    <label><input type="checkbox" data-layer="ict"> ICT 상세(FVG/OB)</label>
+   </div>
+  </details>
+  <details class="card flowPanel"><summary><div><b>수급·압축 근거</b><span>가격 차트와 분리해서 확인</span></div><span>열기</span></summary>
+   <div class="metrics">
+    <div><span>4H 리본 폭</span><b id="mRibbon">N/A</b><small id="mRibbonSub">-</small></div>
+    <div><span>MACD</span><b id="mMacd">N/A</b><small id="mMacdSub">-</small></div>
+    <div><span>RVOL20</span><b id="mRvol">N/A</b><small id="mRvolSub">-</small></div>
+    <div><span>OI 1H / 4H</span><b id="mOi">N/A</b><small id="mOiSub">-</small></div>
+    <div><span>Taker</span><b id="mTaker">N/A</b><small id="mTakerSub">-</small></div>
+    <div><span>Funding</span><b id="mFunding">N/A</b><small id="mFundingSub">-</small></div>
+    <div><span>수급 유형</span><b id="mFlowClass">N/A</b><small>A/B/C는 관측 패턴 분류</small></div>
+    <div><span>현물 동행</span><b id="mSpot">N/A</b><small id="mSpotSub">-</small></div>
+   </div>
+  </details>
+ </div>
+ <aside class="sideCol">
+  <section class="card interpretation"><h2>현재 셋업 해석</h2>
+   <div class="answerRow"><span>상위 환경</span><b id="aEnv">-</b></div>
+   <div class="answerRow"><span>현재 셋업</span><b id="aSetup">-</b></div>
+   <div class="answerRow"><span>상태</span><b id="aState">-</b></div>
+   <div class="answerRow"><span>수급</span><b id="aFlow">-</b></div>
+   <div class="answerRow important"><span>확인 조건</span><b id="aConfirm">-</b></div>
+   <div class="answerRow"><span>진입 검토</span><b id="aEntry">-</b></div>
+   <div class="answerRow invalid"><span>무효화</span><b id="aInvalid">-</b></div>
+   <div class="answerRow"><span>목표 후보</span><b id="aTarget">-</b></div>
+   <div class="answerRow"><span>예상 R:R</span><b id="aRr">N/A</b></div>
+  </section>
+  <section class="card dataCard"><div class="cardTitle"><h2>데이터 충실도</h2><span id="coverageBadge" class="coverage">0/6</span></div><div id="limitations" class="limitations"><span>분석 전</span></div></section>
+  <section class="card exportCard"><h2>이미지 저장</h2><div class="exportControls"><select id="exportRatio"><option value="16:9">16:9</option><option value="1:1">1:1</option><option value="9:16">9:16</option></select><button id="savePng">PNG 저장</button></div><p>현재 분석 기준·핵심 구간·조건·무효화를 이미지에 함께 보존합니다.</p></section>
+ </aside>
+</section>
+<footer>Auto Chart Lab v1 · 초기 파라미터는 연구용 설정값이며 종목·변동성별 검증 대상입니다. BSL/SSL·OB 등은 가격 구조 기반 추정입니다.</footer>
+</main>
+<script src="/ui/chart/chart-data.js?v=20260929-market1"></script><script src="/ui/trader/analysis-engine.js?v=20260929-v1"></script><script src="/ui/chart/smc-engine.js?v=20260929-v1"></script><script src="/ui/auto-chart/auto-chart-engine.js?v=20260929-v1"></script><script src="/ui/auto-chart/auto-chart-lab.js?v=20260929-v1"></script></body></html>
