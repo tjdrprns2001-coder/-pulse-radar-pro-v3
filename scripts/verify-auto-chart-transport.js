@@ -13,11 +13,10 @@ global.fetch=async function(url){
     binanceCalls++;
     return{ok:false,status:418,text:async()=>JSON.stringify({code:-1003,msg:'Way too many requests; IP(1.2.3.4) banned until '+(Date.now()+600000)+'.'})};
   }
-  if(u.includes('bybit.com')||u.includes('byt﻿ick.com')||u.includes('byt﻿ick')){
+  if(u.includes('api.bybit.com')){
     bybitCalls++;
     return{ok:true,status:200,text:async()=>JSON.stringify({retCode:0,retMsg:'OK',result:{list}})};
   }
-  if(u.includes('byt')){bybitCalls++;return{ok:true,status:200,text:async()=>JSON.stringify({retCode:0,retMsg:'OK',result:{list}})}}
   throw new Error('unexpected URL '+u);
 };
 const Futures=require('../lib/futures-data.js');
