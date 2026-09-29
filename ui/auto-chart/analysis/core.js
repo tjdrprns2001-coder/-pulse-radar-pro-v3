@@ -36,18 +36,21 @@ function htfCoreLevels(frame,basePrice){
 function attachHigherFrames(base,frames=[]){
   if(!base?.available)return base;
   const htf=(frames||[]).flatMap(x=>htfCoreLevels(x,base.currentPrice));
-  const combined=[...(base.localDisplayLevels||[]),...htf];
+  const combined=[...(base.localDisplayLevels||[]),...htf],baseTf=String(base.timeframe).toLowerCase();
   const merged=LevelState.mergeGroup(combined,{atrNow:base.atrNow,currentPrice:base.currentPrice}).map(z=>{
-    const ranks=(z.components||[]).map(c=>tfRank(c.timeframe)),rank=Math.max(0,...ranks);
-    return{...z,scope:z.timeframes?.some(tf=>String(tf).toLowerCase()!==String(base.timeframe).toLowerCase())?'mixed-or-htf':'local',htfRank:rank};
+    const ranks=(z.components||[]).map(c=>tfRank(c.timeframe)),rank=Math.max(0,...ranks),tfs=(z.timeframes||[]).map(x=>String(x).toLowerCase()),hasLocal=tfs.includes(baseTf),hasHtf=tfs.some(tf=>tf!==baseTf);
+    return{...z,scope:hasLocal?(hasHtf?'mixed':'local'):'htf',hasLocal,hasHtf,htfRank:rank};
   });
-  const p=base.currentPrice,a=base.atrNow||0;
-  const support=merged.filter(x=>x.effectiveRole==='support'&&x.low<=p+a*.25).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p));
-  const resistance=merged.filter(x=>x.effectiveRole==='resistance'&&x.high>=p-a*.25).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p));
-  const transition=merged.filter(x=>x.effectiveRole==='transition').sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p)).slice(0,1);
-  const display=[...support.slice(0,4),...resistance.slice(0,4),...transition];
-  const keys=keyLevels(display,p);
-  return{...base,htfLevels:htf,displayLevels:display,keyLevels:{...keys,invalidation:base.setup?.invalidation||null},higherTimeframes:(frames||[]).filter(x=>x?.available).map(x=>x.timeframe)};
+  const p=base.currentPrice,a=base.atrNow||0,validRole=(role)=>merged.filter(x=>x.effectiveRole===role&&(role==='support'?x.low<=p+a*.25:x.high>=p-a*.25)).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p));
+  function sparse(role){
+    const xs=validRole(role),local=xs.find(x=>x.hasLocal)||xs[0]||null,pureHtf=xs.find(x=>x.scope==='htf')||null,out=[];
+    for(const z of[local,pureHtf])if(z&&!out.some(x=>x.id===z.id))out.push(z);
+    return out;
+  }
+  const support=sparse('support'),resistance=sparse('resistance'),transition=merged.filter(x=>x.effectiveRole==='transition'&&x.hasLocal&&Math.abs(x.mid-p)<=a*1.5).sort((x,y)=>Math.abs(x.mid-p)-Math.abs(y.mid-p)).slice(0,1);
+  const display=[...support,...resistance,...transition];
+  const keys=keyLevels(display,p),htfMerged=LevelState.mergeGroup(htf,{atrNow:base.atrNow,currentPrice:p}),htfKeys=keyLevels(htfMerged,p);
+  return{...base,htfLevels:htf,htfKeyLevels:htfKeys,displayLevels:display,keyLevels:{...keys,invalidation:base.setup?.invalidation||null},higherTimeframes:(frames||[]).filter(x=>x?.available).map(x=>x.timeframe)};
 }
 return{VERSION,analyze,attachHigherFrames,tfRank};
 });
