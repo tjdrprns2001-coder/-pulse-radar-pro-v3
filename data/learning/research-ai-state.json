@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1790710457702,
+  "updatedAt": 1790723602255,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -5282,16 +5282,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 1.1783,
+        "signal_close": 1.1783,
+        "entryPrice": 1.1783,
+        "next_open": 1.1783,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -1.8161758465585875
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -3.0213018755834598
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": -1.3239412713230814
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": 0.16973606042602896
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": 6.161418993465162
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -3.895442586777542
+          }
+        },
+        "mfePct": 9.853178307731492,
+        "maePct": -6.89128405329712,
+        "mae_72h_pct": -6.89128405329712,
+        "mfe_72h_pct": 9.853178307731492,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 1.248998,
+          "sl": 1.1429509999999998,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790492399999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790495999999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790499599999
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790647199999
+            }
+          }
+        },
+        "firstSurgeHours": 13.6097175,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -1.8161758465585875,
+      "outcome3hPct": -3.0213018755834598,
+      "outcome6hPct": -1.3239412713230814,
+      "outcome12hPct": 0.16973606042602896,
+      "outcome24hPct": 6.161418993465162,
+      "outcome72hPct": -3.895442586777542,
+      "mfe72hPct": 9.853178307731492,
+      "mae72hPct": -6.89128405329712,
+      "signal_close": 1.1783,
+      "next_open": 1.1783,
+      "direction": "LONG",
+      "mae_72h_pct": -6.89128405329712,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "ARBUSDT:497345",
@@ -5535,16 +5669,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.2242,
+        "signal_close": 0.2242,
+        "entryPrice": 0.2242,
+        "next_open": 0.2242,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -0.8206958073148973
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -2.127564674397875
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": -1.0392506690454995
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": 1.3068688670829554
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": -0.5218554861730618
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -8.893844781445148
+          }
+        },
+        "mfePct": 5.423728813559303,
+        "maePct": -14.513826940231944,
+        "mae_72h_pct": -14.513826940231944,
+        "mfe_72h_pct": 5.423728813559303,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 0.23765200000000003,
+          "sl": 0.217474,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790495999999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790499599999
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790567999999
+            }
+          }
+        },
+        "firstSurgeHours": 14.6097175,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -0.8206958073148973,
+      "outcome3hPct": -2.127564674397875,
+      "outcome6hPct": -1.0392506690454995,
+      "outcome12hPct": 1.3068688670829554,
+      "outcome24hPct": -0.5218554861730618,
+      "outcome72hPct": -8.893844781445148,
+      "mfe72hPct": 5.423728813559303,
+      "mae72hPct": -14.513826940231944,
+      "signal_close": 0.2242,
+      "next_open": 0.2242,
+      "direction": "LONG",
+      "mae_72h_pct": -14.513826940231944,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "AAVEUSDT:497345",
@@ -5788,16 +6056,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 155,
+        "signal_close": 155,
+        "entryPrice": 155,
+        "next_open": 155,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -0.6838709677419397
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -1.0903225806451644
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": 0.3548387096774297
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": 0.954838709677408
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": 0.05806451612904162
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": 7.232258064516128
+          }
+        },
+        "mfePct": 13.722580645161297,
+        "maePct": -7.141935483870965,
+        "mae_72h_pct": -7.141935483870965,
+        "mfe_72h_pct": 13.722580645161297,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790567999999,
+          "tp": 164.3,
+          "sl": 150.35,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790668799999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790668799999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790672399999
+            },
+            "plus10": {
+              "hit": true,
+              "at": 1790683199999
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790524799999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790567999999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790582399999
+            }
+          }
+        },
+        "firstSurgeHours": 62.6097175,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -0.6838709677419397,
+      "outcome3hPct": -1.0903225806451644,
+      "outcome6hPct": 0.3548387096774297,
+      "outcome12hPct": 0.954838709677408,
+      "outcome24hPct": 0.05806451612904162,
+      "outcome72hPct": 7.232258064516128,
+      "mfe72hPct": 13.722580645161297,
+      "mae72hPct": -7.141935483870965,
+      "signal_close": 155,
+      "next_open": 155,
+      "direction": "LONG",
+      "mae_72h_pct": -7.141935483870965,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "OPUSDT:497345",
@@ -6041,16 +6443,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.14604,
+        "signal_close": 0.14604,
+        "entryPrice": 0.14604,
+        "next_open": 0.14604,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -1.1024376883045695
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -2.745823062174757
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": -1.6365379348123876
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": -0.6025746370857288
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": -0.3355245138318197
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -11.599561763900311
+          }
+        },
+        "mfePct": 2.9854834291974885,
+        "maePct": -12.318542864968506,
+        "mae_72h_pct": -12.318542864968506,
+        "mfe_72h_pct": 2.9854834291974885,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 0.1548024,
+          "sl": 0.1416588,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790582399999
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -1.1024376883045695,
+      "outcome3hPct": -2.745823062174757,
+      "outcome6hPct": -1.6365379348123876,
+      "outcome12hPct": -0.6025746370857288,
+      "outcome24hPct": -0.3355245138318197,
+      "outcome72hPct": -11.599561763900311,
+      "mfe72hPct": 2.9854834291974885,
+      "mae72hPct": -12.318542864968506,
+      "signal_close": 0.14604,
+      "next_open": 0.14604,
+      "direction": "LONG",
+      "mae_72h_pct": -12.318542864968506,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "PONSUSDT:497345",
@@ -6292,16 +6828,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.6503,
+        "signal_close": 0.6503,
+        "entryPrice": 0.6503,
+        "next_open": 0.6503,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -0.507458096263258
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -3.3676764570198414
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": -1.506996770721214
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": -5.366753805935732
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": -8.826695371367066
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -19.237275103798247
+          }
+        },
+        "mfePct": 0.3998154697831824,
+        "maePct": -21.359372597262805,
+        "mae_72h_pct": -21.359372597262805,
+        "mfe_72h_pct": 0.3998154697831824,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 0.689318,
+          "sl": 0.630791,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790485199999
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -0.507458096263258,
+      "outcome3hPct": -3.3676764570198414,
+      "outcome6hPct": -1.506996770721214,
+      "outcome12hPct": -5.366753805935732,
+      "outcome24hPct": -8.826695371367066,
+      "outcome72hPct": -19.237275103798247,
+      "mfe72hPct": 0.3998154697831824,
+      "mae72hPct": -21.359372597262805,
+      "signal_close": 0.6503,
+      "next_open": 0.6503,
+      "direction": "LONG",
+      "mae_72h_pct": -21.359372597262805,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "GRAMUSDT:497345",
@@ -6547,16 +7217,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 1.53,
+        "signal_close": 1.53,
+        "entryPrice": 1.53,
+        "next_open": 1.53,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": 2.2222222222222143
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": 2.2222222222222143
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": 5.882352941176472
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": 3.529411764705892
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": 8.823529411764696
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -2.6797385620914937
+          }
+        },
+        "mfePct": 13.006535947712417,
+        "maePct": -1.6993464052287632,
+        "mae_72h_pct": -1.6993464052287632,
+        "mfe_72h_pct": 13.006535947712417,
+        "barriers": {
+          "status": "TP_FIRST",
+          "at": 1790467199999,
+          "tp": 1.6218000000000001,
+          "sl": 1.4841,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790449199999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790467199999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790524799999
+            },
+            "plus10": {
+              "hit": true,
+              "at": 1790528399999
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": false,
+              "at": null
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": 1.6097175,
+        "label": 1,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "POSITIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 1,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": 2.2222222222222143,
+      "outcome3hPct": 2.2222222222222143,
+      "outcome6hPct": 5.882352941176472,
+      "outcome12hPct": 3.529411764705892,
+      "outcome24hPct": 8.823529411764696,
+      "outcome72hPct": -2.6797385620914937,
+      "mfe72hPct": 13.006535947712417,
+      "mae72hPct": -1.6993464052287632,
+      "signal_close": 1.53,
+      "next_open": 1.53,
+      "direction": "LONG",
+      "mae_72h_pct": -1.6993464052287632,
+      "tpSlOrder": "TP_FIRST"
     },
     {
       "key": "XMRUSDT:497345",
@@ -6798,16 +7602,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 554.32,
+        "signal_close": 554.32,
+        "entryPrice": 554.32,
+        "next_open": 554.32,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -0.0613364121806903
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -0.48167123683072743
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": 1.0174628373502692
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": 1.2014720738923401
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": -1.3818732861884953
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": -2.011473517102047
+          }
+        },
+        "mfePct": 1.737263674411893,
+        "maePct": -5.32905181122818,
+        "mae_72h_pct": -5.32905181122818,
+        "mfe_72h_pct": 1.737263674411893,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790564399999,
+          "tp": 587.5792000000001,
+          "sl": 537.6904000000001,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": false,
+              "at": null
+            },
+            "plus5": {
+              "hit": false,
+              "at": null
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790524799999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790564399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790585999999
+            }
+          }
+        },
+        "firstSurgeHours": null,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -0.0613364121806903,
+      "outcome3hPct": -0.48167123683072743,
+      "outcome6hPct": 1.0174628373502692,
+      "outcome12hPct": 1.2014720738923401,
+      "outcome24hPct": -1.3818732861884953,
+      "outcome72hPct": -2.011473517102047,
+      "mfe72hPct": 1.737263674411893,
+      "mae72hPct": -5.32905181122818,
+      "signal_close": 554.32,
+      "next_open": 554.32,
+      "direction": "LONG",
+      "mae_72h_pct": -5.32905181122818,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "HBARUSDT:497345",
@@ -7053,16 +7991,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.09424,
+        "signal_close": 0.09424,
+        "entryPrice": 0.09424,
+        "next_open": 0.09424,
+        "entryTime": 1790443405016,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443405016,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447005016,
+            "closeAt": 1790449199999,
+            "returnPct": -1.02928692699491
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454205016,
+            "closeAt": 1790456399999,
+            "returnPct": -1.9630730050933853
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465005016,
+            "closeAt": 1790467199999,
+            "returnPct": -0.9125636672326021
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486605016,
+            "closeAt": 1790488799999,
+            "returnPct": -0.5411714770798048
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529805016,
+            "closeAt": 1790531999999,
+            "returnPct": -0.3077249575551777
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702605016,
+            "closeAt": 1790704799999,
+            "returnPct": 9.974533106960948
+          }
+        },
+        "mfePct": 39.006791171477076,
+        "maePct": -2.6952461799660488,
+        "mae_72h_pct": -2.6952461799660488,
+        "mfe_72h_pct": 39.006791171477076,
+        "barriers": {
+          "status": "TP_FIRST",
+          "at": 1790585999999,
+          "tp": 0.09989440000000001,
+          "sl": 0.0914128,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790560799999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790582399999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790585999999
+            },
+            "plus10": {
+              "hit": true,
+              "at": 1790585999999
+            },
+            "plus15": {
+              "hit": true,
+              "at": 1790585999999
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus3": {
+              "hit": false,
+              "at": null
+            },
+            "minus5": {
+              "hit": false,
+              "at": null
+            }
+          }
+        },
+        "firstSurgeHours": 32.6097175,
+        "label": 1,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "POSITIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 1,
+      "labelStatus": "RESOLVED",
       "source": "astra-astra",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -1.02928692699491,
+      "outcome3hPct": -1.9630730050933853,
+      "outcome6hPct": -0.9125636672326021,
+      "outcome12hPct": -0.5411714770798048,
+      "outcome24hPct": -0.3077249575551777,
+      "outcome72hPct": 9.974533106960948,
+      "mfe72hPct": 39.006791171477076,
+      "mae72hPct": -2.6952461799660488,
+      "signal_close": 0.09424,
+      "next_open": 0.09424,
+      "direction": "LONG",
+      "mae_72h_pct": -2.6952461799660488,
+      "tpSlOrder": "TP_FIRST"
     },
     {
       "key": "ONDOUSDT:497345",
@@ -7308,16 +8380,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.5361,
+        "signal_close": 0.5361,
+        "entryPrice": 0.5361,
+        "next_open": 0.5361,
+        "entryTime": 1790443444187,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443444187,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447044187,
+            "closeAt": 1790449199999,
+            "returnPct": 0.24249207237454495
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454244187,
+            "closeAt": 1790456399999,
+            "returnPct": -0.37306472673008795
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465044187,
+            "closeAt": 1790467199999,
+            "returnPct": 0.29845178138405704
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486644187,
+            "closeAt": 1790488799999,
+            "returnPct": -0.1305726543555319
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529844187,
+            "closeAt": 1790531999999,
+            "returnPct": 2.406267487409064
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702644187,
+            "closeAt": 1790704799999,
+            "returnPct": -6.659205372132082
+          }
+        },
+        "mfePct": 13.39302368961015,
+        "maePct": -8.319343406080959,
+        "mae_72h_pct": -8.319343406080959,
+        "mfe_72h_pct": 13.39302368961015,
+        "barriers": {
+          "status": "TP_FIRST",
+          "at": 1790553599999,
+          "tp": 0.568266,
+          "sl": 0.520017,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790517599999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790542799999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790553599999
+            },
+            "plus10": {
+              "hit": true,
+              "at": 1790553599999
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790582399999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790582399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790582399999
+            }
+          }
+        },
+        "firstSurgeHours": 20.598836666666667,
+        "label": 1,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "POSITIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": null,
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 1,
+      "labelStatus": "RESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": 0.24249207237454495,
+      "outcome3hPct": -0.37306472673008795,
+      "outcome6hPct": 0.29845178138405704,
+      "outcome12hPct": -0.1305726543555319,
+      "outcome24hPct": 2.406267487409064,
+      "outcome72hPct": -6.659205372132082,
+      "mfe72hPct": 13.39302368961015,
+      "mae72hPct": -8.319343406080959,
+      "signal_close": 0.5361,
+      "next_open": 0.5361,
+      "direction": "LONG",
+      "mae_72h_pct": -8.319343406080959,
+      "tpSlOrder": "TP_FIRST"
     },
     {
       "key": "PHAUSDT:497345",
@@ -7561,16 +8767,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.07873,
+        "signal_close": 0.07873,
+        "entryPrice": 0.07873,
+        "next_open": 0.07873,
+        "entryTime": 1790443444187,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443444187,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447044187,
+            "closeAt": 1790449199999,
+            "returnPct": 3.9121046615013366
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454244187,
+            "closeAt": 1790456399999,
+            "returnPct": 4.852025911342572
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465044187,
+            "closeAt": 1790467199999,
+            "returnPct": 5.169566874126774
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486644187,
+            "closeAt": 1790488799999,
+            "returnPct": -6.503238917820397
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529844187,
+            "closeAt": 1790531999999,
+            "returnPct": -13.158897497777211
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702644187,
+            "closeAt": 1790704799999,
+            "returnPct": -14.987933443414192
+          }
+        },
+        "mfePct": 9.983487869935237,
+        "maePct": -26.000254032770222,
+        "mae_72h_pct": -26.000254032770222,
+        "mfe_72h_pct": 9.983487869935237,
+        "barriers": {
+          "status": "TP_FIRST",
+          "at": 1790449199999,
+          "tp": 0.0834538,
+          "sl": 0.0763681,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790449199999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790449199999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790463599999
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790449199999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790477999999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790477999999
+            }
+          }
+        },
+        "firstSurgeHours": 1.5988366666666667,
+        "label": 1,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "POSITIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_BREAKOUT",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 1,
+      "labelStatus": "RESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": 3.9121046615013366,
+      "outcome3hPct": 4.852025911342572,
+      "outcome6hPct": 5.169566874126774,
+      "outcome12hPct": -6.503238917820397,
+      "outcome24hPct": -13.158897497777211,
+      "outcome72hPct": -14.987933443414192,
+      "mfe72hPct": 9.983487869935237,
+      "mae72hPct": -26.000254032770222,
+      "signal_close": 0.07873,
+      "next_open": 0.07873,
+      "direction": "LONG",
+      "mae_72h_pct": -26.000254032770222,
+      "tpSlOrder": "TP_FIRST"
     },
     {
       "key": "PENGUUSDT:497345",
@@ -7814,16 +9154,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.010128,
+        "signal_close": 0.010128,
+        "entryPrice": 0.010128,
+        "next_open": 0.010128,
+        "entryTime": 1790443444187,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443444187,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447044187,
+            "closeAt": 1790449199999,
+            "returnPct": -1.1453396524486514
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454244187,
+            "closeAt": 1790456399999,
+            "returnPct": -3.7322274881516626
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465044187,
+            "closeAt": 1790467199999,
+            "returnPct": -2.290679304897314
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486644187,
+            "closeAt": 1790488799999,
+            "returnPct": -2.626382306477104
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529844187,
+            "closeAt": 1790531999999,
+            "returnPct": -0.4640600315955812
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702644187,
+            "closeAt": 1790704799999,
+            "returnPct": -5.26263823064771
+          }
+        },
+        "mfePct": 7.898894154818326,
+        "maePct": -11.344786729857825,
+        "mae_72h_pct": -11.344786729857825,
+        "mfe_72h_pct": 7.898894154818326,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 0.010735680000000001,
+          "sl": 0.00982416,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790513999999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790513999999
+            },
+            "plus8": {
+              "hit": false,
+              "at": null
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790452799999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790582399999
+            }
+          }
+        },
+        "firstSurgeHours": 19.598836666666667,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -1.1453396524486514,
+      "outcome3hPct": -3.7322274881516626,
+      "outcome6hPct": -2.290679304897314,
+      "outcome12hPct": -2.626382306477104,
+      "outcome24hPct": -0.4640600315955812,
+      "outcome72hPct": -5.26263823064771,
+      "mfe72hPct": 7.898894154818326,
+      "mae72hPct": -11.344786729857825,
+      "signal_close": 0.010128,
+      "next_open": 0.010128,
+      "direction": "LONG",
+      "mae_72h_pct": -11.344786729857825,
+      "tpSlOrder": "SL_FIRST"
     },
     {
       "key": "ETHFIUSDT:497345",
@@ -8067,16 +9541,150 @@
         "RSI",
         "MACD"
       ],
-      "outcomeV2": null,
-      "label": null,
-      "labelStatus": "UNRESOLVED",
+      "outcomeV2": {
+        "version": "RESEARCH_OUTCOME_v3",
+        "status": "PARTIAL_OR_CONFIRMED",
+        "confirmed": true,
+        "signalPrice": 0.7502,
+        "signal_close": 0.7502,
+        "entryPrice": 0.7502,
+        "next_open": 0.7502,
+        "entryTime": 1790443444187,
+        "entryPolicy": "SIGNAL_PRICE",
+        "direction": "LONG",
+        "asOf": 1790443444187,
+        "horizons": {
+          "h1": {
+            "status": "CONFIRMED",
+            "targetAt": 1790447044187,
+            "closeAt": 1790449199999,
+            "returnPct": -0.933084510797122
+          },
+          "h3": {
+            "status": "CONFIRMED",
+            "targetAt": 1790454244187,
+            "closeAt": 1790456399999,
+            "returnPct": -3.8123167155425186
+          },
+          "h6": {
+            "status": "CONFIRMED",
+            "targetAt": 1790465044187,
+            "closeAt": 1790467199999,
+            "returnPct": -2.7859237536656978
+          },
+          "h12": {
+            "status": "CONFIRMED",
+            "targetAt": 1790486644187,
+            "closeAt": 1790488799999,
+            "returnPct": -1.7462010130631866
+          },
+          "h24": {
+            "status": "CONFIRMED",
+            "targetAt": 1790529844187,
+            "closeAt": 1790531999999,
+            "returnPct": -6.038389762729935
+          },
+          "h72": {
+            "status": "CONFIRMED",
+            "targetAt": 1790702644187,
+            "closeAt": 1790704799999,
+            "returnPct": 1.4662756598240456
+          }
+        },
+        "mfePct": 9.61077046121035,
+        "maePct": -11.743535057318045,
+        "mae_72h_pct": -11.743535057318045,
+        "mfe_72h_pct": 9.61077046121035,
+        "barriers": {
+          "status": "SL_FIRST",
+          "at": 1790456399999,
+          "tp": 0.795212,
+          "sl": 0.727694,
+          "source": "RESEARCH_CONTRACT_FALLBACK",
+          "tpPct": 6,
+          "slPct": -3
+        },
+        "thresholds": {
+          "up": {
+            "plus3": {
+              "hit": true,
+              "at": 1790690399999
+            },
+            "plus5": {
+              "hit": true,
+              "at": 1790693999999
+            },
+            "plus8": {
+              "hit": true,
+              "at": 1790693999999
+            },
+            "plus10": {
+              "hit": false,
+              "at": null
+            },
+            "plus15": {
+              "hit": false,
+              "at": null
+            }
+          },
+          "down": {
+            "minus2": {
+              "hit": true,
+              "at": 1790452799999
+            },
+            "minus3": {
+              "hit": true,
+              "at": 1790456399999
+            },
+            "minus5": {
+              "hit": true,
+              "at": 1790524799999
+            }
+          }
+        },
+        "firstSurgeHours": 68.59883666666667,
+        "label": 0,
+        "labelStatus": "RESOLVED",
+        "sampleLabel": "NEGATIVE_SAMPLE",
+        "costModel": {
+          "version": null,
+          "roundTripCostPct": null,
+          "configured": false
+        },
+        "netHorizons": {
+          "h1": null,
+          "h3": null,
+          "h6": null,
+          "h12": null,
+          "h24": null,
+          "h72": null
+        },
+        "failureType": "FAIL_TIMING",
+        "evaluatedAt": 1790723602255,
+        "confirmedBars": 71
+      },
+      "label": 0,
+      "labelStatus": "RESOLVED",
       "source": "astra-perplexity",
       "referenceOnly": true,
       "legacyReason": "PRE_INTEGRITY_CONTRACT",
       "preIgnitionStage": null,
       "preIgnitionSubtypes": [],
       "preIgnitionProgressPct": null,
-      "preIgnitionEvidenceScore": null
+      "preIgnitionEvidenceScore": null,
+      "outcome1hPct": -0.933084510797122,
+      "outcome3hPct": -3.8123167155425186,
+      "outcome6hPct": -2.7859237536656978,
+      "outcome12hPct": -1.7462010130631866,
+      "outcome24hPct": -6.038389762729935,
+      "outcome72hPct": 1.4662756598240456,
+      "mfe72hPct": 9.61077046121035,
+      "mae72hPct": -11.743535057318045,
+      "signal_close": 0.7502,
+      "next_open": 0.7502,
+      "direction": "LONG",
+      "mae_72h_pct": -11.743535057318045,
+      "tpSlOrder": "SL_FIRST"
     }
   ],
   "model": {
@@ -8551,7 +10159,7 @@
     "researchNotes": [
       {
         "id": "RN-0A8LZU6",
-        "at": 1790710460529,
+        "at": 1790723605003,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -8590,7 +10198,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790710460529,
+  "exportedAt": 1790723605004,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -9594,7 +11202,7 @@
       "notes": [
         {
           "id": "RN-0A8LZU6",
-          "at": 1790710460529,
+          "at": 1790723605003,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
