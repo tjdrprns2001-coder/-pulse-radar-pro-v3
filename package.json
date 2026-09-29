@@ -171,7 +171,8 @@
     "test:sampling-v3-oos-service": "node scripts/verify-sampling-v3-oos-service.js",
     "test:auto-recommender": "node scripts/verify-auto-recommender.js",
     "test:ignition-bridge": "node scripts/verify-ignition-bridge.js",
-    "test:common-preignition-stage": "node scripts/verify-common-preignition-stage.js"
+    "test:common-preignition-stage": "node scripts/verify-common-preignition-stage.js",
+    "test:auto-chart-lab": "node scripts/verify-auto-chart-lab.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
