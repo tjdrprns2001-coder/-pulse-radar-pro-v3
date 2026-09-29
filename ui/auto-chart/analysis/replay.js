@@ -18,9 +18,10 @@ function track({candles,swings,atrSeries,timeframe,settings={}}={}){
       if(candidate&&invalidatedIds.has(candidate.id))candidate=null;
     }
     const setup=Setup.derive(prefix,candidate,{atrNow,atrSeries:atrSeries.slice(0,i+1),breakoutAtr:settings.breakoutAtr??.10,retestAtr:settings.retestAtr??.25});
-    currentSetup=setup;currentRange=setup.range||candidate||null;
+    currentSetup=setup;
     if(!lockedRange&&[Setup.STATES.BREAKOUT,Setup.STATES.RETEST,Setup.STATES.CONFIRMED].includes(setup.state))lockedRange=setup.range;
-    if(lockedRange&&setup.state===Setup.STATES.INVALID){invalidatedIds.add(lockedRange.id);lockedRange=null}
+    if(lockedRange&&setup.state===Setup.STATES.INVALID){invalidatedIds.add(lockedRange.id);lockedRange=null;currentRange=null}
+    else currentRange=setup.range||candidate||null
     const eventKey=[setup.state,setup.changedAt,setup.range?.id||'none'].join('|');
     if(eventKey!==lastEventKey){history.push({state:setup.state,label:setup.label,changedAt:setup.changedAt,range:setup.range?{id:setup.range.id,low:setup.range.low,high:setup.range.high,frozen:!!setup.range.frozen,lockedAt:setup.range.lockedAt||null}:null,event:setup.event||null});lastEventKey=eventKey}
   }
