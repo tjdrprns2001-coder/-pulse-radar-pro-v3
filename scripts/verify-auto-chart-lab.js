@@ -120,6 +120,22 @@ if(a1.keyLevels.support)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.supp
 if(a1.keyLevels.resistance)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.resistance.id),'resistance card zone must come from chart displayLevels');
 assert(a1.volume&&a1.volume.definition.includes('previous 20'),'core must expose strict RVOL definition');
 
+// HTF attachment: current chart and card share the same merged higher-TF zones.
+const htf4={available:true,timeframe:'4h',localDisplayLevels:[
+ {id:'4S',effectiveRole:'support',role:'support',status:'SUPPORT_HOLD',statusLabel:'지지 유지',timeframe:'4h',timeframes:['4h'],low:96,high:97,mid:96.5,touches:3,knownAt:1},
+ {id:'4R',effectiveRole:'resistance',role:'resistance',status:'RESISTANCE_HOLD',statusLabel:'저항 유지',timeframe:'4h',timeframes:['4h'],low:104,high:105,mid:104.5,touches:3,knownAt:1}
+]};
+const htf1d={available:true,timeframe:'1d',localDisplayLevels:[
+ {id:'1DS',effectiveRole:'support',role:'support',status:'SUPPORT_HOLD',statusLabel:'지지 유지',timeframe:'1d',timeframes:['1d'],low:95.8,high:96.7,mid:96.2,touches:4,knownAt:1},
+ {id:'1DR',effectiveRole:'resistance',role:'resistance',status:'RESISTANCE_HOLD',statusLabel:'저항 유지',timeframe:'1d',timeframes:['1d'],low:108,high:109,mid:108.5,touches:4,knownAt:1}
+]};
+const attached=Core.attachHigherFrames({...a1,currentPrice:100,atrNow:1},[htf4,htf1d]);
+assert(attached.higherTimeframes.includes('4h')&&attached.higherTimeframes.includes('1d'),'higher timeframe sources must be recorded');
+assert(attached.displayLevels.some(x=>x.timeframes?.includes('4h')),'4H overlay must be present');
+assert(attached.displayLevels.some(x=>x.timeframes?.includes('1d')),'1D overlay must be present');
+if(attached.keyLevels.support)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.support.id),'HTF support card must use chart display zone object');
+if(attached.keyLevels.resistance)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.resistance.id),'HTF resistance card must use chart display zone object');
+
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
 const html=fs.readFileSync('auto-chart-lab.html','utf8'),app=fs.readFileSync('ui/auto-chart/app.js','utf8');
