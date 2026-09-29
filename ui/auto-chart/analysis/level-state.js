@@ -31,8 +31,10 @@ function evolve(zone,candles,{atrSeries=[],atrNow,breakoutAtr=.10,retestAtr=.25}
     const c=candles[i],a=atrAt(i,atrSeries,atrNow);if(!(a>0))continue;
     const breakMargin=a*breakoutAtr,retestTol=a*retestAtr;
     if(out.effectiveRole==='resistance'&&phase==='hold'){
+      if(originRole==='support'&&out.status===STATUS.RESISTANCE_FLIP_CONFIRMED&&c.close>zone.high+retestTol){out.effectiveRole='support';out.transitionTarget=null;event(out,STATUS.FLIP_FAILED,i,c,{failedTarget:'resistance'});continue}
       if(c.close>zone.high+breakMargin){out.effectiveRole='transition';out.transitionTarget='support';out.breakIndex=i;phase='flip-support';event(out,STATUS.BREAKOUT_CONFIRMED,i,c,{boundary:zone.high});continue}
     }else if(out.effectiveRole==='support'&&phase==='hold'){
+      if(originRole==='resistance'&&out.status===STATUS.SUPPORT_FLIP_CONFIRMED&&c.close<zone.low-retestTol){out.effectiveRole='resistance';out.transitionTarget=null;event(out,STATUS.FLIP_FAILED,i,c,{failedTarget:'support'});continue}
       if(c.close<zone.low-breakMargin){out.effectiveRole='transition';out.transitionTarget='resistance';out.breakIndex=i;phase='flip-resistance';event(out,STATUS.BREAKDOWN_CONFIRMED,i,c,{boundary:zone.low});continue}
     }else if(phase==='flip-support'){
       if(i<=out.breakIndex)continue;
