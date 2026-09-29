@@ -57,7 +57,7 @@ function evolve(zone,candles,{atrSeries=[],atrNow,breakoutAtr=.10,retestAtr=.25}
   out.role=out.effectiveRole;
   return out;
 }
-function mergeGroup(items,{atrNow,currentPrice}={}){
+function mergeRole(items,{atrNow,currentPrice}={}){
   if(!items.length)return[];
   const gapTol=Math.max(Number(atrNow||0)*.15,Math.abs(Number(currentPrice)||1)*.0006),sorted=[...items].sort((a,b)=>a.low-b.low),groups=[];
   for(const z of sorted){
@@ -65,11 +65,15 @@ function mergeGroup(items,{atrNow,currentPrice}={}){
     if(!g||z.low>g.high+gapTol){groups.push({low:z.low,high:z.high,items:[z]});continue}
     g.low=Math.min(g.low,z.low);g.high=Math.max(g.high,z.high);g.items.push(z);
   }
+  return groups;
+}
+function mergeGroup(items,{atrNow,currentPrice}={}){
+  const roles=['support','resistance','transition'],groups=roles.flatMap(role=>mergeRole((items||[]).filter(x=>(x.effectiveRole||x.role||x.type)===role),{atrNow,currentPrice}).map(g=>({role,...g})));
   return groups.map((g,idx)=>{
-    const touches=g.items.reduce((s,x)=>s+Number(x.touches||0),0),roles=[...new Set(g.items.map(x=>x.effectiveRole))],statuses=[...new Set(g.items.map(x=>x.status))],timeframes=[...new Set(g.items.flatMap(x=>x.timeframes||[x.timeframe]).filter(Boolean))];
-    const role=roles.length===1?roles[0]:'transition',weight=Math.max(...g.items.map(x=>Number(x.touches||1))),mid=g.items.reduce((s,x)=>s+Number(x.mid||((x.low+x.high)/2))*Number(x.touches||1),0)/Math.max(1,touches);
-    const best=[...g.items].sort((a,b)=>(Number(b.touches||0)-Number(a.touches||0))||(Number(b.knownAt||0)-Number(a.knownAt||0)))[0];
-    return{...best,id:'DISPLAY-'+(timeframes.join('+')||best.timeframe)+'-'+role+'-'+idx,kind:'display-zone',low:g.low,high:g.high,mid,role,effectiveRole:role,originRole:best.originRole,status:statuses.length===1?statuses[0]:'MERGED',statusLabel:statuses.length===1?(best.statusLabel||LABELS[best.status]):'겹치는 유효 구간 병합',touches,sourceIds:g.items.flatMap(x=>x.sourceIds||[x.id]),sourceZoneIds:g.items.map(x=>x.id),timeframes,timeframe:timeframes.length===1?timeframes[0]:timeframes.join('+'),merged:g.items.length>1,components:g.items.map(x=>({id:x.id,timeframe:x.timeframe,low:x.low,high:x.high,status:x.status,role:x.effectiveRole}))};
+    const touches=g.items.reduce((s,x)=>s+Number(x.touches||0),0),statuses=[...new Set(g.items.map(x=>x.status))],timeframes=[...new Set(g.items.flatMap(x=>x.timeframes||[x.timeframe]).filter(Boolean))],role=g.role;
+    const mid=g.items.reduce((sum,x)=>sum+Number(x.mid||((x.low+x.high)/2))*Math.max(1,Number(x.touches||1)),0)/Math.max(1,g.items.reduce((sum,x)=>sum+Math.max(1,Number(x.touches||1)),0));
+    const best=[...g.items].sort((a,b)=>(Number(b.htfRank||0)-Number(a.htfRank||0))||(Number(b.touches||0)-Number(a.touches||0))||(Number(b.knownAt||0)-Number(a.knownAt||0)))[0];
+    return{...best,id:'DISPLAY-'+(timeframes.join('+')||best.timeframe)+'-'+role+'-'+idx,kind:'display-zone',low:g.low,high:g.high,mid,role,effectiveRole:role,originRole:best.originRole,status:statuses.length===1?statuses[0]:'MERGED',statusLabel:statuses.length===1?(best.statusLabel||LABELS[best.status]):'겹치는 유효 구간 병합',touches,sourceIds:g.items.flatMap(x=>x.sourceIds||[x.id]),sourceZoneIds:g.items.map(x=>x.id),timeframes,timeframe:timeframes.length===1?timeframes[0]:timeframes.join('+'),merged:g.items.length>1,components:g.items.map(x=>({id:x.id,timeframe:x.timeframe,low:x.low,high:x.high,status:x.status,role:x.effectiveRole,htfRank:x.htfRank||0}))};
   });
 }
 function limits(tf){return tf==='5m'?1:tf==='15m'?2:tf==='1h'?2:tf==='4h'?2:3}
