@@ -175,6 +175,8 @@ const lab=ResearchLab.labSummary(labeledRows,{integrity:integrityState});
 assert.equal(lab.shadowOnly,true);
 assert.equal(lab.integrity.oosAccess,'SEALED_DENY_HYPOTHESIS_GENERATOR');
 assert.equal(lab.knowledge.coverage.total,ResearchLab.techniqueCatalog().length);
+assert(Array.isArray(lab.hypotheses.phasePatterns),'common-stage hypothesis list required');
+assert(lab.hypotheses.phasePatterns.some(x=>x.kind==='COMMON_PHASE_PATTERN'&&x.phaseStage==='RECLAIM'),'phase lab must build RECLAIM hypothesis from labeled phase data');
 assert(Array.isArray(lab.experiments));
 assert(lab.experiments.every(x=>x.rankWeight===0&&x.requiresLockedOos===true&&x.split==='TRAIN_VALIDATION_ONLY'));
 const evalProbe=ResearchLab.evaluateHypothesis(labeledRows,{ruleIds:['MARKET_STRUCTURE','VOLUME_PRICE'],regime:'RISK_ON'});
