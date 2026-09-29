@@ -57,7 +57,7 @@ function renderLab(state){
   const lab=state.research?.lab||{},knowledge=lab.knowledge||{},coverage=knowledge.coverage||{},hyp=lab.hypotheses||{};
   $('labTechTotal').textContent=num(coverage.total||knowledge.techniques?.length||0);
   $('labTechSeen').textContent=num(coverage.observed||0);
-  $('labHypotheses').textContent=num(hyp.observed?.length||0);
+  $('labHypotheses').textContent=num((hyp.observed?.length||0)+(hyp.phasePatterns?.length||0));
   $('labHybrids').textContent=num(hyp.archetypes?.length||0);
   $('labIdeas').textContent=num(hyp.ideaCount||0);
 
@@ -68,10 +68,10 @@ function renderLab(state){
     return '<span class="techniqueChip '+(active?'seen':'unseen')+'" title="'+esc((t.sources||[]).join(' · ')+req)+'"><b>'+esc(t.label)+'</b><small>'+esc(t.category)+' · '+esc(t.researchRole||t.mode)+'</small></span>';
   }).join(''):'<span class="muted">등록 기법이 없습니다.</span>';
 
-  const observed=(hyp.observed||[]).slice(0,12);
+  const observed=[...(hyp.phasePatterns||[]),...(hyp.observed||[])].slice(0,16);
   $('hypothesisCards').innerHTML=observed.length?observed.map(x=>{
     const counter=x.counterexamples||[],rateText=x.successRate==null?'표본 부족':Math.round(x.successRate*100)+'%';
-    return '<article class="hypothesisCard"><div class="hypHead"><span class="hypId">'+esc(x.id)+'</span><span class="hypScore">'+esc(x.confidence)+'점</span></div><h3>'+esc(x.title)+'</h3><div class="hypMeta"><span>시장국면 '+esc(x.regime)+'</span><span>표본 '+num(x.support)+'</span><span>성공률 '+esc(rateText)+'</span><span>MFE '+pct(x.avgMfePct)+'</span></div><p>'+esc(x.thesis)+'</p><div class="counter '+(counter.length?'has':'none')+'">⚠️ 반례 '+counter.length+'개 · '+esc(x.falsification||'')+'</div><div class="next">다음 연구 → '+esc(x.nextAction||'추가 관찰')+'</div></article>';
+    const kind=x.kind==='COMMON_PHASE_PATTERN'?'🧭 5단계 가설':'🧠 기법 가설';return '<article class="hypothesisCard"><div class="hypHead"><span class="hypId">'+esc(kind+' · '+x.id)+'</span><span class="hypScore">'+esc(x.confidence)+'점</span></div><h3>'+esc(x.title)+'</h3><div class="hypMeta"><span>시장국면 '+esc(x.regime)+'</span><span>표본 '+num(x.support)+'</span><span>성공률 '+esc(rateText)+'</span><span>MFE '+pct(x.avgMfePct)+'</span></div><p>'+esc(x.thesis)+'</p><div class="counter '+(counter.length?'has':'none')+'">⚠️ 반례 '+counter.length+'개 · '+esc(x.falsification||'')+'</div><div class="next">다음 연구 → '+esc(x.nextAction||'추가 관찰')+'</div></article>';
   }).join(''):'<div class="emptyLab">라벨 표본이 더 쌓이면 기법 조합 가설이 자동 생성됩니다.</div>';
 
   const hybrids=(hyp.archetypes||[]).slice(0,10);
