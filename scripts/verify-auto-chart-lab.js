@@ -60,7 +60,7 @@ assert.equal(Volume.rvol20(rvBars,20),3,'RVOL20 must be current / previous 20 av
 // Timestamp windows: 72h means 72 real hours on every timeframe, not a fixed bar count.
 const fourH=[];for(let i=0;i<40;i++){const b={openTime:i*4*3600000,closeTime:(i+1)*4*3600000-1,open:100,high:101,low:99,close:100,volume:100,closed:true};fourH.push(b)}
 fourH[18].volume=500; // ~84h before final close -> exclude from 72h
-fourH[22].volume=500; // ~68h before final close -> include
+fourH[22].volume=700; // ~68h before final close -> include; remains >=3x even with older spike in denominator
 const s72=Volume.spikes(fourH,{hours:72,threshold:3,period:5});
 assert(!s72.some(x=>x.index===18),'72h search must exclude a 4H spike older than 72 real hours');
 assert(s72.some(x=>x.index===22),'72h search must include a 4H spike inside 72 real hours');
