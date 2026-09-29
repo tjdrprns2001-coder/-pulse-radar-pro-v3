@@ -3,7 +3,8 @@
   MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),Ranges:require('./ranges.js'),Setup:require('./setup-state.js'),Indicators:require('./indicators.js')
  }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,Ranges:root.PulseAutoChartRanges,Setup:root.PulseAutoChartSetupState,Indicators:root.PulseAutoChartIndicators};
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function({MathX,Swings,Levels,Ranges,Setup,Indicators}){'use strict';
+})(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
+const {MathX,Swings,Levels,Ranges,Setup,Indicators}=dep;
 const VERSION='AUTO_CHART_CORE_v1';
 function analyze(dataset,settings={}){
   const candles=dataset?.candles||[],last=candles.at(-1);
