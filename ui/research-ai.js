@@ -4,6 +4,10 @@ const pct=v=>v==null?'—':Number(v).toFixed(2)+'%';
 const rate=v=>v==null?'—':(Number(v)*100).toFixed(1)+'%';
 const num=v=>v==null?'—':Number(v).toLocaleString();
 const esc=v=>String(v??'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const stageName=v=>({
+  BASE:'① BASE',EARLY_ACTIVITY:'② EARLY',COOLDOWN_COMPRESSION:'③ COOLDOWN/COMP',
+  RECLAIM:'④ RECLAIM',IGNITION:'⑤ IGNITION',INVALIDATED:'⛔ INVALIDATED',NO_SETUP:'⚪ NO SETUP',UNKNOWN:'미분류'
+})[String(v||'UNKNOWN')]||String(v||'미분류');
 async function get(action='status'){
   const r=await fetch('/api/learning-ai?action='+encodeURIComponent(action),{cache:'no-store'});
   const d=await r.json();if(!r.ok||d.status!=='ok')throw Error(d.error||('HTTP '+r.status));return d;
@@ -15,7 +19,7 @@ function renderTop(state){
   const modelState=(state.registry?.models||[]).find(x=>x.id==='tiny-mlp-v2')?.state||'SHADOW';
   const active=labels.length>=20;
   $('model').innerHTML=active?'<span class="good">'+esc(modelState)+'</span>':'<span class="warn">준비중 '+labels.length+'/20</span>';
-  const autoCount=all.filter(x=>x.source==='auto-surge-reverse-trace').length,failCount=all.filter(x=>x.source==='auto-failed-ignition-reverse-trace').length;$('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>🧬 성공 역추적 <b>'+num(autoCount)+'</b>개<br>🟥 실패 역추적 <b>'+num(failCount)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(all.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
+  const autoCount=all.filter(x=>x.source==='auto-surge-reverse-trace').length,failCount=all.filter(x=>x.source==='auto-failed-ignition-reverse-trace').length,stageCount=all.filter(x=>x.preIgnitionStage).length;$('sources').innerHTML='급등 역추적 seed <b>'+num(state.memory?.seedSamples)+'</b>개<br>🧬 성공 역추적 <b>'+num(autoCount)+'</b>개<br>🟥 실패 역추적 <b>'+num(failCount)+'</b>개<br>🧭 5단계 포착 <b>'+num(stageCount)+'</b>개<br>책 기법 <b>'+num(state.memory?.bookTechniques)+'</b>개<br>스캔 소스 <b>'+esc([...(new Set(all.map(x=>x.source).filter(Boolean)))].join(', ')||'대기')+'</b>';
   $('persist').innerHTML='저장소 <b>'+esc(state.memory?.persistence||'—')+'</b><br>모델 <b>'+esc(state.model?.type||'—')+'</b><br>버전 <b>'+esc(state.version||'—')+'</b><br>마지막 학습 '+(state.model?.trainedAt?new Date(state.model.trainedAt).toLocaleString():'대기 중');
   const ds=state.training?.dataset||{};
   $('dataset').innerHTML='학습 <b>'+num(ds.train||0)+'</b><br>검증 <b>'+num(ds.validation||0)+'</b><br>잠금 OOS <b>'+num(ds.lockedOos||0)+'</b><br>경계 제거 <b>'+num(ds.purged||0)+'</b> · 엠바고 <b>'+num(ds.embargoed||0)+'</b><br>OOS 고정시각 <b>'+esc(state.validation?.lockedOosStart?new Date(state.validation.lockedOosStart).toLocaleString():'미설정')+'</b>';
@@ -39,6 +43,10 @@ function renderResearch(state){
   const score=stats.scoreBuckets||[];
   $('scoreRows').innerHTML=score.length?score.map(x=>'<tr><td><b>'+esc(x.key)+'</b></td><td>'+num(x.count)+'</td><td>'+rate(x.successRate)+'</td><td>'+pct(x.avgMfePct)+'</td><td>'+pct(x.avgMaePct)+'</td></tr>').join(''):'<tr><td colspan="5">실제 라벨이 더 필요합니다.</td></tr>';
   $('archetypeRows').innerHTML=clusters.length?clusters.slice(0,12).map(x=>'<tr><td><b>'+esc(x.id)+'</b></td><td>'+num(x.count)+'</td><td>'+esc((x.symbols||[]).slice(0,4).join(', '))+'</td><td>'+pct(x.avgMfePct)+'</td><td>'+pct(x.avgMaePct)+'</td></tr>').join(''):'<tr><td colspan="5">성공 라벨 군집 대기</td></tr>';
+  const stages=(stats.byPreIgnitionStage||[]).filter(x=>x.key!=='UNKNOWN');
+  $('stageOutcomeRows').innerHTML=stages.length?stages.map(x=>'<tr><td><b>'+esc(stageName(x.key))+'</b></td><td>'+num(x.observed)+'</td><td>'+num(x.labeled)+'</td><td>'+num(x.pending)+'</td><td>'+rate(x.successRate)+'</td><td>'+pct(x.avgMfePct)+'</td><td>'+pct(x.avgMaePct)+'</td></tr>').join(''):'<tr><td colspan="7">5단계가 붙은 실제 outcome 표본을 수집 중입니다.</td></tr>';
+  const subtypes=(stats.byPreIgnitionSubtype||[]).filter(x=>x.key!=='UNKNOWN');
+  $('subtypeOutcomeRows').innerHTML=subtypes.length?subtypes.map(x=>'<tr><td><b>'+esc(x.key)+'</b></td><td>'+num(x.observed)+'</td><td>'+num(x.labeled)+'</td><td>'+rate(x.successRate)+'</td><td>'+pct(x.avgMfePct)+'</td><td>'+pct(x.avgMaePct)+'</td><td>'+pct(x.avgEvidenceScore)+'</td></tr>').join(''):'<tr><td colspan="7">A/B/C/COMP/ABS/CONT outcome 표본을 수집 중입니다.</td></tr>';
   const books=stats.bookRules||[];
   $('bookRows').innerHTML=books.length?books.slice(0,20).map(x=>'<tr><td><b>'+esc(x.ruleId)+'</b></td><td>'+esc(x.regime)+'</td><td>'+num(x.count)+'</td><td>'+rate(x.successRate)+'</td></tr>').join(''):'<tr><td colspan="4">책 규칙 outcome 대기</td></tr>';
   const regimes=stats.byRegime||[];
@@ -96,10 +104,10 @@ function renderLedger(state){
 function horizon(row,h){return row.outcomeV2?.horizons?.['h'+h]?.returnPct??row['outcome'+h+'hPct']??null}
 function renderRows(state){
   const rows=(state.observations||[]).slice(-40).reverse();
-  $('rows').innerHTML=rows.length?rows.map(r=>'<tr><td><b>'+esc(r.symbol)+'</b></td><td>'+new Date(r.asOf||r.capturedAt).toLocaleString()+'</td><td>'+esc(r.researchScore??'—')+'</td><td>'+esc(r.researchStage||r.scannerState||'—')+'</td><td>'+pct(horizon(r,1))+'</td><td>'+pct(horizon(r,6))+'</td><td>'+pct(horizon(r,24))+'</td><td>'+pct(horizon(r,72))+'</td><td>'+pct(r.outcomeV2?.mfePct??r.mfe72hPct)+'</td><td>'+pct(r.outcomeV2?.maePct??r.mae72hPct)+'</td><td>'+(r.label===1?'<span class="good">성공</span>':r.label===0?'<span class="bad">실패</span>':r.labelStatus==='AMBIGUOUS'?'<span class="warn">모호</span>':'대기')+'</td></tr>').join(''):'<tr><td colspan="11">아직 자동스캔 학습 관측이 없습니다.</td></tr>';
+  $('rows').innerHTML=rows.length?rows.map(r=>'<tr><td><b>'+esc(r.symbol)+'</b></td><td>'+new Date(r.asOf||r.capturedAt).toLocaleString()+'</td><td>'+esc(r.researchScore??'—')+'</td><td><b>'+esc(stageName(r.preIgnitionStage))+'</b><br><small>'+esc((r.preIgnitionSubtypes||[]).join(' · ')||'—')+'</small></td><td>'+esc(r.researchStage||r.scannerState||'—')+'</td><td>'+pct(horizon(r,1))+'</td><td>'+pct(horizon(r,6))+'</td><td>'+pct(horizon(r,24))+'</td><td>'+pct(horizon(r,72))+'</td><td>'+pct(r.outcomeV2?.mfePct??r.mfe72hPct)+'</td><td>'+pct(r.outcomeV2?.maePct??r.mae72hPct)+'</td><td>'+(r.label===1?'<span class="good">성공</span>':r.label===0?'<span class="bad">실패</span>':r.labelStatus==='AMBIGUOUS'?'<span class="warn">모호</span>':'대기')+'</td></tr>').join(''):'<tr><td colspan="12">아직 자동스캔 학습 관측이 없습니다.</td></tr>';
 }
 async function refresh(){
-  $('status').textContent='연구 AI v4 상태 불러오는 중…';
+  $('status').textContent='연구 AI v5 상태 불러오는 중…';
   try{
     const d=await get('export'),state=d.state||{};
     renderTop(state);renderIntegrity(state);renderResearch(state);renderLab(state);renderLedger(state);renderRows(state);window.__researchAIState=state;
