@@ -45,8 +45,10 @@ module.exports = async function handler(req, res) {
         try{
           const rr=await fetch(runtime+'/api/structure?'+params.toString(),{signal:ctrl.signal,headers:{accept:'application/json'}});
           const body=await rr.json().catch(()=>({ok:false,error:'Structure runtime invalid response'}));
-          if(rr.ok&&body?.ok)return res.status(200).json({...body,structureRuntime:'oregon'});
-          if(rr.status<500)return res.status(rr.status).json(body);
+          const requestedMarket=String(req.query?.market||'spot').toLowerCase()==='futures'?'futures':'spot';
+          const marketMatches=requestedMarket!=='futures'||String(body?.market||'').toLowerCase()==='futures';
+          if(rr.ok&&body?.ok&&marketMatches)return res.status(200).json({...body,structureRuntime:'oregon'});
+          if(rr.status<500&&marketMatches)return res.status(rr.status).json(body);
         }catch(_e){
           // Fall through to the local handler. Spot data may still be available even if the runtime is not.
         }finally{clearTimeout(timer)}
