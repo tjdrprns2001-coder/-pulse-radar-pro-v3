@@ -13,6 +13,18 @@ async function fetchHistorical({exchange='binance',market='futures',symbol='BTCU
 async function fetchMeta({market='futures',symbol='BTCUSDT',fetchImpl}={}){const CD=getCD();if(CD?.fetchMarketMeta)return CD.fetchMarketMeta({symbol,market,fetchImpl});return json('/api/structure?symbol='+encodeURIComponent(symbol)+'&meta=1&market='+encodeURIComponent(market),fetchImpl)}
 async function fetchLive({market='futures',symbol='BTCUSDT',fetchImpl}={}){const CD=getCD();if(CD?.fetchLive)return CD.fetchLive({symbol,interval:'1m',market,fetchImpl});return json('/api/structure?symbol='+encodeURIComponent(symbol)+'&interval=1m&live=1&market='+encodeURIComponent(market),fetchImpl)}
 async function fetchDerivatives({symbol='BTCUSDT',fetchImpl}={}){const raw=await json('/api/structure?symbol='+encodeURIComponent(symbol)+'&derivatives=1',fetchImpl);return Normalize.normalizeDerivatives(raw)}
+function higherTimeframes(interval){
+  const tf=String(interval||'').toLowerCase();
+  return ({'1w':[],'1d':['1w'],'4h':['1w','1d'],'1h':['1d','4h'],'15m':['1d','4h','1h'],'5m':['1d','4h','1h']})[tf]||[];
+}
+async function fetchHigherTimeframes({exchange='binance',market='futures',symbol='BTCUSDT',interval='4h',fetchImpl}={}){
+  const out=[];
+  for(const tf of higherTimeframes(interval)){
+    try{out.push(await fetchHistorical({exchange,market,symbol,interval:tf,limit:320,fetchImpl}))}
+    catch(e){out.push({available:false,timeframe:tf,error:e?.message||String(e)})}
+  }
+  return out;
+}
 async function fetchAuxiliary({exchange='binance',market='futures',symbol='BTCUSDT',interval='4h',fetchImpl}={}){
   const metaP=fetchMeta({market,symbol,fetchImpl}).catch(e=>({available:false,error:e.message}));
   const liveP=fetchLive({market,symbol,fetchImpl}).catch(e=>({available:false,error:e.message}));
@@ -21,5 +33,5 @@ async function fetchAuxiliary({exchange='binance',market='futures',symbol='BTCUS
   const [meta,live,derivatives,spot]=await Promise.all([metaP,liveP,derivativesP,spotP]);
   return{meta,live,derivatives,spot};
 }
-return{fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchAuxiliary};
+return{fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchHigherTimeframes,higherTimeframes,fetchAuxiliary};
 });

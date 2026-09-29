@@ -4,6 +4,7 @@ const State=require('../ui/auto-chart/state.js');
 const MathX=require('../ui/auto-chart/analysis/math.js');
 const Swings=require('../ui/auto-chart/analysis/swings.js');
 const Levels=require('../ui/auto-chart/analysis/levels.js');
+const LevelState=require('../ui/auto-chart/analysis/level-state.js');
 const Ranges=require('../ui/auto-chart/analysis/ranges.js');
 const Setup=require('../ui/auto-chart/analysis/setup-state.js');
 const Volume=require('../ui/auto-chart/analysis/volume.js');
@@ -53,6 +54,28 @@ seq.push(bar(5,100.25,100.0,100.4));st=Setup.derive(seq,box,{atrNow:ar,atrSeries
 seq.push(bar(6,99.6,99.45,100.0));st=Setup.derive(seq,box,{atrNow:ar,atrSeries:Array(seq.length).fill(1)});assert.equal(st.state,'INVALIDATED');
 assert(st.range.frozen&&st.range.high===top,'breakout must preserve original range boundary');
 
+// SR lifecycle: origin resistance must not remain resistance forever after a confirmed role flip.
+const rz={id:'Z-R',type:'resistance',timeframe:'1h',low:99.8,high:100.2,mid:100,touches:3,knownAt:bar(0,99).closeTime,sourceIds:['H1','H2']};
+let lseq=[bar(0,99.3,99.1,99.6),bar(1,99.9,99.7,100.15),bar(2,100.5,100.3,100.7),bar(3,100.35,99.95,100.55)];
+let life=LevelState.evolve(rz,lseq,{atrNow:1,atrSeries:Array(lseq.length).fill(1),breakoutAtr:.1,retestAtr:.25});
+assert.equal(life.status,'SUPPORT_FLIP_CONFIRMED');
+assert.equal(life.effectiveRole,'support','broken resistance must become support only after post-breakout retest confirmation');
+assert(life.events.find(e=>e.state==='BREAKOUT_CONFIRMED').index<life.events.find(e=>e.state==='SUPPORT_FLIP_CONFIRMED').index,'flip confirmation must occur after breakout');
+lseq.push(bar(4,99.4,99.2,99.8));
+life=LevelState.evolve(rz,lseq,{atrNow:1,atrSeries:Array(lseq.length).fill(1),breakoutAtr:.1,retestAtr:.25});
+assert.equal(life.status,'FLIP_FAILED');
+assert.equal(life.effectiveRole,'resistance','re-loss after support flip must mark transition failure and restore resistance role');
+
+// Overlapping zones merge only when their effective role agrees.
+const merged=LevelState.mergeGroup([
+ {...rz,effectiveRole:'support',role:'support',status:'SUPPORT_FLIP_CONFIRMED',statusLabel:'재테스트 후 지지 전환',low:99.8,high:100.2,timeframes:['1h']},
+ {id:'S2',type:'support',effectiveRole:'support',role:'support',status:'SUPPORT_HOLD',statusLabel:'지지 유지',timeframe:'1h',timeframes:['1h'],low:100.15,high:100.45,mid:100.3,touches:2,knownAt:1},
+ {id:'R2',type:'resistance',effectiveRole:'resistance',role:'resistance',status:'RESISTANCE_HOLD',statusLabel:'저항 유지',timeframe:'4h',timeframes:['4h'],low:100.1,high:100.5,mid:100.3,touches:2,knownAt:1}
+],{atrNow:1,currentPrice:100.6});
+assert.equal(merged.filter(x=>x.effectiveRole==='support').length,1,'overlapping supports should merge');
+assert.equal(merged.filter(x=>x.effectiveRole==='resistance').length,1,'opposite-role overlap must not be merged into support');
+
+// Core chart/card contract: displayLevels and keyLevels must point to the same lifecycle-aware objects.
 // RVOL: current confirmed bar is excluded from its own denominator.
 const rvBars=[];for(let i=0;i<21;i++)rvBars.push(bar(i,100,99.8,100.2));rvBars.forEach((b,i)=>b.volume=i===20?300:100);
 assert.equal(Volume.rvol20(rvBars,20),3,'RVOL20 must be current / previous 20 average');
@@ -91,13 +114,32 @@ assert(Math.abs(prefixReplay.setup.range.high-breakoutEvent.range.high)<1e-9,'fu
 
 const a1=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3}),a2=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3});
 assert.deepStrictEqual(a1,a2,'same data/settings must produce same analysis');
-assert.equal(a1.version,'AUTO_CHART_CORE_v1_1');
+assert.equal(a1.version,'AUTO_CHART_CORE_v1_2');
+assert(Array.isArray(a1.displayLevels),'core must expose lifecycle displayLevels');
+if(a1.keyLevels.support)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.support.id),'support card zone must come from chart displayLevels');
+if(a1.keyLevels.resistance)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.resistance.id),'resistance card zone must come from chart displayLevels');
 assert(a1.volume&&a1.volume.definition.includes('previous 20'),'core must expose strict RVOL definition');
+
+// HTF attachment: current chart and card share the same merged higher-TF zones.
+const htf4={available:true,timeframe:'4h',localDisplayLevels:[
+ {id:'4S',effectiveRole:'support',role:'support',status:'SUPPORT_HOLD',statusLabel:'지지 유지',timeframe:'4h',timeframes:['4h'],low:96,high:97,mid:96.5,touches:3,knownAt:1},
+ {id:'4R',effectiveRole:'resistance',role:'resistance',status:'RESISTANCE_HOLD',statusLabel:'저항 유지',timeframe:'4h',timeframes:['4h'],low:104,high:105,mid:104.5,touches:3,knownAt:1}
+]};
+const htf1d={available:true,timeframe:'1d',localDisplayLevels:[
+ {id:'1DS',effectiveRole:'support',role:'support',status:'SUPPORT_HOLD',statusLabel:'지지 유지',timeframe:'1d',timeframes:['1d'],low:95.8,high:96.7,mid:96.2,touches:4,knownAt:1},
+ {id:'1DR',effectiveRole:'resistance',role:'resistance',status:'RESISTANCE_HOLD',statusLabel:'저항 유지',timeframe:'1d',timeframes:['1d'],low:108,high:109,mid:108.5,touches:4,knownAt:1}
+]};
+const attached=Core.attachHigherFrames({...a1,currentPrice:100,atrNow:1},[htf4,htf1d]);
+assert(attached.higherTimeframes.includes('4h')&&attached.higherTimeframes.includes('1d'),'higher timeframe sources must be recorded');
+assert(attached.displayLevels.some(x=>x.timeframes?.includes('4h')),'4H overlay must be present');
+assert(attached.displayLevels.some(x=>x.timeframes?.includes('1d')),'1D overlay must be present');
+if(attached.keyLevels.support)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.support.id),'HTF support card must use chart display zone object');
+if(attached.keyLevels.resistance)assert(attached.displayLevels.some(x=>x.id===attached.keyLevels.resistance.id),'HTF resistance card must use chart display zone object');
 
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
 const html=fs.readFileSync('auto-chart-lab.html','utf8'),app=fs.readFileSync('ui/auto-chart/app.js','utf8');
-for(const k of['AUTO CHART LAB · CORE v1','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','data-layer="sr"','data-layer="box"','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing core UI '+k);
-for(const k of['beginRequest','isCurrent','fetchHistorical','fetchAuxiliary','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
+for(const k of['AUTO CHART LAB · CORE v1','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','cardHtf','data-layer="sr"','data-layer="box"','analysis/level-state.js','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing core UI '+k);
+for(const k of['beginRequest','isCurrent','fetchHistorical','fetchHigherTimeframes','fetchAuxiliary','attachHigherFrames','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
 assert(app.indexOf('fetchHistorical')<app.indexOf('fetchAuxiliary'),'historical data must be handled before auxiliary/live');
 console.log('auto chart core replay/RVOL/N-A PASS');
