@@ -12,6 +12,7 @@
     assistantscan:{title:'내 연구 스캔',desc:'v2 전체스캔 → 정밀검사 → 반증',path:'/assistant-scan.html'},
     radar:{title:'LIVE RADAR',desc:'현물·선물·DEX 확장 이상징후 감시',path:'/radar.html'},
     analysis:{title:'전문 차트 분석',desc:'추세선 · SMC/ICT · 유동성 · 매물대 · 이평 · 보조지표',path:'/unified-chart.html'},
+    autochart:{title:'Auto Chart Lab',desc:'구조 · 셋업 · 확인 조건 · 무효화 · 조건부 경로 자동 분석',path:'/auto-chart-lab.html'},
     snapshotcenter:{title:'스냅샷 센터',desc:'8TF · 유동성 · 품질/서사 통합 · 필요한 모듈만 로드',path:'/snapshot-hub.html'},
     mtfsnapshot:{title:'8TF 스냅샷',desc:'스냅샷 센터 · 8TF 보드',path:'/snapshot-hub.html',mode:'board'},
     liquiditysnapshot:{title:'유동성 스냅샷',desc:'스냅샷 센터 · 유동성 지도',path:'/snapshot-hub.html',mode:'liquidity'},
@@ -40,7 +41,7 @@
   const ROOT={
     home:'home',pulseai:'ai',bookai:'ai',researchai:'ai',
     scanner:'scan',autoscan:'scan',ignition:'scan',astra:'scan',traderscan:'scan',assistantscan:'scan',radar:'scan',
-    report:'analysis',analysis:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
+    report:'analysis',analysis:'analysis',autochart:'analysis',snapshotcenter:'analysis',mtfsnapshot:'analysis',liquiditysnapshot:'analysis',longtrend:'analysis',multi:'analysis',ict:'analysis',simpletrading:'analysis',forexbook:'analysis',bookconfluence:'analysis',structure:'analysis',liquidity:'analysis',surge:'analysis',snapshot:'analysis',dante:'dante',
     intel:'info',
     performance:'more',preignitionoos:'scan',backtest:'more',historical:'more',backfill:'more',risk:'more',diagnostics:'more',chartsnapshot:'analysis'
   };
@@ -72,7 +73,7 @@
 
   function scopeText(key){
     if(key==='radar')return'DEX 별도';
-    if(['autoscan','ignition','astra','traderscan','assistantscan','preignitionoos','report','analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
+    if(['autoscan','ignition','astra','traderscan','assistantscan','preignitionoos','report','analysis','autochart','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','ict','simpletrading','forexbook','bookconfluence','structure','liquidity','surge','snapshot','dante'].includes(key))return universeCounts.core!=null?'코어 '+universeCounts.core.toLocaleString():'코어 유니버스';
     if(key==='scanner')return universeCounts.extended!=null?'확장 '+universeCounts.extended.toLocaleString():'확장 유니버스';
     if(key==='intel'||key==='pulseai'||key==='bookai'||key==='researchai'||key==='home')return universeCounts.core!=null&&universeCounts.extended!=null?`코어 ${universeCounts.core.toLocaleString()} · 확장 ${universeCounts.extended.toLocaleString()}`:'코어 · 확장';
     return'연구 도구';
@@ -92,7 +93,7 @@
     closeMenu();emit('pulse:viewchange',{view:key});
   }
   function applySymbol(){const s=symbol();$('symbol').value=s;setView(current,true);emit('pulse:symbolchange',{symbol:s})}
-  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','report','ict','dante','bookai'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
+  function applyPreset(){const p=presets.savePreset($('preset').value);$('preset').value=p.id;const u=new URL(location.href);u.searchParams.set('preset',p.id);history.replaceState(null,'',u);if(['analysis','autochart','snapshotcenter','mtfsnapshot','liquiditysnapshot','chartsnapshot','longtrend','multi','report','ict','dante','bookai'].includes(current))setView(current,false);else applyPresetToChild();emit('pulse:presetchange',{preset:p.id})}
   function syncChildSymbol(raw){const s=cleanSymbol(raw),prev=symbol();$('symbol').value=s;const u=new URL(location.href);u.searchParams.set('symbol',s);if(u.href!==location.href)history.replaceState(null,'',u);if(s!==prev)emit('pulse:symbolchange',{symbol:s,source:'child'});return s}
 
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));

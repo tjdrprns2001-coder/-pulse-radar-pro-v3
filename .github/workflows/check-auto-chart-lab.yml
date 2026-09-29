@@ -1,0 +1,36 @@
+name: Auto Chart Lab checks
+on:
+  pull_request:
+    paths:
+      - 'auto-chart-lab.html'
+      - 'ui/auto-chart/**'
+      - 'ui/chart/chart-data.js'
+      - 'handlers/structure.js'
+      - 'api/index.js'
+      - 'scripts/verify-auto-chart-lab.js'
+      - 'package.json'
+      - '.github/workflows/check-auto-chart-lab.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auto-chart-lab.html'
+      - 'ui/auto-chart/**'
+      - 'ui/chart/chart-data.js'
+      - 'handlers/structure.js'
+      - 'api/index.js'
+      - 'scripts/verify-auto-chart-lab.js'
+      - 'package.json'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --omit=dev
+      - run: node -c ui/auto-chart/auto-chart-engine.js
+      - run: node -c ui/auto-chart/auto-chart-lab.js
+      - run: node -c handlers/structure.js
+      - run: node -c api/index.js
+      - run: npm run test:auto-chart-lab
