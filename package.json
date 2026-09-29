@@ -153,7 +153,7 @@
     "test:entry-confirmation": "node scripts/verify-entry-confirmation.js",
     "test:fakeout-state": "node scripts/verify-fakeout-state.js",
     "test:scan-run-service": "node scripts/verify-scan-run-service.js",
-    "test:astra-auto-scan": "node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-claude-scan.js && node scripts/verify-astra-wiring.js",
+    "test:astra-auto-scan": "npm run test:common-preignition-stage && node scripts/verify-astra-auto-scan.js && node scripts/verify-grok-gemini-scan.js && node scripts/verify-claude-scan.js && node scripts/verify-astra-wiring.js",
     "test:trader-scan": "node scripts/verify-trader-scan.js && node scripts/verify-trader-service.js && node scripts/verify-trader-freshness.js && node scripts/verify-trader-result-age.js",
     "test:bowl224-research-v1": "node scripts/verify-bowl224-research-v1.js",
     "test:presurge-book-fusion": "node scripts/verify-presurge-book-fusion.js",
@@ -170,7 +170,8 @@
     "test:sampling-v3-outcome-resolver": "node scripts/verify-sampling-v3-outcome-resolver.js",
     "test:sampling-v3-oos-service": "node scripts/verify-sampling-v3-oos-service.js",
     "test:auto-recommender": "node scripts/verify-auto-recommender.js",
-    "test:ignition-bridge": "node scripts/verify-ignition-bridge.js"
+    "test:ignition-bridge": "node scripts/verify-ignition-bridge.js",
+    "test:common-preignition-stage": "node scripts/verify-common-preignition-stage.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
