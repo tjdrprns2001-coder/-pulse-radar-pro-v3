@@ -15,11 +15,7 @@ on:
     paths:
       - 'auto-chart-lab.html'
       - 'ui/auto-chart/**'
-      - 'ui/chart/chart-data.js'
-      - 'handlers/structure.js'
-      - 'api/index.js'
       - 'scripts/verify-auto-chart-lab.js'
-      - 'package.json'
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -29,8 +25,12 @@ jobs:
         with:
           node-version: 24
       - run: npm install --omit=dev
-      - run: node -c ui/auto-chart/auto-chart-engine.js
-      - run: node -c ui/auto-chart/auto-chart-lab.js
-      - run: node -c handlers/structure.js
-      - run: node -c api/index.js
+      - run: node -c ui/auto-chart/state.js
+      - run: node -c ui/auto-chart/data/normalize.js
+      - run: node -c ui/auto-chart/data/market-data.js
+      - run: node -c ui/auto-chart/analysis/core.js
+      - run: node -c ui/auto-chart/analysis/setup-state.js
+      - run: node -c ui/auto-chart/chart/renderer.js
+      - run: node -c ui/auto-chart/ui/analysis-card.js
+      - run: node -c ui/auto-chart/app.js
       - run: npm run test:auto-chart-lab
