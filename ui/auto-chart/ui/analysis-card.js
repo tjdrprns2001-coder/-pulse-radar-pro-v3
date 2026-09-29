@@ -14,7 +14,7 @@ function render(analysis,{aux=null}={}){
   setText('cardKnownAt','현재 상태 알려진 시각 · '+localTime(analysis.setup.knownAt));
   setText('updatedAt','데이터 '+localTime(analysis.dataStatus.updatedAt));
   const history=$('historyState');if(history){history.textContent='과거봉 정상';history.dataset.state='ok'}
-  const gaps=analysis.dataStatus.gaps||[],items=[];if(gaps.length)items.push('누락 구간 '+gaps.length+'개');if(!analysis.range)items.push('유효 박스 없음');if(!s)items.push('확정 지지 N/A');if(!r)items.push('확정 저항 N/A');
+  const gaps=analysis.dataStatus.gaps||[],items=[],m=analysis.market||{};if(m.structureRuntime==='vercel-edge')items.push('Binance edge 우회 · Vercel');if(m.fallback)items.push('대체 소스 · '+String(m.dataSource||m.sourceExchange||'N/A'));if(gaps.length)items.push('누락 구간 '+gaps.length+'개');if(!analysis.range)items.push('유효 박스 없음');if(!s)items.push('확정 지지 N/A');if(!r)items.push('확정 저항 N/A');
   if(aux){if(aux.live?.available!==true)items.push('실시간 연결 지연');if(aux.derivatives?.available!==true&&analysis.market.marketType==='futures')items.push('OI/Taker N/A')}
   const box=$('dataNotes');if(box){box.innerHTML='';for(const t of(items.length?items:['핵심 데이터 정상'])){const span=document.createElement('span');span.textContent=t;box.append(span)}}
 }
