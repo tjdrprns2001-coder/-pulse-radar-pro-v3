@@ -81,6 +81,9 @@ const provider={
   assert(d.items[0].samplingV3.alternativeBars.bars.tickCount>0&&d.items[0].samplingV3.alternativeBars.bars.volumeCount>0,'Astra tick/volume bars required');
   assert.equal(d.items[0].samplingV3.alternativeBars.policy.thresholdMode,'FROZEN_CALIBRATION','Astra alternative-bar thresholds must be train/eval separated');
   assert.equal(d.items[0].samplingV3.alternativeBars.diagnostics.futureDataUsedForThresholds,false,'Astra thresholds must not use evaluation/future trades');
+  assert.equal(d.items[0].integratedSurge.version,'INTEGRATED_SURGE_v1','integrated strategy must be attached');
+  assert.equal(d.items[0].verdict.integratedSurge.stage,d.items[0].integratedSurge.stage);
+  assert.equal(d.items[0].integratedSurge.policy.negative5mMacdVeto,false);
   assert(d.items[0].commonPreignition&&d.items[0].commonPreignition.version==='COMMON_PREIGNITION_STAGE_v1','common pre-ignition stage must be attached');
   assert.equal(d.items[0].commonPreignition.shadowOnly,true,'common stage must stay shadow-only');
   assert.equal(d.items[0].commonPreignition.rankingEffect,0,'common stage must not change ranking before validation');
