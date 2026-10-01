@@ -39,6 +39,7 @@ assert(astraCore.includes("require('./common-preignition-stage.js')")&&astraCore
 assert(js.includes('pulseradar-selector-runtime.onrender.com/api/astra-scan'),'Render Astra API fallback missing');
 assert(runtime.includes("route.pathname==='/api/astra-scan'")&&runtime.includes("route.pathname==='/astra-scan'"),'Render scanner routes missing');
 assert(runtime.includes('createAstraAutoScanner'),'Render Astra scanner instance missing');
+for(const match of runtime.matchAll(/serveRepoFile\(res,'([^']+)'/g)) assert(fs.existsSync(match[1]),'Render static asset missing: '+match[1]);
 assert(css.includes('.card.IGNITION_CONFIRMED')&&css.includes('.card.A_FIRE'));
 assert(legacy.includes('href="/astra-scan.html"')&&legacy.includes('Astra 검색기'));
 assert(netlify.includes('from = "/api/astra-scan*"')&&netlify.includes('to = "/.netlify/functions/astra-scan:splat"'));
