@@ -104,6 +104,7 @@ def spot_symbol_candidates(symbol: str) -> list[tuple[str, float]]:
             alias = symbol[len(prefix):]
             if alias and alias != symbol:
                 candidates.append((alias, float(prefix)))
+            break
     return candidates
 
 
