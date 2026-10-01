@@ -33,6 +33,10 @@ const allowedPaths=[
 ];
 const probes=[
   ['time','https://fapi.binance.com/fapi/v1/time'],
+  ['fapi1','https://fapi1.binance.com/fapi/v1/time'],
+  ['fapi2','https://fapi2.binance.com/fapi/v1/time'],
+  ['fapi3','https://fapi3.binance.com/fapi/v1/time'],
+  ['fapi4','https://fapi4.binance.com/fapi/v1/time'],
   ['klines','https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=1'],
   ['oi','https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1'],
   ['taker','https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=1h&limit=1'],
@@ -98,18 +102,28 @@ const server=createServer(async(req,res)=>{
         ? futuresFailoverHosts
         : [target.hostname];
       let upstream=null,buf=null,chosen=target.hostname;
+      const failures=[];
       for(const host of candidates){
         const attempt=new URL(target.toString());
         attempt.hostname=host;
-        const response=await fetch(attempt.toString(),{
-          method:'GET',
-          headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.2'},
-          signal:ctrl.signal,
-          redirect:'error'
-        });
-        const body=Buffer.from(await response.arrayBuffer());
-        upstream=response;buf=body;chosen=host;
-        if(response.ok||![403,418,429,451,500,502,503,504].includes(response.status))break;
+        try{
+          const response=await fetch(attempt.toString(),{
+            method:'GET',
+            headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.3'},
+            signal:ctrl.signal,
+            redirect:'error'
+          });
+          const body=Buffer.from(await response.arrayBuffer());
+          upstream=response;buf=body;chosen=host;
+          if(response.ok||![403,418,429,451,500,502,503,504].includes(response.status))break;
+          failures.push({host,status:response.status});
+        }catch(e){
+          failures.push({host,error:e?.name==='AbortError'?'timeout':'network_error'});
+          continue;
+        }
+      }
+      if(!upstream){
+        return json(res,502,{error:'proxy_all_upstreams_failed',failures});
       }
       const headers={
         'content-type':upstream.headers.get('content-type')||'application/json',
