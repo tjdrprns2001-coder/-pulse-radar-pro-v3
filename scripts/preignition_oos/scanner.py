@@ -1285,6 +1285,16 @@ async def scan(args, cfg: Config) -> dict:
 def self_test():
     cfg = Config()
 
+    assert min_bars_for("1d", cfg) == 40
+    assert spot_symbol_candidates("1000PEPEUSDT") == [
+        ("1000PEPEUSDT", 1.0),
+        ("PEPEUSDT", 1000.0),
+    ]
+    assert spot_symbol_candidates("1000000MOGUSDT") == [
+        ("1000000MOGUSDT", 1.0),
+        ("MOGUSDT", 1000000.0),
+    ]
+
     assert flow_label([1.2, 1.3, 1.2, 1.4], cfg) == "FLOW-SUSTAIN"
     assert flow_label([0.7, 0.8, 1.0, 1.8], cfg) == "FLOW-IGNITION"
     assert flow_label([4.5, 0.8, 1.5, 0.3], cfg) == "FLOW-SPIKE-FAIL"
