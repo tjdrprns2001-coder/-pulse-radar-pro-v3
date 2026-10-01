@@ -44,3 +44,15 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# pre-ignition OOS forward-validation runtime outputs
+/signals.sqlite
+/signals.sqlite-wal
+/signals.sqlite-shm
+/scan.json
+/validation.json
+/scripts/preignition_oos/signals.sqlite
+/scripts/preignition_oos/signals.sqlite-wal
+/scripts/preignition_oos/signals.sqlite-shm
+/scripts/preignition_oos/scan.json
+/scripts/preignition_oos/validation.json
