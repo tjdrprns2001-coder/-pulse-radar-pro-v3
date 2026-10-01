@@ -40,6 +40,7 @@ for symbol, status in [("CHASEUSDT", "NO_CHASE"), ("READYUSDT", "LONG_READY")]:
                      "riskReward": 6.35}
 plans["WINTERUSDT"] = {"status": "WAIT_RECLAIM", "tradeDate": "2026-12-01",
                        "sweep": {"at": stamp("2026-12-01T14:15:00Z"), "low": .020423}}
+plans["REVIEWUSDT"] = {**copy.deepcopy(plan), "status": "BLOCKED_REVIEW", "label": "구조 완성 · 확인 필요", "review": {"economicEvent": "UNKNOWN", "oiFunding": "UNKNOWN", "orderRisk": "UNKNOWN"}, "breakout": {"model": "BREAKOUT_RETEST", "status": "WAIT_BREAKOUT", "label": "돌파 대기"}}
 rows = [{"symbol": symbol, "longEntry": value, "verdict": {"key": "WAIT", "reasons": []}}
         for symbol, value in plans.items()]
 
@@ -72,7 +73,7 @@ try:
             page.goto(BASE + "/astra-scan.html")
             page.locator("#astraRun").click()
             expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
-            expect(page.locator(".longEntry")).to_have_count(len(rows))
+            expect(page.locator(".longEntry")).to_have_count(len(rows) + 1)
             rr = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".longEntry")
             expect(rr.locator(".longTrigger span")).to_have_text("관찰 트리거 · 진입 금지")
             expect(rr.locator(".longPermission")).to_contain_text("진입 금지")
@@ -80,8 +81,8 @@ try:
             expect(rr.locator(".longRequiredTarget b")).to_have_text("0.021829")
             expect(rr).to_contain_text("가장 가까운 실제 유동성 목표")
             expect(rr).to_contain_text("0.0214 · 0.84R")
-            expect(rr.locator(".longChecks")).to_contain_text("Sweep 09:15 EDT")
-            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 09:45 EDT")
+            expect(rr.locator(".longChecks")).to_contain_text("Sweep 10/01, 22:15 KST / 09:15 EDT")
+            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 10/01, 22:45 KST / 09:45 EDT")
             events = rr.locator(".longChecks").inner_text()
             assert baseline is None or events == baseline, (timezone, events, baseline)
             baseline = events
@@ -93,13 +94,16 @@ try:
             expect(invalid.locator(".longInvalidDetails")).to_contain_text("무효 기준")
             expect(invalid.locator(".longInvalidDetails")).to_contain_text("무효 발생 종가")
             expect(invalid.locator(".longInvalidDetails b")).to_have_text(["0.020423", "0.020423", "0.0203"])
-            expect(invalid.locator(".longInvalidDetails")).to_contain_text("10:00 EDT")
+            expect(invalid.locator(".longInvalidDetails")).to_contain_text("23:00 KST / 10:00 EDT")
             expect(invalid.locator(".longTrigger span")).to_contain_text("진입 금지")
             expect(page.locator(".longEntry[data-long-status=NO_CHASE] .longTrigger span")).to_contain_text("진입 금지")
             expect(page.locator(".longEntry[data-long-status=LONG_READY] .longTrigger span")).to_have_text("진입 트리거")
+            expect(page.locator(".longEntry[data-long-status=BLOCKED_REVIEW]")).to_contain_text("경제 일정 UNKNOWN")
+            expect(page.locator(".longEntry[data-long-status=BLOCKED_REVIEW] .longTrigger span")).to_contain_text("진입 금지")
+            expect(page.locator(".longEntry[data-long-status=WAIT_BREAKOUT]")).to_contain_text("돌파 되돌림")
             wait = page.locator(".longEntry[data-long-status=WAIT_SWEEP]")
             expect(wait.locator(".longTrigger b")).to_have_text("-")
-            expect(page.locator(".longEntry[data-long-status=WAIT_RECLAIM] .longChecks")).to_contain_text("09:15 EST")
+            expect(page.locator(".longEntry[data-long-status=WAIT_RECLAIM] .longChecks")).to_contain_text("23:15 KST / 09:15 EST")
             for viewport, label in [({"width": 1440, "height": 1050}, "desktop"), ({"width": 390, "height": 844}, "mobile")]:
                 page.set_viewport_size(viewport)
                 assert page.evaluate("document.documentElement.scrollWidth") <= viewport["width"] + 1
@@ -112,7 +116,7 @@ try:
             assert not errors, errors
             context.close()
         browser.close()
-    print("PASS: NY/DST times, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
+    print("PASS: KST + NY/DST times, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
 finally:
     server.terminate()
     server.wait(timeout=10)

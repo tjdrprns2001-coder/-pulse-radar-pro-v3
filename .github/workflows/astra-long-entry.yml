@@ -6,6 +6,7 @@ on:
     branches:
       - feature/astra-concrete-long-entry-20261001
       - codex/long-entry-details-20261001
+      - codex/ict-kst-long-v2
       - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
