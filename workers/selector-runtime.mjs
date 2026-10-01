@@ -535,7 +535,7 @@ function server(){
         if(stage==='oi')return jsonResponse(res,200,await astraScanner.oi(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
         if(stage==='deep')return jsonResponse(res,200,await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
         return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'unknown stage'});
-      }catch(e){return jsonResponse(res,502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)})}
+      }catch(e){const sourceState=astraScanner.getSourceState?.()||null,retryAt=Number(e?.retryAt||sourceState?.futuresBlockedUntil)||null,paused=retryAt>Date.now();if(paused)res.setHeader('Retry-After',String(Math.ceil((retryAt-Date.now())/1000)));return jsonResponse(res,paused?503:502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e),retryAt,upstreamStatus:e?.upstreamStatus||null,sourceState})}
     }
     if(req.method==='GET'&&(route.pathname==='/full-scan'||route.pathname==='/full-scan.html'))return serveRepoFile(res,'full-scan.html','text/html; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/full-scan.js')return serveRepoFile(res,'ui/full-scan.js','application/javascript; charset=utf-8');

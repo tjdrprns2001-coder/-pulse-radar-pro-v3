@@ -38,5 +38,5 @@ module.exports=async function handler(req,res,ctx={}){
       return res.status(200).json(result);
     }
     return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG},claude:{...CONFIG,...CLAUDE_CONFIG}}});
-  }catch(e){return res.status(Number(e?.statusCode)||502).json({status:'error',version:VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e)});}
+  }catch(e){const sourceState=scanner.getSourceState?.()||null,retryAt=Number(e?.retryAt||sourceState?.futuresBlockedUntil)||null,paused=retryAt>Date.now();if(paused)res.setHeader('Retry-After',String(Math.ceil((retryAt-Date.now())/1000)));return res.status(paused?503:Number(e?.statusCode)||502).json({status:'error',version:VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e),retryAt,upstreamStatus:e?.upstreamStatus||null,sourceState});}
 };
