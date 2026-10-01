@@ -188,22 +188,37 @@ async def post_collection(payload, sink_url, sink_token, cooldown_hours):
         **payload,
         "cooldown_hours": cooldown_hours,
     }
-    timeout = aiohttp.ClientTimeout(total=120)
+    timeout = aiohttp.ClientTimeout(total=180)
+    retryable = {408, 425, 429, 500, 502, 503, 504}
+
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        async with session.post(
-            sink_url,
-            json=body,
-            headers=headers,
-        ) as response:
-            text = await response.text()
-            if response.status >= 300:
-                raise RuntimeError(
-                    f"원격 저장 실패 HTTP {response.status}: {text[:500]}"
-                )
+        last_error = None
+        for attempt in range(5):
             try:
-                return json.loads(text)
-            except json.JSONDecodeError:
-                return {"status": "ok", "raw": text[:500]}
+                async with session.post(
+                    sink_url,
+                    json=body,
+                    headers=headers,
+                ) as response:
+                    text = await response.text()
+                    if response.status < 300:
+                        try:
+                            return json.loads(text)
+                        except json.JSONDecodeError:
+                            return {"status": "ok", "raw": text[:500]}
+
+                    last_error = RuntimeError(
+                        f"원격 저장 실패 HTTP {response.status}: {text[:500]}"
+                    )
+                    if response.status not in retryable:
+                        raise last_error
+            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                last_error = RuntimeError(f"원격 저장 네트워크 오류: {exc}")
+
+            if attempt < 4:
+                await asyncio.sleep(min(60, 5 * (2 ** attempt)))
+
+        raise last_error or RuntimeError("원격 저장 실패")
 
 
 async def collect_once(
