@@ -1,0 +1,51 @@
+name: Light Dashboard Renewal
+on:
+  pull_request:
+    paths:
+      - '*.html'
+      - 'ui/**'
+      - 'workers/selector-runtime.mjs'
+      - 'scripts/verify-light-renewal.py'
+      - '.github/workflows/light-renewal.yml'
+  push:
+    branches: [main, codex/light-dashboard-20261001]
+    paths:
+      - '*.html'
+      - 'ui/**'
+      - 'workers/selector-runtime.mjs'
+      - 'scripts/verify-light-renewal.py'
+      - '.github/workflows/light-renewal.yml'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing scanner regression checks
+        run: |
+          node --check ui/astra-scan.js
+          node --check ui/pulse-shell.js
+          node --check workers/selector-runtime.mjs
+          node scripts/verify-astra-wiring.js
+          node scripts/verify-integrated-surge-engine.js
+          node scripts/verify-binance-cooldown.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright==1.55.0
+      - run: python -m playwright install --with-deps chromium
+      - name: Browser feature and responsive layout checks
+        run: python scripts/verify-light-renewal.py
+      - name: Fixture screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: light-dashboard-fixture-screenshots
+          path: artifacts/light-renewal
+          if-no-files-found: warn
+          retention-days: 14
