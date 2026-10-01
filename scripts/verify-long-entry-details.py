@@ -58,6 +58,27 @@ short_plan = {
 }
 rows.append({"symbol": "SHORTUSDT", "shortEntry": short_plan, "verdict": {"key": "WAIT", "reasons": []}})
 
+rows[0]["chartbroContext"] = {
+    "version": "CHARTBRO_CONTEXT_v1", "asOf": stamp("2026-10-01T14:20:00Z"),
+    "levels": {
+        "tradeDate": "2026-10-01", "currentSession": "NEW_YORK",
+        "previousDay": {"high": .0218, "low": .0198}, "previousWeek": {"high": .023, "low": .018},
+        "opens": {"day": .0205, "week": .0201},
+        "sessions": {"asia": {"high": .0214, "low": .020457}, "london": {"high": .0212, "low": .0203}},
+        "swings": {"h1High": {"price": .0216}, "h1Low": {"price": .0202}, "h4High": {"price": .0221}, "h4Low": {"price": .0199}},
+        "equalLiquidity": {"high": {"price": .02155}, "low": {"price": .02015}},
+        "dealingRange": {"high": .0221, "low": .0199, "equilibrium": .021, "position": "PREMIUM", "positionPct": 62.0}
+    },
+    "reviews": {
+        "macro": {"status": "CLEAR", "nearest": {"type": "CPI", "minutesAway": 480}},
+        "longDerivatives": {"status": "CLEAR"},
+        "shortDerivatives": {"status": "CLEAR"},
+        "execution": {"status": "CLEAR", "available": True, "spreadBps": 4.2, "maxSlippageBps": 8.0, "depth10Usd": 125000}
+    },
+    "amd": {"long": "DISTRIBUTION_UP", "short": "ACCUMULATION"}, "conflict": False
+}
+
+
 
 def route_api(route):
     q = parse_qs(urlparse(route.request.url).query)
@@ -98,6 +119,17 @@ try:
             expect(rr).to_contain_text("0.0214 · 0.84R")
             expect(rr.locator(".longChecks")).to_contain_text("Sweep 10/01, 22:15 KST / 09:15 EDT")
             expect(rr.locator(".longChecks")).to_contain_text("Reclaim 10/01, 22:45 KST / 09:45 EDT")
+            context_panel = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".chartbroContext")
+            expect(context_panel).to_contain_text("ICT · ChartBro 상태")
+            expect(context_panel).to_contain_text("LONG DISTRIBUTION_UP")
+            expect(context_panel).to_contain_text("PDH 0.0218")
+            expect(context_panel).to_contain_text("PWL 0.018")
+            expect(context_panel).to_contain_text("Macro CLEAR")
+            expect(context_panel).to_contain_text("Execution CLEAR")
+            expect(context_panel).to_contain_text("IPDA EQ 0.021")
+            expect(context_panel).to_contain_text("PREMIUM 62.0%")
+            expect(context_panel).to_contain_text("spread 4.2bp")
+
             events = rr.locator(".longChecks").inner_text()
             assert baseline is None or events == baseline, (timezone, events, baseline)
             baseline = events
