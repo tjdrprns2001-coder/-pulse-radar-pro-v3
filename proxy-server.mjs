@@ -7,6 +7,10 @@ const SERVICE=String(process.env.RENDER_SERVICE_NAME||'ignition-binance-proxy');
 const REGION=String(process.env.RENDER_REGION||process.env.AWS_REGION||'unknown');
 const allowedHosts=new Set([
   'fapi.binance.com',
+  'fapi1.binance.com',
+  'fapi2.binance.com',
+  'fapi3.binance.com',
+  'fapi4.binance.com',
   'api.binance.com',
   'api-gcp.binance.com',
   'api1.binance.com',
@@ -15,6 +19,13 @@ const allowedHosts=new Set([
   'api4.binance.com',
   'data-api.binance.vision'
 ]);
+const futuresFailoverHosts=[
+  'fapi.binance.com',
+  'fapi1.binance.com',
+  'fapi2.binance.com',
+  'fapi3.binance.com',
+  'fapi4.binance.com'
+];
 const allowedPaths=[
   /^\/fapi\/v1\/(?:exchangeInfo|ticker\/24hr|time|klines|fundingRate)$/,
   /^\/futures\/data\/(?:openInterestHist|takerlongshortRatio)$/,
@@ -83,18 +94,29 @@ const server=createServer(async(req,res)=>{
     if(target.username||target.password||target.port)return json(res,403,{error:'target_forbidden'});
     const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
     try{
-      const upstream=await fetch(target.toString(),{
-        method:'GET',
-        headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.1'},
-        signal:ctrl.signal,
-        redirect:'error'
-      });
-      const buf=Buffer.from(await upstream.arrayBuffer());
+      const candidates=target.hostname.startsWith('fapi')
+        ? futuresFailoverHosts
+        : [target.hostname];
+      let upstream=null,buf=null,chosen=target.hostname;
+      for(const host of candidates){
+        const attempt=new URL(target.toString());
+        attempt.hostname=host;
+        const response=await fetch(attempt.toString(),{
+          method:'GET',
+          headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.2'},
+          signal:ctrl.signal,
+          redirect:'error'
+        });
+        const body=Buffer.from(await response.arrayBuffer());
+        upstream=response;buf=body;chosen=host;
+        if(response.ok||![403,418,429,451,500,502,503,504].includes(response.status))break;
+      }
       const headers={
         'content-type':upstream.headers.get('content-type')||'application/json',
         'cache-control':'no-store',
         'x-ignition-proxy-service':SERVICE,
-        'x-ignition-proxy-region':REGION
+        'x-ignition-proxy-region':REGION,
+        'x-ignition-upstream-host':chosen
       };
       for(const h of ['x-mbx-used-weight-1m','retry-after']){const v=upstream.headers.get(h);if(v)headers[h]=v;}
       res.writeHead(upstream.status,headers);res.end(buf);
