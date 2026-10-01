@@ -35,7 +35,8 @@ const provider={
     if(symbol!=='AAAUSDT')return{rows:[],oi4hPct:null};
     const start=FIXED-25*3600000;
     const rows=Array.from({length:25},(_,i)=>({timestamp:start+i*3600000,sumOpenInterest:String(1000+i*4),sumOpenInterestValue:String(100000+i*400)}));
-    return{rows,oi1hPct:.4,oi4hPct:1.5,oi8hPct:2.1,oi12hPct:2.4,oi24hPct:4,oiDrawdownPct:0};
+    const raw15mRows=Array.from({length:97},(_,i)=>({timestamp:FIXED-(97-i)*900000,sumOpenInterest:String(1000+i*4)}));
+    return{rows,raw15mRows,oi1hPct:.4,oi4hPct:1.5,oi8hPct:2.1,oi12hPct:2.4,oi24hPct:4,oiDrawdownPct:0};
   },
   async getV2TakerSeries(_symbol,period){
     const ms=period==='5m'?300000:period==='15m'?900000:3600000,start=FIXED-ms*10;
@@ -84,6 +85,11 @@ const provider={
   assert.equal(d.items[0].integratedSurge.version,'INTEGRATED_SURGE_v1','integrated strategy must be attached');
   assert.equal(d.items[0].verdict.integratedSurge.stage,d.items[0].integratedSurge.stage);
   assert.equal(d.items[0].integratedSurge.policy.negative5mMacdVeto,false);
+  assert.equal(d.items[0].integratedSurge.oi.known,true,'integrated OI must use raw 15m rows while legacy keeps hourly rows');
+  assert(d.items[0].integratedSurge.oi.change15mPct>0);
+  const noVolumeCut=await scan.universe({method:'astra',minQuoteVolume:0});
+  assert.equal(noVolumeCut.volumeFilter.mode,'off');
+  assert(noVolumeCut.items.some(x=>x.symbol==='CCCUSDT'),'zero volume cut must retain low-volume symbols');
   assert(d.items[0].commonPreignition&&d.items[0].commonPreignition.version==='COMMON_PREIGNITION_STAGE_v1','common pre-ignition stage must be attached');
   assert.equal(d.items[0].commonPreignition.shadowOnly,true,'common stage must stay shadow-only');
   assert.equal(d.items[0].commonPreignition.rankingEffect,0,'common stage must not change ranking before validation');

@@ -7,6 +7,9 @@ on:
       - 'lib/coin-scan/integrated-surge-engine.js'
       - 'lib/coin-scan/astra-auto-scanner.js'
       - 'ui/astra-scan.js'
+      - 'api/astra-scan.js'
+      - 'workers/selector-runtime.mjs'
+      - 'scripts/verify-astra-wiring.js'
       - 'scripts/verify-integrated-surge-engine.js'
       - 'scripts/verify-astra-auto-scan.js'
       - '.github/workflows/surge.yml'
@@ -19,6 +22,9 @@ on:
       - 'lib/coin-scan/integrated-surge-engine.js'
       - 'lib/coin-scan/astra-auto-scanner.js'
       - 'ui/astra-scan.js'
+      - 'api/astra-scan.js'
+      - 'workers/selector-runtime.mjs'
+      - 'scripts/verify-astra-wiring.js'
       - 'scripts/verify-integrated-surge-engine.js'
       - 'scripts/verify-astra-auto-scan.js'
       - '.github/workflows/surge.yml'
@@ -55,6 +61,8 @@ jobs:
           node --check lib/coin-scan/integrated-surge-engine.js
           node --check lib/coin-scan/astra-auto-scanner.js
           node --check ui/astra-scan.js
+          node --check api/astra-scan.js
+          node --check workers/selector-runtime.mjs
           node scripts/verify-integrated-surge-engine.js
           node scripts/verify-common-preignition-stage.js
           node scripts/verify-astra-auto-scan.js
