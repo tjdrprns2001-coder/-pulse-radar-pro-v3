@@ -157,7 +157,7 @@ class Binance:
                     if response.status == 418:
                         if not self.proxy_url:
                             self.blocked = True
-                        raise BinanceError("HTTP 418: IP 차단, 요청 중단")
+                        raise BinanceError(f"HTTP 418: IP 차단, 요청 중단 ({path})")
 
                     if response.status == 429:
                         if attempt == 3:
@@ -1114,6 +1114,34 @@ async def analyze(
     }
 
 
+async def futures_clock(api: Binance) -> int:
+    try:
+        clock = await api.get("/fapi/v1/time")
+        return int(clock["serverTime"])
+    except Exception:
+        return int(time.time() * 1000)
+
+
+async def futures_universe(api: Binance) -> set[str]:
+    try:
+        exchange = await api.get("/fapi/v1/exchangeInfo")
+        return {
+            item["symbol"]
+            for item in exchange.get("symbols", [])
+            if item.get("status") == "TRADING"
+            and item.get("contractType") == "PERPETUAL"
+            and item.get("quoteAsset") == "USDT"
+        }
+    except Exception:
+        tickers = await api.get("/fapi/v1/ticker/24hr")
+        return {
+            str(item.get("symbol", "")).upper()
+            for item in tickers
+            if str(item.get("symbol", "")).upper().endswith("USDT")
+            and "_" not in str(item.get("symbol", ""))
+        }
+
+
 async def scan(args, cfg: Config) -> dict:
     timeout = aiohttp.ClientTimeout(total=30)
     connector = aiohttp.TCPConnector(limit=20)
@@ -1122,22 +1150,13 @@ async def scan(args, cfg: Config) -> dict:
     ) as session:
         api = Binance(session)
 
-        clock, exchange = await asyncio.gather(
-            api.get("/fapi/v1/time"),
-            api.get("/fapi/v1/exchangeInfo"),
+        server_time, universe = await asyncio.gather(
+            futures_clock(api),
+            futures_universe(api),
         )
 
         # 한 스캔 전체에 같은 기준시점 적용.
-        server_time = int(clock["serverTime"])
         asof = ((server_time - 5_000) // TF_MS["5m"]) * TF_MS["5m"]
-
-        universe = {
-            item["symbol"]
-            for item in exchange["symbols"]
-            if item["status"] == "TRADING"
-            and item["contractType"] == "PERPETUAL"
-            and item["quoteAsset"] == "USDT"
-        }
 
         if args.symbols:
             requested = {s.upper() for s in args.symbols}
