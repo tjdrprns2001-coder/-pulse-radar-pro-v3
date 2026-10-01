@@ -6,6 +6,7 @@ on:
       - 'ui/**'
       - 'workers/selector-runtime.mjs'
       - 'scripts/verify-light-renewal.py'
+      - 'scripts/verify-coin-report-wiring.js'
       - '.github/workflows/light-renewal.yml'
   push:
     branches: [main, codex/light-dashboard-20261001]
@@ -31,6 +32,7 @@ jobs:
           node --check ui/astra-scan.js
           node --check ui/pulse-shell.js
           node --check workers/selector-runtime.mjs
+          node scripts/verify-coin-report-wiring.js
           node scripts/verify-astra-wiring.js
           node scripts/verify-integrated-surge-engine.js
           node scripts/verify-binance-cooldown.js
