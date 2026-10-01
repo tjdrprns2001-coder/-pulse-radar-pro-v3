@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feature/astra-concrete-long-entry-20261001
+      - feature/ict-chartbro-long-v2-kst-20261002
       - codex/long-entry-details-20261001
       - main
     paths:

@@ -26,13 +26,14 @@ plan = {
     "reasons": ["가용 상단 유동성까지 R:R 1:1.5 미만"]
 }
 plans = {"RRUSDT": plan, "LEGACYUSDT": copy.deepcopy(plan)}
-plans["RRUSDT"]["requiredTarget"] = .020849 + 1.5 * (.020849 - .020196)
+plans["RRUSDT"]["required1RPrice"] = .020849 + (.020849 - .020196)
+plans["RRUSDT"]["required1_5RPrice"] = .020849 + 1.5 * (.020849 - .020196)
 plans["RRUSDT"]["nearestTarget"] = plans["RRUSDT"]["targets"][0]
 plans["WAITUSDT"] = {"status": "WAIT_SWEEP", "label": "아시아 저점 스윕 대기", "asia": {"low": .020457}}
 plans["INVALIDUSDT"] = {
     "status": "INVALID", "label": "스윕 저점 재이탈 · 롱 무효", "tradeDate": "2026-10-01",
     "sweep": plan["sweep"], "reclaimAt": plan["reclaimAt"], "invalidation": .020423,
-    "invalidationClose": .020300, "invalidatedAt": stamp("2026-10-01T14:00:00Z")
+    "invalidClose": .020300, "invalidAt": stamp("2026-10-01T14:00:00Z")
 }
 for symbol, status in [("CHASEUSDT", "NO_CHASE"), ("READYUSDT", "LONG_READY")]:
     plans[symbol] = {**copy.deepcopy(plan), "status": status, "entry": .020849,
@@ -76,30 +77,30 @@ try:
             rr = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".longEntry")
             expect(rr.locator(".longTrigger span")).to_have_text("관찰 트리거 · 진입 금지")
             expect(rr.locator(".longPermission")).to_contain_text("진입 금지")
-            expect(rr.locator(".longRequiredTarget")).to_contain_text("1.5R 달성 필요 목표가")
-            expect(rr.locator(".longRequiredTarget b")).to_have_text("0.021829")
+            expect(rr.locator(".longRequiredTarget")).to_contain_text("최소 필요 목표가")
+            expect(rr.locator(".longRequiredTarget b")).to_contain_text("1.5R 0.021829")
             expect(rr).to_contain_text("가장 가까운 실제 유동성 목표")
             expect(rr).to_contain_text("0.0214 · 0.84R")
-            expect(rr.locator(".longChecks")).to_contain_text("Sweep 09:15 EDT")
-            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 09:45 EDT")
+            expect(rr.locator(".longChecks")).to_contain_text("Sweep 22:15 KST")
+            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 22:45 KST")
             events = rr.locator(".longChecks").inner_text()
             assert baseline is None or events == baseline, (timezone, events, baseline)
             baseline = events
 
             legacy = page.locator(".card").filter(has=page.locator(".symbol", has_text="LEGACYUSDT"))
-            expect(legacy.locator(".longRequiredTarget b")).to_have_text("0.021829")
+            expect(legacy.locator(".longRequiredTarget b")).to_contain_text("1.5R 0.021829")
             invalid = page.locator(".longEntry[data-long-status=INVALID]")
             expect(invalid.locator(".longInvalidDetails")).to_contain_text("Sweep Low")
             expect(invalid.locator(".longInvalidDetails")).to_contain_text("무효 기준")
             expect(invalid.locator(".longInvalidDetails")).to_contain_text("무효 발생 종가")
             expect(invalid.locator(".longInvalidDetails b")).to_have_text(["0.020423", "0.020423", "0.0203"])
-            expect(invalid.locator(".longInvalidDetails")).to_contain_text("10:00 EDT")
+            expect(invalid.locator(".longInvalidDetails")).to_contain_text("23:00 KST")
             expect(invalid.locator(".longTrigger span")).to_contain_text("진입 금지")
             expect(page.locator(".longEntry[data-long-status=NO_CHASE] .longTrigger span")).to_contain_text("진입 금지")
             expect(page.locator(".longEntry[data-long-status=LONG_READY] .longTrigger span")).to_have_text("진입 트리거")
             wait = page.locator(".longEntry[data-long-status=WAIT_SWEEP]")
             expect(wait.locator(".longTrigger b")).to_have_text("-")
-            expect(page.locator(".longEntry[data-long-status=WAIT_RECLAIM] .longChecks")).to_contain_text("09:15 EST")
+            expect(page.locator(".longEntry[data-long-status=WAIT_RECLAIM] .longChecks")).to_contain_text("23:15 KST")
             for viewport, label in [({"width": 1440, "height": 1050}, "desktop"), ({"width": 390, "height": 844}, "mobile")]:
                 page.set_viewport_size(viewport)
                 assert page.evaluate("document.documentElement.scrollWidth") <= viewport["width"] + 1
@@ -112,7 +113,7 @@ try:
             assert not errors, errors
             context.close()
         browser.close()
-    print("PASS: NY/DST times, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
+    print("PASS: KST times, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
 finally:
     server.terminate()
     server.wait(timeout=10)
