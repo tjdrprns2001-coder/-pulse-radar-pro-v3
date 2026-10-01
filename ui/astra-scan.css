@@ -50,3 +50,8 @@
 .longRiskPlanner p{grid-column:1/-1;margin:0;color:var(--muted);font-size:10px;line-height:1.45}.longRiskPlanner p b{color:#cce1f3}
 .longRiskPlanner input:disabled,.longRiskPlanner select:disabled{opacity:.55}
 @media(max-width:640px){.longRiskPlanner{grid-template-columns:1fr 1fr}.longRiskPlanner>div:first-child{grid-column:1/-1}.longRiskPlanner p{font-size:9px}}
+
+.longExitPlan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+.longExitPlan>div{padding:8px 9px;border:1px solid #315168;border-radius:8px;background:#0a1824}
+.longExitPlan span,.longExitPlan small{display:block;color:var(--muted);font-size:9px}.longExitPlan b{display:block;font-size:12px;margin:2px 0}
+@media(max-width:640px){.longExitPlan{grid-template-columns:1fr}}
