@@ -8,6 +8,7 @@ on:
       - codex/long-entry-details-20261001
       - codex/ict-kst-long-v2
       - codex/chartbro-session-bidirectional-20261002
+      - codex/chartbro-complete-context-20261002
       - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
@@ -22,6 +23,7 @@ on:
       - "ui/astra-scan.css"
       - "astra-scan.html"
       - "scripts/verify-long-entry-details.py"
+      - "scripts/verify-astra-auto-scan.js"
       - ".github/workflows/astra-long-entry.yml"
   pull_request:
     paths:
@@ -37,6 +39,7 @@ on:
       - "ui/astra-scan.css"
       - "astra-scan.html"
       - "scripts/verify-long-entry-details.py"
+      - "scripts/verify-astra-auto-scan.js"
 
 jobs:
   test:
@@ -53,6 +56,7 @@ jobs:
       - run: node --check lib/coin-scan/astra-auto-scanner.js
       - run: node --check ui/astra-scan.js
       - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js
+      - run: node scripts/verify-astra-auto-scan.js
 
       - uses: actions/setup-python@v5
         with:
