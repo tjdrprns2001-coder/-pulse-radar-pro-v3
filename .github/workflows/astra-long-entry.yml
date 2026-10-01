@@ -1,4 +1,5 @@
 name: Astra Long Entry
+# validates locked sweep invalidation
 
 on:
   push:
