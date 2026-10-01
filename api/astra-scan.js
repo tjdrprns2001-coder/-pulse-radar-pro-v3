@@ -4,6 +4,7 @@ const {createAstraAutoScanner,CONFIG,MANUS_CONFIG,PERPLEXITY_CONFIG,GROK_CONFIG,
 let singleton=null;
 function defaultScanner(){if(!singleton)singleton=createAstraAutoScanner({provider:createBinanceProvider({disableFuturesFallback:false,concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(process.env.ASTRA_FUTURES_MIN_INTERVAL_MS||275)})});return singleton}
 function symbolsOf(q={}){return String(q.symbols||'').split(',').map(x=>x.trim()).filter(Boolean)}
+function longRiskOf(q={}){const event=String(q.eventRisk||'UNKNOWN').toUpperCase(),oi=String(q.oiFundingRisk||'UNKNOWN').toUpperCase(),accountEquity=n(q.accountEquity),riskPercent=n(q.riskPercent);return{eventRisk:['CLEAR','BLOCK'].includes(event)?event:'UNKNOWN',oiFundingRisk:['CLEAR','BLOCK'].includes(oi)?oi:'UNKNOWN',accountEquity,riskPercent,orderRiskConfirmed:Number.isFinite(accountEquity)&&accountEquity>0&&Number.isFinite(riskPercent)&&riskPercent>0}}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function marketOf(q={}){
   return{
@@ -29,7 +30,7 @@ module.exports=async function handler(req,res,ctx={}){
     }
     if(stage==='deep'){
       const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
-      const result=await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf)});
+      const result=await scanner.deep(symbols,{method,market:marketOf(q),asOf:n(q.asOf),longRisk:longRiskOf(q)});
       try{
         const adapter=require('../lib/learning/scanner-adapter.js');
         const learned=await adapter.ingestScannerItems(result.items||[],{source:'astra-'+method,marketState:result.marketState||marketOf(q),asOf:result.asOf});
