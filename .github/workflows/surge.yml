@@ -7,6 +7,9 @@ on:
       - 'lib/coin-scan/integrated-surge-engine.js'
       - 'lib/coin-scan/astra-auto-scanner.js'
       - 'ui/astra-scan.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'scripts/verify-binance-cooldown.js'
+      - 'astra-scan.html'
       - 'api/astra-scan.js'
       - 'workers/selector-runtime.mjs'
       - 'scripts/verify-astra-wiring.js'
@@ -22,6 +25,9 @@ on:
       - 'lib/coin-scan/integrated-surge-engine.js'
       - 'lib/coin-scan/astra-auto-scanner.js'
       - 'ui/astra-scan.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'scripts/verify-binance-cooldown.js'
+      - 'astra-scan.html'
       - 'api/astra-scan.js'
       - 'workers/selector-runtime.mjs'
       - 'scripts/verify-astra-wiring.js'
@@ -63,6 +69,8 @@ jobs:
           node --check ui/astra-scan.js
           node --check api/astra-scan.js
           node --check workers/selector-runtime.mjs
+          node scripts/verify-coin-scan-provider.js
+          node scripts/verify-binance-cooldown.js
           node scripts/verify-integrated-surge-engine.js
           node scripts/verify-common-preignition-stage.js
           node scripts/verify-astra-auto-scan.js
