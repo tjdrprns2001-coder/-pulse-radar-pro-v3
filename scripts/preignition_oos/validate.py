@@ -243,7 +243,43 @@ async def collect_once(
             f"스캐너 오류 {len(result.get('errors', []))}개",
             flush=True,
         )
-        return remote
+        preview = []
+        for row in result.get("candidates", [])[:120]:
+            echo = row.get("volume_echo") or {}
+            cascade = row.get("compression_cascade") or {}
+            setup = row.get("setup_4h") or {}
+            ready = row.get("ready_1h") or {}
+            gate15 = row.get("gate_15m") or {}
+            oi = row.get("oi") or {}
+            preview.append({
+                "symbol": row.get("symbol"),
+                "price": row.get("price"),
+                "type": row.get("type"),
+                "stage": row.get("stage"),
+                "score": row.get("score"),
+                "change_24h_pct": row.get("change_24h_pct"),
+                "extended": row.get("extended", False),
+                "volume_state": echo.get("state", "QUIET"),
+                "echo": bool(echo.get("detected")),
+                "compression_count": cascade.get("count"),
+                "compression_label": cascade.get("label"),
+                "compression_4h_pct": setup.get("compression_pct"),
+                "ready_1h": bool(ready.get("ready")),
+                "flow_15m": gate15.get("flow"),
+                "oi_known": bool(oi.get("known")),
+                "oi_1h_pct": oi.get("change_1h_pct"),
+                "warnings": row.get("warnings", [])[:4],
+            })
+        return {
+            **remote,
+            "_dashboard": {
+                "asof_utc": result.get("asof_utc"),
+                "universe_count": result.get("universe_count"),
+                "rejected_4h_count": result.get("rejected_4h_count"),
+                "scanner_errors": len(result.get("errors", [])),
+                "candidates": preview,
+            },
+        }
 
     if db is None:
         raise ValueError("로컬 저장에는 DB 연결이 필요합니다")
