@@ -66,7 +66,8 @@ rows[0]["chartbroContext"] = {
         "opens": {"day": .0205, "week": .0201},
         "sessions": {"asia": {"high": .0214, "low": .020457}, "london": {"high": .0212, "low": .0203}},
         "swings": {"h1High": {"price": .0216}, "h1Low": {"price": .0202}, "h4High": {"price": .0221}, "h4Low": {"price": .0199}},
-        "equalLiquidity": {"high": {"price": .02155}, "low": {"price": .02015}}
+        "equalLiquidity": {"high": {"price": .02155}, "low": {"price": .02015}},
+        "dealingRange": {"high": .0221, "low": .0199, "equilibrium": .021, "position": "PREMIUM", "positionPct": 62.0}
     },
     "reviews": {
         "macro": {"status": "CLEAR", "nearest": {"type": "CPI", "minutesAway": 480}},
@@ -125,6 +126,8 @@ try:
             expect(context_panel).to_contain_text("PWL 0.018")
             expect(context_panel).to_contain_text("Macro CLEAR")
             expect(context_panel).to_contain_text("Execution CLEAR")
+            expect(context_panel).to_contain_text("IPDA EQ 0.021")
+            expect(context_panel).to_contain_text("PREMIUM 62.0%")
             expect(context_panel).to_contain_text("spread 4.2bp")
 
             events = rr.locator(".longChecks").inner_text()
