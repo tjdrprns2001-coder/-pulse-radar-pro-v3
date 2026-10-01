@@ -69,30 +69,55 @@ async def market_snapshot():
     timeout = aiohttp.ClientTimeout(total=30)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         api = Binance(session)
-        tickers, exchange = await asyncio.gather(
-            api.get("/fapi/v1/ticker/24hr"),
-            api.get("/fapi/v1/exchangeInfo"),
-        )
-        clock = await api.get("/fapi/v1/time")
 
-    active = {
-        row["symbol"]
-        for row in exchange["symbols"]
-        if row["status"] == "TRADING"
-        and row["contractType"] == "PERPETUAL"
-        and row["quoteAsset"] == "USDT"
-    }
+        try:
+            tickers = await api.get("/fapi/v1/ticker/24hr")
+            ticker_source = "futures"
+        except Exception:
+            tickers = await api.get(
+                "/api/v3/ticker/24hr",
+                base_url="https://api.binance.com",
+            )
+            ticker_source = "spot"
+
+        try:
+            exchange = await api.get("/fapi/v1/exchangeInfo")
+            active = {
+                row["symbol"]
+                for row in exchange.get("symbols", [])
+                if row.get("status") == "TRADING"
+                and row.get("contractType") == "PERPETUAL"
+                and row.get("quoteAsset") == "USDT"
+            }
+        except Exception:
+            active = {
+                str(row.get("symbol", "")).upper()
+                for row in tickers
+                if str(row.get("symbol", "")).upper().endswith("USDT")
+                and "_" not in str(row.get("symbol", ""))
+            }
+
+        try:
+            clock = await api.get("/fapi/v1/time")
+            ts = int(clock["serverTime"]) // 1000
+        except Exception:
+            ts = int(time.time())
 
     market = {}
     for row in tickers:
-        symbol = row["symbol"]
+        symbol = str(row.get("symbol", "")).upper()
         if symbol not in active:
             continue
         if not finite_positive(row.get("lastPrice")):
             continue
 
-        volume = float(row["quoteVolume"])
-        change = float(row["priceChangePercent"])
+        volume_key = "quoteVolume"
+        change_key = "priceChangePercent"
+        try:
+            volume = float(row.get(volume_key, 0))
+            change = float(row.get(change_key, 0))
+        except (TypeError, ValueError):
+            continue
         if not math.isfinite(volume) or not math.isfinite(change):
             continue
 
@@ -100,10 +125,11 @@ async def market_snapshot():
             "price": float(row["lastPrice"]),
             "volume": max(volume, 0.0),
             "change": change,
+            "source": ticker_source,
         }
 
     # 수집 완료 시각을 기준으로 후속 성과를 측정한다.
-    return int(clock["serverTime"]) // 1000, market
+    return ts, market
 
 
 def match_controls(symbol, market, excluded, count=3):
