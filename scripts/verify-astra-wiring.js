@@ -13,7 +13,7 @@ assert(html.includes('Astra 자동스캔'));
 assert(html.includes('id="astraRun"'));
 assert(html.includes('id="scanMethod"')&&html.includes('value="manus"')&&html.includes('value="perplexity"')&&html.includes('value="grok"')&&html.includes('value="gemini"')&&html.includes('value="claude"'),'scan method selector missing');
 assert(html.includes('id="astraAudit"'),'OI audit panel missing');
-assert(js.includes("get('universe')")&&js.includes("get('oi'")&&js.includes("get('deep'"));
+for(const stage of ['universe','oi','deep']) assert(new RegExp("\\bget\\(\\s*['\"]"+stage+"['\"]\\s*[,)]").test(js),stage+' API stage call missing');
 assert(js.includes('chunks(filtered.map(x=>x.symbol),16)'));
 assert(js.includes("method:state.method")||js.includes("method=state.method")||js.includes("method: state.method")||js.includes("method:state.method"),'method query wiring missing');
 assert(js.includes('A_FIRE')&&js.includes('B_PREPARE')&&js.includes('C_WATCH'),'Manus classification UI missing');
@@ -25,7 +25,7 @@ assert(js.includes('동적 거래대금 컷')&&js.includes('동적컷'),'Grok/Ge
 assert(js.includes('CLAUDE_A_PRE')&&js.includes('CLAUDE_A_B')&&js.includes('CLAUDE_NFB_SQ'),'Claude label UI missing');
 assert(js.includes('DIRECTION_CONFIRM')&&js.includes('CLEAN→REBUILD'),'Claude v3 decision UI missing');
 assert(js.includes('OI 조회 감사'),'OI audit rendering missing');
-assert(js.includes('commonStageBar')&&js.includes('COOLDOWN_COMPRESSION')&&js.includes('SHADOW'),'common five-stage UI missing');
+assert(js.includes('commonStageBar')&&js.includes("c.label||c.stage||'NO_SETUP'")&&js.includes('SHADOW'),'common five-stage UI missing');
 assert(html.includes('공통 5단계')&&html.includes('SHADOW'),'common stage disclosure missing');
 assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.includes("stage==='deep'"));
 assert(api.includes('methodOf(q.method)'),'API method routing missing');

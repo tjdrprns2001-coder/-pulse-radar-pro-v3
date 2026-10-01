@@ -1,0 +1,171 @@
+name: Integrated Surge Scanner
+
+on:
+  pull_request:
+    paths:
+      - 'surge/**'
+      - 'lib/coin-scan/integrated-surge-engine.js'
+      - 'lib/coin-scan/astra-auto-scanner.js'
+      - 'ui/astra-scan.js'
+      - 'scripts/verify-integrated-surge-engine.js'
+      - 'scripts/verify-astra-auto-scan.js'
+      - '.github/workflows/surge.yml'
+  push:
+    branches:
+      - main
+      - codex/integrated-surge-scanner-20261001
+    paths:
+      - 'surge/**'
+      - 'lib/coin-scan/integrated-surge-engine.js'
+      - 'lib/coin-scan/astra-auto-scanner.js'
+      - 'ui/astra-scan.js'
+      - 'scripts/verify-integrated-surge-engine.js'
+      - 'scripts/verify-astra-auto-scan.js'
+      - '.github/workflows/surge.yml'
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Run one live Binance collection after tests'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: surge/requirements.txt
+      - run: pip install -r surge/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Native strategy and existing Astra integration
+        run: |
+          node --check lib/coin-scan/integrated-surge-engine.js
+          node --check lib/coin-scan/astra-auto-scanner.js
+          node --check ui/astra-scan.js
+          node scripts/verify-integrated-surge-engine.js
+          node scripts/verify-common-preignition-stage.js
+          node scripts/verify-astra-auto-scan.js
+          node scripts/verify-astra-wiring.js
+      - name: Compile and integration tests
+        run: |
+          python -m py_compile surge/scanner.py surge/validate.py
+          python surge/scanner.py --self-test
+      - name: Report with empty database
+        run: python surge/validate.py report --db "$RUNNER_TEMP/empty.sqlite" --output "$RUNNER_TEMP/empty-report.json"
+
+  collect:
+    needs: test
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.live)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: surge-collection-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: surge/requirements.txt
+      - run: pip install -r surge/requirements.txt
+      - name: Find prior successful state on this branch
+        id: state
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate "repos/$GH_REPO/actions/artifacts?per_page=100" --jq '.artifacts[] | select(.name == "surge-validation-state" and .expired == false) | [.created_at, .workflow_run.id, .workflow_run.head_branch] | @tsv' > "$RUNNER_TEMP/surge-artifacts.tsv"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          rows = [line.split("\t") for line in Path(os.environ["RUNNER_TEMP"], "surge-artifacts.tsv").read_text().splitlines()]
+          rows = [row for row in rows if len(row) == 3 and row[2] == os.environ["GITHUB_REF_NAME"]]
+          run_id = max(rows, key=lambda row: row[0])[1] if rows else ""
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"run_id={run_id}\n")
+          PY
+      - name: Restore cumulative SQLite observations
+        if: steps.state.outputs.run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: surge-validation-state
+          path: surge
+          run-id: ${{ steps.state.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Collect once and generate report
+        run: |
+          python surge/validate.py collect --once --db surge/signals.sqlite
+          python surge/validate.py report --db surge/signals.sqlite --output surge/validation.json
+      - name: Save cumulative state
+        uses: actions/upload-artifact@v4
+        with:
+          name: surge-validation-state
+          path: |
+            surge/signals.sqlite
+            surge/validation.json
+          if-no-files-found: error
+          retention-days: 90
+
+  live-smoke:
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: surge/requirements.txt
+      - run: pip install -r surge/requirements.txt
+      - name: Read Binance candles and OI
+        run: python surge/live_smoke.py --output surge/live-smoke.json
+      - name: Save live API result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surge-live-smoke
+          path: surge/live-smoke.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  full-scan:
+    needs: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: surge/requirements.txt
+      - run: pip install -r surge/requirements.txt
+      - name: Scan the complete USDT perpetual universe
+        run: python surge/scanner.py --output surge/scan.json
+      - name: Save full scanner result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surge-full-scan
+          path: surge/scan.json
+          if-no-files-found: warn
+          retention-days: 7
