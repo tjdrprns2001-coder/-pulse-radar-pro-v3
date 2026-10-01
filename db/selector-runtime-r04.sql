@@ -191,3 +191,42 @@ CREATE TABLE IF NOT EXISTS chart_snapshot_outcomes (
 );
 CREATE INDEX IF NOT EXISTS chart_snapshot_outcomes_snapshot_time_idx
   ON chart_snapshot_outcomes(snapshot_id,event_time DESC);
+
+
+-- Pre-ignition OOS forward-validation persistence
+CREATE TABLE IF NOT EXISTS preignition_oos_scans (
+  scan_ts BIGINT PRIMARY KEY,
+  signal_ts BIGINT NOT NULL,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS preignition_oos_prices (
+  symbol TEXT NOT NULL,
+  ts BIGINT NOT NULL,
+  price DOUBLE PRECISION NOT NULL,
+  quote_volume DOUBLE PRECISION NOT NULL DEFAULT 0,
+  change_24h_pct DOUBLE PRECISION NOT NULL DEFAULT 0,
+  PRIMARY KEY(symbol,ts)
+);
+CREATE INDEX IF NOT EXISTS preignition_oos_prices_time_idx
+  ON preignition_oos_prices(ts,symbol);
+
+CREATE TABLE IF NOT EXISTS preignition_oos_events (
+  id BIGSERIAL PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  stage TEXT NOT NULL,
+  candidate_type TEXT NOT NULL,
+  echo BOOLEAN NOT NULL DEFAULT false,
+  volume_state TEXT NOT NULL DEFAULT 'QUIET',
+  t0 BIGINT NOT NULL,
+  price0 DOUBLE PRECISION NOT NULL,
+  score DOUBLE PRECISION NOT NULL DEFAULT 0,
+  controls JSONB NOT NULL DEFAULT '[]'::jsonb,
+  scan_ts BIGINT NOT NULL REFERENCES preignition_oos_scans(scan_ts) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS preignition_oos_events_symbol_stage_time_idx
+  ON preignition_oos_events(symbol,stage,t0 DESC);
+CREATE INDEX IF NOT EXISTS preignition_oos_events_time_idx
+  ON preignition_oos_events(t0 DESC);
