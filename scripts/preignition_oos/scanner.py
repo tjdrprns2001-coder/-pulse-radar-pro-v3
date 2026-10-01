@@ -1223,6 +1223,7 @@ async def scan(args, cfg: Config) -> dict:
             asof / 1000, timezone.utc
         ).isoformat(),
         "universe_count": len(universe),
+        "universe_symbols": sorted(universe),
         "rejected_4h_count": rejected,
         "config": asdict(cfg),
         "candidates": [r for r in rows if not r["extended"]],
