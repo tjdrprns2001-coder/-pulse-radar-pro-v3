@@ -542,7 +542,7 @@ function server(){
     if(req.method==='GET'&&route.pathname==='/ui/full-scan.css')return serveRepoFile(res,'ui/full-scan.css','text/css; charset=utf-8');
     if(req.method==='GET'&&(route.pathname==='/astra-scan'||route.pathname==='/astra-scan.html'))return serveRepoFile(res,'astra-scan.html','text/html; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/astra-scan.js')return serveRepoFile(res,'ui/astra-scan.js','application/javascript; charset=utf-8');
-    if(req.method==='GET'&&route.pathname==='/ui/pulse-light.css')return serveRepoFile(res,'ui/pulse-light.css','text/css; charset=utf-8');
+    if(req.method==='GET'&&route.pathname==='/ui/pulse-theme.css')return serveRepoFile(res,'ui/pulse-light.css','text/css; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/astra-scan.css')return serveRepoFile(res,'ui/astra-scan.css','text/css; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/pulse-child-normalize.css')return serveRepoFile(res,'ui/pulse-child-normalize.css','text/css; charset=utf-8');
     if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}

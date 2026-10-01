@@ -1,0 +1,8 @@
+/* Original dark module themes with the dashboard callout. */
+:root{color-scheme:dark}
+.home .deskCallout{display:flex;justify-content:space-between;align-items:center;gap:18px;background:#0b2a22;border:1px solid #285543;border-radius:14px;padding:19px 22px;margin:18px 0}
+.deskCallout b{font-size:15px;color:#a4efd2}
+.deskCallout p{font-size:12px;color:#8fa5b8;margin:5px 0 0}
+.deskCallout button{background:#102c26;color:#a4efd2;border:1px solid #2d8b6b;border-radius:9px;padding:11px 15px;font-size:12px;white-space:nowrap;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #49d59c;outline-offset:3px}
+@media(max-width:640px){.home .deskCallout{flex-direction:column;align-items:flex-start;gap:14px;padding:16px}.home .deskCallout button{width:100%}}

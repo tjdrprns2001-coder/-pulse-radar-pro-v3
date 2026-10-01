@@ -1,4 +1,4 @@
-name: Light Dashboard Renewal
+name: Dashboard UI
 on:
   pull_request:
     paths:
@@ -9,7 +9,7 @@ on:
       - 'scripts/verify-coin-report-wiring.js'
       - '.github/workflows/light-renewal.yml'
   push:
-    branches: [main, codex/light-dashboard-20261001]
+    branches: [main, codex/restore-dark-theme-20261001]
     paths:
       - '*.html'
       - 'ui/**'
@@ -47,7 +47,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: light-dashboard-fixture-screenshots
-          path: artifacts/light-renewal
+          name: dark-dashboard-fixture-screenshots
+          path: artifacts/dashboard-ui
           if-no-files-found: warn
           retention-days: 14
