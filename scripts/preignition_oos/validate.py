@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import math
+import os
 import sqlite3
 import statistics
 import time
@@ -134,12 +135,72 @@ def match_controls(symbol, market, excluded, count=3):
     ]
 
 
-async def collect_once(db, cooldown_hours):
+async def build_collection_payload():
     result = await scan(
         SimpleNamespace(symbols=None),
         Config(),
     )
     ts, market = await market_snapshot()
+    return {
+        "result": json_safe(result),
+        "ts": ts,
+        "market": market,
+    }
+
+
+async def post_collection(payload, sink_url, sink_token, cooldown_hours):
+    headers = {"content-type": "application/json"}
+    if sink_token:
+        headers["authorization"] = f"Bearer {sink_token}"
+
+    body = {
+        **payload,
+        "cooldown_hours": cooldown_hours,
+    }
+    timeout = aiohttp.ClientTimeout(total=120)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.post(
+            sink_url,
+            json=body,
+            headers=headers,
+        ) as response:
+            text = await response.text()
+            if response.status >= 300:
+                raise RuntimeError(
+                    f"원격 저장 실패 HTTP {response.status}: {text[:500]}"
+                )
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError:
+                return {"status": "ok", "raw": text[:500]}
+
+
+async def collect_once(
+    db,
+    cooldown_hours,
+    sink_url=None,
+    sink_token=None,
+):
+    payload = await build_collection_payload()
+    result = payload["result"]
+    ts = payload["ts"]
+    market = payload["market"]
+
+    if sink_url:
+        remote = await post_collection(
+            payload, sink_url, sink_token, cooldown_hours
+        )
+        print(
+            f"원격 저장: 가격 {remote.get('prices', len(market))}개, "
+            f"신규 신호 {remote.get('added', 0)}개, "
+            f"신호 지연 {remote.get('lag_seconds', 'N/A')}초, "
+            f"스캐너 오류 {len(result.get('errors', []))}개",
+            flush=True,
+        )
+        return remote
+
+    if db is None:
+        raise ValueError("로컬 저장에는 DB 연결이 필요합니다")
 
     asof = result["asof_utc"]
     from datetime import datetime
@@ -226,6 +287,12 @@ async def collect_once(db, cooldown_hours):
         f"스캐너 오류 {len(result['errors'])}개",
         flush=True,
     )
+    return {
+        "status": "ok",
+        "prices": len(market),
+        "added": added,
+        "lag_seconds": lag_seconds,
+    }
 
 
 def future_return(db, symbol, t0, price0, hours, tolerance):
@@ -343,7 +410,12 @@ async def collection_loop(db, args):
     while True:
         started = time.monotonic()
         try:
-            await collect_once(db, args.cooldown_hours)
+            await collect_once(
+                db,
+                args.cooldown_hours,
+                sink_url=args.sink_url,
+                sink_token=args.sink_token,
+            )
         except Exception as exc:
             print(f"수집 실패: {exc}", flush=True)
             if args.once:
@@ -369,6 +441,14 @@ def main():
     parser.add_argument("--tolerance-minutes", type=int, default=30)
     parser.add_argument("--output", default="validation.json")
     parser.add_argument("--once", action="store_true")
+    parser.add_argument(
+        "--sink-url",
+        default=os.getenv("OOS_SINK_URL"),
+    )
+    parser.add_argument(
+        "--sink-token",
+        default=os.getenv("OOS_VALIDATION_TOKEN"),
+    )
     args = parser.parse_args()
 
     if args.interval < 300:
@@ -378,7 +458,10 @@ def main():
     if args.tolerance_minutes < 0:
         parser.error("--tolerance-minutes는 0 이상이어야 합니다")
 
-    db = connect(args.db)
+    db = None
+    if args.mode == "report" or not args.sink_url:
+        db = connect(args.db)
+
     try:
         if args.mode == "collect":
             asyncio.run(collection_loop(db, args))
@@ -409,7 +492,8 @@ def main():
             )
         print(f"상세 결과: {args.output}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 if __name__ == "__main__":
