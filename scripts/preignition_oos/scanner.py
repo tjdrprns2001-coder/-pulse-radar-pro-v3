@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlencode
 
 import aiohttp
 import numpy as np
@@ -111,6 +113,8 @@ class RateGate:
 class Binance:
     def __init__(self, session: aiohttp.ClientSession):
         self.session = session
+        self.proxy_url = os.getenv("BINANCE_PROXY_URL", "").rstrip("/")
+        self.proxy_token = os.getenv("BINANCE_PROXY_TOKEN", "")
         self.http_gate = RateGate(0.25)
         # OI 통계 API는 더 보수적으로 호출한다.
         self.oi_gate = RateGate(0.40)
@@ -130,8 +134,22 @@ class Binance:
                 raise BinanceError("API 차단 상태: 추가 요청 중단")
 
             try:
+                request_url = BASE_URL + path
+                request_params = params
+                request_headers = None
+                if self.proxy_url:
+                    query = urlencode(params)
+                    target = request_url + (("?" + query) if query else "")
+                    request_url = self.proxy_url + "/fetch"
+                    request_params = {"url": target}
+                    request_headers = {
+                        "Authorization": f"Bearer {self.proxy_token}"
+                    }
+
                 async with self.session.get(
-                    BASE_URL + path, params=params
+                    request_url,
+                    params=request_params,
+                    headers=request_headers,
                 ) as response:
                     if response.status == 418:
                         self.blocked = True
