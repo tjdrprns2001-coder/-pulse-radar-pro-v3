@@ -47,3 +47,21 @@ button.primary,.primary,.scanBtn.active,.refresh,.go{background:#087f75!importan
 [data-ui-page="radar"] :is(.beginnerState.ready,.pill.warn){color:#916211!important;background:#fff7e6!important}
 [data-ui-page="radar"] :is(.beginnerState.surge,.beginnerState.danger){color:#a13b4a!important;background:#fff0f2!important}
 @media(max-width:640px){[data-ui-page="full-scan"] input,[data-ui-page="ignition-bridge"] input,[data-ui-page="ignition-bridge"] select,[data-ui-page="radar"] input,[data-ui-page="radar"] select{font-size:16px}}
+
+[data-ui-page="expanded"] .card{background:#fff!important;border-color:#dfe6ef!important}
+[data-ui-page="expanded"] :is(.mini,.chip,.chart){background:#f7f9fc!important;border-color:#dfe6ef!important;color:#536d86}
+[data-ui-page="expanded"] :is(td,.kv){border-color:#e4eaf1}
+[data-ui-page="expanded"] tbody tr:hover{background:#f6f9fb}
+[data-ui-page="expanded"] :is(.filter.active,.tab.active){background:#e7f4ef!important;color:#087560!important}
+[data-ui-page="expanded"] .btn.primary{color:#fff!important}
+[data-ui-page="trader"] :is(.tag,.plan){background:#f5f8fb!important;color:#536d86}
+[data-ui-page="trader"] :is(.why,.card summary){color:#536d86}
+[data-ui-page="trader"] .progress{background:#e4eaf1}
+[data-ui-page="trader"] .tag.CONFIRMED{background:#e7f4ef!important;color:#087560}
+[data-ui-page="trader"] .tag.EXCLUDED{background:#fff0f2!important;color:#a13b4a}
+[data-ui-page="radar"] :is(.marketFlow,.altcoinFlow,.preSurgeSection,.psCard,.marketFlowRow,.altOverviewCard,.altOverviewRow,.altEvidenceSummary>div){background:#fff!important;border-color:#dfe6ef!important;color:#304a64}
+[data-ui-page="radar"] :is(.altFlowStat,.altDetails span,.psMetrics div,.psFlag,.psState,.psHealth,.psBadge){background:#f6f8fb!important;border-color:#dfe6ef!important;color:#536d86}
+[data-ui-page="radar"] :is(.marketFlowTrack,.psScoreRow i){background:#e7edf3}
+[data-ui-page="radar"] .altSignal{background:#edf5f2!important;color:#087560!important}
+[data-ui-page="radar"] .altSignal.pre-surge{background:#fff7e6!important;color:#916211!important}
+[data-ui-page="radar"] :is(.altSignal.surge,.altSignal.risk){background:#fff0f2!important;color:#a13b4a!important}

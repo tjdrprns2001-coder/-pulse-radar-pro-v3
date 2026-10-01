@@ -1,5 +1,6 @@
 """Browser feature checks and fixture-only screenshots for the light dashboard."""
 import json
+import base64
 import subprocess
 import time
 from pathlib import Path
@@ -36,6 +37,9 @@ def check_layout(page, name):
     color = page.evaluate("getComputedStyle(document.body).backgroundColor")
     assert color == "rgb(245, 247, 250)", (name, color)
     page.screenshot(path=str(OUT / (name + ".png")), full_page=True)
+    if name in ["main-desktop", "astra-desktop-results", "index-desktop"]:
+        preview = page.screenshot(type="jpeg", quality=35, full_page=False)
+        print("SCREENSHOT_PREVIEW:" + name + ":" + base64.b64encode(preview).decode(), flush=True)
 
 
 def fixtures(route):
@@ -94,6 +98,9 @@ try:
         page.goto(BASE + "/astra-scan.html")
         expect(page.locator("#quoteVolumeFilter")).to_have_value("0")
         expect(page.locator("#scanMethod option")).to_have_count(6)
+        for selector in ["#scanMethod", "#quoteVolumeFilter", "#resultSearch", "#stageFilter"]:
+            box = page.locator(selector).bounding_box()
+            assert box["x"] >= 0 and box["x"] + box["width"] <= 1441, selector
         check_layout(page, "astra-desktop-idle")
         page.locator("#astraRun").click()
         expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
@@ -170,7 +177,8 @@ try:
                    "ignition-bridge", "preignition-oos", "radar", "index"]
         for module in modules:
             for width, label in [(1440, "desktop"), (390, "mobile")]:
-                page = context.new_page(viewport={"width": width, "height": 1050 if width == 1440 else 844})
+                page = context.new_page()
+                page.set_viewport_size({"width": width, "height": 1050 if width == 1440 else 844})
                 page.goto(BASE + "/" + module + ".html", wait_until="domcontentloaded")
                 expect(page.locator("body")).to_be_visible()
                 check_layout(page, module + "-" + label)
