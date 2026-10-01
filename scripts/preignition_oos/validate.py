@@ -65,7 +65,7 @@ def finite_positive(value):
         return False
 
 
-async def market_snapshot():
+async def market_snapshot(allowed_symbols=None):
     timeout = aiohttp.ClientTimeout(total=30)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         api = Binance(session)
@@ -102,6 +102,9 @@ async def market_snapshot():
             ts = int(clock["serverTime"]) // 1000
         except Exception:
             ts = int(time.time())
+
+    if allowed_symbols:
+        active &= {str(symbol).upper() for symbol in allowed_symbols}
 
     market = {}
     for row in tickers:
@@ -166,7 +169,9 @@ async def build_collection_payload():
         SimpleNamespace(symbols=None),
         Config(),
     )
-    ts, market = await market_snapshot()
+    ts, market = await market_snapshot(
+        result.get("universe_symbols")
+    )
     return {
         "result": json_safe(result),
         "ts": ts,
