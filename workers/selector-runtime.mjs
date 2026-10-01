@@ -36,7 +36,7 @@ const runtime=createRuntimeWorker({store,journal:createMemoryRawEventJournal({ma
 const selectorStore=createPostgresSelectorStore({query});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
-const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false})});
+const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false,disableFuturesFallback:true})});
 const fullScanStore=createPostgresFullScanStore({query});
 const preignitionOos=createPreignitionOosStore({query});
 const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
@@ -530,7 +530,7 @@ function server(){
     if(route.pathname==='/api/astra-scan'){
       const stage=String(route.searchParams.get('stage')||'universe').toLowerCase(),method=astraMethodOf(route.searchParams.get('method'));
       try{
-        if(stage==='universe')return jsonResponse(res,200,await astraScanner.universe({method}));
+        if(stage==='universe')return jsonResponse(res,200,await astraScanner.universe({method,minQuoteVolume:route.searchParams.has('minQuoteVolume')?numParam(route.searchParams.get('minQuoteVolume')):null}));
         const symbols=astraSymbols(route);if(!symbols.length)return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'symbols required'});
         if(stage==='oi')return jsonResponse(res,200,await astraScanner.oi(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
         if(stage==='deep')return jsonResponse(res,200,await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
