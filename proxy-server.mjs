@@ -3,6 +3,7 @@ import {timingSafeEqual,createHash} from 'node:crypto';
 
 const PORT=Number(process.env.PORT||8080);
 const TOKEN=String(process.env.IGNITION_PROXY_TOKEN||'');
+const TOKEN_SECONDARY=String(process.env.IGNITION_PROXY_TOKEN_SECONDARY||'');
 const SERVICE=String(process.env.RENDER_SERVICE_NAME||'ignition-binance-proxy');
 const REGION=String(process.env.RENDER_REGION||process.env.AWS_REGION||'unknown');
 const allowedHosts=new Set([
@@ -27,7 +28,7 @@ const futuresFailoverHosts=[
   'fapi4.binance.com'
 ];
 const allowedPaths=[
-  /^\/fapi\/v1\/(?:exchangeInfo|ticker\/24hr|time|klines|fundingRate)$/,
+  /^\/fapi\/v1\/(?:exchangeInfo|ticker\/24hr|time|klines|continuousKlines|fundingRate)$/,
   /^\/futures\/data\/(?:openInterestHist|takerlongshortRatio)$/,
   /^\/api\/v3\/(?:exchangeInfo|ticker\/24hr|time|klines)$/
 ];
@@ -38,6 +39,7 @@ const probes=[
   ['fapi3','https://fapi3.binance.com/fapi/v1/time'],
   ['fapi4','https://fapi4.binance.com/fapi/v1/time'],
   ['klines','https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=1'],
+  ['continuous','https://fapi.binance.com/fapi/v1/continuousKlines?pair=BTCUSDT&contractType=PERPETUAL&interval=1m&limit=1'],
   ['oi','https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=1'],
   ['taker','https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=1h&limit=1'],
   ['funding','https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1'],
@@ -46,10 +48,11 @@ const probes=[
 
 function digest(v){return createHash('sha256').update(v).digest();}
 function validToken(req){
-  if(TOKEN.length<43)return false;
   const m=/^Bearer ([A-Za-z0-9_-]{43,256})$/.exec(String(req.headers.authorization||''));
   if(!m)return false;
-  return timingSafeEqual(digest(m[1]),digest(TOKEN));
+  const candidate=digest(m[1]);
+  const tokens=[TOKEN,TOKEN_SECONDARY].filter(x=>x.length>=43);
+  return tokens.some(token=>timingSafeEqual(candidate,digest(token)));
 }
 function json(res,status,body,headers={}){
   res.writeHead(status,{
@@ -103,22 +106,38 @@ const server=createServer(async(req,res)=>{
         : [target.hostname];
       let upstream=null,buf=null,chosen=target.hostname;
       const failures=[];
+      const targets=[];
       for(const host of candidates){
-        const attempt=new URL(target.toString());
-        attempt.hostname=host;
+        const primary=new URL(target.toString());
+        primary.hostname=host;
+        targets.push({host,url:primary,kind:'primary'});
+        if(target.pathname==='/fapi/v1/klines'){
+          const continuous=new URL(primary.toString());
+          continuous.pathname='/fapi/v1/continuousKlines';
+          const symbol=continuous.searchParams.get('symbol');
+          continuous.searchParams.delete('symbol');
+          if(symbol)continuous.searchParams.set('pair',symbol);
+          continuous.searchParams.set('contractType','PERPETUAL');
+          targets.push({host,url:continuous,kind:'continuous'});
+        }
+      }
+      for(const item of targets){
         try{
-          const response=await fetch(attempt.toString(),{
+          const response=await fetch(item.url.toString(),{
             method:'GET',
-            headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.3'},
+            headers:{accept:'application/json','user-agent':'IGNITION-Proxy/1.4'},
             signal:ctrl.signal,
             redirect:'error'
           });
           const body=Buffer.from(await response.arrayBuffer());
-          upstream=response;buf=body;chosen=host;
-          if(response.ok||![403,418,429,451,500,502,503,504].includes(response.status))break;
-          failures.push({host,status:response.status});
+          upstream=response;buf=body;chosen=item.host;
+          if(response.ok||![403,418,429,451,500,502,503,504].includes(response.status)){
+            if(item.kind==='continuous')chosen=item.host+':continuous';
+            break;
+          }
+          failures.push({host:item.host,kind:item.kind,status:response.status});
         }catch(e){
-          failures.push({host,error:e?.name==='AbortError'?'timeout':'network_error'});
+          failures.push({host:item.host,kind:item.kind,error:e?.name==='AbortError'?'timeout':'network_error'});
           continue;
         }
       }
