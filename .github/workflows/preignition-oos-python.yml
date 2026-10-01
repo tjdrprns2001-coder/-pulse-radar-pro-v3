@@ -25,6 +25,6 @@ jobs:
           cache: "pip"
           cache-dependency-path: scripts/preignition_oos/requirements.txt
       - run: python -m pip install -r scripts/preignition_oos/requirements.txt
-      - run: python -m py_compile scripts/preignition_oos/scanner.py scripts/preignition_oos/validate.py
+      - run: python -m py_compile scripts/preignition_oos/scanner.py scripts/preignition_oos/validate.py scripts/preignition_oos/service.py
       - run: python scripts/preignition_oos/scanner.py --self-test
       - run: python scripts/preignition_oos/validate.py report --db /tmp/preignition-signals.sqlite --output /tmp/preignition-validation.json
