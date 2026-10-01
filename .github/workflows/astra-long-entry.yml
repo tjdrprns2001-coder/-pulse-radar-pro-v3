@@ -1,0 +1,35 @@
+name: Astra Long Entry
+# validates locked sweep invalidation
+
+on:
+  push:
+    branches:
+      - feature/astra-concrete-long-entry-20261001
+    paths:
+      - "lib/coin-scan/amd-long-entry.js"
+      - "lib/coin-scan/amd-long-entry.test.js"
+      - "lib/coin-scan/astra-auto-scanner.js"
+      - "ui/astra-scan.js"
+      - "ui/astra-scan.css"
+      - ".github/workflows/astra-long-entry.yml"
+  pull_request:
+    paths:
+      - "lib/coin-scan/amd-long-entry.js"
+      - "lib/coin-scan/amd-long-entry.test.js"
+      - "lib/coin-scan/astra-auto-scanner.js"
+      - "ui/astra-scan.js"
+      - "ui/astra-scan.css"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check lib/coin-scan/amd-long-entry.js
+      - run: node --check lib/coin-scan/astra-auto-scanner.js
+      - run: node --check ui/astra-scan.js
+      - run: node --test lib/coin-scan/amd-long-entry.test.js
