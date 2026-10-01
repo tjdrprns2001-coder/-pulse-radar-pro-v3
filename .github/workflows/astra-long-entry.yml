@@ -7,9 +7,12 @@ on:
       - feature/astra-concrete-long-entry-20261001
       - codex/long-entry-details-20261001
       - codex/ict-kst-long-v2
+      - codex/chartbro-session-bidirectional-20261002
       - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
+      - "lib/coin-scan/amd-short-entry.js"
+      - "lib/coin-scan/amd-short-entry.test.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
@@ -20,6 +23,8 @@ on:
   pull_request:
     paths:
       - "lib/coin-scan/amd-long-entry.js"
+      - "lib/coin-scan/amd-short-entry.js"
+      - "lib/coin-scan/amd-short-entry.test.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
@@ -37,9 +42,10 @@ jobs:
         with:
           node-version: "22"
       - run: node --check lib/coin-scan/amd-long-entry.js
+      - run: node --check lib/coin-scan/amd-short-entry.js
       - run: node --check lib/coin-scan/astra-auto-scanner.js
       - run: node --check ui/astra-scan.js
-      - run: node --test lib/coin-scan/amd-long-entry.test.js
+      - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js
 
       - uses: actions/setup-python@v5
         with:
