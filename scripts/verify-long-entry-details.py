@@ -80,8 +80,8 @@ try:
             expect(rr.locator(".longRequiredTarget b")).to_contain_text("1.5R 0.021829")
             expect(rr).to_contain_text("가장 가까운 실제 유동성 목표")
             expect(rr).to_contain_text("0.0214 · 0.84R")
-            expect(rr.locator(".longChecks")).to_contain_text("Sweep 09:15 EDT")
-            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 09:45 EDT")
+            expect(rr.locator(".longChecks")).to_contain_text("Sweep 22:15 KST")
+            expect(rr.locator(".longChecks")).to_contain_text("Reclaim 22:45 KST")
             events = rr.locator(".longChecks").inner_text()
             assert baseline is None or events == baseline, (timezone, events, baseline)
             baseline = events
