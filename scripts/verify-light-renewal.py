@@ -1,13 +1,14 @@
-"""Browser feature checks and fixture-only screenshots for the light dashboard."""
+"""Browser feature checks and fixture-only screenshots for the dashboard."""
 import json
 import base64
+import re
 import subprocess
 import time
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 from playwright.sync_api import sync_playwright, expect
 
-OUT = Path("artifacts/light-renewal")
+OUT = Path("artifacts/dashboard-ui")
 OUT.mkdir(parents=True, exist_ok=True)
 BASE = "http://127.0.0.1:8765"
 SYMBOLS = ["CELRUSDT", "QNTUSDT", "MOVRUSDT", "BTCUSDT"]
@@ -34,8 +35,15 @@ def check_layout(page, name):
     page.wait_for_timeout(250)
     width = page.viewport_size["width"]
     assert page.evaluate("document.documentElement.scrollWidth") <= width + 1, name + " horizontal overflow"
-    color = page.evaluate("getComputedStyle(document.body).backgroundColor")
-    assert color == "rgb(245, 247, 250)", (name, color)
+    paint = page.evaluate("""() => {
+        const body = getComputedStyle(document.body), html = getComputedStyle(document.documentElement);
+        return {color: body.backgroundColor, image: body.backgroundImage, html: html.backgroundColor};
+    }""")
+    color = paint["color"]
+    if color == "rgba(0, 0, 0, 0)":
+        color = paint["image"] if paint["image"] != "none" else paint["html"]
+    channels = [max(float(v) for v in group.split(",")[:3]) for group in re.findall(r"rgba?\(([^)]+)\)", color)]
+    assert channels and max(channels) < 65 and color != "rgba(0, 0, 0, 0)", (name, paint)
     page.screenshot(path=str(OUT / (name + ".png")), full_page=True)
     if name in ["main-desktop", "astra-desktop-results", "index-desktop"]:
         preview = page.screenshot(type="jpeg", quality=35, full_page=False)
@@ -184,8 +192,8 @@ try:
                 check_layout(page, module + "-" + label)
                 page.close()
         browser.close()
-    print("PASS: light dashboard navigation, all six Astra methods, client filters, cooldown, desktop/mobile layout.")
-    print("Screenshots contain test fixtures only: artifacts/light-renewal")
+    print("PASS: dark dashboard navigation, all six Astra methods, client filters, cooldown, desktop/mobile layout.")
+    print("Screenshots contain test fixtures only: artifacts/dashboard-ui")
 finally:
     server.terminate()
     server.wait(timeout=10)
