@@ -6,6 +6,7 @@ import os
 import time
 from pathlib import Path
 
+import aiohttp
 from aiohttp import web
 
 from validate import collect_once
