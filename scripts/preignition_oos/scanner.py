@@ -16,6 +16,7 @@ import pandas as pd
 
 
 BASE_URL = "https://fapi.binance.com"
+SPOT_BASE_URL = "https://api.binance.com"
 EMA_PERIODS = (14, 28, 57, 92)
 TF_MS = {
     "1d": 86_400_000,
@@ -115,12 +116,14 @@ class Binance:
         self.session = session
         self.proxy_url = os.getenv("BINANCE_PROXY_URL", "").rstrip("/")
         self.proxy_token = os.getenv("BINANCE_PROXY_TOKEN", "")
+        self.kline_mode = os.getenv("BINANCE_KLINE_MODE", "futures").lower()
+        self.kline_fallback = os.getenv("BINANCE_KLINE_FALLBACK", "spot").lower()
         self.http_gate = RateGate(0.25)
         # OI 통계 API는 더 보수적으로 호출한다.
         self.oi_gate = RateGate(0.40)
         self.blocked = False
 
-    async def get(self, path: str, **params):
+    async def get(self, path: str, base_url: str = BASE_URL, **params):
         is_oi = path.startswith("/futures/data/")
         for attempt in range(4):
             if self.blocked:
@@ -134,7 +137,7 @@ class Binance:
                 raise BinanceError("API 차단 상태: 추가 요청 중단")
 
             try:
-                request_url = BASE_URL + path
+                request_url = base_url + path
                 request_params = params
                 request_headers = None
                 if self.proxy_url:
@@ -152,7 +155,8 @@ class Binance:
                     headers=request_headers,
                 ) as response:
                     if response.status == 418:
-                        self.blocked = True
+                        if not self.proxy_url:
+                            self.blocked = True
                         raise BinanceError("HTTP 418: IP 차단, 요청 중단")
 
                     if response.status == 429:
@@ -191,13 +195,38 @@ class Binance:
     async def candles(
         self, symbol: str, interval: str, asof: int, cfg: Config
     ) -> pd.DataFrame:
-        raw = await self.get(
-            "/fapi/v1/klines",
-            symbol=symbol,
-            interval=interval,
-            endTime=asof - 1,
-            limit=cfg.bars,
-        )
+        source = "BINANCE_FUTURES"
+        if self.kline_mode == "spot":
+            raw = await self.get(
+                "/api/v3/klines",
+                base_url=SPOT_BASE_URL,
+                symbol=symbol,
+                interval=interval,
+                endTime=asof - 1,
+                limit=cfg.bars,
+            )
+            source = "BINANCE_SPOT_FALLBACK"
+        else:
+            try:
+                raw = await self.get(
+                    "/fapi/v1/klines",
+                    symbol=symbol,
+                    interval=interval,
+                    endTime=asof - 1,
+                    limit=cfg.bars,
+                )
+            except Exception:
+                if self.kline_fallback != "spot":
+                    raise
+                raw = await self.get(
+                    "/api/v3/klines",
+                    base_url=SPOT_BASE_URL,
+                    symbol=symbol,
+                    interval=interval,
+                    endTime=asof - 1,
+                    limit=cfg.bars,
+                )
+                source = "BINANCE_SPOT_FALLBACK"
         columns = [
             "open_time", "open", "high", "low", "close", "volume",
             "close_time", "quote_volume", "trades",
@@ -229,7 +258,9 @@ class Binance:
         if not np.isfinite(df[columns].to_numpy()).all():
             raise ValueError(f"{symbol} {interval}: 비정상 수치")
 
-        return indicators(df, cfg)
+        out = indicators(df, cfg)
+        out.attrs["source"] = source
+        return out
 
 
 def min_bars_for(interval: str, cfg: Config) -> int:
@@ -704,6 +735,69 @@ def pct_change(current: float, previous: float) -> float:
     return (current / previous - 1) * 100
 
 
+async def taker_series(
+    api: Binance, symbol: str, period: str, asof: int
+) -> dict:
+    try:
+        period_ms = TF_MS[period]
+        cutoff = (asof // period_ms) * period_ms - 1
+        raw = await api.get(
+            "/futures/data/takerlongshortRatio",
+            symbol=symbol,
+            period=period,
+            limit=8,
+            endTime=cutoff,
+        )
+        df = pd.DataFrame(raw)
+        if df.empty:
+            raise ValueError("taker 데이터 없음")
+
+        df["timestamp"] = pd.to_numeric(df.timestamp)
+        df["buy"] = pd.to_numeric(df.buyVol)
+        df["sell"] = pd.to_numeric(df.sellVol)
+        df = (
+            df.loc[df.timestamp <= cutoff]
+            .sort_values("timestamp")
+            .drop_duplicates("timestamp")
+        )
+        if len(df) < 4:
+            raise ValueError("taker 이력 부족")
+
+        floor = np.maximum(df.sell.to_numpy(dtype=float), 1e-12)
+        ratios = df.buy.to_numpy(dtype=float) / floor
+        if not np.isfinite(ratios[-4:]).all():
+            raise ValueError("taker 비정상 수치")
+
+        return {
+            "known": True,
+            "period": period,
+            "values": ratios[-4:].tolist(),
+            "timestamp": int(df.timestamp.iloc[-1]),
+            "source": "BINANCE_FUTURES_TAKER_DATA",
+            "error": None,
+        }
+    except Exception as exc:
+        return {
+            "known": False,
+            "period": period,
+            "values": [],
+            "source": "N/A",
+            "error": str(exc),
+        }
+
+
+def apply_futures_taker(df: pd.DataFrame, feature: dict) -> pd.DataFrame:
+    out = df.copy()
+    tail = out.index[-4:]
+    out.loc[tail, "taker"] = np.nan
+    values = feature.get("values", []) if feature.get("known") else []
+    if len(values) >= 4:
+        out.loc[tail, "taker"] = np.asarray(values[-4:], dtype=float)
+    out.attrs.update(df.attrs)
+    out.attrs["taker_source"] = feature.get("source", "N/A")
+    return out
+
+
 async def oi_features(
     api: Binance, symbol: str, asof: int, cfg: Config
 ) -> dict:
@@ -849,11 +943,18 @@ async def analyze(
         api.candles(symbol, "1d", asof, cfg),
         api.candles(symbol, "1h", asof, cfg),
     )
-    m15, m5, oi = await asyncio.gather(
+    m15, m5, oi, taker_h1, taker_m15, taker_m5 = await asyncio.gather(
         api.candles(symbol, "15m", asof, cfg),
         api.candles(symbol, "5m", asof, cfg),
         oi_features(api, symbol, asof, cfg),
+        taker_series(api, symbol, "1h", asof),
+        taker_series(api, symbol, "15m", asof),
+        taker_series(api, symbol, "5m", asof),
     )
+
+    h1 = apply_futures_taker(h1, taker_h1)
+    m15 = apply_futures_taker(m15, taker_m15)
+    m5 = apply_futures_taker(m5, taker_m5)
 
     ready = ready_1h(h1, cfg)
     echo = volume_context(h4, h1, m15, cfg)
@@ -955,6 +1056,22 @@ async def analyze(
     score -= 20 * int(extended)
 
     warnings = []
+    candle_sources = {
+        "1d": daily.attrs.get("source", "UNKNOWN"),
+        "4h": h4.attrs.get("source", "UNKNOWN"),
+        "1h": h1.attrs.get("source", "UNKNOWN"),
+        "15m": m15.attrs.get("source", "UNKNOWN"),
+        "5m": m5.attrs.get("source", "UNKNOWN"),
+    }
+    taker_sources = {
+        "1h": taker_h1.get("source", "N/A"),
+        "15m": taker_m15.get("source", "N/A"),
+        "5m": taker_m5.get("source", "N/A"),
+    }
+    if "BINANCE_SPOT_FALLBACK" in candle_sources.values():
+        warnings.append("가격/거래량 Binance Spot fallback")
+    if not all(x.get("known") for x in (taker_h1, taker_m15, taker_m5)):
+        warnings.append("Futures taker 일부 미확인")
     if not oi["known"]:
         warnings.append("OI 미확인")
     if not ready["ready"]:
@@ -974,6 +1091,11 @@ async def analyze(
         "extended": extended,
         "extended_reasons": extended_reasons,
         "compression_cascade": cascade,
+        "data_sources": {
+            "candles": candle_sources,
+            "taker": taker_sources,
+            "oi": "BINANCE_FUTURES_OI" if oi.get("known") else "N/A",
+        },
         "volume_echo": echo,
         "echo_reignition": bool(
             echo["detected"]
