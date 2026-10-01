@@ -10159,7 +10159,7 @@
     "researchNotes": [
       {
         "id": "RN-0A8LZU6",
-        "at": 1790829066523,
+        "at": 1790853081258,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -10198,7 +10198,7 @@
       "learning-memory 브랜치에 주기적으로 체크포인트 저장"
     ]
   },
-  "exportedAt": 1790829066523,
+  "exportedAt": 1790853081258,
   "featureNames": [
     "scannerScore",
     "change24h",
@@ -11202,7 +11202,7 @@
       "notes": [
         {
           "id": "RN-0A8LZU6",
-          "at": 1790829066523,
+          "at": 1790853081258,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
