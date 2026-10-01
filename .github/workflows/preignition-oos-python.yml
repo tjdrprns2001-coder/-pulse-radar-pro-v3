@@ -1,0 +1,30 @@
+name: preignition-oos-python
+
+on:
+  push:
+    branches:
+      - research/preignition-oos-live-validation-20261001
+    paths:
+      - "scripts/preignition_oos/**"
+      - ".github/workflows/preignition-oos-python.yml"
+  pull_request:
+    paths:
+      - "scripts/preignition_oos/**"
+      - ".github/workflows/preignition-oos-python.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: scripts/preignition_oos/requirements.txt
+      - run: python -m pip install -r scripts/preignition_oos/requirements.txt
+      - run: python -m py_compile scripts/preignition_oos/scanner.py scripts/preignition_oos/validate.py
+      - run: python scripts/preignition_oos/scanner.py --self-test
+      - run: python scripts/preignition_oos/validate.py report --db /tmp/preignition-signals.sqlite --output /tmp/preignition-validation.json
