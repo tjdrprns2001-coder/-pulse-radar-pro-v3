@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<title>Pre-Ignition OOS Dashboard</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#0d1b2d;--panel2:#11243a;--line:#213653;--text:#eef5ff;--muted:#8da6c8;--good:#57e389;--warn:#ffcb66;--bad:#ff6f7d;--accent:#69a7ff;--violet:#a88cff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#102641 0,#07111f 42%);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:1280px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}.title h1{margin:0;font-size:23px}.title p{margin:5px 0 0;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:#0b1727;font-weight:700}.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--good);box-shadow:0 0 12px var(--good)}.dot.run{background:var(--warn);box-shadow:0 0 12px var(--warn)}.dot.fail{background:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.card{background:linear-gradient(180deg,rgba(17,36,58,.96),rgba(10,25,43,.96));border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.18)}.metric .k{font-size:12px;color:var(--muted)}.metric .v{font-size:24px;font-weight:800;margin-top:3px}.metric .s{font-size:11px;color:var(--muted);margin-top:2px}
+.section{margin-top:14px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 8px}.section-head h2{font-size:16px;margin:0}.section-head span{color:var(--muted);font-size:12px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.controls input,.controls select{background:#0b1829;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 10px;outline:none}.controls input{min-width:180px;flex:1}
+.table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;min-width:900px;background:rgba(8,20,35,.86)}th,td{padding:10px 11px;border-bottom:1px solid #182c47;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#10223a;color:#9bb4d5;font-size:11px;text-transform:uppercase;letter-spacing:.04em}tr:hover td{background:#0f2138}.sym{font-weight:800}.score{font-weight:800;color:var(--accent)}.pos{color:var(--good)}.neg{color:var(--bad)}
+.pill{display:inline-flex;padding:3px 7px;border-radius:999px;border:1px solid #2b4668;background:#122844;font-size:11px;font-weight:700}.pill.ign{border-color:#806d25;color:#ffe281;background:#30290f}.pill.confirm{border-color:#2c7650;color:#7ff0aa;background:#0c2b1d}.pill.armed{border-color:#4a5797;color:#b8c2ff;background:#151b43}
+.perf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.perf-card h3{margin:0 0 10px;font-size:14px}.perf-row{display:grid;grid-template-columns:1.4fr .7fr .7fr .8fr;gap:6px;padding:7px 0;border-top:1px solid #1a304d;font-size:12px}.perf-row:first-of-type{border-top:0}.muted{color:var(--muted)}.empty{padding:24px;text-align:center;color:var(--muted)}
+.footer{color:var(--muted);font-size:11px;text-align:center;padding:22px 0 8px}.refresh{border:1px solid var(--line);background:#11243a;color:var(--text);border-radius:10px;padding:8px 11px;font-weight:700}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.grid .card:first-child{grid-column:span 2}.perf{grid-template-columns:1fr}.top{align-items:center}.title h1{font-size:20px}.wrap{padding:12px}.metric .v{font-size:21px}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><div class="title"><h1>⚡ Pre-Ignition OOS</h1><p>급등 직전 구조 · 실시간 후보 · OOS 검증</p></div><div><button class="refresh" onclick="load()">새로고침</button> <span class="badge"><i id="dot" class="dot"></i><span id="status">LOADING</span></span></div></div>
+<section class="grid" id="metrics"></section>
+<section class="section card">
+  <div class="section-head"><h2>현재 후보</h2><span id="asof">-</span></div>
+  <div class="controls"><input id="q" placeholder="코인 검색" oninput="renderCandidates()"><select id="stage" onchange="renderCandidates()"><option value="">전체 단계</option><option>PRE</option><option>COMPRESSED</option><option>ARMED</option><option>IGNITION</option><option>CONFIRM</option><option>EARLY_IGNITION</option></select><select id="type" onchange="renderCandidates()"><option value="">전체 유형</option><option>A</option><option>B</option><option>A+B</option><option>C</option><option>N/A</option></select></div>
+  <div class="table-wrap"><table><thead><tr><th>코인</th><th>Stage</th><th>Type</th><th>Score</th><th>24H</th><th>Volume</th><th>압축</th><th>15m Flow</th><th>OI 1H</th></tr></thead><tbody id="candidates"></tbody></table></div>
+</section>
+<section class="section"><div class="section-head"><h2>OOS 성과</h2><span>대조군 대비 초과수익 · 수수료/슬리피지 미포함</span></div><div class="perf" id="performance"></div></section>
+<div class="footer">15분 자동 수집 · PRE 입력에는 미래 점화봉 정보를 사용하지 않음 · 성공확률이 아닌 실시간 검증 데이터</div>
+</main>
+<script>
+let data={};let candidates=[];
+const fmt=(v,d=2)=>Number.isFinite(Number(v))?Number(v).toFixed(d):'-';
+const pct=v=>Number.isFinite(Number(v))?((Number(v)>=0?'+':'')+Number(v).toFixed(2)+'%'):'-';
+const pp=v=>Number.isFinite(Number(v))?((Number(v)>=0?'+':'')+Number(v).toFixed(2)+'pp'):'-';
+function pill(v){const s=String(v||'-');const c=s==='IGNITION'?'ign':s==='CONFIRM'?'confirm':s==='ARMED'?'armed':'';return '<span class="pill '+c+'">'+s+'</span>'}
+function renderCandidates(){
+ const q=document.getElementById('q').value.trim().toUpperCase(),st=document.getElementById('stage').value,ty=document.getElementById('type').value;
+ const rows=candidates.filter(x=>(!q||String(x.symbol).includes(q))&&(!st||x.stage===st)&&(!ty||x.type===ty));
+ document.getElementById('candidates').innerHTML=rows.length?rows.map(x=>`<tr><td class="sym">${x.symbol}</td><td>${pill(x.stage)}</td><td><span class="pill">${x.type||'-'}</span></td><td class="score">${fmt(x.score,0)}</td><td class="${Number(x.change_24h_pct)>=0?'pos':'neg'}">${pct(x.change_24h_pct)}</td><td>${x.volume_state||'QUIET'}${x.echo?' · Echo':''}</td><td>${x.compression_label||'-'} ${x.compression_count??'-'}/4</td><td>${x.flow_15m||'-'}</td><td>${x.oi_known?pct(x.oi_1h_pct):'N/A'}</td></tr>`).join(''):'<tr><td colspan="9" class="empty">표시할 후보가 없습니다.</td></tr>';
+}
+function renderPerf(report){
+ const groups=['stage:','type:','volume:']; const titles=['Stage별','Type별','Volume state별'];
+ document.getElementById('performance').innerHTML=groups.map((prefix,i)=>{
+   const rows=(report||[]).filter(x=>String(x.group).startsWith(prefix)&&x.hours===24).sort((a,b)=>(b.matched||0)-(a.matched||0)).slice(0,8);
+   return `<div class="card perf-card"><h3>${titles[i]} · 24H</h3>${rows.length?rows.map(r=>`<div class="perf-row"><b>${String(r.group).slice(prefix.length)}</b><span>n ${r.observed}/${r.events}</span><span>${pct(r.mean_return_pct)}</span><span class="${Number(r.mean_excess_return_pp)>=0?'pos':'neg'}">${pp(r.mean_excess_return_pp)}</span></div>`).join(''):'<div class="empty">24H 관측이 아직 부족합니다.</div>'}</div>`;
+ }).join('');
+}
+async function load(){
+ try{
+  const r=await fetch('/api/dashboard-data',{cache:'no-store'}); data=await r.json();
+  const sc=data.scanner||{}, sink=sc.last_result||{}, dash=sc.dashboard||{};
+  candidates=dash.candidates||[];
+  const active=!!sc.active,status=active?'RUNNING':(sc.last_status||'IDLE');
+  document.getElementById('status').textContent=status; document.getElementById('dot').className='dot '+(active?'run':status==='OK'?'ok':status==='FAILED'?'fail':'');
+  document.getElementById('asof').textContent=dash.asof_utc?new Date(dash.asof_utc).toLocaleString('ko-KR'):'최신 스캔 대기';
+  const stats=data.stats?.stats||{}, sm=stats.scans||{}, pm=stats.prices||{}, em=stats.events||{};
+  const metrics=[
+   ['스캔 상태',status,sc.last_error||'오류 없음'],
+   ['Futures Universe',dash.universe_count??sink.universe_count??'-','실제 스캔 대상'],
+   ['현재 후보',candidates.length,'PRE~CONFIRM'],
+   ['누적 이벤트',em.count??0,'OOS 신규 신호'],
+   ['누적 가격',pm.count??0,'성과 측정 스냅샷']
+  ];
+  document.getElementById('metrics').innerHTML=metrics.map(x=>`<div class="card metric"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+  renderCandidates(); renderPerf(data.report?.report||[]);
+ }catch(e){document.getElementById('status').textContent='ERROR';document.getElementById('dot').className='dot fail';document.getElementById('metrics').innerHTML='<div class="card empty">대시보드 데이터를 불러오지 못했습니다: '+String(e)+'</div>'}
+}
+load();setInterval(load,30000);
+</script></body></html>
