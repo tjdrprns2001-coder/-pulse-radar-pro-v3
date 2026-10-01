@@ -23,3 +23,10 @@
 .longChecks span,.longReasons span{font-size:10px;padding:4px 6px;border-radius:6px;border:1px solid #29435a;background:#0c1824;color:#b9ccdb}
 .longReasons span{color:#d8e7f3}.long-ready .longReasons span{color:#a4efd2;border-color:#285543}
 @media(max-width:640px){.longPriceGrid{grid-template-columns:1fr}.longEntry{padding:12px}.longEntryTop{gap:6px}.longChecks span,.longReasons span{font-size:9px}}
+
+/* Make blocked plans visibly distinct from actionable long entries. */
+.longPermission{margin:10px 0 0;padding:8px 10px;border:1px solid #643843;border-radius:8px;background:#351d27;color:#ff9ba5;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.long-blocked .longTrigger b{color:var(--muted);font-size:12px;font-weight:500}
+.longRequiredTarget{border-color:#735735!important}.longRequiredTarget small{line-height:1.6;margin-top:4px}
+.longInvalidDetails{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.longInvalidDetails>div{padding:9px 10px;border-radius:8px;background:#301c25;border:1px solid #643843;min-width:0}.longInvalidDetails span,.longInvalidDetails small{display:block;font-size:10px;color:var(--muted)}.longInvalidDetails b{display:block;color:#ff9ba5;font-size:13px;margin-top:3px;overflow-wrap:anywhere}.longInvalidDetails small{margin-top:4px}
+@media(max-width:640px){.longInvalidDetails{grid-template-columns:1fr}.longEntryTop strong{white-space:normal;overflow-wrap:anywhere;max-width:45%}}

@@ -1,16 +1,20 @@
 name: Astra Long Entry
-# validates locked sweep invalidation
+# validates long-entry evidence and presentation
 
 on:
   push:
     branches:
       - feature/astra-concrete-long-entry-20261001
+      - codex/long-entry-details-20261001
+      - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
       - "ui/astra-scan.css"
+      - "astra-scan.html"
+      - "scripts/verify-long-entry-details.py"
       - ".github/workflows/astra-long-entry.yml"
   pull_request:
     paths:
@@ -19,6 +23,8 @@ on:
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
       - "ui/astra-scan.css"
+      - "astra-scan.html"
+      - "scripts/verify-long-entry-details.py"
 
 jobs:
   test:
@@ -33,3 +39,17 @@ jobs:
       - run: node --check lib/coin-scan/astra-auto-scanner.js
       - run: node --check ui/astra-scan.js
       - run: node --test lib/coin-scan/amd-long-entry.test.js
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright==1.55.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python scripts/verify-long-entry-details.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: long-entry-details-fixtures
+          path: artifacts/long-entry-details
+          if-no-files-found: warn
+          retention-days: 14

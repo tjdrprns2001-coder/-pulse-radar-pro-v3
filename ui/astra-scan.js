@@ -3,8 +3,9 @@ const $=id=>document.getElementById(id),state={running:false,controller:null,row
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(v,d=2)=>v===null||v===undefined||v===''?'-':Number.isFinite(Number(v))?Number(v).toFixed(d):'-';
 const pct=v=>v===null||v===undefined||v===''?'-':Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`:'-';
-const priceFmt=v=>{const n=Number(v);if(!Number.isFinite(n))return'-';const a=Math.abs(n);const d=a>=1000?2:a>=1?4:a>=.01?6:8;return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d})};
-const timeFmt=v=>Number.isFinite(Number(v))?new Date(Number(v)).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'-';
+const priceFmt=v=>{if(v===null||v===undefined||v==='')return'-';const n=Number(v);if(!Number.isFinite(n))return'-';const a=Math.abs(n);const d=a>=1000?2:a>=1?4:a>=.01?6:8;return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d})};
+const nyTimeFmt=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZoneName:'short'});
+const timeFmt=v=>v===null||v===undefined||v===''?'-':Number.isFinite(Number(v))?nyTimeFmt.format(new Date(Number(v))):'-';
 const chunks=(a,n)=>{const out=[];for(let i=0;i<a.length;i+=n)out.push(a.slice(i,i+n));return out};
 const quantile=(a,p=.5)=>{const x=a.map(Number).filter(Number.isFinite).sort((m,n)=>m-n);if(!x.length)return null;const i=(x.length-1)*Math.max(0,Math.min(1,p)),lo=Math.floor(i),hi=Math.ceil(i);return lo===hi?x[lo]:x[lo]+(x[hi]-x[lo])*(i-lo)};
 const MODE={
@@ -39,13 +40,25 @@ function integratedSurgeBar(x){
 }
 function longEntryBar(x){
  const l=x.longEntry||x.verdict?.longEntry;if(!l)return'';
- const ready=l.status==='LONG_READY',blocked=/^(NO_LONG|NO_CHASE|INVALID)/.test(String(l.status||'')),cls=ready?'long-ready':blocked?'long-blocked':'long-wait';
+ const ready=l.status==='LONG_READY',blocked=/^(NO_LONG|NO_CHASE|INVALID|BLOCKED)/.test(String(l.status||'')),cls=ready?'long-ready':blocked?'long-blocked':'long-wait';
  const z=l.entryZone||{},target=l.selectedTarget||{},m=l.mss||{},sw=l.sweep||{};
  const entry=l.entry??l.plannedEntry,rr=l.riskReward??target.rr;
+ const minRr=Number.isFinite(Number(l.minRr??l.policy?.minRr))&&Number(l.minRr??l.policy?.minRr)>0?Number(l.minRr??l.policy?.minRr):1.5;
+ const risk=entry!=null&&l.stop!=null?Number(entry)-Number(l.stop):null;
+ const requiredTarget=l.requiredTarget??(risk>0?Number(entry)+minRr*risk:null);
+ const nearest=l.nearestTarget||(l.targets||[]).filter(t=>t.price!=null&&Number.isFinite(Number(t.price))&&entry!=null&&Number(t.price)>Number(entry)).sort((a,b)=>Number(a.price)-Number(b.price))[0]||null;
+ const nearestRr=nearest?(nearest.rr??(risk>0?(Number(nearest.price)-Number(entry))/risk:null)):null;
+ const rrBlocked=l.status==='NO_LONG_RR',invalid=l.status==='INVALID';
+ const triggerLabel=ready?'진입 트리거':blocked?'관찰 트리거 · 진입 금지':'관찰 트리거 · 진입 대기';
  const reasons=(l.reasons||[]).slice(0,3).map(v=>'<span>'+esc(v)+'</span>').join('');
- return '<div class="longEntry '+cls+'"><div class="longEntryTop"><div><b>🎯 롱 타점 · '+esc(l.label||l.status||'대기')+'</b><small>'+esc(l.tradeDate||'')+' · NY 세션 기준</small></div><strong>'+esc(l.status||'-')+'</strong></div>'+
- '<div class="longPriceGrid"><div><span>진입 트리거</span><b>'+priceFmt(entry)+'</b></div><div><span>FVG/OB 되돌림</span><b>'+priceFmt(z.low)+' ~ '+priceFmt(z.high)+'</b></div><div><span>손절</span><b>'+priceFmt(l.stop)+'</b><small>무효 '+priceFmt(l.invalidation)+'</small></div><div><span>목표 / R:R</span><b>'+priceFmt(target.price)+' · '+fmt(rr,2)+'R</b><small>'+esc(target.label||'목표 대기')+'</small></div></div>'+
- '<div class="longChecks"><span>Asia L '+priceFmt(l.asia?.low)+'</span><span>Sweep '+(sw.at?timeFmt(sw.at):'-')+'</span><span>Reclaim '+(l.reclaimAt?timeFmt(l.reclaimAt):'-')+'</span><span>MSS '+esc(m.tf||'-')+' '+(m.at?timeFmt(m.at):'')+'</span><span>Retest '+(l.retestAt?timeFmt(l.retestAt):'-')+'</span><span>Rebreak '+(l.rebreakAt?timeFmt(l.rebreakAt):'-')+'</span></div>'+
+ const targetCell=rrBlocked?'<div><span>가장 가까운 실제 유동성 목표</span><b>'+priceFmt(nearest?.price)+' · '+fmt(nearestRr,2)+'R</b><small>'+esc(nearest?.label||'확인된 실제 목표 없음')+'</small></div>':
+ '<div><span>목표 / R:R</span><b>'+priceFmt(target.price)+' · '+fmt(rr,2)+'R</b><small>'+esc(target.label||'목표 대기')+'</small></div>';
+ const requiredCell=rrBlocked?'<div class="longRequiredTarget"><span>'+fmt(minRr,1)+'R 달성 필요 목표가</span><b>'+priceFmt(requiredTarget)+'</b><small>진입·손절 기준 계산값 · 실제 유동성 목표 아님</small></div>':'';
+ const invalidDetails=invalid?'<div class="longInvalidDetails"><div><span>Sweep Low</span><b>'+priceFmt(sw.low)+'</b></div><div><span>무효 기준 · 15m 종가 하회</span><b>'+priceFmt(l.invalidation??sw.low)+'</b></div><div><span>무효 발생 종가 · 15m</span><b>'+priceFmt(l.invalidationClose)+'</b><small>'+(l.invalidatedAt?timeFmt(l.invalidatedAt):'발생 시각 미확인')+'</small></div></div>':'';
+ return '<div class="longEntry '+cls+'" data-long-status="'+esc(l.status||'')+'"><div class="longEntryTop"><div><b>🎯 롱 타점 · '+esc(l.label||l.status||'대기')+'</b><small>'+esc(l.tradeDate||'')+' · America/New_York · 모든 이벤트 시간 NY</small></div><strong>'+esc(l.status||'-')+'</strong></div>'+
+ (blocked?'<p class="longPermission" role="note">진입 금지 · '+esc(l.label||l.status)+'</p>':'')+
+ '<div class="longPriceGrid"><div class="longTrigger"><span>'+triggerLabel+'</span><b>'+priceFmt(entry)+'</b></div><div><span>FVG/OB 되돌림</span><b>'+priceFmt(z.low)+' ~ '+priceFmt(z.high)+'</b></div><div><span>'+(blocked?'관찰 손절 기준':'손절')+'</span><b>'+priceFmt(l.stop)+'</b><small>무효 '+priceFmt(l.invalidation??sw.low)+'</small></div>'+targetCell+requiredCell+'</div>'+invalidDetails+
+ '<div class="longChecks"><span>Asia L '+priceFmt(l.asia?.low)+'</span><span>Sweep '+timeFmt(sw.at)+'</span><span>Reclaim '+timeFmt(l.reclaimAt)+'</span><span>MSS '+esc(m.tf||'-')+' '+timeFmt(m.at)+'</span><span>Retest '+timeFmt(l.retestAt)+'</span><span>Rebreak '+timeFmt(l.rebreakAt)+'</span></div>'+
  (reasons?'<div class="longReasons">'+reasons+'</div>':'')+'</div>';
 }
 function attachCommonStage(card,x){const band=longEntryBar(x)+integratedSurgeBar(x)+commonStageBar(x);return band?card.replace(/(<article[^>]*>)/,`$1${band}`):card}
