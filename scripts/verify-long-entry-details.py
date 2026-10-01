@@ -26,7 +26,8 @@ plan = {
     "reasons": ["가용 상단 유동성까지 R:R 1:1.5 미만"]
 }
 plans = {"RRUSDT": plan, "LEGACYUSDT": copy.deepcopy(plan)}
-plans["RRUSDT"]["required1RPrice"] = .020849 + (.020849 - .020196)\nplans["RRUSDT"]["required1_5RPrice"] = .020849 + 1.5 * (.020849 - .020196)
+plans["RRUSDT"]["required1RPrice"] = .020849 + (.020849 - .020196)
+plans["RRUSDT"]["required1_5RPrice"] = .020849 + 1.5 * (.020849 - .020196)
 plans["RRUSDT"]["nearestTarget"] = plans["RRUSDT"]["targets"][0]
 plans["WAITUSDT"] = {"status": "WAIT_SWEEP", "label": "아시아 저점 스윕 대기", "asia": {"low": .020457}}
 plans["INVALIDUSDT"] = {
