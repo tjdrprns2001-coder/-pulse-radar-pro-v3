@@ -6,3 +6,20 @@
 
 /* Restore the original dark palette while retaining scanner controls. */
 .brandMark{background:#0b2a22;color:#a4efd2}.btn.primary{background:#0b2a22;border-color:#2d8b6b;color:#a4efd2;box-shadow:none}.btn.primary:hover:not(:disabled){background:#123e30}.scanWorkspace,.card{box-shadow:none}
+
+.longEntry{padding:14px;margin-bottom:14px;border:1px solid #2a465d;border-radius:12px;background:#0b1726}
+.longEntry.long-ready{border-color:#2d8b6b;background:#0a241d}
+.longEntry.long-wait{border-color:#735735;background:#231d14}
+.longEntry.long-blocked{border-color:#643843;background:#281820}
+.longEntryTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.longEntryTop b{font-size:13px}.longEntryTop small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.longEntryTop strong{font-size:10px;padding:4px 7px;border:1px solid #2a465d;border-radius:999px;white-space:nowrap}
+.long-ready .longEntryTop strong{color:#a4efd2;border-color:#2d8b6b}.long-blocked .longEntryTop strong{color:#ff9ba5;border-color:#643843}.long-wait .longEntryTop strong{color:#f4c565;border-color:#735735}
+.longPriceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}
+.longPriceGrid>div{padding:9px 10px;border-radius:8px;background:#0c1824;border:1px solid #203448;min-width:0}
+.longPriceGrid span,.longPriceGrid small{display:block;font-size:10px;color:var(--muted)}
+.longPriceGrid b{display:block;margin-top:2px;font-size:14px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.longChecks,.longReasons{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.longChecks span,.longReasons span{font-size:10px;padding:4px 6px;border-radius:6px;border:1px solid #29435a;background:#0c1824;color:#b9ccdb}
+.longReasons span{color:#d8e7f3}.long-ready .longReasons span{color:#a4efd2;border-color:#285543}
+@media(max-width:640px){.longPriceGrid{grid-template-columns:1fr}.longEntry{padding:12px}.longEntryTop{gap:6px}.longChecks span,.longReasons span{font-size:9px}}
