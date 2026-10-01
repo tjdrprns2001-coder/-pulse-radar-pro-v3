@@ -2,7 +2,7 @@
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createAstraAutoScanner,CONFIG,MANUS_CONFIG,PERPLEXITY_CONFIG,GROK_CONFIG,GEMINI_CONFIG,CLAUDE_CONFIG,METHODS,VERSION,methodOf}=require('../lib/coin-scan/astra-auto-scanner.js');
 let singleton=null;
-function defaultScanner(){if(!singleton)singleton=createAstraAutoScanner({provider:createBinanceProvider({disableFuturesFallback:true,concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(process.env.ASTRA_FUTURES_MIN_INTERVAL_MS||275)})});return singleton}
+function defaultScanner(){if(!singleton)singleton=createAstraAutoScanner({provider:createBinanceProvider({disableFuturesFallback:false,concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(process.env.ASTRA_FUTURES_MIN_INTERVAL_MS||275)})});return singleton}
 function symbolsOf(q={}){return String(q.symbols||'').split(',').map(x=>x.trim()).filter(Boolean)}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function marketOf(q={}){

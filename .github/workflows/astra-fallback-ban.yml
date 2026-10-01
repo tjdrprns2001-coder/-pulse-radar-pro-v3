@@ -1,0 +1,34 @@
+name: Astra Fallback During Binance Ban
+
+on:
+  push:
+    branches:
+      - fix/astra-fallback-during-binance-ban-20261001
+    paths:
+      - "lib/coin-scan/binance-provider.js"
+      - "lib/coin-scan/binance-provider.fallback.test.js"
+      - "api/astra-scan.js"
+      - "workers/selector-runtime.mjs"
+      - "ui/astra-scan.js"
+      - ".github/workflows/astra-fallback-ban.yml"
+  pull_request:
+    paths:
+      - "lib/coin-scan/binance-provider.js"
+      - "lib/coin-scan/binance-provider.fallback.test.js"
+      - "api/astra-scan.js"
+      - "workers/selector-runtime.mjs"
+      - "ui/astra-scan.js"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check api/astra-scan.js
+      - run: node --check workers/selector-runtime.mjs
+      - run: node --check ui/astra-scan.js
+      - run: node --test lib/coin-scan/binance-provider.fallback.test.js
