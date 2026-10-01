@@ -35,7 +35,7 @@ class Config:
     rvol_window: int = 20
 
     # TF별 최소 이력. 신규 상장 종목을 150일 일괄 컷하지 않는다.
-    min_bars_1d: int = 100
+    min_bars_1d: int = 40
     min_bars_4h: int = 120
     min_bars_1h: int = 100
     min_bars_15m: int = 100
@@ -93,6 +93,18 @@ class Config:
 
 class BinanceError(RuntimeError):
     pass
+
+
+def spot_symbol_candidates(symbol: str) -> list[tuple[str, float]]:
+    """Return spot symbols that preserve percentage structure for multiplier futures."""
+    symbol = symbol.upper()
+    candidates = [(symbol, 1.0)]
+    for prefix in ("1000000", "1000"):
+        if symbol.startswith(prefix) and symbol.endswith("USDT"):
+            alias = symbol[len(prefix):]
+            if alias and alias != symbol:
+                candidates.append((alias, float(prefix)))
+    return candidates
 
 
 class RateGate:
@@ -192,20 +204,44 @@ class Binance:
 
         raise BinanceError("API 요청 실패")
 
+    async def spot_klines(
+        self, symbol: str, interval: str, asof: int, cfg: Config
+    ):
+        last_error = None
+        for spot_symbol, scale in spot_symbol_candidates(symbol):
+            try:
+                raw = await self.get(
+                    "/api/v3/klines",
+                    base_url=SPOT_BASE_URL,
+                    symbol=spot_symbol,
+                    interval=interval,
+                    endTime=asof - 1,
+                    limit=cfg.bars,
+                )
+                return raw, spot_symbol, scale
+            except BinanceError as exc:
+                last_error = exc
+                if "Invalid symbol" not in str(exc):
+                    raise
+        if last_error is not None:
+            raise last_error
+        raise BinanceError(f"{symbol}: usable spot candle symbol 없음")
+
     async def candles(
         self, symbol: str, interval: str, asof: int, cfg: Config
     ) -> pd.DataFrame:
         source = "BINANCE_FUTURES"
+        spot_symbol = symbol
+        spot_scale = 1.0
         if self.kline_mode == "spot":
-            raw = await self.get(
-                "/api/v3/klines",
-                base_url=SPOT_BASE_URL,
-                symbol=symbol,
-                interval=interval,
-                endTime=asof - 1,
-                limit=cfg.bars,
+            raw, spot_symbol, spot_scale = await self.spot_klines(
+                symbol, interval, asof, cfg
             )
-            source = "BINANCE_SPOT_FALLBACK"
+            source = (
+                "BINANCE_SPOT_FALLBACK"
+                if spot_symbol == symbol
+                else f"BINANCE_SPOT_ALIAS:{spot_symbol}*{spot_scale:g}"
+            )
         else:
             try:
                 raw = await self.get(
@@ -218,15 +254,14 @@ class Binance:
             except Exception:
                 if self.kline_fallback != "spot":
                     raise
-                raw = await self.get(
-                    "/api/v3/klines",
-                    base_url=SPOT_BASE_URL,
-                    symbol=symbol,
-                    interval=interval,
-                    endTime=asof - 1,
-                    limit=cfg.bars,
+                raw, spot_symbol, spot_scale = await self.spot_klines(
+                    symbol, interval, asof, cfg
                 )
-                source = "BINANCE_SPOT_FALLBACK"
+                source = (
+                    "BINANCE_SPOT_FALLBACK"
+                    if spot_symbol == symbol
+                    else f"BINANCE_SPOT_ALIAS:{spot_symbol}*{spot_scale:g}"
+                )
         columns = [
             "open_time", "open", "high", "low", "close", "volume",
             "close_time", "quote_volume", "trades",
@@ -238,6 +273,15 @@ class Binance:
 
         for col in columns:
             df[col] = pd.to_numeric(df[col], errors="raise")
+
+        # Multiplier futures such as 1000PEPEUSDT can reuse PEPEUSDT spot
+        # percentage structure. Rescale OHLC/base volume so price/VWAP stay
+        # in the futures contract's nominal units.
+        if spot_scale != 1.0:
+            for col in ("open", "high", "low", "close"):
+                df[col] *= spot_scale
+            df["volume"] /= spot_scale
+            df["taker_buy_base"] /= spot_scale
 
         df = (
             df.loc[df.close_time < asof]
@@ -260,6 +304,8 @@ class Binance:
 
         out = indicators(df, cfg)
         out.attrs["source"] = source
+        out.attrs["history_bars"] = len(df)
+        out.attrs["short_history"] = bool(interval == "1d" and len(df) < 100)
         return out
 
 
@@ -1056,6 +1102,10 @@ async def analyze(
     score -= 20 * int(extended)
 
     warnings = []
+    if daily.attrs.get("short_history"):
+        warnings.append(
+            f"1D 이력 짧음({daily.attrs.get('history_bars')}봉): EMA92 참고치"
+        )
     candle_sources = {
         "1d": daily.attrs.get("source", "UNKNOWN"),
         "4h": h4.attrs.get("source", "UNKNOWN"),
