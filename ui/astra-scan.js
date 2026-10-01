@@ -49,6 +49,7 @@ function chartbroContextBar(x){
  push('D Open',l.opens?.day);push('W Open',l.opens?.week);push('Asia H',s.asia?.high);push('Asia L',s.asia?.low);
  push('London H',s.london?.high);push('London L',s.london?.low);push('1H Swing H',l.swings?.h1High?.price);push('1H Swing L',l.swings?.h1Low?.price);
  push('4H Swing H',l.swings?.h4High?.price);push('4H Swing L',l.swings?.h4Low?.price);push('EQH',l.equalLiquidity?.high?.price);push('EQL',l.equalLiquidity?.low?.price);
+ if(l.dealingRange){push('IPDA EQ',l.dealingRange.equilibrium);lv.push('<span><b>'+esc(l.dealingRange.position||'IPDA')+'</b> '+fmt(l.dealingRange.positionPct,1)+'%</span>')}
  const status=(name,v)=>'<span class="ctx-'+String(v?.status||'UNKNOWN').toLowerCase()+'">'+esc(name)+' '+esc(v?.status||'UNKNOWN')+'</span>';
  const macro=r.macro||{},exec=r.execution||{},ld=r.longDerivatives||{},sd=r.shortDerivatives||{};
  const macroExtra=macro.nearest?'<small>'+esc(macro.nearest.type||'EVENT')+' '+(Number.isFinite(Number(macro.nearest.minutesAway))?fmt(macro.nearest.minutesAway,0)+'m':'')+'</small>':'';
