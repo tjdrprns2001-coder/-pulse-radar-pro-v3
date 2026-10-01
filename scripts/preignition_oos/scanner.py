@@ -138,7 +138,8 @@ class Binance:
 
     async def get(self, path: str, base_url: str = BASE_URL, **params):
         is_oi = path.startswith("/futures/data/")
-        for attempt in range(4):
+        max_attempts = 6 if self.proxy_url else 4
+        for attempt in range(max_attempts):
             if self.blocked:
                 raise BinanceError("API 차단 상태: 추가 요청 중단")
 
@@ -173,8 +174,10 @@ class Binance:
                         raise BinanceError(f"HTTP 418: IP 차단, 요청 중단 ({path})")
 
                     if response.status == 429:
-                        if attempt == 3:
-                            raise BinanceError("HTTP 429: 재시도 한도 초과")
+                        if attempt == max_attempts - 1:
+                            raise BinanceError(
+                                f"HTTP 429: 재시도 한도 초과 ({path})"
+                            )
                         retry_after = response.headers.get("Retry-After", "60")
                         try:
                             delay = max(float(retry_after), 1.0)
@@ -184,9 +187,16 @@ class Binance:
                         continue
 
                     if response.status >= 500:
-                        if attempt == 3:
-                            raise BinanceError(f"HTTP {response.status}")
-                        await asyncio.sleep(2 ** attempt)
+                        if attempt == max_attempts - 1:
+                            raise BinanceError(
+                                f"HTTP {response.status} ({path})"
+                            )
+                        delay = (
+                            min(60.0, 5.0 * (2 ** attempt))
+                            if self.proxy_url
+                            else float(2 ** attempt)
+                        )
+                        await asyncio.sleep(delay)
                         continue
 
                     if response.status != 200:
@@ -199,9 +209,14 @@ class Binance:
                     return data
 
             except (aiohttp.ClientError, asyncio.TimeoutError):
-                if attempt == 3:
+                if attempt == max_attempts - 1:
                     raise
-                await asyncio.sleep(2 ** attempt)
+                delay = (
+                    min(60.0, 5.0 * (2 ** attempt))
+                    if self.proxy_url
+                    else float(2 ** attempt)
+                )
+                await asyncio.sleep(delay)
 
         raise BinanceError("API 요청 실패")
 
