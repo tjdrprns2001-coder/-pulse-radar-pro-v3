@@ -42,7 +42,7 @@ function integratedSurgeBar(x){
 function longEntryBar(x){
  const l=x.longEntry||x.verdict?.longEntry;if(!l)return'';
  const ready=l.status==='LONG_READY',blocked=/^(NO_LONG|NO_CHASE|INVALID|EVENT_BLOCKED)/.test(String(l.status||'')),cls=ready?'long-ready':blocked?'long-blocked':'long-wait';
- const z=l.entryZone||{},target=l.selectedTarget||{},m=l.mss||{},sw=l.sweep||{},check=l.checklist||{},htf=l.htf||{},der=l.derivatives||{},riskPlan=l.riskPlan||{};
+ const z=l.entryZone||{},target=l.selectedTarget||{},m=l.mss||{},sw=l.sweep||{},check=l.checklist||{},htf=l.htf||{},der=l.derivatives||{},riskPlan=l.riskPlan||{},exitPlan=l.exitPlan||{};
  const entry=l.entry??l.plannedEntry,rr=l.riskReward??target.rr;
  const minRr=Number.isFinite(Number(l.minRr??l.policy?.minRr))&&Number(l.minRr??l.policy?.minRr)>0?Number(l.minRr??l.policy?.minRr):1.5;
  const risk=entry!=null&&l.stop!=null?Number(entry)-Number(l.stop):null;
@@ -64,7 +64,7 @@ function longEntryBar(x){
  (blocked?'<p class="longPermission" role="note">진입 금지 · '+esc(l.label||l.status)+'</p>':'')+
  '<div class="longMeta"><span>4H '+esc(htf.h4?.state||'-')+'</span><span>1H '+esc(htf.h1?.state||'-')+'</span><span>체크 '+(check.passed??0)+'/10</span><span>Asia '+esc(l.policy?.asia||'08:00-13:00')+'</span><span>London '+esc(l.policy?.london||'-')+'</span><span>NY '+esc(l.policy?.newYork||'-')+'</span></div>'+
  '<div class="longPriceGrid"><div class="longTrigger"><span>'+triggerLabel+'</span><b>'+priceFmt(entry)+'</b></div><div><span>FVG/OB 되돌림</span><b>'+priceFmt(z.low)+' ~ '+priceFmt(z.high)+'</b></div><div><span>'+(blocked?'관찰 손절 기준':'손절')+'</span><b>'+priceFmt(l.stop)+'</b><small>무효 '+priceFmt(l.invalidation??sw.low)+'</small></div>'+targetCell+requiredCell+'</div>'+
- (entries?'<div class="longEntries">'+entries+'</div>':'')+invalidDetails+
+ (entries?'<div class="longEntries">'+entries+'</div>':'')+(exitPlan.tp1?'<div class="longExitPlan"><div><span>1차 익절</span><b>'+priceFmt(exitPlan.tp1.price)+' · '+fmt(exitPlan.tp1.rr,2)+'R</b><small>25~50% 축소 · '+esc(exitPlan.tp1.label||'')+'</small></div><div><span>2차 익절</span><b>'+priceFmt(exitPlan.tp2?.price)+' · '+fmt(exitPlan.tp2?.rr,2)+'R</b><small>'+esc(exitPlan.tp2?.label||'HTF 목표 대기')+'</small></div><div><span>잔량</span><b>15m HL 이탈</b><small>종가 기준 청산</small></div></div>':'')+invalidDetails+
  '<div class="longChecks"><span>Asia L '+priceFmt(l.asia?.low)+'</span><span>PDL '+priceFmt(l.levels?.daily?.pdl)+'</span><span>Sweep '+timeFmt(sw.at)+'</span><span>Reclaim '+timeFmt(l.reclaimAt)+'</span><span>MSS '+esc(m.tf||'-')+' '+timeFmt(m.at)+'</span><span>Retest '+timeFmt(l.retestAt)+'</span><span>Rebreak '+timeFmt(l.rebreakAt)+'</span></div>'+
  '<div class="longDerivatives"><span>OI 1H '+pct(der.oi1hPct)+'</span><span>OI 4H '+pct(der.oi4hPct)+'</span><span>Funding '+pct(der.fundingRatePct)+'</span><span>위험 '+(riskPlan.riskPercent!=null?fmt(riskPlan.riskPercent,2)+'%':'미입력')+'</span><span>허용손실 '+(riskPlan.maxLoss!=null?priceFmt(riskPlan.maxLoss):'-')+'</span><span>수량 '+(riskPlan.quantity!=null?priceFmt(riskPlan.quantity):'-')+'</span><small>'+esc(der.note||'')+'</small></div>'+
  (checklistHtml?'<div class="longChecklist">'+checklistHtml+'</div>':'')+
