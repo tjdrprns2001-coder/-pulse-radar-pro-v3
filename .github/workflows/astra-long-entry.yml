@@ -13,6 +13,9 @@ on:
       - "lib/coin-scan/amd-long-entry.js"
       - "lib/coin-scan/amd-short-entry.js"
       - "lib/coin-scan/amd-short-entry.test.js"
+      - "lib/coin-scan/chartbro-context.js"
+      - "lib/coin-scan/chartbro-context.test.js"
+      - "lib/coin-scan/binance-provider.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
@@ -25,6 +28,9 @@ on:
       - "lib/coin-scan/amd-long-entry.js"
       - "lib/coin-scan/amd-short-entry.js"
       - "lib/coin-scan/amd-short-entry.test.js"
+      - "lib/coin-scan/chartbro-context.js"
+      - "lib/coin-scan/chartbro-context.test.js"
+      - "lib/coin-scan/binance-provider.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
       - "ui/astra-scan.js"
@@ -43,9 +49,10 @@ jobs:
           node-version: "22"
       - run: node --check lib/coin-scan/amd-long-entry.js
       - run: node --check lib/coin-scan/amd-short-entry.js
+      - run: node --check lib/coin-scan/chartbro-context.js
       - run: node --check lib/coin-scan/astra-auto-scanner.js
       - run: node --check ui/astra-scan.js
-      - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js
+      - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js
 
       - uses: actions/setup-python@v5
         with:
