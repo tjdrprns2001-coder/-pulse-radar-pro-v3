@@ -31,6 +31,8 @@ const provider={
   async getFuturesTickers(){return tickers},
   async getSpotTickers(){return[{symbol:'AAAUSDT',priceChangePercent:'1.1',lastPrice:'0.1079'}]},
   async getFundingMap(){return new Map([['AAAUSDT',.01]])},
+  async getMacroCalendar(){return{available:true,provider:'TEST',items:[]}},
+  async getFuturesExecution(){return{marketType:'futures',available:true,observedAt:FIXED,spreadBps:4,depthUsd:{bid10bps:100000,ask10bps:100000},slippage:{buy:[{notional:10000,slippageBps:8}],sell:[{notional:10000,slippageBps:8}]}}},
   async getV2OiProfile(symbol){
     if(symbol!=='AAAUSDT')return{rows:[],oi4hPct:null};
     const start=FIXED-25*3600000;
@@ -94,6 +96,12 @@ const provider={
   assert.equal(d.items[0].commonPreignition.shadowOnly,true,'common stage must stay shadow-only');
   assert.equal(d.items[0].commonPreignition.rankingEffect,0,'common stage must not change ranking before validation');
   assert.equal(d.items[0].verdict.commonStage,d.items[0].commonPreignition.stage,'verdict must expose common stage');
+  assert(d.items[0].longEntry&&d.items[0].shortEntry,'Astra must attach both ChartBro directions');
+  assert(d.items[0].chartbroContext&&d.items[0].chartbroContext.version==='CHARTBRO_CONTEXT_v1','Astra must attach ChartBro context');
+  assert.equal(d.items[0].chartbroContext.reviews.macro.status,'CLEAR','macro calendar must reach ChartBro review');
+  assert(d.items[0].chartbroContext.levels&&d.items[0].chartbroContext.levels.previousDay,'ChartBro liquidity levels required');
+  assert.equal(d.items[0].verdict.chartbroContext.version,'CHARTBRO_CONTEXT_v1','verdict must expose ChartBro context');
+
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
   const m=await scan.deep(['AAAUSDT'],{method:'manus',market:mkt,asOf:u.asOf});
