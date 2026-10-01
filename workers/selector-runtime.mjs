@@ -21,6 +21,7 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
 const {createFullUniverseScanService,normalizeTierSelection,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
 const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
 const {createPostgresFullScanStore}=require('../lib/coin-scan/postgres-full-scan-store.js');
+const {createPreignitionOosStore}=require('../lib/coin-scan/preignition-oos-store.js');
 const {createBinanceFuturesWsShards,BINANCE_USDM_PUBLIC_STREAM_URL}=require('../lib/coin-scan/binance-ws-shards.js');
 
 const {Pool}=pg;
@@ -37,10 +38,11 @@ const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:c
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
 const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false})});
 const fullScanStore=createPostgresFullScanStore({query});
+const preignitionOos=createPreignitionOosStore({query});
 const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
 const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:true});
 const fullScanService=createFullUniverseScanService({provider:fullScanProvider,marketCapProvider:fullScanMarketCaps,store:fullScanStore,maxWorkers:Number(env.FULL_SCAN_WORKERS||8),requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||150),klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)});
-const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},errors:[]};
+const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},preignitionOos:{status:'INIT'},errors:[]};
 let evmCollector=null,fullScanWs=null,fullScanActive=false;
 
 async function migrate(){
@@ -335,6 +337,76 @@ function scheduleFullUniverseScanner(){
   setTimeout(runFullUniverseAutoScan,Math.max(0,Number(env.FULL_SCAN_START_DELAY_MS||5000))).unref?.();
   setInterval(runFullUniverseAutoScan,tick).unref?.();
 }
+function preignitionOosAuth(req){
+  const secret=String(env.OOS_VALIDATION_TOKEN||'');
+  const raw=String(req.headers.authorization||'');
+  return Boolean(secret&&raw.toLowerCase().startsWith('bearer ')&&raw.slice(7).trim()===secret);
+}
+async function handlePreignitionOos(req,res,route){
+  if(!preignitionOosAuth(req))return jsonResponse(res,401,{status:'error',error:'unauthorized'});
+  try{
+    if(req.method==='POST'){
+      const body=await snapshotBody(req,16*1024*1024);
+      const result=await preignitionOos.collect(body);
+      health.preignitionOos={status:'COLLECTED',updatedAt:Date.now(),...result};
+      return jsonResponse(res,200,result);
+    }
+    if(req.method==='GET'){
+      const action=String(route.searchParams.get('action')||'stats').toLowerCase();
+      if(action==='report'){
+        const toleranceMinutes=Math.max(0,Math.min(240,Number(route.searchParams.get('toleranceMinutes'))||30));
+        const report=await preignitionOos.report({toleranceMinutes});
+        return jsonResponse(res,200,{status:'ok',action,updatedAt:Date.now(),report});
+      }
+      if(action==='stats'){
+        const stats=await preignitionOos.stats();
+        return jsonResponse(res,200,{status:'ok',action,updatedAt:Date.now(),stats,health:health.preignitionOos});
+      }
+      return jsonResponse(res,400,{status:'error',error:'unknown action'});
+    }
+    return jsonResponse(res,405,{status:'error',error:'method not allowed'});
+  }catch(e){
+    health.preignitionOos={status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)};
+    health.errors.push({source:'preignition-oos',at:Date.now(),error:String(e?.message||e)});
+    return jsonResponse(res,500,{status:'error',error:String(e?.message||e)});
+  }
+}
+
+let preignitionTriggerActive=false;
+async function triggerPreignitionOosScanner(){
+  const base=String(env.OOS_SCANNER_URL||'').replace(/\/$/,'');
+  const token=String(env.OOS_VALIDATION_TOKEN||'');
+  if(!base||!token){
+    health.preignitionOos={status:'DISABLED',updatedAt:Date.now(),reason:'OOS_SCANNER_URL or OOS_VALIDATION_TOKEN missing'};
+    return;
+  }
+  if(preignitionTriggerActive)return;
+  preignitionTriggerActive=true;
+  try{
+    const response=await fetch(base+'/collect',{
+      method:'POST',
+      headers:{authorization:'Bearer '+token,'content-type':'application/json'},
+      body:'{}',
+      signal:AbortSignal.timeout(Math.max(5000,Number(env.OOS_TRIGGER_TIMEOUT_MS||20000)))
+    });
+    const text=await response.text();
+    if(!response.ok&&response.status!==202)throw new Error('scanner trigger HTTP '+response.status+': '+text.slice(0,240));
+    health.preignitionOos={...health.preignitionOos,status:'TRIGGERED',triggeredAt:Date.now(),scannerUrl:base};
+  }catch(e){
+    health.preignitionOos={...health.preignitionOos,status:'TRIGGER_FAILED',updatedAt:Date.now(),error:String(e?.message||e)};
+    health.errors.push({source:'preignition-oos-trigger',at:Date.now(),error:String(e?.message||e)});
+  }finally{preignitionTriggerActive=false}
+}
+function schedulePreignitionOos(){
+  if(String(env.OOS_VALIDATION_ENABLED||'1')==='0'){
+    health.preignitionOos={status:'DISABLED',updatedAt:Date.now(),reason:'OOS_VALIDATION_ENABLED=0'};
+    return;
+  }
+  const interval=Math.max(300000,Number(env.OOS_SCAN_INTERVAL_MS||900000));
+  setTimeout(triggerPreignitionOosScanner,Math.max(0,Number(env.OOS_SCAN_START_DELAY_MS||30000))).unref?.();
+  setInterval(triggerPreignitionOosScanner,interval).unref?.();
+}
+
 function fullScanAuth(req){
   const secret=String(env.FULL_SCAN_ADMIN_TOKEN||'');
   const raw=String(req.headers.authorization||'');
@@ -430,6 +502,7 @@ function server(){
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
     if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null,marketCaps:fullScanMarketCaps.state,manualEnabled:Boolean(env.FULL_SCAN_ADMIN_TOKEN)});
+    if(route.pathname==='/api/v1/preignition-oos')return handlePreignitionOos(req,res,route);
     if(req.method==='GET'&&route.pathname==='/api/v1/results'){
       const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000)),compact=String(route.searchParams.get('compact')||'0')==='1';
       const latest=await fullScanStore.latest({tiers,limit});
@@ -555,4 +628,5 @@ runEvidencePollers();
 runSelectorScanner();
 startFullUniverseWebsocket();
 scheduleFullUniverseScanner();
+schedulePreignitionOos();
 process.on('SIGTERM',()=>{process.exit(0)});
