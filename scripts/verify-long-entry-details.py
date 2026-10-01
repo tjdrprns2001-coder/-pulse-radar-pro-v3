@@ -1,4 +1,4 @@
-"""Exercise the long-entry card with fixture data in real browsers."""
+"""Exercise bidirectional ChartBro entry cards with fixture data in real browsers."""
 import copy
 import json
 import subprocess
@@ -43,6 +43,21 @@ plans["WINTERUSDT"] = {"status": "WAIT_RECLAIM", "tradeDate": "2026-12-01",
 plans["REVIEWUSDT"] = {**copy.deepcopy(plan), "status": "BLOCKED_REVIEW", "label": "구조 완성 · 확인 필요", "review": {"economicEvent": "UNKNOWN", "oiFunding": "UNKNOWN", "orderRisk": "UNKNOWN"}, "breakout": {"model": "BREAKOUT_RETEST", "status": "WAIT_BREAKOUT", "label": "돌파 대기"}}
 rows = [{"symbol": symbol, "longEntry": value, "verdict": {"key": "WAIT", "reasons": []}}
         for symbol, value in plans.items()]
+short_plan = {
+    "status": "SHORT_READY", "label": "숏 트리거 충족", "tradeDate": "2026-10-01",
+    "asia": {"high": 100.0}, "sweep": {"at": stamp("2026-10-01T11:15:00Z"), "high": 100.6},
+    "reclaimAt": stamp("2026-10-01T11:30:00Z"),
+    "mss": {"tf": "5m", "at": stamp("2026-10-01T11:45:00Z")},
+    "retestAt": stamp("2026-10-01T12:00:00Z"), "rebreakAt": stamp("2026-10-01T12:05:00Z"),
+    "entryZone": {"low": 99.2, "high": 99.6}, "entry": 98.9, "plannedEntry": 98.9,
+    "stop": 100.7, "invalidation": 100.6, "minRr": 1.5,
+    "selectedTarget": {"price": 95.0, "label": "ASIA_LOW", "rr": (98.9-95.0)/(100.7-98.9)},
+    "riskReward": (98.9-95.0)/(100.7-98.9),
+    "review": {"economicEvent": "CONFIRMED", "oiFunding": "CONFIRMED", "orderRisk": "CONFIRMED"},
+    "reasons": ["아시아 고점 sweep", "하락 MSS", "bearish FVG/OB retest"]
+}
+rows.append({"symbol": "SHORTUSDT", "shortEntry": short_plan, "verdict": {"key": "WAIT", "reasons": []}})
+
 
 def route_api(route):
     q = parse_qs(urlparse(route.request.url).query)
@@ -101,6 +116,14 @@ try:
             expect(page.locator(".longEntry[data-long-status=BLOCKED_REVIEW]")).to_contain_text("경제 일정 UNKNOWN")
             expect(page.locator(".longEntry[data-long-status=BLOCKED_REVIEW] .longTrigger span")).to_contain_text("진입 금지")
             expect(page.locator(".longEntry[data-long-status=WAIT_BREAKOUT]")).to_contain_text("돌파 되돌림")
+            short = page.locator(".card").filter(has=page.locator(".symbol", has_text="SHORTUSDT")).locator(".shortEntry")
+            expect(short).to_have_count(1)
+            expect(short.locator(".longEntryTop")).to_contain_text("숏 타점")
+            expect(short.locator(".longTrigger span")).to_have_text("진입 트리거")
+            expect(short.locator(".longChecks")).to_contain_text("Asia H 100")
+            expect(short.locator(".longChecks")).to_contain_text("Sweep 10/01, 20:15 KST / 07:15 EDT")
+            expect(short).to_contain_text("ASIA_LOW")
+
             wait = page.locator(".longEntry[data-long-status=WAIT_SWEEP]")
             expect(wait.locator(".longTrigger b")).to_have_text("-")
             expect(page.locator(".longEntry[data-long-status=WAIT_RECLAIM] .longChecks")).to_contain_text("23:15 KST / 09:15 EST")
@@ -116,7 +139,7 @@ try:
             assert not errors, errors
             context.close()
         browser.close()
-    print("PASS: KST + NY/DST times, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
+    print("PASS: bidirectional KST + NY/DST cards, blocked entries, invalidation evidence, RR targets, desktop/mobile.")
 finally:
     server.terminate()
     server.wait(timeout=10)
