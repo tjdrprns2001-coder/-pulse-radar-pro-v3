@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Auto Chart Lab · Core</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/auto-chart/auto-chart-lab.css?v=20261002-mtf2"></head><body><main class="aclApp">
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Auto Chart Lab · Core</title><link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5"><link rel="stylesheet" href="/ui/auto-chart/auto-chart-lab.css?v=20261002-mtf3"></head><body><main class="aclApp">
 <header class="top">
  <div><span class="eyebrow">AUTO CHART LAB · MTF v2</span><h1 id="pageTitle">BTCUSDT · 4H</h1><p>주봉부터 5분봉까지 환경 → 셋업 → 실행을 연결합니다. 확정봉·확정 스윙만 구조 판단에 사용합니다.</p></div>
  <div class="statusRow"><span id="historyState" data-state="idle">과거봉 대기</span><span id="liveState" data-state="idle">실시간 대기</span><span id="updatedAt">-</span></div>
@@ -21,6 +21,8 @@
   <label><input type="checkbox" data-layer="box" checked> 유효 박스</label>
   <label><input type="checkbox" data-layer="structure" checked> HH·HL·LH·LL</label>
   <label><input type="checkbox" data-layer="liquidity" checked> EQH/EQL · Sweep · MSS</label>
+  <label><input type="checkbox" data-layer="reference" checked> PDH/PDL · PWH/PWL · Sessions</label>
+  <label><input type="checkbox" data-layer="dealing" checked> IPDA Premium/Discount</label>
   <label><input type="checkbox" data-layer="zones" checked> FVG · Order Block</label>
   <label><input type="checkbox" data-layer="vpvr" checked> VPVR · VAH/POC/VAL</label>
   <label><input type="checkbox" data-layer="fib"> Fibonacci</label>
@@ -47,6 +49,8 @@
   <div class="row"><span>Momentum</span><b id="cardMomentum">N/A</b></div>
   <div class="row"><span>Divergence</span><b id="cardDivergence">N/A</b></div>
   <div class="row"><span>유동성</span><b id="cardLiquidity">N/A</b></div>
+  <div class="row"><span>PD/PW 레벨</span><b id="cardReference">N/A</b></div>
+  <div class="row"><span>IPDA Range</span><b id="cardDealing">N/A</b></div>
   <div class="row"><span>FVG / OB</span><b id="cardZones">N/A</b></div>
   <div class="row"><span>VPVR</span><b id="cardVpvr">N/A</b></div>
   <div class="row"><span>Fibonacci</span><b id="cardFib">N/A</b></div>
@@ -65,25 +69,26 @@
 <footer>MTF v2: 1W→1D→4H→1H→15m→5m 역할 분리 · 확정봉 전용 · 미래정보 금지 · 구조/수급/보조지표를 독립 근거로 표시.</footer>
 </main>
 <script src="/ui/chart/chart-data.js?v=20260929-market1"></script>
-<script src="/ui/auto-chart/state.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/data/normalize.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/data/market-data.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/math.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/swings.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/levels.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/level-state.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/ranges.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/setup-state.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/indicators.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/volume.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/advanced.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/multi-timeframe.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/replay.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/analysis/core.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/chart/overlays.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/chart/renderer.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/ui/controls.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/ui/analysis-card.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/export/png.js?v=20261002-mtf2"></script>
-<script src="/ui/auto-chart/app.js?v=20261002-mtf2"></script>
+<script src="/ui/auto-chart/state.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/data/normalize.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/data/market-data.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/math.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/swings.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/levels.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/level-state.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/ranges.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/setup-state.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/indicators.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/volume.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/advanced.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/multi-timeframe.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/reference-levels.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/replay.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/analysis/core.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/chart/overlays.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/chart/renderer.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/ui/controls.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/ui/analysis-card.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/export/png.js?v=20261002-mtf3"></script>
+<script src="/ui/auto-chart/app.js?v=20261002-mtf3"></script>
 </body></html>
