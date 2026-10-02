@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
   <title>PulseRadar · 전종목 자동검색기</title>
-  <link rel="stylesheet" href="/ui/full-scan.css?v=20260927-1">
+  <link rel="stylesheet" href="/ui/full-scan.css?v=20261002-mtf1">
 <link rel="stylesheet" href="/ui/pulse-theme.css?v=20261001-dark-restore">
 </head>
 <body data-ui-page="full-scan">
@@ -14,7 +14,7 @@
     <div>
       <div class="eyebrow">PULSE RADAR · BINANCE USDT PERPETUAL</div>
       <h1>전종목 자동검색기</h1>
-      <p>5m → 15m → 1H → 4H → 1D → 1W · OI · Funding. 30분마다 자동 실행되며 페이지 새로고침은 스캔을 다시 시작하지 않습니다.</p>
+      <p>1W → 1D → 4H → 1H → 15m → 5m · EMA/MACD/RSI/OBV · 유동성 · OI · Funding · 프리점화 랭킹. 30분마다 자동 실행됩니다.</p>
     </div>
     <div class="heroActions">
       <button id="refresh" class="primary">지금 상태 새로고침</button>
@@ -58,6 +58,7 @@
     </div>
     <div class="filters" id="filters">
       <button data-filter="all" class="active">전체</button>
+      <button data-filter="pre">프리점화 60+</button>
       <button data-filter="small">소형</button>
       <button data-filter="mid">중형</button>
       <button data-filter="large">대형</button>
@@ -72,6 +73,6 @@
     <a href="/api/v1/results?compact=1&limit=2000" target="_blank" rel="noopener">원본 결과 JSON</a>
   </footer>
 </main>
-<script src="/ui/full-scan.js?v=20260927-1"></script>
+<script src="/ui/full-scan.js?v=20261002-mtf1"></script>
 </body>
 </html>
