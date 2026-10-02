@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { BOOK_PAGES } from "@/features/book/book-manifest";
 import { Page001Cover } from "@/features/book/page-001-cover";
+import { Page002Introduction } from "@/features/book/page-002-introduction";
 
 export function generateStaticParams() {
   return BOOK_PAGES
@@ -15,9 +16,8 @@ export default async function BookSourcePage({
 }) {
   const { page } = await params;
 
-  if (page === "1") {
-    return <Page001Cover />;
-  }
+  if (page === "1") return <Page001Cover />;
+  if (page === "2") return <Page002Introduction />;
 
   notFound();
 }
