@@ -59,7 +59,7 @@ const handler=require('../api/astra-scan.js');
     async()=>{browserCalls++;return{ok:false,status:503,json:async()=>({status:'error',retryAt})}});
   const error=await get('universe').catch(e=>e);
   assert.equal(error.retryAt,retryAt);
-  assert.equal(browserCalls,1,'browser must not try Render after a known ban');
+  assert.equal(browserCalls,2,'browser may try one alternate scanner endpoint after a retryable upstream ban');
   assert(ui.includes("if(state.retryAt>Date.now())"));
   assert(ui.includes("$('astraRun').disabled=state.retryAt>Date.now()"));
   const runtime=fs.readFileSync('workers/selector-runtime.mjs','utf8');
