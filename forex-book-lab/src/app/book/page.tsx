@@ -13,7 +13,7 @@ export default function BookPage() {
         <h1 className={styles.libraryTitle}>Forex Book</h1>
         <p className={styles.libraryLead}>
           원본을 한 페이지씩 직접 확인하고, 구현과 빌드 검증이 끝난 페이지만 활성화합니다.
-          현재 Page 1 표지와 Page 2 Introduction까지 완성했습니다.
+          현재 Page 1–3까지 완성했습니다.
         </p>
       </header>
 
@@ -29,9 +29,11 @@ export default function BookPage() {
           <Link href={"/book/" + page.slug} className={styles.pageCard} key={page.number}>
             <div
               className={
-                page.kind === "lesson"
-                  ? styles.thumb + " " + styles.thumbLesson
-                  : styles.thumb
+                page.kind === "cover"
+                  ? styles.thumb
+                  : page.kind === "contents"
+                    ? styles.thumb + " " + styles.thumbContents
+                    : styles.thumb + " " + styles.thumbLesson
               }
               aria-hidden="true"
             >
