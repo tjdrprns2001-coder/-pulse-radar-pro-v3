@@ -1,0 +1,71 @@
+.controls {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.controlRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.button,
+.activeButton,
+.jumpForm button {
+  border: 1px solid #354052;
+  background: #151b25;
+  color: #cbd4e1;
+  min-height: 32px;
+  border-radius: 9px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.activeButton {
+  border-color: var(--accent);
+  background: rgba(215,255,70,.12);
+  color: var(--accent);
+}
+
+.jumpForm {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.jumpForm input {
+  width: 62px;
+  min-height: 32px;
+  border: 1px solid #354052;
+  background: #0e131b;
+  color: #fff;
+  border-radius: 9px;
+  padding: 0 8px;
+}
+
+.note {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid #354052;
+  background: #0d1219;
+  color: #e8edf5;
+  border-radius: 11px;
+  padding: 12px;
+  font: inherit;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .jumpForm {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .jumpForm input {
+    flex: 1;
+  }
+}
