@@ -96,6 +96,9 @@ research_stats = {
         "challengers": [{"label": "최소 RR 2.0", "evaluated": 20, "deltaSuccessRate": 0.05}]
     },
     "failureCounts": {"SWEEP_NO_MSS": 7},
+    "bySession": {"LONDON": {"evaluated": 12, "successRate": 0.5833}, "NEW_YORK": {"evaluated": 14, "successRate": 0.6429}},
+    "bySessionPattern": {"LONDON_TO_NEW_YORK": {"evaluated": 8, "successRate": 0.75}},
+    "funnel": {"sweep": 40, "mss": 28, "retrace": 20, "retest": 16, "ready": 11},
     "recentAlerts": [{"symbol": "RRUSDT", "side": "LONG", "kind": "MSS_CONFIRMED", "capturedAt": stamp("2026-10-01T14:15:00Z")}]
 }
 
@@ -164,6 +167,10 @@ try:
             expect(page.locator("#cbMfe")).to_have_text("1.80R")
             expect(page.locator("#cbLatestAlert")).to_contain_text("RRUSDT")
             expect(page.locator("#cbLatestAlert")).to_contain_text("MSS_CONFIRMED")
+            expect(page.locator("#cbLondon")).to_contain_text("12건")
+            expect(page.locator("#cbNy")).to_contain_text("14건")
+            expect(page.locator("#cbLny")).to_contain_text("8건")
+            expect(page.locator("#cbFunnel")).to_contain_text("Sweep 40 → MSS 28 → Retest 16 → Ready 11")
             oos_card = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".chartbroOos")
             expect(oos_card).to_contain_text("PRODUCTION GATE PASS")
             expect(oos_card).to_contain_text("랭킹 +5")
