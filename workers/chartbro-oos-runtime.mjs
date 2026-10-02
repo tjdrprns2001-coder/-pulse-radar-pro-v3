@@ -20,7 +20,7 @@ const provider=createBinanceProvider({
 });
 const scanner=createAstraAutoScanner({provider});
 const health={startedAt:Date.now(),status:'INIT',run:null,kv:{status:'INIT'},errors:[]};
-let active=false;
+let active=false,universeCursor=0;
 
 function send(res,status,body){
   res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store, max-age=0','access-control-allow-origin':'*'});
@@ -37,32 +37,31 @@ async function run(){
   if(active||String(env.CHARTBRO_TRACKER_ENABLED||'1')==='0')return;
   active=true;const started=Date.now();health.status='RUNNING';health.run={startedAt:started};
   try{
-    const minQuoteVolume=Math.max(0,Number(env.CHARTBRO_MIN_QUOTE_VOLUME||10000000));
+    const minQuoteVolume=Math.max(0,Number(env.CHARTBRO_MIN_QUOTE_VOLUME||0));
     const oiLimit=Math.max(4,Math.min(96,Number(env.CHARTBRO_OI_LIMIT||48)));
     const deepLimit=Math.max(1,Math.min(24,Number(env.CHARTBRO_DEEP_LIMIT||16)));
     const outcomeLimit=Math.max(4,Math.min(64,Number(env.CHARTBRO_OUTCOME_LIMIT||24)));
-    const u=await scanner.universe({method:'astra',minQuoteVolume});
-    const symbols=(u.items||[]).slice(0,oiLimit).map(x=>x.symbol),oiItems=[];
+    const u=await scanner.universe({method:'astra',minQuoteVolume}),universe=(u.items||[]),symbols=[];
+    if(universe.length){for(let i=0;i<Math.min(oiLimit,universe.length);i++)symbols.push(universe[(universeCursor+i)%universe.length].symbol);universeCursor=(universeCursor+symbols.length)%universe.length}
+    const oiItems=[];
     for(const xs of batch(symbols,24)){
       const o=await scanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});
       oiItems.push(...(o.items||[]));
     }
-    const passed=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
-    const oiDataAvailable=oiItems.some(x=>Number.isFinite(Number(x.oi4hPct)));
-    const pass=passed.length?passed:(!oiDataAvailable?symbols.slice(0,deepLimit):[]);
-    const degradedStructureOnly=!passed.length&&!oiDataAvailable;
+    const freshPass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const carry=oos.activeSymbols({limit:Math.max(4,deepLimit)}),pass=[...new Set([...carry,...freshPass])].slice(0,Math.max(deepLimit,24));
     let deepScanned=0;
     for(const xs of batch(pass,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
     const pending=oos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
     for(const p of pending){
       try{
         const rows=await provider.getFuturesKlines(p.symbol,'5m',400),ev=oos.evaluateSymbol({symbol:p.symbol,frames:{'5m':rows},asOf:Date.now()});
-        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated)||0;
+        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated24h)||0;
       }catch(e){health.errors.push({source:'outcome-resolver',symbol:p.symbol,at:Date.now(),error:String(e?.message||e)})}
     }
     const persisted=await oos.flush(),stats=oos.stats();
     health.status='OK';health.updatedAt=Date.now();
-    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,oiChecked:symbols.length,oiPassed:passed.length,oiDataAvailable,degradedStructureOnly,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
+    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,universeCursor,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
     health.errors=health.errors.slice(-20);
   }catch(e){
     health.status='DEGRADED';health.updatedAt=Date.now();health.run={...health.run,finishedAt:Date.now(),error:String(e?.message||e)};

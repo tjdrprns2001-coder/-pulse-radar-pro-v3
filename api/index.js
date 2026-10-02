@@ -22,7 +22,9 @@ const handlers = {
   'signal-health': require('../handlers/signal-health'),
   'signal-performance': require('../handlers/signal-performance'),
   'learning-ai': require('../handlers/learning-ai'),
-  'ignition-results': require('../handlers/ignition-results')
+  'ignition-results': require('../handlers/ignition-results'),
+  'chartbro-research': require('../handlers/chartbro-research'),
+  'chart-snapshots': require('../handlers/chart-snapshots')
 };
 
 const structureEdgeCache=new Map();
