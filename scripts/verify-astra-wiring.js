@@ -29,8 +29,8 @@ assert(js.includes('commonStageBar')&&js.includes("c.label||c.stage||'NO_SETUP'"
 assert(html.includes('공통 5단계')&&html.includes('SHADOW'),'common stage disclosure missing');
 assert(api.includes("stage==='universe'")&&api.includes("stage==='oi'")&&api.includes("stage==='deep'"));
 assert(api.includes('methodOf(q.method)'),'API method routing missing');
-assert(api.includes('disableFuturesFallback:true'),'Astra API must preserve Binance-only futures source');
-assert(runtime.includes('disableSpotRest:false,disableFuturesFallback:true'),'Render Astra must preserve Binance-only futures source');
+assert(api.includes('disableFuturesFallback:false'),'Astra API must preserve resilient futures fallback');
+assert(runtime.includes('disableSpotRest:false,disableFuturesFallback:false'),'Render Astra must preserve resilient futures fallback');
 assert(runtime.includes("minQuoteVolume:route.searchParams.has('minQuoteVolume')?numParam(route.searchParams.get('minQuoteVolume')):null"),'Render volume-cut forwarding must preserve explicit zero and omitted defaults');
 assert(api.includes('GROK_CONFIG')&&api.includes('GEMINI_CONFIG'),'Grok/Gemini API config missing');
 assert(api.includes('CLAUDE_CONFIG'),'Claude API config missing');
