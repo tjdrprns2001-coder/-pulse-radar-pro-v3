@@ -50,6 +50,7 @@
 .chartbroResearchGrid b{display:block;margin-top:4px;font-size:16px;color:#edf7ff}
 .chartbroCompetition{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
 .chartbroCompetition span{display:block;margin-top:5px;font-size:11px;color:#d8e7f3;line-height:1.45}
+.chartbroLatest{grid-column:1/-1}
 .chartbroOos{border-color:#314e66;background:#0a1724}
 .chartbroOos .oos-pass{color:#a4efd2}.chartbroOos .oos-shadow{color:#f4c565}.chartbroOos .oos-neg{color:#ff9ba5}
 @media(max-width:720px){.chartbroResearchGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.chartbroCompetition{grid-template-columns:1fr}.chartbroResearchPanel{padding:12px}}
