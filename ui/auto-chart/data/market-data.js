@@ -3,7 +3,7 @@ const Normalize=dep.Normalize;
 const getCD=()=>typeof window!=='undefined'?window.PulseChartData:null;
 async function json(url,fetchImpl){const f=fetchImpl||(typeof fetch==='function'?fetch:null);if(!f)throw new Error('fetch unavailable');const r=await f(url,{cache:'no-store',headers:{accept:'application/json'}}),j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error||('HTTP '+r.status));return j}
 async function fetchHistorical({exchange='binance',market='futures',symbol='BTCUSDT',interval='4h',limit=600,refresh=false,fetchImpl}={}){
-  if(exchange!=='binance')throw new Error('Auto Chart v1 supports Binance only');
+  if(exchange!=='binance')throw new Error('Auto Chart supports Binance only');
   const CD=getCD();
   let raw;
   if(CD?.fetchStructure)raw=await CD.fetchStructure({symbol,interval,limit,market,cacheBust:refresh?Date.now():null,fetchImpl});
