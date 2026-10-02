@@ -111,10 +111,16 @@ function compactFullScanItem(x){
 }
 async function runFullScan(){
   if(fullScanActive||String(env.FULL_SCAN_ENABLED||'1')==='0')return;
-  fullScanActive=true;const started=Date.now();health.fullScan={...health.fullScan,status:'RUNNING',startedAt:started,updatedAt:started};
+  fullScanActive=true;const started=Date.now();health.fullScan={...health.fullScan,status:'PREPARING',startedAt:started,updatedAt:started,source:'render-kv-full-scan'};
   try{
-    const out=await fullScan.execute({kind:'auto',owner:'chartbro-kv-runtime'});
-    health.fullScan={status:out.status||'DONE',runId:out.id||null,startedAt:out.startedAt||started,updatedAt:Date.now(),completedAt:out.completedAt||null,universeCount:out.universeCount||0,selectedCount:out.selectedCount||0,completedCount:out.completedCount||0,errorCount:out.errorCount||0,cacheHit:Boolean(out.cacheHit),skipped:Boolean(out.skipped),source:'render-kv-full-scan'};
+    const prepared=await fullScan.prepare({kind:'auto',owner:'chartbro-kv-runtime'}),run=prepared.run;
+    health.fullScan={...health.fullScan,status:run?.status||'QUEUED',runId:run?.id||null,startedAt:run?.startedAt||started,updatedAt:Date.now(),cacheHit:Boolean(prepared.cacheHit),skipped:Boolean(prepared.skipped),source:'render-kv-full-scan'};
+    if(prepared.skipped){
+      health.fullScan={...health.fullScan,status:run?.status||'SKIPPED',universeCount:run?.universeCount||0,selectedCount:run?.selectedCount||0,completedCount:run?.completedCount||0,errorCount:run?.errorCount||0,completedAt:run?.completedAt||null,updatedAt:Date.now()};
+      return;
+    }
+    const out=await fullScan.executeRun(run,{tiers:prepared.tiers});
+    health.fullScan={status:out.status||'DONE',runId:out.id||run?.id||null,startedAt:out.startedAt||started,updatedAt:Date.now(),completedAt:out.completedAt||null,universeCount:out.universeCount||0,selectedCount:out.selectedCount||0,completedCount:out.completedCount||0,errorCount:out.errorCount||0,cacheHit:Boolean(out.cacheHit),skipped:false,recovered:Boolean(prepared.recovered),source:'render-kv-full-scan'};
   }catch(e){
     health.fullScan={...health.fullScan,status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};
     health.errors.push({source:'full-scan',at:Date.now(),error:String(e?.message||e)});health.errors=health.errors.slice(-20);
