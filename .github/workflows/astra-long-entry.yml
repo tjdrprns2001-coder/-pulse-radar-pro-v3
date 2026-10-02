@@ -25,7 +25,10 @@ on:
       - "lib/coin-scan/render-kv-state-store.test.js"
       - "workers/chartbro-oos-runtime.mjs"
       - "api/astra-scan.js"
-      - "api/chartbro-research.js"
+      - "handlers/chartbro-research.js"
+      - "handlers/chart-snapshots.js"
+      - "api/index.js"
+      - "vercel.json"
       - "render-temp-server.js"
       - "workers/selector-runtime.mjs"
       - "lib/coin-scan/binance-provider.js"
@@ -50,7 +53,10 @@ on:
       - "lib/coin-scan/render-kv-state-store.test.js"
       - "workers/chartbro-oos-runtime.mjs"
       - "api/astra-scan.js"
-      - "api/chartbro-research.js"
+      - "handlers/chartbro-research.js"
+      - "handlers/chart-snapshots.js"
+      - "api/index.js"
+      - "vercel.json"
       - "render-temp-server.js"
       - "workers/selector-runtime.mjs"
       - "lib/coin-scan/binance-provider.js"
@@ -78,7 +84,9 @@ jobs:
       - run: node --check lib/coin-scan/render-kv-state-store.js
       - run: node --check workers/chartbro-oos-runtime.mjs
       - run: node --check api/astra-scan.js
-      - run: node --check api/chartbro-research.js
+      - run: node --check handlers/chartbro-research.js
+      - run: node --check handlers/chart-snapshots.js
+      - run: node --check api/index.js
       - run: node --check render-temp-server.js
       - run: node --check workers/selector-runtime.mjs
       - run: node --check lib/coin-scan/astra-auto-scanner.js
