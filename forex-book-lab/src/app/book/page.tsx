@@ -13,7 +13,7 @@ export default function BookPage() {
         <h1 className={styles.libraryTitle}>Forex Book</h1>
         <p className={styles.libraryLead}>
           원본을 한 페이지씩 직접 확인하고, 구현과 빌드 검증이 끝난 페이지만 활성화합니다.
-          현재 Page 1–3까지 완성했습니다.
+          현재 Page 1–4까지 완성했습니다.
         </p>
       </header>
 
