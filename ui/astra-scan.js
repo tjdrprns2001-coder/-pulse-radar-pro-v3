@@ -62,6 +62,12 @@ function renderChartbroResearch(s){
  if($('cbChallenger'))$('cbChallenger').textContent=best?(String(best.label)+' · '+String(best.evaluated||0)+'건 · Δ '+pctText(best.deltaSuccessRate)):'표본 수집 중';
  const fs=Object.entries(s.failureCounts||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);
  if($('cbFailures'))$('cbFailures').textContent=fs.length?fs.map(x=>String(x[0])+' '+String(x[1])).join(' · '):'아직 없음';
+ const sessionText=m=>m&&m.evaluated?String(m.evaluated)+'건 · '+pctText(m.successRate):'표본 수집 중';
+ if($('cbLondon'))$('cbLondon').textContent=sessionText(s.bySession?.LONDON);
+ if($('cbNy'))$('cbNy').textContent=sessionText(s.bySession?.NEW_YORK);
+ if($('cbLny'))$('cbLny').textContent=sessionText(s.bySessionPattern?.LONDON_TO_NEW_YORK);
+ const funnel=s.funnel||{};if($('cbFunnel'))$('cbFunnel').textContent='Sweep '+String(funnel.sweep||0)+' → MSS '+String(funnel.mss||0)+' → Retest '+String(funnel.retest||0)+' → Ready '+String(funnel.ready||0);
+
  const latest=Array.isArray(s.recentAlerts)&&s.recentAlerts.length?s.recentAlerts[0]:null;if($('cbLatestAlert'))$('cbLatestAlert').textContent=latest?(String(latest.symbol||'')+' · '+String(latest.side||'')+' · '+String(latest.kind||'')+' · '+timeFmt(latest.capturedAt)):'아직 없음';
 }
 async function loadChartbroResearch(){
