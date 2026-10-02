@@ -5,11 +5,14 @@ on:
     branches:
       - feature/full-universe-auto-scan-20260927
       - codex/mtf-whole-market-integration-20261002
+      - codex/selector-db-resilience-20261002
   pull_request:
     paths:
       - 'lib/coin-scan/full-universe-auto-scan.js'
       - 'lib/coin-scan/mtf-market-analyzer.js'
       - 'lib/coin-scan/mtf-market-analyzer.test.js'
+      - 'lib/coin-scan/full-scan-resilient-store.js'
+      - 'lib/coin-scan/full-scan-resilient-store.test.js'
       - 'lib/coin-scan/market-cap-provider.js'
       - 'lib/coin-scan/postgres-full-scan-store.js'
       - 'lib/coin-scan/binance-ws-shards.js'
@@ -38,6 +41,7 @@ jobs:
       - run: node scripts/verify-full-universe-auto-scan.js
       - run: node --test lib/coin-scan/mtf-market-analyzer.test.js
       - run: node --check lib/coin-scan/mtf-market-analyzer.js
+      - run: node --test lib/coin-scan/full-scan-resilient-store.test.js
       - run: node scripts/verify-full-universe-worker-contract.js
       - run: node --check workers/full-universe-auto-scan.mjs
       - run: node --check workers/selector-runtime.mjs
