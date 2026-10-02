@@ -8,7 +8,7 @@ function symbolsOf(q={}){return String(q.symbols||'').split(',').map(x=>x.trim()
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function clamp(v,a=0,b=100){return Math.max(a,Math.min(b,Number(v)||0))}
 async function canonicalChartbroStats(){
-  const base=String(process.env.CHARTBRO_RESEARCH_URL||'https://pulseradar-selector-runtime.onrender.com/api/chartbro-research').replace(/\/$/,'');
+  const base=String(process.env.CHARTBRO_RESEARCH_URL||'https://pulseradar-chartbro-oos-runtime.onrender.com/api/chartbro-research').replace(/\/$/,'');
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6000);
   try{const r=await fetch(base+'?view=stats',{headers:{accept:'application/json'},signal:ctrl.signal});if(!r.ok)return null;const x=await r.json();return x?.status==='ok'?x:null}catch{return null}finally{clearTimeout(timer)}
 }
@@ -22,7 +22,7 @@ function applyCanonicalChartbro(result,stats){
     item.chartbroResearch={...local,canonical:true,canonicalUpdatedAt:stats.updatedAt||null,productionGate:stats.productionGate,rankingAdjustment:next};
     v.chartbroResearch=item.chartbroResearch;item.verdict=v;
   }
-  result.chartbroResearch={...stats,canonical:true,source:'selector-runtime-postgres'};
+  result.chartbroResearch={...stats,canonical:true,source:'chartbro-oos-runtime'};
   return result;
 }
 
