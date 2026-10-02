@@ -19,8 +19,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <main className="main">
         <header className="topbar">
-          <strong>New Build</strong>
-          <div className="status"><span className="dot" />Skeleton v0.1</div>
+          <strong>Clean-room Book Build</strong>
+          <div className="status"><span className="dot" />Page 001 · Complete</div>
         </header>
         <div className="content">{children}</div>
       </main>
