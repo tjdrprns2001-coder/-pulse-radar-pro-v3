@@ -781,10 +781,17 @@ def compression_cascade(
     }
     passed = {tf: values[tf] <= thresholds[tf] for tf in values}
     count = sum(passed.values())
+    label = (
+        "FULL" if count == 4
+        else "TIGHT" if count == 3
+        else "PARTIAL" if count == 2
+        else "LOOSE"
+    )
     return {
         "count": count,
         "total": 4,
         "qualified": count >= cfg.cascade_min_count,
+        "label": label,
         "passed": passed,
         "compression_pct": {tf: values[tf] * 100 for tf in values},
         "tiers": {tf: compression_tier(values[tf]) for tf in values},
@@ -825,16 +832,36 @@ async def taker_series(
         if len(df) < 4:
             raise ValueError("taker 이력 부족")
 
-        floor = np.maximum(df.sell.to_numpy(dtype=float), 1e-12)
-        ratios = df.buy.to_numpy(dtype=float) / floor
-        if not np.isfinite(ratios[-4:]).all():
+        # 마지막 4개 taker 버킷이 실제 최신 확정봉 4개와 연속적으로
+        # 정렬되는지 검증한다. 누락/지연 데이터를 최신 캔들에 억지로
+        # 덮어쓰면 FLOW-SUSTAIN/IGNITION이 잘못 승격될 수 있다.
+        tail = df.iloc[-4:].copy()
+        buckets = (
+            tail["timestamp"].to_numpy(dtype=np.int64) // period_ms
+        ) * period_ms
+        if not np.all(np.diff(buckets) == period_ms):
+            raise ValueError("taker 구간 누락 또는 비연속")
+
+        expected_latest = (
+            (asof // period_ms) * period_ms - period_ms
+        )
+        if int(buckets[-1]) != int(expected_latest):
+            raise ValueError(
+                "taker 최신 데이터 지연 "
+                f"{int(buckets[-1])} != {int(expected_latest)}"
+            )
+
+        floor = np.maximum(tail.sell.to_numpy(dtype=float), 1e-12)
+        ratios = tail.buy.to_numpy(dtype=float) / floor
+        if not np.isfinite(ratios).all():
             raise ValueError("taker 비정상 수치")
 
         return {
             "known": True,
             "period": period,
-            "values": ratios[-4:].tolist(),
-            "timestamp": int(df.timestamp.iloc[-1]),
+            "values": ratios.tolist(),
+            "timestamps": tail.timestamp.astype("int64").tolist(),
+            "timestamp": int(tail.timestamp.iloc[-1]),
             "source": "BINANCE_FUTURES_TAKER_DATA",
             "error": None,
         }
@@ -1134,7 +1161,10 @@ async def analyze(
         "15m": taker_m15.get("source", "N/A"),
         "5m": taker_m5.get("source", "N/A"),
     }
-    if "BINANCE_SPOT_FALLBACK" in candle_sources.values():
+    if any(
+        str(source).startswith("BINANCE_SPOT")
+        for source in candle_sources.values()
+    ):
         warnings.append("가격/거래량 Binance Spot fallback")
     if not all(x.get("known") for x in (taker_h1, taker_m15, taker_m5)):
         warnings.append("Futures taker 일부 미확인")
@@ -1248,10 +1278,9 @@ async def scan(args, cfg: Config) -> dict:
             queue.put_nowait(symbol)
 
         rows, errors = [], []
-        rejected = 0
+        rejected_symbols = []
 
         async def worker():
-            nonlocal rejected
             while True:
                 try:
                     symbol = queue.get_nowait()
@@ -1260,7 +1289,7 @@ async def scan(args, cfg: Config) -> dict:
                 try:
                     row = await analyze(api, symbol, asof, cfg)
                     if row is None:
-                        rejected += 1
+                        rejected_symbols.append(symbol)
                     else:
                         rows.append(row)
                 except Exception as exc:
@@ -1290,7 +1319,8 @@ async def scan(args, cfg: Config) -> dict:
         ).isoformat(),
         "universe_count": len(universe),
         "universe_symbols": sorted(universe),
-        "rejected_4h_count": rejected,
+        "rejected_4h_count": len(rejected_symbols),
+        "rejected_symbols": sorted(rejected_symbols),
         "config": asdict(cfg),
         "candidates": [r for r in rows if not r["extended"]],
         "extended": [r for r in rows if r["extended"]],
