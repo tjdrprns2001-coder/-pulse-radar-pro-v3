@@ -40,3 +40,16 @@
 .chartbroReviews .ctx-watch,.chartbroReviews .ctx-unknown{color:#f4c565;border-color:#735735}
 .chartbroContext .commonStageTop>span{overflow-wrap:anywhere}
 @media(max-width:640px){.chartbroAmd span,.chartbroReviews span,.chartbroLevels span,.chartbroMeta small{font-size:9px}.chartbroLevels{gap:5px}}
+
+.chartbroResearchPanel{margin:14px 0 22px;padding:16px;border:1px solid #2d465d;border-radius:16px;background:#091521}
+.chartbroResearchHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chartbroResearchHead h2{margin:3px 0 0;font-size:18px}
+.chartbroResearchGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.chartbroResearchGrid>div,.chartbroCompetition>div{padding:10px;border:1px solid #243b50;border-radius:12px;background:#0b1a28}
+.chartbroResearchGrid span,.chartbroCompetition b{display:block;font-size:10px;color:#8ba6bc}
+.chartbroResearchGrid b{display:block;margin-top:4px;font-size:16px;color:#edf7ff}
+.chartbroCompetition{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.chartbroCompetition span{display:block;margin-top:5px;font-size:11px;color:#d8e7f3;line-height:1.45}
+.chartbroOos{border-color:#314e66;background:#0a1724}
+.chartbroOos .oos-pass{color:#a4efd2}.chartbroOos .oos-shadow{color:#f4c565}.chartbroOos .oos-neg{color:#ff9ba5}
+@media(max-width:720px){.chartbroResearchGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.chartbroCompetition{grid-template-columns:1fr}.chartbroResearchPanel{padding:12px}}
