@@ -27,11 +27,13 @@ function render(analysis,{aux=null}={}){
   setText('cardCompression',String(a.compressionState||'N/A')+' · EMA14/28/57/92 폭 '+pct(a.compressionPct));
   setText('cardMomentum','RSI '+ratio(a.rsi?.value)+' · MACD '+(a.macd?.histNow==null?'N/A':Number(a.macd.histNow).toPrecision(3))+' · '+(a.macd?.improving===true?'개선':a.macd?.improving===false?'약화':'N/A')+' · OBV5 '+pct(a.obv?.slope5));
   setText('cardDivergence','RSI '+String(a.rsi?.divergence||'NONE')+' · MACD '+String(a.macd?.divergence||'NONE')+' · OBV '+String(a.obv?.divergence||'NONE'));
-  setText('cardLiquidity','EQ '+String((a.liquidity||[]).length)+' · 최근 '+latestKind(a.sweeps||[]));
+  setText('cardLiquidity','EQ '+String((a.liquidity||[]).length)+' · 최근 '+latestKind(a.sweeps||[])+' · Hammer '+String((a.hammers||[]).length));
   setText('cardZones','FVG '+String((a.fvg||[]).length)+' · OB '+String((a.orderBlocks||[]).length));
   setText('cardVpvr',a.vpvr?('VAH '+price(a.vpvr.vah)+' · POC '+price(a.vpvr.poc)+' · VAL '+price(a.vpvr.val)):'N/A');
   setText('cardFib',a.fib?('0.382 '+price(a.fib.levels?.['0.382'])+' · 0.5 '+price(a.fib.levels?.['0.5'])+' · 0.618 '+price(a.fib.levels?.['0.618'])+' · 0.786 '+price(a.fib.levels?.['0.786'])):'N/A');
   setText('cardIchimoku',a.ichimoku?.baseNow!=null?('전환 '+price(a.ichimoku.conversionNow)+' · 기준 '+price(a.ichimoku.baseNow)+' · 구름 '+price(a.ichimoku.spanANow)+'/'+price(a.ichimoku.spanBNow)):'N/A');
+  const ve=a.volumeEcho;setText('cardVolumeEcho',ve?((ve.active?'ACTIVE':'OFF')+' · anchor '+Number(ve.anchor?.rvol||0).toFixed(2)+'x · 현재 '+(ve.currentRvol==null?'N/A':Number(ve.currentRvol).toFixed(2)+'x')+' · 유지 '+(ve.retained?'Y':'N')):'N/A');
+  const sp=a.specialSetups||{},d=sp.daily92142,h=sp.fourHLongEmaSupport;setText('cardSpecial',d?('1D 92→142 '+(d.ready?'READY':'WAIT')+' · 142거리 '+pct(d.distanceTo142Pct)):h?('4H '+(h.nearest?.period||'')+'EMA '+(h.reclaimed?'RECLAIM':h.holding?'HOLD':'AWAY')+' · 거리 '+pct(h.distancePct)):'선택 TF 전용 조건 없음');
   const inv=analysis.setup.invalidation;setText('cardInvalidation',inv?.price!=null?price(inv.price)+' · '+(inv.type==='range-low'?'박스 하단 이탈':'돌파 실패 기준'):'N/A');
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
   if(aux?.derivatives?.available){const d=aux.derivatives;setText('cardDerivatives','OI4H '+pct(d.oi?.change4hPct)+' · Funding '+pct(d.funding?.ratePct,4)+' · Taker4H '+ratio(d.taker?.ratio4h))}
