@@ -36,7 +36,8 @@ function marketOf(q={}){
     positiveVolumeRatio:n(q.positiveVolumeRatio),
     volumeWeightedBreadth:n(q.volumeWeightedBreadth),
     oiScanDegraded:String(q.oiDegraded||'').toLowerCase()==='true',
-    grokOiCut:n(q.grokOiCut)
+    grokOiCut:n(q.grokOiCut),
+    chartbroCohort:String(q.chartbroCohort||'ASTRA_PASS').toUpperCase()
   };
 }
 module.exports=async function handler(req,res,ctx={}){
