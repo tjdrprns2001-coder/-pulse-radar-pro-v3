@@ -17,6 +17,16 @@ function higherTimeframes(interval){
   const tf=String(interval||'').toLowerCase();
   return ({'1w':[],'1d':['1w'],'4h':['1w','1d'],'1h':['1d','4h'],'15m':['1d','4h','1h'],'5m':['1d','4h','1h']})[tf]||[];
 }
+const ANALYSIS_TFS=Object.freeze(['1w','1d','4h','1h','15m','5m']);
+function historyLimit(tf){return({'1w':320,'1d':560,'4h':560,'1h':520,'15m':480,'5m':480})[String(tf||'').toLowerCase()]||480}
+async function fetchTimeframeStack({exchange='binance',market='futures',symbol='BTCUSDT',selected='4h',selectedDataset=null,fetchImpl}={}){
+  const jobs=ANALYSIS_TFS.map(async tf=>{
+    if(tf===String(selected).toLowerCase()&&selectedDataset)return[tf,selectedDataset];
+    try{return[tf,await fetchHistorical({exchange,market,symbol,interval:tf,limit:historyLimit(tf),fetchImpl})]}
+    catch(e){return[tf,{available:false,timeframe:tf,error:e?.message||String(e)}]}
+  });
+  return Object.fromEntries(await Promise.all(jobs))
+}
 async function fetchHigherTimeframes({exchange='binance',market='futures',symbol='BTCUSDT',interval='4h',fetchImpl}={}){
   const out=[];
   for(const tf of higherTimeframes(interval)){
@@ -33,5 +43,5 @@ async function fetchAuxiliary({exchange='binance',market='futures',symbol='BTCUS
   const [meta,live,derivatives,spot]=await Promise.all([metaP,liveP,derivativesP,spotP]);
   return{meta,live,derivatives,spot};
 }
-return{fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchHigherTimeframes,higherTimeframes,fetchAuxiliary};
+return{ANALYSIS_TFS,historyLimit,fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchTimeframeStack,fetchHigherTimeframes,higherTimeframes,fetchAuxiliary};
 });
