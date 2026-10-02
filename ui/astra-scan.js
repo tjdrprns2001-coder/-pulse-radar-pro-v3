@@ -164,7 +164,12 @@ function render(){const box=$('astraResults'),rows=visibleRows();if($('resultCou
 
 async function loadWholeMarketMtfCandidates(exclude=new Set()){
  const urls=location.hostname==='pulseradar-selector-runtime.onrender.com'?['/api/v1/results?compact=1&limit=2000']:['/api/v1/results?compact=1&limit=2000','https://pulseradar-selector-runtime.onrender.com/api/v1/results?compact=1&limit=2000'];
- for(const url of urls){try{const r=await fetch(url,{cache:'no-store',signal:state.controller?.signal}),x=await r.json();if(!r.ok||!Array.isArray(x.items))continue;return x.items.filter(v=>!exclude.has(String(v.symbol||''))&&Number(v.preIgnitionScore)>=55&&!['LATE','INVALID'].includes(String(v.preIgnitionStage?.key||''))).sort((a,b)=>Number(b.preIgnitionScore||0)-Number(a.preIgnitionScore||0)).slice(0,24)}catch(e){if(e?.name==='AbortError')throw e}}
+ for(const url of urls){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),1200);const outer=state.controller?.signal,onAbort=()=>ctrl.abort();if(outer){if(outer.aborted)ctrl.abort();else outer.addEventListener('abort',onAbort,{once:true})}
+  try{const r=await fetch(url,{cache:'no-store',signal:ctrl.signal}),x=await r.json();if(!r.ok||!Array.isArray(x.items))continue;return x.items.filter(v=>!exclude.has(String(v.symbol||''))&&Number(v.preIgnitionScore)>=55&&!['LATE','INVALID'].includes(String(v.preIgnitionStage?.key||''))).sort((a,b)=>Number(b.preIgnitionScore||0)-Number(a.preIgnitionScore||0)).slice(0,24)}
+  catch(e){if(outer?.aborted)throw e}
+  finally{clearTimeout(timer);if(outer)outer.removeEventListener('abort',onAbort)}
+ }
  return[]
 }
 
