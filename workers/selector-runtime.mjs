@@ -38,7 +38,8 @@ const selectorStore=createPostgresSelectorStore({query});
 const chartbroOos=ChartBroOos.defaultChartBroOosService({store:selectorStore});
 const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:createBinanceResolver({})});
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
-const astraScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(env.ASTRA_FUTURES_MIN_INTERVAL_MS||275),disableSpotRest:false,disableFuturesFallback:false})});
+const astraProvider=createBinanceProvider({concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(env.ASTRA_FUTURES_MIN_INTERVAL_MS||275),disableSpotRest:false,disableFuturesFallback:false});
+const astraScanner=createAstraAutoScanner({provider:astraProvider});
 const fullScanStore=createPostgresFullScanStore({query});
 const preignitionOos=createPreignitionOosStore({query});
 const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
@@ -312,8 +313,15 @@ async function runAstraChartBroTracker(){
     const pass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
     let deepScanned=0;
     for(let i=0;i<pass.length;i+=4){const xs=pass.slice(i,i+4);await astraScanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
+    const outcomeLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OUTCOME_LIMIT||24))),pending=chartbroOos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
+    for(const p of pending){
+      try{
+        const rows=await astraProvider.getFuturesKlines(p.symbol,'5m',400),ev=chartbroOos.evaluateSymbol({symbol:p.symbol,frames:{'5m':rows},asOf:Date.now()});
+        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated)||0;
+      }catch(e){health.errors.push({source:'chartbro-outcome-resolver',symbol:p.symbol,at:Date.now(),error:String(e?.message||e)})}
+    }
     await chartbroOos.flush();const stats=chartbroOos.stats();
-    health.chartbro={status:'DONE',updatedAt:Date.now(),universeCount:u.universeCount||0,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
+    health.chartbro={status:'DONE',updatedAt:Date.now(),universeCount:u.universeCount||0,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
   }catch(e){health.chartbro={...health.chartbro,status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)};health.errors.push({source:'chartbro-oos',at:Date.now(),error:String(e?.message||e)})}
   finally{chartbroTrackerActive=false}
 }
