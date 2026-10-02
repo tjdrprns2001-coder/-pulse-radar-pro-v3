@@ -4,7 +4,7 @@ export type BookPageMeta = {
   number: number;
   slug: string;
   title: string;
-  kind: "cover" | "lesson";
+  kind: "cover" | "lesson" | "contents";
   status: "complete" | "queued";
   source: string;
   summary: string;
@@ -28,6 +28,15 @@ export const BOOK_PAGES: BookPageMeta[] = [
     status: "complete",
     source: "All you should know about Forex-1-200.pdf",
     summary: "Beginner orientation, learning goals, expectations, and continuous learning mindset.",
+  },
+  {
+    number: 3,
+    slug: "3",
+    title: "Contents",
+    kind: "contents",
+    status: "complete",
+    source: "All you should know about Forex-1-200.pdf",
+    summary: "Structured table of contents for Forex Market Basics, Psychology in Forex, and Major Players.",
   },
 ];
 
