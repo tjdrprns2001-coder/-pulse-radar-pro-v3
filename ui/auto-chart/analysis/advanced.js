@@ -85,6 +85,7 @@ function sweeps(candles,liqs,{lookback=48}={}){
  const out=[],start=Math.max(1,candles.length-lookback);
  for(let i=start;i<candles.length;i++){const c=candles[i],prev=candles[i-1];
   for(const l of liqs){
+   if(Number(l.knownAt||0)>Number(c.closeTime))continue;
    if(l.side==='sell-side'&&c.low<l.low&&c.close>l.price)out.push({side:'bull',kind:'SELL_SIDE_SWEEP',price:l.price,index:i,time:c.closeTime,reclaim:true});
    if(l.side==='buy-side'&&c.high>l.high&&c.close<l.price)out.push({side:'bear',kind:'BUY_SIDE_SWEEP',price:l.price,index:i,time:c.closeTime,reclaim:true});
   }
@@ -132,7 +133,7 @@ function volumeEcho(candles,emas,{hours=72,minAgeHours=3}={}){
 function specialSetups(candles,emas,timeframe,currentPrice){
  const tf=String(timeframe||'').toLowerCase(),i=candles.length-1,px=num(currentPrice),out={daily92142:null,fourHLongEmaSupport:null};
  if(tf==='1d'){
-  const e92=num(emas?.[92]?.[i]),e142=num(emas?.[142]?.[i]);if(e92!=null&&e142!=null&&px!=null){const dist142=(px/e142-1)*100;out.daily92142={ema92:e92,ema142:e142,price:px,distanceTo142Pct:dist142,above92:px>=e92,near142:Math.abs(dist142)<=3,ready:px>=e92&&px<e142&&dist142>=-3}}
+  const e92=num(emas?.[92]?.[i]),e142=num(emas?.[142]?.[i]);if(e92!=null&&e142!=null&&px!=null){const dist142=(px/e142-1)*100;out.daily92142={ema92:e92,ema142:e142,price:px,distanceTo142Pct:dist142,above92:px>=e92,ema92Below142:e92<e142,near142:Math.abs(dist142)<=3,ready:e92<e142&&px>=e92&&px<e142&&dist142>=-3}}
  }
  if(tf==='4h'){
   const periods=[224,268,378,448],levels=periods.map(p=>({period:p,value:num(emas?.[p]?.[i])})).filter(x=>x.value!=null);if(levels.length&&px!=null){const nearest=levels.sort((a,b)=>Math.abs(px/a.value-1)-Math.abs(px/b.value-1))[0],dist=(px/nearest.value-1)*100;out.fourHLongEmaSupport={levels,nearest,distancePct:dist,holding:dist>=-.8&&dist<=3,reclaimed:dist>=0&&dist<=3}}
