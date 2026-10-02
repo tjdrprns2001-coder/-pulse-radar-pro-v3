@@ -117,6 +117,7 @@ async function runFullScan(){
     health.fullScan={...health.fullScan,status:run?.status||'QUEUED',runId:run?.id||null,startedAt:run?.startedAt||started,updatedAt:Date.now(),cacheHit:Boolean(prepared.cacheHit),skipped:Boolean(prepared.skipped),source:'render-kv-full-scan'};
     if(prepared.skipped){
       health.fullScan={...health.fullScan,status:run?.status||'SKIPPED',universeCount:run?.universeCount||0,selectedCount:run?.selectedCount||0,completedCount:run?.completedCount||0,errorCount:run?.errorCount||0,completedAt:run?.completedAt||null,updatedAt:Date.now()};
+      if(String(run?.status||'')==='RUNNING')setTimeout(runFullScan,Math.max(95000,Number(env.FULL_SCAN_RECOVERY_RETRY_MS||120000))).unref?.();
       return;
     }
     const out=await fullScan.executeRun(run,{tiers:prepared.tiers});
