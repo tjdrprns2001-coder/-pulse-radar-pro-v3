@@ -46,7 +46,7 @@ const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MAR
 const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:true});
 const fullScanService=createFullUniverseScanService({provider:fullScanProvider,marketCapProvider:fullScanMarketCaps,store:fullScanStore,maxWorkers:Number(env.FULL_SCAN_WORKERS||8),requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||150),klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)});
 const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},preignitionOos:{status:'INIT'},chartbro:{status:String(env.ASTRA_CHARTBRO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED'},errors:[]};
-let evmCollector=null,fullScanWs=null,fullScanActive=false,chartbroTrackerActive=false;
+let evmCollector=null,fullScanWs=null,fullScanActive=false,chartbroTrackerActive=false,chartbroUniverseCursor=0;
 
 async function migrate(){
   if(env.RUNTIME_AUTO_MIGRATE==='0')return;
@@ -307,21 +307,24 @@ async function runAstraChartBroTracker(){
   if(String(env.ASTRA_CHARTBRO_TRACKER_ENABLED||'0')!=='1'||chartbroTrackerActive)return;
   chartbroTrackerActive=true;health.chartbro={...health.chartbro,status:'RUNNING',startedAt:Date.now(),updatedAt:Date.now()};
   try{
-    const minQuoteVolume=Math.max(0,Number(env.ASTRA_CHARTBRO_MIN_QUOTE_VOLUME||10000000)),oiLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OI_LIMIT||24))),deepLimit=Math.max(1,Math.min(16,Number(env.ASTRA_CHARTBRO_DEEP_LIMIT||8)));
-    const u=await astraScanner.universe({method:'astra',minQuoteVolume}),symbols=(u.items||[]).slice(0,oiLimit).map(x=>x.symbol),oiItems=[];
+    const minQuoteVolume=Math.max(0,Number(env.ASTRA_CHARTBRO_MIN_QUOTE_VOLUME||0)),oiLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OI_LIMIT||48))),deepLimit=Math.max(1,Math.min(16,Number(env.ASTRA_CHARTBRO_DEEP_LIMIT||16)));
+    const u=await astraScanner.universe({method:'astra',minQuoteVolume}),universe=(u.items||[]),symbols=[];
+    if(universe.length){for(let i=0;i<Math.min(oiLimit,universe.length);i++)symbols.push(universe[(chartbroUniverseCursor+i)%universe.length].symbol);chartbroUniverseCursor=(chartbroUniverseCursor+symbols.length)%universe.length}
+    const oiItems=[];
     for(let i=0;i<symbols.length;i+=24){const xs=symbols.slice(i,i+24),o=await astraScanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});oiItems.push(...(o.items||[]))}
-    const pass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const freshPass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const carry=chartbroOos.activeSymbols({limit:Math.max(4,deepLimit)}),pass=[...new Set([...carry,...freshPass])].slice(0,Math.max(deepLimit,16));
     let deepScanned=0;
     for(let i=0;i<pass.length;i+=4){const xs=pass.slice(i,i+4);await astraScanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
     const outcomeLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OUTCOME_LIMIT||24))),pending=chartbroOos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
     for(const p of pending){
       try{
         const rows=await astraProvider.getFuturesKlines(p.symbol,'5m',400),ev=chartbroOos.evaluateSymbol({symbol:p.symbol,frames:{'5m':rows},asOf:Date.now()});
-        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated)||0;
+        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated24h)||0;
       }catch(e){health.errors.push({source:'chartbro-outcome-resolver',symbol:p.symbol,at:Date.now(),error:String(e?.message||e)})}
     }
     await chartbroOos.flush();const stats=chartbroOos.stats();
-    health.chartbro={status:'DONE',updatedAt:Date.now(),universeCount:u.universeCount||0,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
+    health.chartbro={status:'DONE',updatedAt:Date.now(),universeCount:u.universeCount||0,universeCursor:chartbroUniverseCursor,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
   }catch(e){health.chartbro={...health.chartbro,status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)};health.errors.push({source:'chartbro-oos',at:Date.now(),error:String(e?.message||e)})}
   finally{chartbroTrackerActive=false}
 }
