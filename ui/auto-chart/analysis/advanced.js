@@ -31,7 +31,7 @@ function ichimoku(candles){
  return{conversion:conv,base,spanA,spanB}
 }
 function emaPack(candles,periods=[14,28,57,92,142,224,268,378,448]){
- const close=(candles||[]).map(x=>Number(x.close)),out={};for(const p of periods)out[p]=ema(close,p);return out
+ const close=(candles||[]).map(x=>Number(x.close)),out={};for(const p of periods){const raw=ema(close,p);out[p]=raw.map((v,i)=>i>=p-1?v:null)}return out
 }
 function compression(pack,index,periods=[14,28,57,92]){
  const xs=periods.map(p=>num(pack?.[p]?.[index])).filter(finite);if(xs.length!==periods.length)return null;
@@ -111,14 +111,43 @@ function vpvr(candles,{bins=24,lookback=180}={}){
  const val=Math.min(...chosen.map(x=>x.low)),vah=Math.max(...chosen.map(x=>x.high));
  return{poc:(poc.low+poc.high)/2,val,vah,bins:arr,totalVolume:total}
 }
-function summary(candles,swings,{atrSeries=[],currentPrice=null}={}){
- const i=candles.length-1,emas=emaPack(candles),r=rsi(candles),m=macd(candles),o=obv(candles),ichi=ichimoku(candles),comp=compression(emas,i),liq=liquidity(candles,swings,{atrNow:atrSeries[i],currentPrice}),sweep=sweeps(candles,liq),fg=fvg(candles,{atrSeries}),ob=orderBlocks(candles,{atrSeries}),fibx=fib(swings,currentPrice),vp=vpvr(candles);
+
+function hammerSignals(candles,{lookback=8}={}){
+ const out=[],start=Math.max(1,candles.length-lookback);
+ for(let i=start;i<candles.length;i++){const c=candles[i],body=Math.max(Math.abs(c.close-c.open),Math.abs(c.close)*.00005),lower=Math.min(c.open,c.close)-c.low,upper=c.high-Math.max(c.open,c.close),prior=candles.slice(Math.max(0,i-6),i);if(prior.length<3)continue;
+  const down=prior.at(-1).close<prior[0].close;
+  if(down&&lower>=body*2&&upper<=body*.9)out.push({kind:'HAMMER',side:'bull',index:i,time:c.closeTime,low:c.low,high:c.high,body,lowerWick:lower})
+ }
+ return out
+}
+function rvolAt(candles,index,period=20){
+ if(index<period)return null;const cur=num(candles[index]?.volume),prev=candles.slice(index-period,index).map(x=>num(x?.volume));if(cur==null||prev.some(x=>x==null))return null;const a=prev.reduce((s,x)=>s+x,0)/period;return a>0?cur/a:null
+}
+function volumeEcho(candles,emas,{hours=72,minAgeHours=3}={}){
+ if(candles.length<25)return null;const end=Number(candles.at(-1).closeTime),from=end-hours*3600000,to=end-minAgeHours*3600000;let anchor=null;
+ for(let i=20;i<candles.length-1;i++){const c=candles[i];if(c.closeTime<from||c.closeTime>to)continue;const r=rvolAt(candles,i,20);if(r!=null&&r>=2)anchor={index:i,time:c.closeTime,rvol:r,close:c.close,low:c.low}}
+ if(!anchor)return null;const currentRvol=rvolAt(candles,candles.length-1,20),last=candles.at(-1),e14=num(emas?.[14]?.at(-1)),retained=last.close>=anchor.close*.97&&last.low>=anchor.low*.97,emaHold=e14!=null&&last.close>=e14;
+ return{anchor,currentRvol,retained,ema14Hold:emaHold,active:retained&&emaHold&&(currentRvol==null||currentRvol<=1.2)}
+}
+function specialSetups(candles,emas,timeframe,currentPrice){
+ const tf=String(timeframe||'').toLowerCase(),i=candles.length-1,px=num(currentPrice),out={daily92142:null,fourHLongEmaSupport:null};
+ if(tf==='1d'){
+  const e92=num(emas?.[92]?.[i]),e142=num(emas?.[142]?.[i]);if(e92!=null&&e142!=null&&px!=null){const dist142=(px/e142-1)*100;out.daily92142={ema92:e92,ema142:e142,price:px,distanceTo142Pct:dist142,above92:px>=e92,near142:Math.abs(dist142)<=3,ready:px>=e92&&px<e142&&dist142>=-3}}
+ }
+ if(tf==='4h'){
+  const periods=[224,268,378,448],levels=periods.map(p=>({period:p,value:num(emas?.[p]?.[i])})).filter(x=>x.value!=null);if(levels.length&&px!=null){const nearest=levels.sort((a,b)=>Math.abs(px/a.value-1)-Math.abs(px/b.value-1))[0],dist=(px/nearest.value-1)*100;out.fourHLongEmaSupport={levels,nearest,distancePct:dist,holding:dist>=-.8&&dist<=3,reclaimed:dist>=0&&dist<=3}}
+ }
+ return out
+}
+
+function summary(candles,swings,{atrSeries=[],currentPrice=null,timeframe=null}={}){
+ const i=candles.length-1,emas=emaPack(candles),r=rsi(candles),m=macd(candles),o=obv(candles),ichi=ichimoku(candles),comp=compression(emas,i),liq=liquidity(candles,swings,{atrNow:atrSeries[i],currentPrice}),sweep=sweeps(candles,liq),fg=fvg(candles,{atrSeries}),ob=orderBlocks(candles,{atrSeries}),fibx=fib(swings,currentPrice),vp=vpvr(candles),hammers=hammerSignals(candles),echo=volumeEcho(candles,emas),special=specialSetups(candles,emas,timeframe,currentPrice);
  const e14=num(emas[14]?.[i]),e28=num(emas[28]?.[i]),e57=num(emas[57]?.[i]),e92=num(emas[92]?.[i]),px=num(currentPrice);
  const trend=e14&&e28&&e57&&e92?(e14>e28&&e28>e57&&e57>e92?'BULL':e14<e28&&e28<e57&&e57<e92?'BEAR':'MIXED'):'UNKNOWN';
  return{ema:emas,compressionPct:comp,compressionState:comp==null?'N/A':comp<=5?'STRONG':comp<=10?'COMPRESSED':'OPEN',emaTrend:trend,emaSlope14:slope(emas[14],i,5),
   rsi:{series:r,value:num(r[i]),divergence:divergence(candles,r)},macd:{...m,lineNow:num(m.line[i]),signalNow:num(m.signal[i]),histNow:num(m.hist[i]),histPrev:num(m.hist[i-1]),improving:finite(m.hist[i])&&finite(m.hist[i-1])?m.hist[i]>m.hist[i-1]:null,divergence:divergence(candles,m.line)},obv:{series:o,value:num(o[i]),slope5:slope(o,i,5),divergence:divergence(candles,o)},ichimoku:{...ichi,conversionNow:num(ichi.conversion[i]),baseNow:num(ichi.base[i]),spanANow:num(ichi.spanA[i]),spanBNow:num(ichi.spanB[i])},
-  fvg:fg,orderBlocks:ob,liquidity:liq,sweeps:sweep,fib:fibx,vpvr:vp,longEmaDistance:{ema142:eDist(px,emas[142]?.[i]),ema224:eDist(px,emas[224]?.[i]),ema268:eDist(px,emas[268]?.[i]),ema378:eDist(px,emas[378]?.[i]),ema448:eDist(px,emas[448]?.[i])}}
+  fvg:fg,orderBlocks:ob,liquidity:liq,sweeps:sweep,hammers,volumeEcho:echo,specialSetups:special,fib:fibx,vpvr:vp,longEmaDistance:{ema142:eDist(px,emas[142]?.[i]),ema224:eDist(px,emas[224]?.[i]),ema268:eDist(px,emas[268]?.[i]),ema378:eDist(px,emas[378]?.[i]),ema448:eDist(px,emas[448]?.[i])}}
 }
 function eDist(px,e){return finite(px)&&finite(e)&&Number(e)!==0?(Number(px)/Number(e)-1)*100:null}
-return{rsi,macd,obv,ichimoku,emaPack,compression,slope,divergence,fvg,orderBlocks,liquidity,sweeps,fib,vpvr,summary};
+return{rsi,macd,obv,ichimoku,emaPack,compression,slope,divergence,fvg,orderBlocks,liquidity,sweeps,hammerSignals,volumeEcho,specialSetups,fib,vpvr,summary};
 });
