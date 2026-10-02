@@ -310,14 +310,15 @@ async function runAstraChartBroTracker(){
     const minQuoteVolume=Math.max(0,Number(env.ASTRA_CHARTBRO_MIN_QUOTE_VOLUME||10000000)),oiLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OI_LIMIT||24))),deepLimit=Math.max(1,Math.min(16,Number(env.ASTRA_CHARTBRO_DEEP_LIMIT||8)));
     const u=await astraScanner.universe({method:'astra',minQuoteVolume}),symbols=(u.items||[]).slice(0,oiLimit).map(x=>x.symbol),oiItems=[];
     for(let i=0;i<symbols.length;i+=24){const xs=symbols.slice(i,i+24),o=await astraScanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});oiItems.push(...(o.items||[]))}
-    const pass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const freshPass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const carry=chartbroOos.activeSymbols({limit:Math.max(4,deepLimit)}),pass=[...new Set([...carry,...freshPass])].slice(0,Math.max(deepLimit,16));
     let deepScanned=0;
     for(let i=0;i<pass.length;i+=4){const xs=pass.slice(i,i+4);await astraScanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
     const outcomeLimit=Math.max(4,Math.min(48,Number(env.ASTRA_CHARTBRO_OUTCOME_LIMIT||24))),pending=chartbroOos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
     for(const p of pending){
       try{
         const rows=await astraProvider.getFuturesKlines(p.symbol,'5m',400),ev=chartbroOos.evaluateSymbol({symbol:p.symbol,frames:{'5m':rows},asOf:Date.now()});
-        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated)||0;
+        outcomeSymbolsChecked++;outcomesEvaluated24h+=Number(ev.evaluated24h)||0;
       }catch(e){health.errors.push({source:'chartbro-outcome-resolver',symbol:p.symbol,at:Date.now(),error:String(e?.message||e)})}
     }
     await chartbroOos.flush();const stats=chartbroOos.stats();
