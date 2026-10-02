@@ -19,7 +19,7 @@ on:
       - "lib/coin-scan/chartbro-context.js"
       - "lib/coin-scan/chartbro-context.test.js"
       - "lib/coin-scan/chartbro-oos-service.js"
-      - "lib/coin-scan/chartbro-oos-service.test.js lib/coin-scan/render-kv-state-store.test.js"
+      - "lib/coin-scan/chartbro-oos-service.test.js"
       - "lib/coin-scan/render-kv-state-store.js"
       - "lib/coin-scan/render-kv-state-store.test.js"
       - "workers/chartbro-oos-runtime.mjs"
@@ -82,7 +82,7 @@ jobs:
       - run: node --check workers/selector-runtime.mjs
       - run: node --check lib/coin-scan/astra-auto-scanner.js
       - run: node --check ui/astra-scan.js
-      - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js lib/coin-scan/chartbro-oos-service.test.js
+      - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js lib/coin-scan/chartbro-oos-service.test.js lib/coin-scan/render-kv-state-store.test.js
       - run: node scripts/verify-astra-auto-scan.js
 
       - uses: actions/setup-python@v5
