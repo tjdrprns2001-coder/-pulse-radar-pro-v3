@@ -3,9 +3,14 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const {URL}=require('url');
+const {createBinanceProvider}=require('./lib/coin-scan/binance-provider.js');
+const {createAstraAutoScanner}=require('./lib/coin-scan/astra-auto-scanner.js');
+const ChartBroOos=require('./lib/coin-scan/chartbro-oos-service.js');
 
 const ROOT=__dirname;
 const PORT=Number(process.env.PORT||10000);
+const chartbroHealth={status:String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now()};
+let chartbroActive=false,chartbroScanner=null;
 
 const aliases={
   '/':'/pulse-unified.html',
@@ -125,10 +130,37 @@ function safeFile(pathname){
   return file;
 }
 
+
+function batch(a,n){const out=[];for(let i=0;i<a.length;i+=n)out.push(a.slice(i,i+n));return out}
+function tracker(){
+  if(!chartbroScanner)chartbroScanner=createAstraAutoScanner({provider:createBinanceProvider({concurrency:1,intervalConcurrency:1,futuresMinIntervalMs:Number(process.env.ASTRA_FUTURES_MIN_INTERVAL_MS||350),disableSpotRest:false,disableFuturesFallback:false})});
+  return chartbroScanner;
+}
+async function runChartBroTracker(){
+  if(String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')!=='1'||chartbroActive)return;
+  chartbroActive=true;chartbroHealth.status='RUNNING';chartbroHealth.startedAt=Date.now();chartbroHealth.updatedAt=Date.now();
+  try{
+    const scanner=tracker(),minQuoteVolume=Math.max(0,Number(process.env.CHARTBRO_TRACKER_MIN_QUOTE_VOLUME||10000000)),oiLimit=Math.max(4,Math.min(48,Number(process.env.CHARTBRO_TRACKER_OI_LIMIT||24))),deepLimit=Math.max(1,Math.min(16,Number(process.env.CHARTBRO_TRACKER_DEEP_LIMIT||8)));
+    const u=await scanner.universe({method:'astra',minQuoteVolume}),symbols=(u.items||[]).slice(0,oiLimit).map(x=>x.symbol),oiItems=[];
+    for(const xs of batch(symbols,24)){const o=await scanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});oiItems.push(...(o.items||[]))}
+    const pass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    let deepScanned=0;
+    for(const xs of batch(pass,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
+    const stats=ChartBroOos.defaultChartBroOosService().stats();
+    Object.assign(chartbroHealth,{status:'DONE',updatedAt:Date.now(),universeCount:u.universeCount||0,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false,error:null});
+  }catch(e){Object.assign(chartbroHealth,{status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)})}
+  finally{chartbroActive=false}
+}
+function scheduleChartBroTracker(){
+  if(String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')!=='1')return;
+  const interval=Math.max(300000,Number(process.env.CHARTBRO_TRACKER_INTERVAL_MS||900000)),delay=Math.max(5000,Number(process.env.CHARTBRO_TRACKER_START_DELAY_MS||45000));
+  setTimeout(runChartBroTracker,delay).unref?.();setInterval(runChartBroTracker,interval).unref?.();
+}
+
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
-    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview'}),{'Content-Type':'application/json; charset=utf-8'});
+    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',chartbro:chartbroHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
     const file=safeFile(u.pathname);
     if(!file||!fs.existsSync(file)||fs.statSync(file).isDirectory())return send(res,404,'Not Found',{'Content-Type':'text/plain; charset=utf-8'});
@@ -140,4 +172,4 @@ const server=http.createServer(async(req,res)=>{
     send(res,500,'Server error: '+String(e&&e.message||e),{'Content-Type':'text/plain; charset=utf-8'});
   }
 });
-server.listen(PORT,'0.0.0.0',()=>console.log('PulseRadar temp preview listening on',PORT));
+server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);scheduleChartBroTracker()});
