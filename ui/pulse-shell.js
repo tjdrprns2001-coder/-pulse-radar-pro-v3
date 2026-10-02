@@ -52,7 +52,7 @@
   function readRecent(){try{const a=JSON.parse(localStorage.getItem('pr_recent')||'[]');return Array.isArray(a)&&a[0]?a[0]:'BTCUSDT'}catch{return'BTCUSDT'}}
   function symbol(){return cleanSymbol($('symbol').value)}
   function activePreset(){return presets?.getPreset($('preset')?.value||'clean')||{id:'clean'}}
-  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20261002-overlayfix1');if(o.mode)u.searchParams.set('mode',o.mode);if(key==='snapshotcenter'){const sq=new URLSearchParams(location.search);for(const k of ['mode','tf','eventId','stageTransition','v2Type','scanUpdatedAt']){const v=sq.get(k);if(v)u.searchParams.set(k,v)}}return u.pathname+u.search}
+  function srcFor(key){const o=V[key]||V.home,s=symbol(),p=activePreset().id,u=new URL(o.path,location.origin);u.searchParams.set('symbol',s);u.searchParams.set('preset',p);u.searchParams.set('shell','1');u.searchParams.set('build','20261002-overlayfix2');if(o.mode)u.searchParams.set('mode',o.mode);if(key==='snapshotcenter'){const sq=new URLSearchParams(location.search);for(const k of ['mode','tf','eventId','stageTransition','v2Type','scanUpdatedAt']){const v=sq.get(k);if(v)u.searchParams.set(k,v)}}return u.pathname+u.search}
   function emit(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
   function openMenu(){side.scrollTop=0;side.classList.add('open');shade.classList.add('open')}
   function closeMenu(){side.classList.remove('open');shade.classList.remove('open')}
