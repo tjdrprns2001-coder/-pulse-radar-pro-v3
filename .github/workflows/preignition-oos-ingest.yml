@@ -17,6 +17,9 @@ on:
       - "lib/coin-scan/preignition-oos-store.test.js"
       - "db/selector-runtime-r04.sql"
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
