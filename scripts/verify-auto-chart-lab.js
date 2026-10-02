@@ -9,6 +9,8 @@ const Ranges=require('../ui/auto-chart/analysis/ranges.js');
 const Setup=require('../ui/auto-chart/analysis/setup-state.js');
 const Volume=require('../ui/auto-chart/analysis/volume.js');
 const Replay=require('../ui/auto-chart/analysis/replay.js');
+const Advanced=require('../ui/auto-chart/analysis/advanced.js');
+const MultiTf=require('../ui/auto-chart/analysis/multi-timeframe.js');
 const Core=require('../ui/auto-chart/analysis/core.js');
 
 function candles(n=120){
@@ -114,7 +116,8 @@ assert(Math.abs(prefixReplay.setup.range.high-breakoutEvent.range.high)<1e-9,'fu
 
 const a1=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3}),a2=Core.analyze(ds,{minWidthAtr:1,minInsideRatio:.5,zoneAtr:.3});
 assert.deepStrictEqual(a1,a2,'same data/settings must produce same analysis');
-assert.equal(a1.version,'AUTO_CHART_CORE_v1_2');
+assert.equal(a1.version,'AUTO_CHART_CORE_v2_0');
+assert(a1.advanced&&a1.advanced.ema&&a1.advanced.rsi&&a1.advanced.macd,'core must expose advanced indicators');
 assert(Array.isArray(a1.displayLevels),'core must expose lifecycle displayLevels');
 if(a1.keyLevels.support)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.support.id),'support card zone must come from chart displayLevels');
 if(a1.keyLevels.resistance)assert(a1.displayLevels.some(x=>x.id===a1.keyLevels.resistance.id),'resistance card zone must come from chart displayLevels');
@@ -139,10 +142,34 @@ if(attached.keyLevels.resistance){assert(attached.displayLevels.some(x=>x.id===a
 assert((attached.htfKeyLevels.support.timeframes||[]).every(tf=>['4h','1d'].includes(String(tf).toLowerCase())),'1H view HTF support context must come from 4H/1D');
 assert((attached.htfKeyLevels.resistance.timeframes||[]).every(tf=>['4h','1d'].includes(String(tf).toLowerCase())),'1H view HTF resistance context must come from 4H/1D');
 
+// Advanced indicator maturity: long EMAs must not pretend to exist before enough bars.
+const warm=Array.from({length:120},(_,i)=>bar(i,100+i*.05,99.7+i*.05,100.3+i*.05));
+const pack=Advanced.emaPack(warm);
+assert.equal(pack[142].at(-1),null,'EMA142 must remain N/A before 142 confirmed bars');
+assert(Number.isFinite(pack[92].at(-1)),'EMA92 should mature after 92 confirmed bars');
+
+// User-specific setup flags: 1D 92->142 approach and 4H long-EMA support/reclaim.
+const dailyBars=Array.from({length:200},(_,i)=>bar(i,100+i*.01,99.7+i*.01,100.3+i*.01));
+const emDaily={92:Array(200).fill(null),142:Array(200).fill(null)};emDaily[92][199]=100;emDaily[142][199]=103;
+const dailySpecial=Advanced.specialSetups(dailyBars,emDaily,'1d',101);
+assert.equal(dailySpecial.daily92142.ready,true,'1D EMA92->142 pre-breakout setup should be explicit');
+const em4={224:Array(500).fill(null),268:Array(500).fill(null),378:Array(500).fill(null),448:Array(500).fill(null)};
+em4[224][499]=100;em4[268][499]=98;em4[378][499]=95;em4[448][499]=90;
+const fourSpecial=Advanced.specialSetups(Array(500).fill(warm.at(-1)),em4,'4h',100.5);
+assert.equal(fourSpecial.fourHLongEmaSupport.reclaimed,true,'4H long EMA reclaim should be explicit');
+
+// MTF role separation must be stable from weekly environment to 5m execution.
+function mf(tf,biasKey,emaTrend,rsiVal,hist,rvol=1.5){return{available:true,timeframe:tf,structure:{key:biasKey},setup:{state:'BOX_WATCH'},advanced:{emaTrend,rsi:{value:rsiVal},macd:{histNow:hist,improving:hist>=0},compressionState:'COMPRESSED',sweeps:[]},volume:{rvol20:rvol}}}
+const synth=MultiTf.synthesize({'1w':mf('1w','UPTREND','BULL',60,1),'1d':mf('1d','UPTREND','BULL',58,.5),'4h':mf('4h','UPTREND','BULL',57,.4),'1h':mf('1h','UPTREND','BULL',55,.3),'15m':mf('15m','UPTREND','BULL',56,.2),'5m':mf('5m','UPTREND','BULL',54,.1)});
+assert.equal(synth.regime,'BULL');assert.equal(synth.rows.length,6);assert(['READY','WATCH'].includes(synth.execution.longState));
+
+const fullStack=Core.attachTimeframeStack({...a1,timeframe:'1h',currentPrice:100,atrNow:1},{'1w':{...htf1d,timeframe:'1w'},'1d':htf1d,'4h':htf4,'1h':a1,'15m':a1,'5m':a1});
+assert(fullStack.multiTimeframe&&fullStack.timeframeStack,'core must expose full timeframe synthesis');
+
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
 const html=fs.readFileSync('auto-chart-lab.html','utf8'),app=fs.readFileSync('ui/auto-chart/app.js','utf8');
-for(const k of['AUTO CHART LAB · CORE v1','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','cardHtf','data-layer="sr"','data-layer="box"','analysis/level-state.js','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing core UI '+k);
-for(const k of['beginRequest','isCurrent','fetchHistorical','fetchHigherTimeframes','fetchAuxiliary','attachHigherFrames','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
+for(const k of['AUTO CHART LAB · MTF v2','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','cardHtf','cardEnvironment','cardExecutionTf','cardCompression','cardMomentum','cardLiquidity','cardZones','cardVpvr','cardFib','cardIchimoku','cardVolumeEcho','cardSpecial','data-layer="sr"','data-layer="box"','data-layer="ema"','data-layer="liquidity"','data-layer="zones"','data-layer="vpvr"','analysis/advanced.js','analysis/multi-timeframe.js','analysis/level-state.js','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing MTF UI '+k);
+for(const k of['beginRequest','isCurrent','fetchHistorical','fetchTimeframeStack','fetchAuxiliary','attachTimeframeStack','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
 assert(app.indexOf('fetchHistorical')<app.indexOf('fetchAuxiliary'),'historical data must be handled before auxiliary/live');
-console.log('auto chart core replay/RVOL/N-A PASS');
+console.log('auto chart MTF v2 advanced/replay/RVOL/N-A PASS');

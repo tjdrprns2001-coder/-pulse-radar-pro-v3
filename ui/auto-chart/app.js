@@ -11,11 +11,11 @@ async function analyze(refresh=false){
     const historical=await MarketData.fetchHistorical({...selection,interval:selection.timeframe,refresh});if(!store.isCurrent(id))return;
     const analysis=Core.analyze(historical);if(!analysis.available)throw new Error(analysis.error||'분석 불가');
     store.patch({historical,analysis,lastGood:{key,analysis,historical},updatedAt:historical.status.updatedAt});render();
-    const htfP=MarketData.fetchHigherTimeframes({...selection,interval:selection.timeframe}).catch(()=>[]);
+    const stackP=MarketData.fetchTimeframeStack({...selection,selected:selection.timeframe,selectedDataset:historical}).catch(()=>({[selection.timeframe]:historical}));
     const auxP=MarketData.fetchAuxiliary({...selection,interval:selection.timeframe}).catch(e=>({live:{available:false,error:e.message},derivatives:{available:false,error:e.message}}));
-    const [htfSets,aux]=await Promise.all([htfP,auxP]);if(!store.isCurrent(id))return;
-    const htfAnalyses=(htfSets||[]).filter(x=>Array.isArray(x?.candles)&&x.candles.length).map(x=>Core.analyze(x)).filter(x=>x?.available);
-    const enriched=Core.attachHigherFrames(analysis,htfAnalyses);
+    const [stackSets,aux]=await Promise.all([stackP,auxP]);if(!store.isCurrent(id))return;
+    const frameMap={};for(const [tf,ds] of Object.entries(stackSets||{})){if(Array.isArray(ds?.candles)&&ds.candles.length)frameMap[tf]=Core.analyze(ds)}
+    const enriched=Core.attachTimeframeStack(frameMap[selection.timeframe]||analysis,frameMap);
     if(aux?.meta?.available&&aux.meta.tickSize)historical.market.tickSize=Number(aux.meta.tickSize);
     store.patch({analysis:enriched,aux,lastGood:{key,analysis:enriched,historical}});render();Card.live(aux);Card.render(enriched,{aux});
   }catch(e){

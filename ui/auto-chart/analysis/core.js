@@ -1,11 +1,11 @@
 (function(root,factory){
  const deps=typeof module==='object'&&module.exports?{
-  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js')
- }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume};
+  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js'),Advanced:require('./advanced.js'),MultiTf:require('./multi-timeframe.js')
+ }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume,Advanced:root.PulseAutoChartAdvanced,MultiTf:root.PulseAutoChartMultiTf};
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
-const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume}=dep;
-const VERSION='AUTO_CHART_CORE_v1_2';
+const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf}=dep;
+const VERSION='AUTO_CHART_CORE_v2_0';
 function keyLevels(displayLevels,currentPrice){
   return{
     support:LevelState.nearest(displayLevels,'support',currentPrice),
@@ -16,12 +16,12 @@ function analyze(dataset,settings={}){
   const candles=dataset?.candles||[],last=candles.at(-1);
   if(!last)return{available:false,version:VERSION,error:'확정봉 데이터 없음',dataset};
   const atrSeries=MathX.atr(candles,14),atrNow=atrSeries.at(-1),swings=Swings.extract(dataset),provisionalSwings=Swings.provisional(dataset),structure=Swings.classify(swings);
-  const replay=Replay.track({candles,swings,atrSeries,timeframe:dataset.market.interval,settings}),range=replay.range||null,setup=replay.setup,ma=Indicators.movingAverages(candles,[20,60]),volume=Volume.summarize(candles,{hours24:24,hours72:72,threshold:settings.volumeSpikeRvol??3,period:20});
+  const replay=Replay.track({candles,swings,atrSeries,timeframe:dataset.market.interval,settings}),range=replay.range||null,setup=replay.setup,ma=Indicators.movingAverages(candles,[20,60]),volume=Volume.summarize(candles,{hours24:24,hours72:72,threshold:settings.volumeSpikeRvol??3,period:20}),advanced=Advanced.summary(candles,swings,{atrSeries,currentPrice:last.close,timeframe:dataset.market.interval});
   const rawLevels=Levels.build(swings,{atrNow,currentPrice:last.close,timeframe:dataset.market.interval,zoneAtr:settings.zoneAtr??.20,minTouches:settings.minTouches??2,maxEachSide:12});
   const levelStates=LevelState.evaluate(rawLevels,candles,{atrSeries,atrNow,breakoutAtr:settings.breakoutAtr??.10,retestAtr:settings.retestAtr??.25});
   const localDisplayLevels=LevelState.select(levelStates,{atrNow,currentPrice:last.close,timeframe:dataset.market.interval,maxEachSide:settings.maxDisplayEachSide});
   const keys=keyLevels(localDisplayLevels,last.close);
-  return{available:true,version:VERSION,asOf:last.closeTime,timeframe:dataset.market.interval,market:dataset.market,currentPrice:last.close,atrNow,candles,swings,provisionalSwings,structure,levels:rawLevels,levelStates,localDisplayLevels,displayLevels:localDisplayLevels,htfLevels:[],range,setup,setupHistory:replay.history,indicators:{ma},volume,keyLevels:{...keys,invalidation:setup.invalidation||null},dataStatus:dataset.status};
+  return{available:true,version:VERSION,asOf:last.closeTime,timeframe:dataset.market.interval,market:dataset.market,currentPrice:last.close,atrNow,candles,swings,provisionalSwings,structure,levels:rawLevels,levelStates,localDisplayLevels,displayLevels:localDisplayLevels,htfLevels:[],range,setup,setupHistory:replay.history,indicators:{ma},advanced,volume,keyLevels:{...keys,invalidation:setup.invalidation||null},dataStatus:dataset.status};
 }
 function tfRank(tf){return({'1w':5,'1d':4,'4h':3,'1h':2,'15m':1,'5m':0})[String(tf||'').toLowerCase()]??0}
 function htfCoreLevels(frame,basePrice){
@@ -60,5 +60,11 @@ function attachHigherFrames(base,frames=[]){
   const majorHtf=htf.filter(z=>majorTfs.includes(String(z.timeframe).toLowerCase())),htfMerged=LevelState.mergeGroup(majorHtf.length?majorHtf:htf,{atrNow:base.atrNow,currentPrice:p}),htfKeys=keyLevels(htfMerged,p);
   return{...base,htfLevels:htf,htfKeyLevels:htfKeys,displayLevels:display,keyLevels:{...keys,invalidation:base.setup?.invalidation||null},higherTimeframes:(frames||[]).filter(x=>x?.available).map(x=>x.timeframe)};
 }
-return{VERSION,analyze,attachHigherFrames,tfRank};
+function attachTimeframeStack(base,frameMap={}){
+  if(!base?.available)return base;
+  const baseTf=String(base.timeframe||'').toLowerCase(),higher=Object.values(frameMap||{}).filter(x=>x?.available&&tfRank(x.timeframe)>tfRank(baseTf));
+  const enriched=attachHigherFrames(base,higher),all={...frameMap,[baseTf]:enriched},multiTimeframe=MultiTf.synthesize(all);
+  return{...enriched,multiTimeframe,timeframeStack:Object.fromEntries(Object.entries(all).map(([tf,x])=>[tf,{available:!!x?.available,timeframe:tf,structure:x?.structure||null,advanced:x?.advanced||null,volume:x?.volume||null,setup:x?.setup||null,currentPrice:x?.currentPrice??null}]))};
+}
+return{VERSION,analyze,attachHigherFrames,attachTimeframeStack,tfRank};
 });
