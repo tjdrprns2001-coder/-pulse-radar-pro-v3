@@ -672,13 +672,19 @@ try{await migrate();health.database={status:'AVAILABLE',updatedAt:Date.now()}}
 catch(e){health.database={status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};health.errors.push({source:'database-startup',at:Date.now(),error:String(e?.message||e)})}
 try{await chartbroOos.hydrate()}catch(e){health.errors.push({source:'chartbro-hydrate',at:Date.now(),error:String(e?.message||e)})}
 server();
-runEvm();
-runBinance();
-runQueues();
-runEvidencePollers();
-runSelectorScanner();
+const databaseAvailable=health.database.status==='AVAILABLE';
+if(databaseAvailable){
+  runEvm();
+  runBinance();
+  runQueues();
+  runEvidencePollers();
+  runSelectorScanner();
+  scheduleAstraChartBroTracker();
+}else{
+  const disabled={status:'DISABLED_DB',reason:'DATABASE_URL target unavailable',updatedAt:Date.now()};
+  health.evm={...disabled};health.binanceSpot={...disabled};health.binanceFutures={...disabled};health.queues={...disabled};health.news={...disabled};health.calendar={...disabled};health.selector={...disabled};health.chartbro={...disabled};
+}
 startFullUniverseWebsocket();
 scheduleFullUniverseScanner();
 schedulePreignitionOos();
-scheduleAstraChartBroTracker();
 process.on('SIGTERM',()=>{chartbroOos.flush().finally(()=>process.exit(0))});
