@@ -137,6 +137,14 @@
     {
       "source": "/api/learning-ai",
       "destination": "/api/index?route=learning-ai"
+    },
+    {
+      "source": "/api/chartbro-research",
+      "destination": "/api/index?route=chartbro-research"
+    },
+    {
+      "source": "/api/chart-snapshots",
+      "destination": "/api/index?route=chart-snapshots"
     }
   ],
   "regions": [
