@@ -62,6 +62,7 @@ function renderChartbroResearch(s){
  if($('cbChallenger'))$('cbChallenger').textContent=best?(String(best.label)+' · '+String(best.evaluated||0)+'건 · Δ '+pctText(best.deltaSuccessRate)):'표본 수집 중';
  const fs=Object.entries(s.failureCounts||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);
  if($('cbFailures'))$('cbFailures').textContent=fs.length?fs.map(x=>String(x[0])+' '+String(x[1])).join(' · '):'아직 없음';
+ const latest=Array.isArray(s.recentAlerts)&&s.recentAlerts.length?s.recentAlerts[0]:null;if($('cbLatestAlert'))$('cbLatestAlert').textContent=latest?(String(latest.symbol||'')+' · '+String(latest.side||'')+' · '+String(latest.kind||'')+' · '+timeFmt(latest.capturedAt)):'아직 없음';
 }
 async function loadChartbroResearch(){
  try{const r=await fetch('/api/chartbro-research?view=stats',{cache:'no-store'}),x=await r.json();if(r.ok&&x.status==='ok')renderChartbroResearch(x)}catch(_e){}
@@ -171,5 +172,5 @@ async function run(){if(state.running)return;if(state.retryAt>Date.now()){setSta
  else if(state.method==='manus')setStatus(`완료 · ${u.universeCount} → ${u.filteredCount} → OI ${pass.length} → A_FIRE ${count('A_FIRE')} · B_PREPARE ${count('B_PREPARE')} · C_WATCH ${count('C_WATCH')} · HOLD ${count('HOLD')} · EXCLUDE ${count('EXCLUDE')}`);
  else{const ign=count('IGNITION_CONFIRMED'),watch=count('WATCH_PRIORITY');setStatus(`완료 · ${u.universeCount} → ${u.filteredCount} → OI 통과 ${pass.length} → 점화 확정 ${ign} · 관찰 우선 ${watch}`)}
  }catch(e){if(e?.retryAt>Date.now())pauseRequests(e.retryAt);if(e?.name!=='AbortError')setStatus('스캔 실패 · '+String(e?.message||e))}finally{state.running=false;$('astraRun').disabled=state.retryAt>Date.now();$('scanMethod').disabled=false;$('quoteVolumeFilter').disabled=false}}
-loadChartbroResearch();$('resultSearch')?.addEventListener('input',render);$('stageFilter')?.addEventListener('change',render);$('astraRun')?.addEventListener('click',run);$('scanMethod')?.addEventListener('change',()=>{if(state.running)return;state.rows=[];syncMethod();render();setStatus('방식 변경됨 · 전체스캔 실행을 눌러 원점에서 검사합니다.')});$('quoteVolumeFilter')?.addEventListener('change',()=>{if(state.running)return;state.minQuoteVolume=selectedMinQuoteVolume();syncMethod();setStatus(`${volumeLabel(state.minQuoteVolume)} 적용 대기 · 전체스캔 실행 시 원점부터 다시 검사합니다.`)});syncMethod();
+loadChartbroResearch();setInterval(()=>{if(!document.hidden)loadChartbroResearch()},60000);$('resultSearch')?.addEventListener('input',render);$('stageFilter')?.addEventListener('change',render);$('astraRun')?.addEventListener('click',run);$('scanMethod')?.addEventListener('change',()=>{if(state.running)return;state.rows=[];syncMethod();render();setStatus('방식 변경됨 · 전체스캔 실행을 눌러 원점에서 검사합니다.')});$('quoteVolumeFilter')?.addEventListener('change',()=>{if(state.running)return;state.minQuoteVolume=selectedMinQuoteVolume();syncMethod();setStatus(`${volumeLabel(state.minQuoteVolume)} 적용 대기 · 전체스캔 실행 시 원점부터 다시 검사합니다.`)});syncMethod();
 })();
