@@ -1,20 +1,10 @@
-import Link from "next/link";
+import { BookReaderBar } from "./book-reader-bar";
 import styles from "./book.module.css";
 
 export function Page001Cover() {
   return (
     <div className={styles.reader}>
-      <div className={styles.readerBar}>
-        <div className={styles.readerBarLeft}>
-          <Link href="/book" className={styles.backLink}>← Book index</Link>
-          <span className={styles.pill}>SOURCE PAGE 001</span>
-          <span className={styles.pill + " " + styles.pillStrong}>COMPLETE</span>
-        </div>
-        <div className={styles.readerBarRight}>
-          <span className={styles.pill}>COVER</span>
-          <span className={styles.pill}>001 / 406</span>
-        </div>
-      </div>
+      <BookReaderBar page={1} kind="cover" nextHref="/book/2" />
 
       <div className={styles.readerGrid}>
         <section className={styles.coverStage} aria-label="Forex Book page 1 cover recreation">
@@ -133,16 +123,11 @@ export function Page001Cover() {
             <ul className={styles.checks}>
               <li>원본 표지의 제목, 계층, 색 대비, 금융 차트 모티프를 반응형 벡터 UI로 재구성.</li>
               <li>원본 비트맵에 의존하지 않아 모바일·태블릿·데스크톱에서 선명하게 스케일.</li>
-              <li>페이지 번호·종류·구현 상태를 manifest로 분리해 이후 2~406페이지를 같은 구조로 확장.</li>
+              <li>페이지 번호·종류·구현 상태를 manifest로 분리해 이후 페이지를 같은 구조로 확장.</li>
               <li>후속 페이지 내용을 미리 섞지 않고 Page 1의 정보 범위를 엄격히 유지.</li>
               <li>Next.js 정적 export만으로 동작해 별도 런타임/API 장애 없이 읽을 수 있게 구성.</li>
             </ul>
           </section>
-
-          <div className={styles.locked}>
-            <strong>Page 2는 아직 잠금 상태</strong>
-            <span>이 페이지를 검증한 뒤 다음 원본 페이지를 읽고, 동일한 방식으로 Page 2를 완성합니다.</span>
-          </div>
         </aside>
       </div>
     </div>
