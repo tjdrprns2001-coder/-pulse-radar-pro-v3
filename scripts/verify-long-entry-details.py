@@ -79,6 +79,27 @@ rows[0]["chartbroContext"] = {
 }
 
 
+rows[0]["chartbroResearch"] = {
+    "version": "CHARTBRO_OOS_v1",
+    "productionGate": {"passed": True},
+    "rankingAdjustment": 5,
+    "lastAlerts": [{"symbol": "RRUSDT", "side": "LONG", "kind": "MSS_CONFIRMED", "capturedAt": stamp("2026-10-01T14:15:00Z")}],
+    "lastFailures": []
+}
+research_stats = {
+    "status": "ok", "version": "CHARTBRO_OOS_v1", "observations": 42, "evaluated24h": 30,
+    "overall": {"successRate": 0.60, "avgMfeR": 1.80},
+    "transitionCount": 120, "alertCount": 15,
+    "productionGate": {"passed": True},
+    "competition": {
+        "champion": {"label": "현재 운영 규칙", "evaluated": 30, "successRate": 0.60},
+        "challengers": [{"label": "최소 RR 2.0", "evaluated": 20, "deltaSuccessRate": 0.05}]
+    },
+    "failureCounts": {"SWEEP_NO_MSS": 7},
+    "recentAlerts": [{"symbol": "RRUSDT", "side": "LONG", "kind": "MSS_CONFIRMED", "capturedAt": stamp("2026-10-01T14:15:00Z")}]
+}
+
+
 
 def route_api(route):
     q = parse_qs(urlparse(route.request.url).query)
@@ -93,6 +114,10 @@ def route_api(route):
         data = {"status": "ok", "items": [r for r in rows if r["symbol"] in names]}
     route.fulfill(status=200, content_type="application/json", body=json.dumps(data, ensure_ascii=False))
 
+
+def route_research(route):
+    route.fulfill(status=200, content_type="application/json", body=json.dumps(research_stats, ensure_ascii=False))
+
 server = subprocess.Popen(["python", "-m", "http.server", "8765", "--bind", "127.0.0.1"],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:
@@ -103,6 +128,7 @@ try:
         for timezone in ["Asia/Seoul", "UTC", "America/New_York"]:
             context = browser.new_context(timezone_id=timezone, viewport={"width": 1440, "height": 1050})
             context.route("**/api/astra-scan?*", route_api)
+            context.route("**/api/chartbro-research?*", route_research)
             page = context.new_page()
             errors = []
             page.on("pageerror", lambda e: errors.append(str(e)))
@@ -129,6 +155,18 @@ try:
             expect(context_panel).to_contain_text("IPDA EQ 0.021")
             expect(context_panel).to_contain_text("PREMIUM 62.0%")
             expect(context_panel).to_contain_text("spread 4.2bp")
+
+            research_panel = page.locator("#chartbroResearchPanel")
+            expect(page.locator("#chartbroGate")).to_have_text("OOS GATE PASS")
+            expect(page.locator("#cbObs")).to_have_text("42")
+            expect(page.locator("#cbEval")).to_have_text("30")
+            expect(page.locator("#cbWin")).to_have_text("60.0%")
+            expect(page.locator("#cbMfe")).to_have_text("1.80R")
+            expect(page.locator("#cbLatestAlert")).to_contain_text("RRUSDT")
+            expect(page.locator("#cbLatestAlert")).to_contain_text("MSS_CONFIRMED")
+            oos_card = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".chartbroOos")
+            expect(oos_card).to_contain_text("PRODUCTION GATE PASS")
+            expect(oos_card).to_contain_text("랭킹 +5")
 
             events = rr.locator(".longChecks").inner_text()
             assert baseline is None or events == baseline, (timezone, events, baseline)
