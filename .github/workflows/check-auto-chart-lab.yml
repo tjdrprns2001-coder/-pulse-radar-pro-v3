@@ -32,6 +32,8 @@ jobs:
       - run: node -c api/index.js
       - run: node -c ui/auto-chart/analysis/level-state.js
       - run: node -c ui/auto-chart/analysis/volume.js
+      - run: node -c ui/auto-chart/analysis/advanced.js
+      - run: node -c ui/auto-chart/analysis/multi-timeframe.js
       - run: node -c ui/auto-chart/analysis/replay.js
       - run: node -c ui/auto-chart/analysis/core.js
       - run: node -c ui/auto-chart/analysis/setup-state.js
