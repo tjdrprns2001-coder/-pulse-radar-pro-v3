@@ -16,7 +16,7 @@ function analyze(dataset,settings={}){
   const candles=dataset?.candles||[],last=candles.at(-1);
   if(!last)return{available:false,version:VERSION,error:'확정봉 데이터 없음',dataset};
   const atrSeries=MathX.atr(candles,14),atrNow=atrSeries.at(-1),swings=Swings.extract(dataset),provisionalSwings=Swings.provisional(dataset),structure=Swings.classify(swings);
-  const replay=Replay.track({candles,swings,atrSeries,timeframe:dataset.market.interval,settings}),range=replay.range||null,setup=replay.setup,ma=Indicators.movingAverages(candles,[20,60]),volume=Volume.summarize(candles,{hours24:24,hours72:72,threshold:settings.volumeSpikeRvol??3,period:20}),advanced=Advanced.summary(candles,swings,{atrSeries,currentPrice:last.close});
+  const replay=Replay.track({candles,swings,atrSeries,timeframe:dataset.market.interval,settings}),range=replay.range||null,setup=replay.setup,ma=Indicators.movingAverages(candles,[20,60]),volume=Volume.summarize(candles,{hours24:24,hours72:72,threshold:settings.volumeSpikeRvol??3,period:20}),advanced=Advanced.summary(candles,swings,{atrSeries,currentPrice:last.close,timeframe:dataset.market.interval});
   const rawLevels=Levels.build(swings,{atrNow,currentPrice:last.close,timeframe:dataset.market.interval,zoneAtr:settings.zoneAtr??.20,minTouches:settings.minTouches??2,maxEachSide:12});
   const levelStates=LevelState.evaluate(rawLevels,candles,{atrSeries,atrNow,breakoutAtr:settings.breakoutAtr??.10,retestAtr:settings.retestAtr??.25});
   const localDisplayLevels=LevelState.select(levelStates,{atrNow,currentPrice:last.close,timeframe:dataset.market.interval,maxEachSide:settings.maxDisplayEachSide});
