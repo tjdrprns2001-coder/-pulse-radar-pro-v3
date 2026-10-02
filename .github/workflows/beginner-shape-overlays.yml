@@ -1,0 +1,46 @@
+name: Beginner Shape Overlays
+
+on:
+  push:
+    branches:
+      - feature/beginner-shape-overlays-20261002
+    paths:
+      - "ui/chart/**"
+      - "ui/multi-chart/**"
+      - "unified-chart.html"
+      - "tests/**"
+      - ".github/workflows/beginner-shape-overlays.yml"
+  pull_request:
+    paths:
+      - "ui/chart/**"
+      - "ui/multi-chart/**"
+      - "unified-chart.html"
+      - "tests/**"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax
+        run: |
+          node --check ui/chart/shape-overlay.js
+          node --check ui/chart/plugins/structure-plugin.js
+          node --check ui/chart/plugins/smc-plugin.js
+          node --check ui/chart/plugins/ict-plugin.js
+          node --check ui/chart/plugins/liquidity-plugin.js
+          node --check ui/chart/plugins/volume-profile-plugin.js
+          node --check ui/chart/plugins/simple-trading-plugin.js
+          node --check ui/chart/plugins/forex-book-plugin.js
+          node --check ui/chart/plugins/book-confluence-plugin.js
+          node --check ui/chart/unified-chart-v5.js
+      - name: Existing overlay contracts
+        run: |
+          node --test tests/ict-plugin.test.js
+          node --test tests/liquidity-plugin-contract.test.js
+          node --test tests/smc-plugin.test.js
+          node --test tests/chart-core.test.js
