@@ -22,6 +22,7 @@ const {createBinanceResolver}=require('../lib/signal-performance/binance-resolve
 const {createFullUniverseScanService,normalizeTierSelection,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
 const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
 const {createPostgresFullScanStore}=require('../lib/coin-scan/postgres-full-scan-store.js');
+const {createResilientFullScanStore}=require('../lib/coin-scan/full-scan-resilient-store.js');
 const {createPreignitionOosStore}=require('../lib/coin-scan/preignition-oos-store.js');
 const {createBinanceFuturesWsShards,BINANCE_USDM_PUBLIC_STREAM_URL}=require('../lib/coin-scan/binance-ws-shards.js');
 
@@ -40,12 +41,13 @@ const selectorLedger=createSelectorLedgerService({store:selectorStore,resolver:c
 const selectorScanService=createScanService({provider:createBinanceProvider({concurrency:1,disableSpotRest:true}),selectorLedger});
 const astraProvider=createBinanceProvider({concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(env.ASTRA_FUTURES_MIN_INTERVAL_MS||275),disableSpotRest:false,disableFuturesFallback:false});
 const astraScanner=createAstraAutoScanner({provider:astraProvider});
-const fullScanStore=createPostgresFullScanStore({query});
+let fullScanStorageFallback=null;
+const fullScanStore=createResilientFullScanStore({primary:createPostgresFullScanStore({query}),cooldownMs:Number(env.FULL_SCAN_DB_FALLBACK_COOLDOWN_MS||60000),onFallback:x=>{fullScanStorageFallback=x}});
 const preignitionOos=createPreignitionOosStore({query});
 const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
 const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:false,disableFuturesFallback:false});
 const fullScanService=createFullUniverseScanService({provider:fullScanProvider,marketCapProvider:fullScanMarketCaps,store:fullScanStore,maxWorkers:Number(env.FULL_SCAN_WORKERS||8),requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||150),klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)});
-const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},preignitionOos:{status:'INIT'},chartbro:{status:String(env.ASTRA_CHARTBRO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED'},errors:[]};
+const health={startedAt:Date.now(),database:{status:'INIT'},evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},preignitionOos:{status:'INIT'},chartbro:{status:String(env.ASTRA_CHARTBRO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED'},errors:[]};
 let evmCollector=null,fullScanWs=null,fullScanActive=false,chartbroTrackerActive=false,chartbroUniverseCursor=0;
 
 async function migrate(){
@@ -442,6 +444,7 @@ function schedulePreignitionOos(){
   setInterval(triggerPreignitionOosScanner,interval).unref?.();
 }
 
+function lastFullScanFallback(){return fullScanStorageFallback?{method:fullScanStorageFallback.method,error:fullScanStorageFallback.error,primaryBlockedUntil:fullScanStorageFallback.primaryBlockedUntil}:null}
 function fullScanAuth(req){
   const secret=String(env.FULL_SCAN_ADMIN_TOKEN||'');
   const raw=String(req.headers.authorization||'');
@@ -539,7 +542,7 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
-    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null,marketCaps:fullScanMarketCaps.state,manualEnabled:Boolean(env.FULL_SCAN_ADMIN_TOKEN)});
+    if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,storage:{...fullScanStore.state(),fallback:lastFullScanFallback()},database:health.database,websocket:fullScanWs?.health?.()||health.fullScanWs||null,marketCaps:fullScanMarketCaps.state,manualEnabled:Boolean(env.FULL_SCAN_ADMIN_TOKEN)});
     if(route.pathname==='/api/v1/preignition-oos')return handlePreignitionOos(req,res,route);
     if(req.method==='GET'&&route.pathname==='/api/v1/results'){
       const tiers=normalizeTierSelection(route.searchParams.get('tiers')||''),limit=Math.max(1,Math.min(2000,Number(route.searchParams.get('limit'))||1000)),compact=String(route.searchParams.get('compact')||'0')==='1';
@@ -665,16 +668,23 @@ function server(){
     res.writeHead(404);res.end('not found');
   }).listen(port,'0.0.0.0');
 }
-await migrate();
-await chartbroOos.hydrate();
+try{await migrate();health.database={status:'AVAILABLE',updatedAt:Date.now()}}
+catch(e){health.database={status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};health.errors.push({source:'database-startup',at:Date.now(),error:String(e?.message||e)})}
+try{await chartbroOos.hydrate()}catch(e){health.errors.push({source:'chartbro-hydrate',at:Date.now(),error:String(e?.message||e)})}
 server();
-runEvm();
-runBinance();
-runQueues();
-runEvidencePollers();
-runSelectorScanner();
+const databaseAvailable=health.database.status==='AVAILABLE';
+if(databaseAvailable){
+  runEvm();
+  runBinance();
+  runQueues();
+  runEvidencePollers();
+  runSelectorScanner();
+  scheduleAstraChartBroTracker();
+}else{
+  const disabled={status:'DISABLED_DB',reason:'DATABASE_URL target unavailable',updatedAt:Date.now()};
+  health.evm={...disabled};health.binanceSpot={...disabled};health.binanceFutures={...disabled};health.queues={...disabled};health.news={...disabled};health.calendar={...disabled};health.selector={...disabled};health.chartbro={...disabled};
+}
 startFullUniverseWebsocket();
 scheduleFullUniverseScanner();
 schedulePreignitionOos();
-scheduleAstraChartBroTracker();
 process.on('SIGTERM',()=>{chartbroOos.flush().finally(()=>process.exit(0))});
