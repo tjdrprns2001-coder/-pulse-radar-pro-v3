@@ -149,8 +149,9 @@ assert.equal(pack[142].at(-1),null,'EMA142 must remain N/A before 142 confirmed 
 assert(Number.isFinite(pack[92].at(-1)),'EMA92 should mature after 92 confirmed bars');
 
 // User-specific setup flags: 1D 92->142 approach and 4H long-EMA support/reclaim.
+const dailyBars=Array.from({length:200},(_,i)=>bar(i,100+i*.01,99.7+i*.01,100.3+i*.01));
 const emDaily={92:Array(200).fill(null),142:Array(200).fill(null)};emDaily[92][199]=100;emDaily[142][199]=103;
-const dailySpecial=Advanced.specialSetups(warm,emDaily,'1d',101);
+const dailySpecial=Advanced.specialSetups(dailyBars,emDaily,'1d',101);
 assert.equal(dailySpecial.daily92142.ready,true,'1D EMA92->142 pre-breakout setup should be explicit');
 const em4={224:Array(500).fill(null),268:Array(500).fill(null),378:Array(500).fill(null),448:Array(500).fill(null)};
 em4[224][499]=100;em4[268][499]=98;em4[378][499]=95;em4[448][499]=90;
