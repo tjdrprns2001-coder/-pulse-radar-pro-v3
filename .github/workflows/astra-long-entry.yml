@@ -35,6 +35,7 @@ on:
       - "astra-scan.html"
       - "scripts/verify-long-entry-details.py"
       - "scripts/verify-astra-auto-scan.js"
+      - "scripts/verify-coin-scan-provider.js"
       - ".github/workflows/astra-long-entry.yml"
   pull_request:
     paths:
@@ -60,6 +61,7 @@ on:
       - "astra-scan.html"
       - "scripts/verify-long-entry-details.py"
       - "scripts/verify-astra-auto-scan.js"
+      - "scripts/verify-coin-scan-provider.js"
 
 jobs:
   test:
@@ -84,6 +86,7 @@ jobs:
       - run: node --check ui/astra-scan.js
       - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js lib/coin-scan/chartbro-oos-service.test.js lib/coin-scan/render-kv-state-store.test.js
       - run: node scripts/verify-astra-auto-scan.js
+      - run: node scripts/verify-coin-scan-provider.js
 
       - uses: actions/setup-python@v5
         with:
