@@ -38,6 +38,15 @@ export const BOOK_PAGES: BookPageMeta[] = [
     source: "All you should know about Forex-1-200.pdf",
     summary: "Structured table of contents for Forex Market Basics, Psychology in Forex, and Major Players.",
   },
+  {
+    number: 4,
+    slug: "4",
+    title: "Contents — Analysis",
+    kind: "contents",
+    status: "complete",
+    source: "All you should know about Forex-1-200.pdf",
+    summary: "Contents continuation covering Technical Analysis and Fundamental Analysis.",
+  },
 ];
 
 export function getBookPage(number: number) {
