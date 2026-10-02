@@ -1,10 +1,10 @@
 (function(root,factory){
  const deps=typeof module==='object'&&module.exports?{
-  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js'),Advanced:require('./advanced.js'),MultiTf:require('./multi-timeframe.js')
- }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume,Advanced:root.PulseAutoChartAdvanced,MultiTf:root.PulseAutoChartMultiTf};
+  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js'),Advanced:require('./advanced.js'),MultiTf:require('./multi-timeframe.js'),Reference:require('./reference-levels.js')
+ }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume,Advanced:root.PulseAutoChartAdvanced,MultiTf:root.PulseAutoChartMultiTf,Reference:root.PulseAutoChartReferenceLevels};
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
-const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf}=dep;
+const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf,Reference}=dep;
 const VERSION='AUTO_CHART_CORE_v2_0';
 function keyLevels(displayLevels,currentPrice){
   return{
@@ -63,8 +63,8 @@ function attachHigherFrames(base,frames=[]){
 function attachTimeframeStack(base,frameMap={}){
   if(!base?.available)return base;
   const baseTf=String(base.timeframe||'').toLowerCase(),higher=Object.values(frameMap||{}).filter(x=>x?.available&&tfRank(x.timeframe)>tfRank(baseTf));
-  const enriched=attachHigherFrames(base,higher),all={...frameMap,[baseTf]:enriched},multiTimeframe=MultiTf.synthesize(all);
-  return{...enriched,multiTimeframe,timeframeStack:Object.fromEntries(Object.entries(all).map(([tf,x])=>[tf,{available:!!x?.available,timeframe:tf,structure:x?.structure||null,advanced:x?.advanced||null,volume:x?.volume||null,setup:x?.setup||null,currentPrice:x?.currentPrice??null}]))};
+  const enriched=attachHigherFrames(base,higher),all={...frameMap,[baseTf]:enriched},multiTimeframe=MultiTf.synthesize(all),referenceLevels=Reference.build(all,enriched.asOf);
+  return{...enriched,multiTimeframe,referenceLevels,timeframeStack:Object.fromEntries(Object.entries(all).map(([tf,x])=>[tf,{available:!!x?.available,timeframe:tf,structure:x?.structure||null,advanced:x?.advanced||null,volume:x?.volume||null,setup:x?.setup||null,currentPrice:x?.currentPrice??null}]))};
 }
 return{VERSION,analyze,attachHigherFrames,attachTimeframeStack,tfRank};
 });
