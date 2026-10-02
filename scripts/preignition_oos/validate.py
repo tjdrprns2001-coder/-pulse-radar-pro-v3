@@ -7,13 +7,20 @@ import math
 import os
 import sqlite3
 import statistics
+import tempfile
 import time
 from pathlib import Path
 from types import SimpleNamespace
 
 import aiohttp
 
-from scanner import Binance, Config, json_safe, scan
+from scanner import (
+    Binance,
+    Config,
+    json_safe,
+    scan,
+    spot_symbol_candidates,
+)
 
 
 SCHEMA = """
@@ -26,6 +33,7 @@ CREATE TABLE IF NOT EXISTS prices (
     symbol TEXT NOT NULL,
     ts INTEGER NOT NULL,
     price REAL NOT NULL,
+    source TEXT NOT NULL DEFAULT 'unknown',
     PRIMARY KEY (symbol, ts)
 );
 
@@ -35,17 +43,24 @@ CREATE TABLE IF NOT EXISTS events (
     stage TEXT NOT NULL,
     type TEXT NOT NULL,
     echo INTEGER NOT NULL,
+    volume_state TEXT NOT NULL DEFAULT 'QUIET',
     t0 INTEGER NOT NULL,
     price0 REAL NOT NULL,
+    price_source TEXT NOT NULL DEFAULT 'unknown',
     score REAL NOT NULL,
     controls TEXT NOT NULL,
+    episode_id TEXT,
     scan_ts INTEGER NOT NULL,
     FOREIGN KEY (scan_ts) REFERENCES scans(ts)
 );
 
 CREATE INDEX IF NOT EXISTS events_symbol_stage_time
 ON events(symbol, stage, t0);
+CREATE INDEX IF NOT EXISTS events_episode
+ON events(episode_id, t0);
 """
+
+
 
 
 def connect(path):
@@ -54,8 +69,50 @@ def connect(path):
     db.execute("PRAGMA foreign_keys=ON")
     db.execute("PRAGMA busy_timeout=5000")
     db.executescript(SCHEMA)
-    return db
 
+    # 기존 DB도 새 소스/에피소드 필드를 사용할 수 있도록 제자리 migration.
+    migrations = {
+        "prices": {
+            "source": "TEXT NOT NULL DEFAULT 'unknown'",
+        },
+        "events": {
+            "volume_state": "TEXT NOT NULL DEFAULT 'QUIET'",
+            "price_source": "TEXT NOT NULL DEFAULT 'unknown'",
+            "episode_id": "TEXT",
+        },
+    }
+    for table, columns in migrations.items():
+        existing = {
+            row[1] for row in db.execute(
+                f"PRAGMA table_info({table})"
+            ).fetchall()
+        }
+        for column, definition in columns.items():
+            if column not in existing:
+                db.execute(
+                    f"ALTER TABLE {table} "
+                    f"ADD COLUMN {column} {definition}"
+                )
+
+    db.execute(
+        "UPDATE prices SET source='unknown' "
+        "WHERE source IS NULL OR source=''"
+    )
+    db.execute(
+        "UPDATE events SET price_source='unknown' "
+        "WHERE price_source IS NULL OR price_source=''"
+    )
+    db.execute(
+        "UPDATE events SET volume_state="
+        "CASE WHEN echo=1 THEN 'VOLUME-ECHO' ELSE 'QUIET' END "
+        "WHERE volume_state IS NULL OR volume_state=''"
+    )
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS events_episode "
+        "ON events(episode_id, t0)"
+    )
+    db.commit()
+    return db
 
 def finite_positive(value):
     try:
@@ -67,6 +124,11 @@ def finite_positive(value):
 
 async def market_snapshot(allowed_symbols=None):
     timeout = aiohttp.ClientTimeout(total=30)
+    allowed = (
+        {str(symbol).upper() for symbol in allowed_symbols}
+        if allowed_symbols else None
+    )
+
     async with aiohttp.ClientSession(timeout=timeout) as session:
         api = Binance(session)
 
@@ -90,12 +152,15 @@ async def market_snapshot(allowed_symbols=None):
                 and row.get("quoteAsset") == "USDT"
             }
         except Exception:
-            active = {
-                str(row.get("symbol", "")).upper()
-                for row in tickers
-                if str(row.get("symbol", "")).upper().endswith("USDT")
-                and "_" not in str(row.get("symbol", ""))
-            }
+            if allowed:
+                active = set(allowed)
+            else:
+                active = {
+                    str(row.get("symbol", "")).upper()
+                    for row in tickers
+                    if str(row.get("symbol", "")).upper().endswith("USDT")
+                    and "_" not in str(row.get("symbol", ""))
+                }
 
         try:
             clock = await api.get("/fapi/v1/time")
@@ -103,37 +168,58 @@ async def market_snapshot(allowed_symbols=None):
         except Exception:
             ts = int(time.time())
 
-    if allowed_symbols:
-        active &= {str(symbol).upper() for symbol in allowed_symbols}
+    if allowed:
+        active &= allowed
 
+    ticker_map = {
+        str(row.get("symbol", "")).upper(): row
+        for row in tickers
+    }
     market = {}
-    for row in tickers:
-        symbol = str(row.get("symbol", "")).upper()
-        if symbol not in active:
+
+    for symbol in sorted(active):
+        selected = None
+        scale = 1.0
+        source = ticker_source
+
+        if ticker_source == "futures":
+            selected = ticker_map.get(symbol)
+        else:
+            for spot_symbol, candidate_scale in spot_symbol_candidates(symbol):
+                candidate = ticker_map.get(spot_symbol)
+                if candidate is not None:
+                    selected = candidate
+                    scale = candidate_scale
+                    source = (
+                        "spot"
+                        if spot_symbol == symbol and scale == 1.0
+                        else f"spot:{spot_symbol}*{scale:g}"
+                    )
+                    break
+
+        if selected is None:
             continue
-        if not finite_positive(row.get("lastPrice")):
+        if not finite_positive(selected.get("lastPrice")):
             continue
 
-        volume_key = "quoteVolume"
-        change_key = "priceChangePercent"
         try:
-            volume = float(row.get(volume_key, 0))
-            change = float(row.get(change_key, 0))
+            price = float(selected["lastPrice"]) * scale
+            volume = float(selected.get("quoteVolume", 0))
+            change = float(selected.get("priceChangePercent", 0))
         except (TypeError, ValueError):
             continue
-        if not math.isfinite(volume) or not math.isfinite(change):
+        if not all(math.isfinite(x) for x in (price, volume, change)):
             continue
 
         market[symbol] = {
-            "price": float(row["lastPrice"]),
+            "price": price,
             "volume": max(volume, 0.0),
             "change": change,
-            "source": ticker_source,
+            "source": source,
         }
 
     # 수집 완료 시각을 기준으로 후속 성과를 측정한다.
     return ts, market
-
 
 def match_controls(symbol, market, excluded, count=3):
     """신호 발생 시점의 거래대금·24H 상승률이 가까운 대조군."""
@@ -151,18 +237,18 @@ def match_controls(symbol, market, excluded, count=3):
             )
             + abs(row["change"] - origin["change"]) / 5.0
         )
-        ranked.append((distance, other, row["price"]))
+        ranked.append((distance, other, row["price"], row.get("source")))
 
     ranked.sort()
     return [
         {
             "symbol": other,
             "price0": price,
+            "source": source or "unknown",
             "match_distance": distance,
         }
-        for distance, other, price in ranked[:count]
+        for distance, other, price, source in ranked[:count]
     ]
-
 
 async def build_collection_payload():
     result = await scan(
@@ -177,6 +263,20 @@ async def build_collection_payload():
         "ts": ts,
         "market": market,
     }
+
+
+def parse_sink_response(status, text):
+    if status >= 300:
+        raise RuntimeError(f"원격 저장 실패 HTTP {status}")
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("원격 저장 응답이 JSON이 아님") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("원격 저장 응답 형식 오류")
+    if str(payload.get("status", "")).lower() != "ok":
+        raise RuntimeError("원격 저장소가 실패 상태를 반환함")
+    return payload
 
 
 async def post_collection(payload, sink_url, sink_token, cooldown_hours):
@@ -201,25 +301,23 @@ async def post_collection(payload, sink_url, sink_token, cooldown_hours):
                     headers=headers,
                 ) as response:
                     text = await response.text()
-                    if response.status < 300:
-                        try:
-                            return json.loads(text)
-                        except json.JSONDecodeError:
-                            return {"status": "ok", "raw": text[:500]}
-
-                    last_error = RuntimeError(
-                        f"원격 저장 실패 HTTP {response.status}: {text[:500]}"
-                    )
-                    if response.status not in retryable:
-                        raise last_error
+                    try:
+                        return parse_sink_response(response.status, text)
+                    except RuntimeError as exc:
+                        last_error = exc
+                        if response.status < 300:
+                            raise
+                        if response.status not in retryable:
+                            raise
             except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
-                last_error = RuntimeError(f"원격 저장 네트워크 오류: {exc}")
+                last_error = RuntimeError(
+                    f"원격 저장 네트워크 오류: {type(exc).__name__}"
+                )
 
             if attempt < 4:
                 await asyncio.sleep(min(60, 5 * (2 ** attempt)))
 
         raise last_error or RuntimeError("원격 저장 실패")
-
 
 async def collect_once(
     db,
@@ -291,7 +389,12 @@ async def collect_once(
     lag_seconds = ts - signal_ts
 
     all_rows = result["candidates"] + result["extended"]
-    excluded = {row["symbol"] for row in all_rows}
+    error_symbols = {
+        str(item.get("symbol", "")).upper()
+        for item in result.get("errors", [])
+        if item.get("symbol")
+    }
+    excluded = {row["symbol"] for row in all_rows} | error_symbols
 
     # 기록은 저장하되, 너무 오래된 스캔은 신규 이벤트로 채택하지 않는다.
     fresh = 0 <= lag_seconds <= 900
@@ -299,7 +402,10 @@ async def collect_once(
 
     with db:
         db.execute(
-            "INSERT INTO scans(ts, payload) VALUES (?, ?)",
+            """
+            INSERT INTO scans(ts, payload) VALUES (?, ?)
+            ON CONFLICT(ts) DO UPDATE SET payload=excluded.payload
+            """,
             (
                 ts,
                 json.dumps(
@@ -310,9 +416,20 @@ async def collect_once(
             ),
         )
         db.executemany(
-            "INSERT INTO prices(symbol, ts, price) VALUES (?, ?, ?)",
+            """
+            INSERT INTO prices(symbol, ts, price, source)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(symbol, ts) DO UPDATE SET
+                price=excluded.price,
+                source=excluded.source
+            """,
             [
-                (symbol, ts, row["price"])
+                (
+                    symbol,
+                    ts,
+                    row["price"],
+                    row.get("source", "unknown"),
+                )
                 for symbol, row in market.items()
             ],
         )
@@ -323,7 +440,7 @@ async def collect_once(
                 if symbol not in market:
                     continue
 
-                # 같은 종목·단계의 반복 신호를 지정된 시간 동안 묶는다.
+                # 같은 종목·단계의 반복 신호는 cooldown 동안 중복 저장하지 않는다.
                 existing = db.execute(
                     """
                     SELECT 1 FROM events
@@ -339,25 +456,47 @@ async def collect_once(
                 if existing:
                     continue
 
-                controls = match_controls(
-                    symbol, market, excluded
+                # 같은 상승 국면에서 stage가 진행돼도 하나의 episode로 묶는다.
+                prior_episode = db.execute(
+                    """
+                    SELECT episode_id FROM events
+                    WHERE symbol = ? AND t0 >= ?
+                    ORDER BY t0 DESC
+                    LIMIT 1
+                    """,
+                    (
+                        symbol,
+                        ts - int(cooldown_hours * 3600),
+                    ),
+                ).fetchone()
+                episode_id = (
+                    prior_episode[0]
+                    if prior_episode and prior_episode[0]
+                    else f"{symbol}:{ts}"
                 )
+
+                controls = match_controls(symbol, market, excluded)
+                echo = row.get("volume_echo") or {}
                 db.execute(
                     """
                     INSERT INTO events(
-                        symbol, stage, type, echo, t0,
-                        price0, score, controls, scan_ts
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        symbol, stage, type, echo, volume_state, t0,
+                        price0, price_source, score, controls,
+                        episode_id, scan_ts
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         symbol,
                         stage,
                         row["type"],
-                        int(row["volume_echo"]["detected"]),
+                        int(bool(echo.get("detected"))),
+                        echo.get("state", "QUIET"),
                         ts,
                         market[symbol]["price"],
+                        market[symbol].get("source", "unknown"),
                         row["score"],
                         json.dumps(controls, ensure_ascii=False),
+                        episode_id,
                         ts,
                     ),
                 )
@@ -374,43 +513,117 @@ async def collect_once(
         "prices": len(market),
         "added": added,
         "lag_seconds": lag_seconds,
+        "fresh": fresh,
+        "scanner_errors": len(result.get("errors", [])),
     }
 
-
-def future_return(db, symbol, t0, price0, hours, tolerance):
+def future_return(
+    db,
+    symbol,
+    t0,
+    price0,
+    hours,
+    tolerance,
+    source=None,
+):
     target = t0 + hours * 3600
-    row = db.execute(
-        """
-        SELECT price, ts FROM prices
-        WHERE symbol = ? AND ts >= ? AND ts <= ?
-        ORDER BY ts
-        LIMIT 1
-        """,
-        (symbol, target, target + tolerance),
-    ).fetchone()
+    if source and source != "unknown":
+        row = db.execute(
+            """
+            SELECT price, ts FROM prices
+            WHERE symbol = ? AND source = ?
+              AND ts >= ? AND ts <= ?
+            ORDER BY ts
+            LIMIT 1
+            """,
+            (symbol, source, target, target + tolerance),
+        ).fetchone()
+    else:
+        row = db.execute(
+            """
+            SELECT price, ts FROM prices
+            WHERE symbol = ? AND ts >= ? AND ts <= ?
+            ORDER BY ts
+            LIMIT 1
+            """,
+            (symbol, target, target + tolerance),
+        ).fetchone()
 
     if row is None:
         return None
     return (row[0] / price0 - 1) * 100
 
-
 def summarize(db, tolerance):
     events = db.execute(
         """
-        SELECT symbol, stage, type, echo, t0, price0, controls
+        SELECT id, symbol, stage, type, echo, volume_state, t0,
+               price0, price_source, controls, episode_id
         FROM events
-        ORDER BY t0
+        ORDER BY t0, id
         """
     ).fetchall()
 
+    first_by_episode = {}
+    normalized = []
+    for row in events:
+        (
+            event_id,
+            symbol,
+            stage,
+            kind,
+            echo,
+            volume_state,
+            t0,
+            price0,
+            price_source,
+            encoded,
+            episode_id,
+        ) = row
+        episode = episode_id or f"legacy:{event_id}"
+        if episode not in first_by_episode:
+            first_by_episode[episode] = event_id
+        normalized.append(
+            (
+                event_id,
+                symbol,
+                stage,
+                kind,
+                echo,
+                volume_state,
+                t0,
+                price0,
+                price_source,
+                encoded,
+                episode,
+            )
+        )
+
     groups = {}
 
-    for symbol, stage, kind, echo, t0, price0, encoded in events:
+    for (
+        event_id,
+        symbol,
+        stage,
+        kind,
+        echo,
+        volume_state,
+        t0,
+        price0,
+        price_source,
+        encoded,
+        episode,
+    ) in normalized:
         controls = json.loads(encoded)
 
         for hours in (1, 4, 24):
             ret = future_return(
-                db, symbol, t0, price0, hours, tolerance
+                db,
+                symbol,
+                t0,
+                price0,
+                hours,
+                tolerance,
+                price_source,
             )
 
             control_returns = [
@@ -421,6 +634,7 @@ def summarize(db, tolerance):
                     item["price0"],
                     hours,
                     tolerance,
+                    item.get("source"),
                 )
                 for item in controls
             ]
@@ -434,11 +648,23 @@ def summarize(db, tolerance):
                 if matched else None
             )
 
-            labels = [
-                f"stage:{stage}",
-                f"type:{kind}",
-                f"echo:{'yes' if echo else 'no'}",
-            ]
+            # stage는 단계별 이벤트 자체를 측정한다.
+            # type/echo/volume은 동일 episode의 첫 신호만 사용해
+            # PRE→ARMED→IGNITION 진행을 독립 표본처럼 중복 가중하지 않는다.
+            labels = [f"stage:{stage}"]
+            if first_by_episode[episode] == event_id:
+                labels.extend([
+                    f"type:{kind}",
+                    f"echo:{'yes' if echo else 'no'}",
+                    f"volume:{volume_state or 'QUIET'}",
+                    "combo:"
+                    + "|".join([
+                        stage,
+                        kind,
+                        volume_state or "QUIET",
+                    ]),
+                ])
+
             for label in labels:
                 group = groups.setdefault(
                     (label, hours),
@@ -488,6 +714,109 @@ def summarize(db, tolerance):
     return report
 
 
+def self_test():
+    path = tempfile.mktemp(prefix="preignition-", suffix=".sqlite")
+    db = connect(path)
+    try:
+        t0 = 1_700_000_000
+        with db:
+            db.execute(
+                "INSERT INTO scans(ts, payload) VALUES (?, ?)",
+                (t0, "{}"),
+            )
+            db.executemany(
+                """
+                INSERT INTO prices(symbol, ts, price, source)
+                VALUES (?, ?, ?, ?)
+                """,
+                [
+                    ("AAAUSDT", t0, 100.0, "futures"),
+                    ("AAAUSDT", t0 + 3600, 999.0, "spot"),
+                    ("AAAUSDT", t0 + 3660, 105.0, "futures"),
+                ],
+            )
+            db.execute(
+                """
+                INSERT INTO events(
+                    symbol, stage, type, echo, volume_state, t0,
+                    price0, price_source, score, controls,
+                    episode_id, scan_ts
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "AAAUSDT",
+                    "PRE",
+                    "A",
+                    0,
+                    "QUIET",
+                    t0,
+                    100.0,
+                    "futures",
+                    50.0,
+                    "[]",
+                    "AAAUSDT:episode",
+                    t0,
+                ),
+            )
+            db.execute(
+                """
+                INSERT INTO events(
+                    symbol, stage, type, echo, volume_state, t0,
+                    price0, price_source, score, controls,
+                    episode_id, scan_ts
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "AAAUSDT",
+                    "ARMED",
+                    "A+B",
+                    1,
+                    "VOLUME-ECHO",
+                    t0 + 60,
+                    100.0,
+                    "futures",
+                    70.0,
+                    "[]",
+                    "AAAUSDT:episode",
+                    t0,
+                ),
+            )
+
+        # 같은 소스의 첫 관측만 사용하고 spot 가격은 섞지 않는다.
+        value = future_return(
+            db, "AAAUSDT", t0, 100.0, 1, 120, "futures"
+        )
+        assert value is not None and abs(value - 5.0) < 1e-9
+
+        report = summarize(db, 120)
+        type_rows = [
+            row for row in report
+            if row["group"].startswith("type:")
+            and row["hours"] == 1
+        ]
+        assert len(type_rows) == 1
+        assert type_rows[0]["group"] == "type:A"
+        assert type_rows[0]["events"] == 1
+
+        assert parse_sink_response(
+            200, '{"status":"ok","added":1}'
+        )["added"] == 1
+        try:
+            parse_sink_response(200, '{"status":"error"}')
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("sink error 응답을 성공으로 처리함")
+
+        print("validate self-test passed")
+    finally:
+        db.close()
+        for suffix in ("", "-wal", "-shm"):
+            try:
+                os.remove(path + suffix)
+            except FileNotFoundError:
+                pass
+
 async def collection_loop(db, args):
     while True:
         started = time.monotonic()
@@ -516,7 +845,10 @@ async def collection_loop(db, args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["collect", "report"])
+    parser.add_argument(
+        "mode",
+        choices=["collect", "report", "self-test"],
+    )
     parser.add_argument("--db", default="signals.sqlite")
     parser.add_argument("--interval", type=int, default=900)
     parser.add_argument("--cooldown-hours", type=float, default=24)
@@ -532,6 +864,10 @@ def main():
         default=os.getenv("OOS_VALIDATION_TOKEN"),
     )
     args = parser.parse_args()
+
+    if args.mode == "self-test":
+        self_test()
+        return
 
     if args.interval < 300:
         parser.error("--interval은 300초 이상으로 지정하세요")
@@ -576,7 +912,6 @@ def main():
     finally:
         if db is not None:
             db.close()
-
 
 if __name__ == "__main__":
     main()
