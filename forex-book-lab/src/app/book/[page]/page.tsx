@@ -4,6 +4,7 @@ import { Page001Cover } from "@/features/book/page-001-cover";
 import { Page002Introduction } from "@/features/book/page-002-introduction";
 import { Page003Contents } from "@/features/book/page-003-contents";
 import { Page004Contents } from "@/features/book/page-004-contents";
+import { Page005Contents } from "@/features/book/page-005-contents";
 
 export function generateStaticParams() {
   return BOOK_PAGES
@@ -22,6 +23,7 @@ export default async function BookSourcePage({
   if (page === "2") return <Page002Introduction />;
   if (page === "3") return <Page003Contents />;
   if (page === "4") return <Page004Contents />;
+  if (page === "5") return <Page005Contents />;
 
   notFound();
 }
