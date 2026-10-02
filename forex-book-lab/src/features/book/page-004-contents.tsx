@@ -55,6 +55,7 @@ export function Page004Contents() {
         page={4}
         kind="contents"
         previousHref="/book/3"
+        nextHref="/book/5"
       />
 
       <div className={styles.readerGrid}>
@@ -137,11 +138,6 @@ export function Page004Contents() {
               <li>Fundamental Analysis의 세 항목을 분리해 후속 본문 연결용 인덱스로 보존.</li>
             </ul>
           </section>
-
-          <div className={styles.locked}>
-            <strong>Page 5 is not built yet</strong>
-            <span>Page 4 배포 검증 후 다음 원본 페이지로 이어갑니다.</span>
-          </div>
         </aside>
       </div>
     </div>
