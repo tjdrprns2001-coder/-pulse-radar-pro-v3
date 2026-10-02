@@ -53,6 +53,7 @@ export function Page003Contents() {
         page={3}
         kind="contents"
         previousHref="/book/2"
+        nextHref="/book/4"
       />
 
       <div className={styles.readerGrid}>
@@ -123,11 +124,6 @@ export function Page003Contents() {
               <li>원본에 없는 설명이나 매매 판단은 목차 본문 영역에 섞지 않음.</li>
             </ul>
           </section>
-
-          <div className={styles.locked}>
-            <strong>Page 4 is not built yet</strong>
-            <span>Page 3 배포 검증 후 다음 원본 페이지를 확인해 이어서 구현합니다.</span>
-          </div>
         </aside>
       </div>
     </div>
