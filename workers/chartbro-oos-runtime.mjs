@@ -128,10 +128,10 @@ function scheduleFullScan(){
 function nextAutoBucketAt(){return(Math.floor(Date.now()/AUTO_INTERVAL_MS)+1)*AUTO_INTERVAL_MS}
 
 function schedule(){
-  if(String(env.CHARTBRO_TRACKER_ENABLED||'1')==='0'){health.status='DISABLED';return}
+  scheduleFullScan();
+  if(String(env.CHARTBRO_TRACKER_ENABLED||'1')==='0'){health.status=health.kv.status==='OK'?'READY':'DEGRADED';return}
   const interval=Math.max(300000,Number(env.CHARTBRO_INTERVAL_MS||900000)),delay=Math.max(1000,Number(env.CHARTBRO_START_DELAY_MS||5000));
   setTimeout(run,delay).unref?.();setInterval(run,interval).unref?.();
-  scheduleFullScan();
 }
 const server=http.createServer(async(req,res)=>{
   try{
