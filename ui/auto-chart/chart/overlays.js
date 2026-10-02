@@ -37,8 +37,18 @@ function drawFib(ctx,analysis,{y,left,right}){
 function drawVpvr(ctx,analysis,{y,left,right}){
  const v=analysis.advanced?.vpvr;if(!v)return;ctx.save();const top=Math.min(y(v.vah),y(v.val)),h=Math.abs(y(v.vah)-y(v.val));ctx.fillStyle='rgba(102,149,255,.045)';ctx.fillRect(left,top,right-left,h);for(const [name,p,stroke] of [['VAH',v.vah,'rgba(101,154,255,.42)'],['POC',v.poc,'rgba(255,214,110,.72)'],['VAL',v.val,'rgba(101,154,255,.42)']]){const yy=y(p);ctx.strokeStyle=stroke;ctx.setLineDash(name==='POC'?[]:[2,5]);ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke();ctx.fillStyle=name==='POC'?'#ffdb7d':'#9bbcff';ctx.font='bold 9px system-ui';ctx.fillText(name,left+6,yy-3)}ctx.restore()
 }
+
+function drawReferenceLevels(ctx,analysis,{y,left,right}){
+ const lines=analysis.referenceLevels?.lines||[];ctx.save();ctx.font='bold 9px system-ui';let lane=0;
+ for(const l of lines){const yy=y(l.price);if(!Number.isFinite(yy))continue;const weekly=l.label.startsWith('PW')||l.label==='W OPEN',session=/ASIA|LONDON|NY/.test(l.label),open=l.kind==='open';ctx.strokeStyle=weekly?'rgba(199,163,255,.62)':session?'rgba(94,191,255,.56)':open?'rgba(255,214,112,.55)':'rgba(210,224,240,.50)';ctx.lineWidth=weekly?1.5:1;ctx.setLineDash(session?[7,4]:open?[2,4]:[4,4]);ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=weekly?'#d2b7ff':session?'#9fd7ff':open?'#ffdb7d':'#c7d5e2';const xx=Math.max(left+4,right-72-(lane%2)*54);ctx.fillText(l.label,xx,yy-3);lane++}
+ ctx.restore()
+}
+function drawDealingRange(ctx,analysis,{y,left,right}){
+ const d=analysis.referenceLevels?.dealingRange;if(!d)return;const yh=y(d.high),yl=y(d.low),ye=y(d.equilibrium);if(![yh,yl,ye].every(Number.isFinite))return;
+ const top=Math.min(yh,yl),bottom=Math.max(yh,yl);ctx.save();ctx.fillStyle='rgba(255,106,126,.025)';ctx.fillRect(left,top,right-left,Math.max(0,ye-top));ctx.fillStyle='rgba(57,214,163,.025)';ctx.fillRect(left,ye,right-left,Math.max(0,bottom-ye));ctx.strokeStyle='rgba(193,169,255,.66)';ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(left,ye);ctx.lineTo(right,ye);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#cdb4ff';ctx.font='bold 9px system-ui';ctx.fillText('IPDA EQ · '+String(d.position||'UNKNOWN')+' '+(Number.isFinite(Number(d.positionPct))?Number(d.positionPct).toFixed(1)+'%':''),left+8,ye-4);ctx.restore()
+}
 function drawIchimoku(ctx,analysis,view){
  const a=analysis.advanced?.ichimoku;if(!a)return;const {x,y,offset}=view,sa=a.spanA||[],sb=a.spanB||[];ctx.save();for(let i=Math.max(offset+1,1);i<analysis.candles.length;i++){if(!Number.isFinite(Number(sa[i]))||!Number.isFinite(Number(sb[i])))continue;const x1=x(i-1),x2=x(i),a1=y(sa[i-1]),a2=y(sa[i]),b1=y(sb[i-1]),b2=y(sb[i]);if([a1,a2,b1,b2].some(v=>!Number.isFinite(v)))continue;ctx.fillStyle=sa[i]>=sb[i]?'rgba(70,190,145,.055)':'rgba(220,90,110,.055)';ctx.beginPath();ctx.moveTo(x1,a1);ctx.lineTo(x2,a2);ctx.lineTo(x2,b2);ctx.lineTo(x1,b1);ctx.closePath();ctx.fill()}ctx.restore()
 }
-return{drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
+return{drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
 });
