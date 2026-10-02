@@ -101,6 +101,11 @@ const provider={
   assert.equal(d.items[0].chartbroContext.reviews.macro.status,'CLEAR','macro calendar must reach ChartBro review');
   assert(d.items[0].chartbroContext.levels&&d.items[0].chartbroContext.levels.previousDay,'ChartBro liquidity levels required');
   assert.equal(d.items[0].verdict.chartbroContext.version,'CHARTBRO_CONTEXT_v1','verdict must expose ChartBro context');
+  assert(d.items[0].chartbroResearch&&d.items[0].chartbroResearch.version==='CHARTBRO_OOS_v1','Astra must attach ChartBro OOS research state');
+  assert(d.items[0].verdict.chartbroResearch&&d.items[0].verdict.chartbroResearch.version==='CHARTBRO_OOS_v1','verdict must expose ChartBro OOS research state');
+  assert(d.chartbroResearch&&d.chartbroResearch.version==='CHARTBRO_OOS_v1','deep response must expose ChartBro OOS stats');
+  assert.equal(d.items[0].chartbroResearch.rankingAdjustment,0,'ChartBro OOS ranking must remain zero before forward gate passes');
+
 
 
   const mkt={regime:'RISK_ON',breadthRatio:.7,btc24hChange:2,eth24hChange:1.5,median24hChange:1};
