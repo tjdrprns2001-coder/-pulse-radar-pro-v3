@@ -43,7 +43,7 @@ const astraScanner=createAstraAutoScanner({provider:astraProvider});
 const fullScanStore=createPostgresFullScanStore({query});
 const preignitionOos=createPreignitionOosStore({query});
 const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
-const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:true});
+const fullScanProvider=createBinanceProvider({concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||8),intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),disableSpotRest:false,disableFuturesFallback:false});
 const fullScanService=createFullUniverseScanService({provider:fullScanProvider,marketCapProvider:fullScanMarketCaps,store:fullScanStore,maxWorkers:Number(env.FULL_SCAN_WORKERS||8),requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||150),klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)});
 const health={startedAt:Date.now(),evm:{status:'INIT'},binanceSpot:{status:'INIT'},binanceFutures:{status:'INIT'},news:{status:'INIT'},calendar:{status:'INIT'},queues:{status:'INIT'},selector:{status:'INIT'},fullScan:{status:'INIT'},preignitionOos:{status:'INIT'},chartbro:{status:String(env.ASTRA_CHARTBRO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED'},errors:[]};
 let evmCollector=null,fullScanWs=null,fullScanActive=false,chartbroTrackerActive=false,chartbroUniverseCursor=0;
