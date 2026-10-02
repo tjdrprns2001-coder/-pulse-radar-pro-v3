@@ -48,10 +48,21 @@ async function run(){
       const o=await scanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});
       oiItems.push(...(o.items||[]));
     }
-    const freshPass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
-    const carry=oos.activeSymbols({limit:Math.max(4,deepLimit)}),pass=[...new Set([...carry,...freshPass])].slice(0,Math.max(deepLimit,24));
-    let deepScanned=0;
-    for(const xs of batch(pass,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
+    const ranked=oiItems.slice().sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999));
+    const freshPass=ranked.filter(x=>x.pass).slice(0,deepLimit).map(x=>x.symbol);
+    const productionCarry=oos.activeSymbols({cohort:'ASTRA_PASS',limit:Math.max(4,deepLimit)});
+    const production=[...new Set([...productionCarry,...freshPass])].slice(0,Math.max(deepLimit,24)),used=new Set(production);
+    const shadowBaseLimit=Math.max(1,Math.min(8,Number(env.CHARTBRO_SHADOW_DEEP_LIMIT||4)));
+    const shadowBudget=production.length?shadowBaseLimit:deepLimit;
+    const shadowCarry=oos.activeSymbols({cohort:'SHADOW_EXPANSION',limit:shadowBudget}),shadow=[];
+    for(const s of shadowCarry){if(!used.has(s)&&shadow.length<shadowBudget){used.add(s);shadow.push(s)}}
+    for(const x of ranked){if(shadow.length>=shadowBudget)break;if(!used.has(x.symbol)&&!x.pass){used.add(x.symbol);shadow.push(x.symbol)}}
+    for(const s of symbols){if(shadow.length>=shadowBudget)break;if(!used.has(s)){used.add(s);shadow.push(s)}}
+    let deepScanned=0,productionDeepScanned=0,shadowDeepScanned=0;
+    const productionMarket={...(u.marketState||u.breadth||{}),chartbroCohort:'ASTRA_PASS'};
+    const shadowMarket={...(u.marketState||u.breadth||{}),chartbroCohort:'SHADOW_EXPANSION'};
+    for(const xs of batch(production,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:productionMarket});deepScanned+=xs.length;productionDeepScanned+=xs.length}
+    for(const xs of batch(shadow,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:shadowMarket});deepScanned+=xs.length;shadowDeepScanned+=xs.length}
     const pending=oos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
     for(const p of pending){
       try{
@@ -61,7 +72,7 @@ async function run(){
     }
     const persisted=await oos.flush(),stats=oos.stats();
     health.status='OK';health.updatedAt=Date.now();
-    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,universeCursor,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
+    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,universeCursor,oiChecked:symbols.length,oiPassed:freshPass.length,productionDeepScanned,shadowDeepScanned,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,productionObservations:stats.productionObservations||0,shadowObservations:stats.shadowObservations||0,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
     health.errors=health.errors.slice(-20);
   }catch(e){
     health.status='DEGRADED';health.updatedAt=Date.now();health.run={...health.run,finishedAt:Date.now(),error:String(e?.message||e)};
