@@ -28,6 +28,8 @@ function render(analysis,{aux=null}={}){
   setText('cardMomentum','RSI '+ratio(a.rsi?.value)+' · MACD '+(a.macd?.histNow==null?'N/A':Number(a.macd.histNow).toPrecision(3))+' · '+(a.macd?.improving===true?'개선':a.macd?.improving===false?'약화':'N/A')+' · OBV5 '+pct(a.obv?.slope5));
   setText('cardDivergence','RSI '+String(a.rsi?.divergence||'NONE')+' · MACD '+String(a.macd?.divergence||'NONE')+' · OBV '+String(a.obv?.divergence||'NONE'));
   setText('cardLiquidity','EQ '+String((a.liquidity||[]).length)+' · 최근 '+latestKind(a.sweeps||[])+' · Hammer '+String((a.hammers||[]).length));
+  const refs=analysis.referenceLevels||{},pd=refs.previousDay,pw=refs.previousWeek;setText('cardReference',(pd?'PDH '+price(pd.high)+' / PDL '+price(pd.low):'PD N/A')+' · '+(pw?'PWH '+price(pw.high)+' / PWL '+price(pw.low):'PW N/A'));
+  const dr=refs.dealingRange;setText('cardDealing',dr?(String(dr.position)+' '+pct(dr.positionPct)+' · EQ '+price(dr.equilibrium)):'N/A');
   setText('cardZones','FVG '+String((a.fvg||[]).length)+' · OB '+String((a.orderBlocks||[]).length));
   setText('cardVpvr',a.vpvr?('VAH '+price(a.vpvr.vah)+' · POC '+price(a.vpvr.poc)+' · VAL '+price(a.vpvr.val)):'N/A');
   setText('cardFib',a.fib?('0.382 '+price(a.fib.levels?.['0.382'])+' · 0.5 '+price(a.fib.levels?.['0.5'])+' · 0.618 '+price(a.fib.levels?.['0.618'])+' · 0.786 '+price(a.fib.levels?.['0.786'])):'N/A');
