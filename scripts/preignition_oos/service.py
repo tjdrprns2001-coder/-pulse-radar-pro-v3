@@ -16,7 +16,9 @@ SINK_URL = os.getenv("OOS_SINK_URL", "").strip()
 TOKEN = os.getenv("OOS_VALIDATION_TOKEN", "").strip()
 COOLDOWN_HOURS = float(os.getenv("OOS_COOLDOWN_HOURS", "24"))
 COLLECT_ON_START = os.getenv("OOS_COLLECT_ON_START", "1") != "0"
-COLLECT_LOOP_ENABLED = os.getenv("OOS_COLLECT_LOOP_ENABLED", "1") != "0"
+# 기본 배포는 selector-runtime의 15분 외부 트리거를 사용한다.
+# 독립 실행 환경에서만 OOS_COLLECT_LOOP_ENABLED=1로 내부 루프를 켠다.
+COLLECT_LOOP_ENABLED = os.getenv("OOS_COLLECT_LOOP_ENABLED", "0") != "0"
 COLLECT_INTERVAL_SECONDS = max(
     300, int(os.getenv("OOS_COLLECT_INTERVAL_SECONDS", "900"))
 )
