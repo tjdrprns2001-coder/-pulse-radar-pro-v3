@@ -15,6 +15,7 @@ const {createTtlCache}=require('../lib/coin-scan/cache.js');
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createAstraAutoScanner,methodOf:astraMethodOf,VERSION:ASTRA_VERSION}=require('../lib/coin-scan/astra-auto-scanner.js');
+const ChartBroOos=require('../lib/coin-scan/chartbro-oos-service.js');
 const {createSelectorLedgerService}=require('../lib/coin-scan/selector-ledger-service.js');
 const {createPostgresSelectorStore}=require('../lib/coin-scan/postgres-selector-store.js');
 const {createBinanceResolver}=require('../lib/signal-performance/binance-resolver.js');
@@ -526,6 +527,13 @@ function server(){
       const prepared=await fullScanService.prepare({kind:'manual',tiers,owner:'selector-runtime-admin'});
       fullScanService.executeRun(prepared.run,{tiers}).then(r=>{health.fullScanManual={status:'DONE',runId:r.id,updatedAt:Date.now()}}).catch(e=>{health.fullScanManual={status:'FAILED',runId:prepared.run.id,error:String(e?.message||e),updatedAt:Date.now()}});
       return jsonResponse(res,202,{status:'accepted',runId:prepared.run.id,tiers,progress:'/api/v1/runs/'+encodeURIComponent(prepared.run.id)});
+    }
+    if(route.pathname==='/api/chartbro-research'){
+      const view=String(route.searchParams.get('view')||'stats').toLowerCase(),svc=ChartBroOos.defaultChartBroOosService(),limit=Math.max(1,Math.min(500,Number(route.searchParams.get('limit'))||100)),symbol=route.searchParams.get('symbol')||null;
+      if(view==='stats')return jsonResponse(res,200,{status:'ok',...svc.stats()});
+      if(view==='experiments')return jsonResponse(res,200,{status:'ok',version:ChartBroOos.VERSION,competition:svc.experiments()});
+      if(['observations','transitions','failures','alerts'].includes(view))return jsonResponse(res,200,{status:'ok',version:ChartBroOos.VERSION,view,items:svc.list({kind:view,symbol,limit})});
+      return jsonResponse(res,400,{status:'error',error:'unknown view'});
     }
     if(route.pathname==='/api/astra-scan'){
       const stage=String(route.searchParams.get('stage')||'universe').toLowerCase(),method=astraMethodOf(route.searchParams.get('method'));
