@@ -47,7 +47,10 @@ async function run(){
       const o=await scanner.oi(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});
       oiItems.push(...(o.items||[]));
     }
-    const pass=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const passed=oiItems.filter(x=>x.pass).sort((a,b)=>(Number(b.oi4hPct)||-999)-(Number(a.oi4hPct)||-999)).slice(0,deepLimit).map(x=>x.symbol);
+    const oiDataAvailable=oiItems.some(x=>Number.isFinite(Number(x.oi4hPct)));
+    const pass=passed.length?passed:(!oiDataAvailable?symbols.slice(0,deepLimit):[]);
+    const degradedStructureOnly=!passed.length&&!oiDataAvailable;
     let deepScanned=0;
     for(const xs of batch(pass,4)){await scanner.deep(xs,{method:'astra',asOf:u.asOf,market:u.marketState||u.breadth||{}});deepScanned+=xs.length}
     const pending=oos.pendingSymbols({asOf:Date.now(),limit:outcomeLimit});let outcomeSymbolsChecked=0,outcomesEvaluated24h=0;
@@ -59,7 +62,7 @@ async function run(){
     }
     const persisted=await oos.flush(),stats=oos.stats();
     health.status='OK';health.updatedAt=Date.now();
-    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,oiChecked:symbols.length,oiPassed:oiItems.filter(x=>x.pass).length,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
+    health.run={startedAt:started,finishedAt:Date.now(),durationMs:Date.now()-started,universeCount:u.universeCount||0,filteredCount:u.filteredCount||0,oiChecked:symbols.length,oiPassed:passed.length,oiDataAvailable,degradedStructureOnly,deepScanned,outcomeSymbolsChecked,outcomesEvaluated24h,persisted,observations:stats.observations,evaluated24h:stats.evaluated24h,alerts:stats.alertCount,productionGate:stats.productionGate?.passed||false};
     health.errors=health.errors.slice(-20);
   }catch(e){
     health.status='DEGRADED';health.updatedAt=Date.now();health.run={...health.run,finishedAt:Date.now(),error:String(e?.message||e)};
