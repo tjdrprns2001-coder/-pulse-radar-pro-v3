@@ -16,11 +16,16 @@ SINK_URL = os.getenv("OOS_SINK_URL", "").strip()
 TOKEN = os.getenv("OOS_VALIDATION_TOKEN", "").strip()
 COOLDOWN_HOURS = float(os.getenv("OOS_COOLDOWN_HOURS", "24"))
 COLLECT_ON_START = os.getenv("OOS_COLLECT_ON_START", "1") != "0"
+COLLECT_LOOP_ENABLED = os.getenv("OOS_COLLECT_LOOP_ENABLED", "1") != "0"
+COLLECT_INTERVAL_SECONDS = max(
+    300, int(os.getenv("OOS_COLLECT_INTERVAL_SECONDS", "900"))
+)
 
 state = {
     "active": False,
     "last_started_at": None,
     "last_finished_at": None,
+    "next_run_at": None,
     "last_status": "IDLE",
     "last_error": None,
     "last_result": None,
@@ -56,12 +61,31 @@ async def run_collection() -> None:
         state["last_result"] = result
         state["last_status"] = "OK"
     except Exception as exc:
-        state["last_error"] = str(exc)
+        # 상세 예외는 서버 로그에만 남기고 공개 API에는 일반화된 상태만 노출한다.
+        state["last_error"] = "collection failed"
         state["last_status"] = "FAILED"
-        print(f"OOS collection failed: {exc}", flush=True)
+        print(
+            f"OOS collection failed: {type(exc).__name__}: {exc}",
+            flush=True,
+        )
     finally:
         state["active"] = False
         state["last_finished_at"] = int(time.time())
+
+
+def public_result() -> dict | None:
+    result = state.get("last_result")
+    if not isinstance(result, dict):
+        return None
+    allowed = {
+        "status",
+        "prices",
+        "added",
+        "lag_seconds",
+        "fresh",
+        "scanner_errors",
+    }
+    return {key: result.get(key) for key in allowed if key in result}
 
 
 async def health(_: web.Request) -> web.Response:
@@ -73,9 +97,10 @@ async def health(_: web.Request) -> web.Response:
         "active": state["active"],
         "last_started_at": state["last_started_at"],
         "last_finished_at": state["last_finished_at"],
+        "next_run_at": state["next_run_at"],
         "last_status": state["last_status"],
         "last_error": state["last_error"],
-        "last_result": state["last_result"],
+        "last_result": public_result(),
     }
     return web.json_response(payload)
 
@@ -97,14 +122,17 @@ async def sink_get(action: str) -> dict:
                     return {
                         "status": "error",
                         "http_status": response.status,
-                        "error": text[:240],
+                        "error": "sink request failed",
                     }
                 try:
-                    return json.loads(text)
+                    payload = json.loads(text)
                 except json.JSONDecodeError:
                     return {"status": "error", "error": "invalid JSON"}
-    except Exception as exc:
-        return {"status": "error", "error": str(exc)}
+                if not isinstance(payload, dict):
+                    return {"status": "error", "error": "invalid payload"}
+                return payload
+    except Exception:
+        return {"status": "error", "error": "sink request failed"}
 
 
 async def dashboard_data(_: web.Request) -> web.Response:
@@ -118,7 +146,8 @@ async def dashboard_data(_: web.Request) -> web.Response:
         "last_finished_at": state["last_finished_at"],
         "last_status": state["last_status"],
         "last_error": state["last_error"],
-        "last_result": state["last_result"],
+        "last_result": public_result(),
+        "next_run_at": state["next_run_at"],
         "dashboard": state["dashboard"],
     }
     return web.json_response({
@@ -153,8 +182,26 @@ async def collect(request: web.Request) -> web.Response:
     )
 
 
+async def periodic_collection() -> None:
+    await asyncio.sleep(3)
+    while True:
+        started = time.monotonic()
+        await run_collection()
+        elapsed = time.monotonic() - started
+        delay = max(0.0, COLLECT_INTERVAL_SECONDS - elapsed)
+        state["next_run_at"] = int(time.time() + delay)
+        await asyncio.sleep(delay)
+
+
 async def startup(_: web.Application) -> None:
-    if COLLECT_ON_START and SINK_URL and TOKEN:
+    if not (SINK_URL and TOKEN):
+        return
+
+    if COLLECT_LOOP_ENABLED:
+        asyncio.create_task(periodic_collection())
+        return
+
+    if COLLECT_ON_START:
         async def delayed_start():
             await asyncio.sleep(3)
             await run_collection()
