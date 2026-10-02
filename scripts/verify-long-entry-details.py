@@ -141,7 +141,12 @@ try:
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.goto(BASE + "/astra-scan.html")
             page.locator("#astraRun").click()
-            expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
+            try:
+                expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
+            except AssertionError:
+                print("ASTRA_STATUS:", page.locator("#astraStatus").inner_text())
+                print("PAGE_ERRORS:", errors)
+                raise
             expect(page.locator(".longEntry")).to_have_count(len(rows) + 1)
             rr = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".longEntry")
             expect(rr.locator(".longTrigger span")).to_have_text("관찰 트리거 · 진입 금지")
