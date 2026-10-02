@@ -1,7 +1,7 @@
 'use strict';
 
 const Oos=require('../lib/coin-scan/chartbro-oos-service.js');
-const REMOTE=String(process.env.CHARTBRO_RESEARCH_URL||'https://pulseradar-selector-runtime.onrender.com/api/chartbro-research').replace(/\/$/,'');
+const REMOTE=String(process.env.CHARTBRO_RESEARCH_URL||'https://pulseradar-chartbro-oos-runtime.onrender.com/api/chartbro-research').replace(/\/$/,'');
 
 async function remote(q={}){
   if(String(process.env.CHARTBRO_RESEARCH_REMOTE||'1')==='0')return null;
