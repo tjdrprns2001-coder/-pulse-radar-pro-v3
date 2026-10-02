@@ -564,7 +564,7 @@ function server(){
         if(stage==='universe')return jsonResponse(res,200,await astraScanner.universe({method,minQuoteVolume:route.searchParams.has('minQuoteVolume')?numParam(route.searchParams.get('minQuoteVolume')):null}));
         const symbols=astraSymbols(route);if(!symbols.length)return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'symbols required'});
         if(stage==='oi')return jsonResponse(res,200,await astraScanner.oi(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
-        if(stage==='deep')return jsonResponse(res,200,await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
+        if(stage==='deep'){const out=await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)});if(method==='astra')await chartbroOos.flush();return jsonResponse(res,200,out)}
         return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'unknown stage'});
       }catch(e){const sourceState=astraScanner.getSourceState?.()||null,retryAt=Number(e?.retryAt||sourceState?.futuresBlockedUntil)||null,paused=retryAt>Date.now();if(paused)res.setHeader('Retry-After',String(Math.ceil((retryAt-Date.now())/1000)));return jsonResponse(res,paused?503:502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e),retryAt,upstreamStatus:e?.upstreamStatus||null,sourceState})}
     }
