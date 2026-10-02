@@ -7,6 +7,7 @@ export type BookPageMeta = {
   kind: "cover" | "lesson";
   status: "complete" | "queued";
   source: string;
+  summary: string;
 };
 
 export const BOOK_PAGES: BookPageMeta[] = [
@@ -17,6 +18,16 @@ export const BOOK_PAGES: BookPageMeta[] = [
     kind: "cover",
     status: "complete",
     source: "All you should know about Forex-1-200.pdf",
+    summary: "Book cover and visual identity.",
+  },
+  {
+    number: 2,
+    slug: "2",
+    title: "Introduction",
+    kind: "lesson",
+    status: "complete",
+    source: "All you should know about Forex-1-200.pdf",
+    summary: "Beginner orientation, learning goals, expectations, and continuous learning mindset.",
   },
 ];
 
