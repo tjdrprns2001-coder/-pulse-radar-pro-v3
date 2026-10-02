@@ -47,6 +47,15 @@ export const BOOK_PAGES: BookPageMeta[] = [
     source: "All you should know about Forex-1-200.pdf",
     summary: "Contents continuation covering Technical Analysis and Fundamental Analysis.",
   },
+  {
+    number: 5,
+    slug: "5",
+    title: "Contents — Risk & Money Management",
+    kind: "contents",
+    status: "complete",
+    source: "All you should know about Forex-1-200.pdf",
+    summary: "Contents continuation covering fundamental-analysis follow-ups, risk management, and money management.",
+  },
 ];
 
 export function getBookPage(number: number) {
