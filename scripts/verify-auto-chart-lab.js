@@ -11,6 +11,7 @@ const Volume=require('../ui/auto-chart/analysis/volume.js');
 const Replay=require('../ui/auto-chart/analysis/replay.js');
 const Advanced=require('../ui/auto-chart/analysis/advanced.js');
 const MultiTf=require('../ui/auto-chart/analysis/multi-timeframe.js');
+const Reference=require('../ui/auto-chart/analysis/reference-levels.js');
 const Core=require('../ui/auto-chart/analysis/core.js');
 
 function candles(n=120){
@@ -163,13 +164,26 @@ function mf(tf,biasKey,emaTrend,rsiVal,hist,rvol=1.5){return{available:true,time
 const synth=MultiTf.synthesize({'1w':mf('1w','UPTREND','BULL',60,1),'1d':mf('1d','UPTREND','BULL',58,.5),'4h':mf('4h','UPTREND','BULL',57,.4),'1h':mf('1h','UPTREND','BULL',55,.3),'15m':mf('15m','UPTREND','BULL',56,.2),'5m':mf('5m','UPTREND','BULL',54,.1)});
 assert.equal(synth.regime,'BULL');assert.equal(synth.rows.length,6);assert(['READY','WATCH'].includes(synth.execution.longState));
 
-const fullStack=Core.attachTimeframeStack({...a1,timeframe:'1h',currentPrice:100,atrNow:1},{'1w':{...htf1d,timeframe:'1w'},'1d':htf1d,'4h':htf4,'1h':a1,'15m':a1,'5m':a1});
+const fullStack=Core.attachTimeframeStack({...a1,timeframe:'1h',currentPrice:100,atrNow:1},{'1w':{...htf1d,timeframe:'1w'},'1d':htf1d,'4h':{...a1,timeframe:'4h'},'1h':a1,'15m':a1,'5m':a1});
 assert(fullStack.multiTimeframe&&fullStack.timeframeStack,'core must expose full timeframe synthesis');
+assert(fullStack.referenceLevels&&Array.isArray(fullStack.referenceLevels.lines),'core must expose reference liquidity');
+assert(fullStack.referenceLevels.lines.some(x=>x.label==='PDH')&&fullStack.referenceLevels.lines.some(x=>x.label==='PDL'),'PDH/PDL must be derived from closed intraday bars');
+
+// Liquidity sweep detector must not use a level before that level was confirmed.
+const causalBars=[bar(0,100,99.5,100.2),bar(1,100,98.8,100.3),bar(2,100.1,99.7,100.4)];
+const futureLevel=[{kind:'EQL',side:'sell-side',price:99,low:98.95,high:99.05,knownAt:causalBars[1].closeTime+1}];
+assert(!Advanced.sweeps(causalBars,futureLevel,{lookback:3}).some(x=>x.kind==='SELL_SIDE_SWEEP'),'future-known EQ liquidity must not leak into prior sweep detection');
+futureLevel[0].knownAt=causalBars[0].closeTime;
+assert(Advanced.sweeps(causalBars,futureLevel,{lookback:3}).some(x=>x.kind==='SELL_SIDE_SWEEP'),'confirmed EQ liquidity may be swept after knownAt');
+
+// Session/reference helpers must be deterministic in KST/NY time.
+assert.equal(Reference.sessionOf(Date.parse('2026-10-02T00:00:00Z')),'ASIA'); // 09:00 KST
+assert.equal(typeof Reference.weekKey(Date.parse('2026-10-02T00:00:00Z')),'string');
 
 const store=State.createState();const r1=store.beginRequest(),r2=store.beginRequest();assert(!store.isCurrent(r1)&&store.isCurrent(r2),'stale request must be rejected');
 
 const html=fs.readFileSync('auto-chart-lab.html','utf8'),app=fs.readFileSync('ui/auto-chart/app.js','utf8');
-for(const k of['AUTO CHART LAB · MTF v2','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','cardHtf','cardEnvironment','cardExecutionTf','cardCompression','cardMomentum','cardLiquidity','cardZones','cardVpvr','cardFib','cardIchimoku','cardVolumeEcho','cardSpecial','data-layer="sr"','data-layer="box"','data-layer="ema"','data-layer="liquidity"','data-layer="zones"','data-layer="vpvr"','analysis/advanced.js','analysis/multi-timeframe.js','analysis/level-state.js','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing MTF UI '+k);
+for(const k of['AUTO CHART LAB · MTF v2','표시 레이어','자동 구조 차트','현재 분석','cardInvalidation','cardVolume','cardHtf','cardEnvironment','cardExecutionTf','cardCompression','cardMomentum','cardLiquidity','cardReference','cardDealing','cardZones','cardVpvr','cardFib','cardIchimoku','cardVolumeEcho','cardSpecial','data-layer="sr"','data-layer="box"','data-layer="ema"','data-layer="liquidity"','data-layer="reference"','data-layer="dealing"','data-layer="zones"','data-layer="vpvr"','analysis/advanced.js','analysis/multi-timeframe.js','analysis/reference-levels.js','analysis/level-state.js','analysis/volume.js','analysis/replay.js'])assert(html.includes(k),'missing MTF UI '+k);
 for(const k of['beginRequest','isCurrent','fetchHistorical','fetchTimeframeStack','fetchAuxiliary','attachTimeframeStack','lastGood'])assert(app.includes(k),'missing orchestration contract '+k);
 assert(app.indexOf('fetchHistorical')<app.indexOf('fetchAuxiliary'),'historical data must be handled before auxiliary/live');
 console.log('auto chart MTF v2 advanced/replay/RVOL/N-A PASS');
