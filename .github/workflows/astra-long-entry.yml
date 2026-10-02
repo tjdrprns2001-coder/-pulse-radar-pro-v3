@@ -13,6 +13,7 @@ on:
       - codex/chartbro-oos-runtime-20261002
       - codex/chartbro-oos-release-20261002
       - codex/chartbro-oos-cohort-final-20261002
+      - codex/mtf-whole-market-integration-20261002
       - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
@@ -35,6 +36,11 @@ on:
       - "lib/coin-scan/binance-provider.js"
       - "lib/coin-scan/amd-long-entry.test.js"
       - "lib/coin-scan/astra-auto-scanner.js"
+      - "lib/coin-scan/mtf-market-analyzer.js"
+      - "lib/coin-scan/mtf-market-analyzer.test.js"
+      - "lib/coin-scan/full-universe-auto-scan.js"
+      - "ui/full-scan.js"
+      - "full-scan.html"
       - "ui/astra-scan.js"
       - "ui/astra-scan.css"
       - "astra-scan.html"
@@ -93,6 +99,8 @@ jobs:
       - run: node --check render-temp-server.js
       - run: node --check workers/selector-runtime.mjs
       - run: node --check lib/coin-scan/astra-auto-scanner.js
+      - run: node --check lib/coin-scan/mtf-market-analyzer.js
+      - run: node --test lib/coin-scan/mtf-market-analyzer.test.js
       - run: node --check ui/astra-scan.js
       - run: node --test lib/coin-scan/amd-long-entry.test.js lib/coin-scan/amd-short-entry.test.js lib/coin-scan/chartbro-context.test.js lib/coin-scan/chartbro-oos-service.test.js lib/coin-scan/render-kv-state-store.test.js
       - run: node scripts/verify-astra-auto-scan.js

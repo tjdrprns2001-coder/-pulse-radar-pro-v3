@@ -121,6 +121,9 @@ def route_api(route):
 def route_research(route):
     route.fulfill(status=200, content_type="application/json", body=json.dumps(research_stats, ensure_ascii=False))
 
+def route_full_scan(route):
+    route.fulfill(status=200, content_type="application/json", body=json.dumps({"status": "ok", "items": []}, ensure_ascii=False))
+
 server = subprocess.Popen(["python", "-m", "http.server", "8765", "--bind", "127.0.0.1"],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:
@@ -132,12 +135,18 @@ try:
             context = browser.new_context(timezone_id=timezone, viewport={"width": 1440, "height": 1050})
             context.route("**/api/astra-scan?*", route_api)
             context.route("**/api/chartbro-research?*", route_research)
+            context.route("**/api/v1/results?*", route_full_scan)
             page = context.new_page()
             errors = []
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.goto(BASE + "/astra-scan.html")
             page.locator("#astraRun").click()
-            expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
+            try:
+                expect(page.locator("#scanActivity")).to_have_attribute("data-state", "done")
+            except AssertionError:
+                print("ASTRA_STATUS:", page.locator("#astraStatus").inner_text())
+                print("PAGE_ERRORS:", errors)
+                raise
             expect(page.locator(".longEntry")).to_have_count(len(rows) + 1)
             rr = page.locator(".card").filter(has=page.locator(".symbol", has_text="RRUSDT")).locator(".longEntry")
             expect(rr.locator(".longTrigger span")).to_have_text("관찰 트리거 · 진입 금지")

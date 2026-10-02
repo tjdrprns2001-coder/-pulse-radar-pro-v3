@@ -105,6 +105,14 @@ const provider={
   assert(d.items[0].verdict.chartbroResearch&&d.items[0].verdict.chartbroResearch.version==='CHARTBRO_OOS_v1','verdict must expose ChartBro OOS research state');
   assert(d.chartbroResearch&&d.chartbroResearch.version==='CHARTBRO_OOS_v1','deep response must expose ChartBro OOS stats');
   assert.equal(d.items[0].chartbroResearch.rankingAdjustment,0,'ChartBro OOS ranking must remain zero before forward gate passes');
+  assert(d.items[0].mtfAnalysis&&d.items[0].mtfAnalysis.version==='MTF_WHOLE_MARKET_v1','Astra must reuse shared MTF analyzer');
+  assert.deepEqual(d.items[0].mtfAnalysis.timeframes,['1w','1d','4h','1h','15m','5m'],'shared MTF role stack required');
+  assert(Number.isFinite(Number(d.items[0].preIgnitionScore)),'Astra must expose pre-ignition score');
+  assert(d.items[0].preIgnitionStage&&d.items[0].entryMap,'Astra must expose beginner stage and entry map');
+  assert.equal(d.items[0].mtfAnalysis.researchSample.cohort,'ASTRA_PASS','default Astra cohort provenance');
+  assert(d.autoSample&&d.autoSample.shadowOnly===true,'Astra deep must feed automatic reverse-trace sample engine in shadow mode');
+  const shadowDeep=await scan.deep(['AAAUSDT'],{method:'astra',asOf:u.asOf,market:{chartbroCohort:'SHADOW_EXPANSION'}});
+  assert.equal(shadowDeep.items[0].mtfAnalysis.researchSample.cohort,'SHADOW_EXPANSION','shadow candidates must remain isolated in MTF provenance');
 
 
 

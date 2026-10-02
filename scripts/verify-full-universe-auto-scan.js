@@ -4,7 +4,7 @@ const Core=require('../lib/coin-scan/full-universe-auto-scan.js');
 const Cap=require('../lib/coin-scan/market-cap-provider.js');
 let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{checks++;assert.deepEqual(a,b,msg)};
 (async()=>{
-  eq(Core.VERSION,'FULL_UNIVERSE_AUTO_SCAN_v1','version');
+  eq(Core.VERSION,'FULL_UNIVERSE_AUTO_SCAN_v2','version');
   eq(Core.AUTO_INTERVAL_MS,1800000,'30m interval');eq(Core.AUTO_STALE_MS,90000,'stale run recovery threshold');
   eq(Core.TIMEFRAMES,['5m','15m','1h','4h','1d','1w'],'six timeframes');
   eq(Core.TIER_ORDER,['small','mid','large'],'tier order');
@@ -42,12 +42,14 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   const provider={
     async getFuturesUniverse(){return{symbols:rows.map(x=>({symbol:x.symbol,baseAsset:x.baseAsset,quoteAsset:'USDT',contractType:'PERPETUAL',status:'TRADING'}))}},
     async getFundingMap(){return new Map(rows.map(x=>[x.symbol,.01]))},
+    async getSpotTickers(){return rows.map((x,i)=>({symbol:x.symbol,lastPrice:String(100+i),priceChangePercent:'1.0',quoteVolume:'10000000'}))},
+    async getFuturesTickers(){return rows.map((x,i)=>({symbol:x.symbol,lastPrice:String(100+i),priceChangePercent:'1.2',quoteVolume:'12000000'}))},
     async getFuturesKlines(symbol,tf){return[[0,1,2,.5,1,10,1],[2,1,2,.5,2,20,3],[4,2,3,1,3,30,5]]},
     async getV2OiProfile(){return{oi1hPct:1,oi4hPct:2,oi8hPct:3,oi12hPct:4,oi24hPct:5,oiDrawdownPct:-1}}
   };
   const marketCapProvider={async resolve(){return caps}};const store=Core.createMemoryFullScanStore();let t=1800000+1000;
   const svc=Core.createFullUniverseScanService({provider,marketCapProvider,store,now:()=>t,sleep:async()=>{},maxWorkers:3,requestsPerMinute:999999,klineRows:3});
-  const auto=await svc.execute({kind:'auto'});eq(auto.status,'DONE','auto done');eq(auto.selectedCount,8,'auto scans entire universe');eq(auto.completedCount,8,'auto completed all');eq(auto.items.length,8,'auto items returned');eq(auto.items[0].fundingPct,.01,'funding included');eq(auto.items[0].oi.oi4hPct,2,'oi included');eq(Object.keys(auto.items[0].frames),Core.TIMEFRAMES,'all frame keys');ok(auto.items.every(x=>x.complete),'items complete');
+  const auto=await svc.execute({kind:'auto'});eq(auto.status,'DONE','auto done');eq(auto.selectedCount,8,'auto scans entire universe');eq(auto.completedCount,8,'auto completed all');eq(auto.items.length,8,'auto items returned');eq(auto.items[0].fundingPct,.01,'funding included');eq(auto.items[0].oi.oi4hPct,2,'oi included');eq(Object.keys(auto.items[0].frames),Core.TIMEFRAMES,'all frame keys');ok(auto.items.every(x=>x.complete),'items complete');ok(auto.items.every(x=>x.mtfAnalysis&&x.mtfAnalysis.version==='MTF_WHOLE_MARKET_v1'),'all market items receive shared MTF analysis');ok(auto.items.every(x=>Number.isFinite(Number(x.preIgnitionScore))),'pre-ignition score stored');ok(auto.items.every(x=>x.preIgnitionStage&&x.entryMap&&x.researchSample),'stage entry-map and research snapshot stored');eq(auto.items[0].researchSample.cohort,'FULL_UNIVERSE_30M','whole-market cohort provenance');
   const again=await svc.execute({kind:'auto'});ok(again.skipped===true&&again.cacheHit===true,'same 30m bucket is cache hit');eq(again.id,auto.id,'same cached run');
   const manual=await svc.execute({kind:'manual',tiers:['small']});eq(manual.kind,'manual','manual kind');eq(manual.selectedCount,2,'manual selected tier only');eq(manual.items.length,2,'manual item count');
   t+=Core.AUTO_INTERVAL_MS;const auto2=await svc.execute({kind:'auto'});ok(auto2.id!==auto.id,'next 30m bucket creates new run');
@@ -66,6 +68,6 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
   const freshStore=Core.createMemoryFullScanStore(),freshSvc=Core.createFullUniverseScanService({provider,marketCapProvider,store:freshStore,now:()=>resumeT,sleep:async()=>{},maxWorkers:1,requestsPerMinute:999999,staleRunMs:60000});
   const freshPrepared=await freshSvc.prepare({kind:'auto'}),freshRun=freshStore._runs.get(freshPrepared.run.id);freshRun.status='RUNNING';freshRun.updatedAt=resumeT;freshStore._runs.set(freshRun.id,freshRun);
   const freshAttempt=await freshSvc.execute({kind:'auto'});ok(freshAttempt.skipped===true,'fresh running bucket is not duplicated');eq(freshAttempt.id,freshPrepared.run.id,'fresh running bucket id preserved');
-  ok(checks>=75,'minimum checks');
+  ok(checks>=79,'minimum checks');
   console.log(`full-universe auto-scan verification PASS (${checks} checks)`);
 })().catch(e=>{console.error(e);process.exit(1)});
