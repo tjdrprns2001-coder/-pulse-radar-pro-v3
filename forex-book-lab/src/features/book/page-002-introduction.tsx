@@ -39,7 +39,8 @@ export function Page002Introduction() {
       paragraphs={paragraphs}
       takeaways={takeaways}
       previousHref="/book/1"
-      nextLabel="Page 3 is not built yet"
+      nextHref="/book/3"
+      nextLabel="Page 3"
     />
   );
 }
