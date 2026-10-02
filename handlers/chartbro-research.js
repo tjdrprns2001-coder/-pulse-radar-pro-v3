@@ -14,7 +14,7 @@ module.exports=async function handler(req,res){
   if(String(req?.method||'GET').toUpperCase()!=='GET')return res.status(405).json({status:'error',error:'GET only'});
   const q=req?.query||{},view=String(q.view||'stats').toLowerCase(),limit=Math.max(1,Math.min(500,Number(q.limit)||100)),symbol=q.symbol?String(q.symbol):null;
   try{
-    const canonical=await remote({view,limit,symbol});if(canonical)return res.status(200).json({...canonical,canonical:true,source:'selector-runtime-postgres'});
+    const canonical=await remote({view,limit,symbol});if(canonical)return res.status(200).json({...canonical,canonical:true,source:canonical.source||'remote-chartbro-oos-runtime'});
     const svc=Oos.defaultChartBroOosService();
     if(view==='stats')return res.status(200).json({status:'ok',...svc.stats(),canonical:false,source:'local-runtime-fallback'});
     if(view==='experiments')return res.status(200).json({status:'ok',version:Oos.VERSION,competition:svc.experiments(),canonical:false,source:'local-runtime-fallback'});
