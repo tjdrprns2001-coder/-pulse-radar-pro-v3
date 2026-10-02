@@ -1,42 +1,67 @@
 import Link from "next/link";
-import { BOOK_TOTAL_PAGES } from "@/features/book/book-manifest";
+import { BOOK_PAGES, BOOK_TOTAL_PAGES } from "@/features/book/book-manifest";
 import styles from "@/features/book/book.module.css";
 
 export default function BookPage() {
+  const complete = BOOK_PAGES.filter((page) => page.status === "complete").length;
+  const progress = Math.max(1, (complete / BOOK_TOTAL_PAGES) * 100);
+
   return (
     <section className={styles.library}>
       <header className={styles.libraryHeader}>
         <div className={styles.eyebrow}>PAGE-BY-PAGE BUILD</div>
         <h1 className={styles.libraryTitle}>Forex Book</h1>
         <p className={styles.libraryLead}>
-          원본을 한 페이지씩 확인하고 완성한 뒤에만 다음 페이지로 넘어갑니다.
-          현재는 Page 1 표지만 완성된 상태입니다.
+          원본을 한 페이지씩 직접 확인하고, 구현과 빌드 검증이 끝난 페이지만 활성화합니다.
+          현재 Page 1 표지와 Page 2 Introduction까지 완성했습니다.
         </p>
       </header>
 
       <div className={styles.progressRow}>
         <div className={styles.progressTrack} aria-label="Book implementation progress">
-          <div className={styles.progressFill} />
+          <div className={styles.progressFill} style={{ width: progress + "%" }} />
         </div>
-        <div className={styles.progressText}>1 / {BOOK_TOTAL_PAGES} complete</div>
+        <div className={styles.progressText}>{complete} / {BOOK_TOTAL_PAGES} complete</div>
       </div>
 
-      <Link href="/book/1" className={styles.pageCard}>
-        <div className={styles.thumb} aria-hidden="true">
-          <div>
-            ALL YOU<br />SHOULD KNOW
-            <span>FOREX</span>
-          </div>
-        </div>
-        <div className={styles.cardCopy}>
-          <div className={styles.cardMeta}>PAGE 001 · COVER · COMPLETE</div>
-          <h2 className={styles.cardTitle}>All You Should Know About Forex</h2>
-          <p className={styles.cardDescription}>
-            원본 표지의 타이포그래피와 금융 차트 모티프를 반응형 벡터 UI로 재구성했습니다.
-          </p>
-        </div>
-        <span className={styles.openButton}>Open page →</span>
-      </Link>
+      <div className={styles.pageCards}>
+        {BOOK_PAGES.map((page) => (
+          <Link href={"/book/" + page.slug} className={styles.pageCard} key={page.number}>
+            <div
+              className={
+                page.kind === "lesson"
+                  ? styles.thumb + " " + styles.thumbLesson
+                  : styles.thumb
+              }
+              aria-hidden="true"
+            >
+              <div>
+                {page.kind === "cover" ? (
+                  <>
+                    ALL YOU<br />SHOULD KNOW
+                    <span>FOREX</span>
+                  </>
+                ) : (
+                  <>
+                    PAGE {String(page.number).padStart(3, "0")}
+                    <span>{page.title.toUpperCase()}</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.cardCopy}>
+              <div className={styles.cardMeta}>
+                PAGE {String(page.number).padStart(3, "0")} · {page.kind.toUpperCase()} · COMPLETE
+              </div>
+              <h2 className={styles.cardTitle}>{page.title}</h2>
+              <p className={styles.cardDescription}>{page.summary}</p>
+            </div>
+
+            <span className={styles.openButton}>Open page →</span>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }
