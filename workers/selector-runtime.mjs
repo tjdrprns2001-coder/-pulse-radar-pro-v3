@@ -27,10 +27,11 @@ const {createBinanceFuturesWsShards,BINANCE_USDM_PUBLIC_STREAM_URL}=require('../
 
 const {Pool}=pg;
 const env=process.env;
-const DB_URL=env.DATABASE_URL;
-if(!DB_URL)throw new Error('DATABASE_URL required');
+const DB_URL=env.DATABASE_URL||'';
+const CANONICAL_RUNTIME=String(env.CANONICAL_FULL_SCAN_URL||'https://pulseradar-chartbro-oos-runtime.onrender.com').replace(/\/$/,'');
+let dbAvailable=Boolean(DB_URL),dbStartupError=DB_URL?'':'DATABASE_URL missing';
 
-const pool=new Pool({connectionString:DB_URL,max:Number(env.PG_POOL_MAX||5),ssl:env.PG_SSL==='0'?false:{rejectUnauthorized:false}});
+const pool=new Pool({connectionString:DB_URL||'postgres://invalid:invalid@127.0.0.1:1/invalid',max:Number(env.PG_POOL_MAX||5),ssl:env.PG_SSL==='0'?false:{rejectUnauthorized:false}});
 const query=(sql,params=[])=>pool.query(sql,params);
 const store=createPostgresRuntimeStore({query});
 const runtime=createRuntimeWorker({store,journal:createMemoryRawEventJournal({maxEvents:Number(env.RUNTIME_JOURNAL_MAX_EVENTS||500),maxQueue:200,maxDlq:200})});
@@ -462,6 +463,13 @@ function compactFullScanItem(x){
 
 function corsHeaders(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type','cache-control':'no-store'}}
 function jsonResponse(res,status,payload){res.writeHead(status,{'content-type':'application/json; charset=utf-8',...corsHeaders()});return res.end(JSON.stringify(payload))}
+async function proxyCanonical(req,res,route){
+  try{
+    const target=CANONICAL_RUNTIME+route.pathname+route.search,r=await fetch(target,{method:'GET',headers:{accept:'application/json'},signal:AbortSignal.timeout(12000)}),body=await r.text();
+    res.writeHead(r.status,{'content-type':r.headers.get('content-type')||'application/json; charset=utf-8',...corsHeaders()});return res.end(body);
+  }catch(e){return jsonResponse(res,503,{status:'error',mode:'selector-degraded-proxy',error:'canonical runtime unavailable',detail:String(e?.message||e)})}
+}
+
 function numParam(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function astraMarketFrom(u){return{regime:String(u.searchParams.get('regime')||'NEUTRAL').toUpperCase(),breadthRatio:numParam(u.searchParams.get('breadth')),btc24hChange:numParam(u.searchParams.get('btc')),eth24hChange:numParam(u.searchParams.get('eth')),median24hChange:numParam(u.searchParams.get('median')),positiveVolumeRatio:numParam(u.searchParams.get('positiveVolumeRatio')),volumeWeightedBreadth:numParam(u.searchParams.get('volumeWeightedBreadth')),oiScanDegraded:String(u.searchParams.get('oiDegraded')||'').toLowerCase()==='true',grokOiCut:numParam(u.searchParams.get('grokOiCut')),chartbroCohort:String(u.searchParams.get('chartbroCohort')||'ASTRA_PASS').toUpperCase()}}
 function astraSymbols(u){return String(u.searchParams.get('symbols')||'').split(',').map(x=>x.trim()).filter(Boolean)}
@@ -539,6 +547,9 @@ function server(){
   return http.createServer(async(req,res)=>{
     if(req.method==='OPTIONS'){res.writeHead(204,corsHeaders());return res.end()}
     const route=new URL(req.url,'http://runtime.local');
+    if(!dbAvailable&&req.method==='GET'&&(route.pathname==='/api/v1/health'||route.pathname==='/api/v1/results'||route.pathname.startsWith('/api/v1/runs/')||route.pathname==='/api/chartbro-research'))return proxyCanonical(req,res,route);
+    if(!dbAvailable&&(route.pathname==='/api/v1/preignition-oos'||route.pathname==='/api/chart-snapshots'))return jsonResponse(res,503,{status:'degraded',error:'selector database unavailable',detail:dbStartupError,canonicalRuntime:CANONICAL_RUNTIME});
+
     if(req.method==='GET'&&route.pathname==='/api/v1/health')return jsonResponse(res,200,{status:'ok',service:'pulse-full-universe-auto-scan',integrated:true,nextAutoBucketAt:fullScanNextBucket(),fullScan:health.fullScan,websocket:fullScanWs?.health?.()||health.fullScanWs||null,marketCaps:fullScanMarketCaps.state,manualEnabled:Boolean(env.FULL_SCAN_ADMIN_TOKEN)});
     if(route.pathname==='/api/v1/preignition-oos')return handlePreignitionOos(req,res,route);
     if(req.method==='GET'&&route.pathname==='/api/v1/results'){
@@ -578,7 +589,7 @@ function server(){
         if(stage==='universe')return jsonResponse(res,200,await astraScanner.universe({method,minQuoteVolume:route.searchParams.has('minQuoteVolume')?numParam(route.searchParams.get('minQuoteVolume')):null}));
         const symbols=astraSymbols(route);if(!symbols.length)return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'symbols required'});
         if(stage==='oi')return jsonResponse(res,200,await astraScanner.oi(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)}));
-        if(stage==='deep'){const out=await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)});if(method==='astra')await chartbroOos.flush();return jsonResponse(res,200,out)}
+        if(stage==='deep'){const out=await astraScanner.deep(symbols,{method,asOf:numParam(route.searchParams.get('asOf')),market:astraMarketFrom(route)});if(method==='astra'&&dbAvailable)await chartbroOos.flush();return jsonResponse(res,200,out)}
         return jsonResponse(res,400,{status:'error',version:ASTRA_VERSION,method,error:'unknown stage'});
       }catch(e){const sourceState=astraScanner.getSourceState?.()||null,retryAt=Number(e?.retryAt||sourceState?.futuresBlockedUntil)||null,paused=retryAt>Date.now();if(paused)res.setHeader('Retry-After',String(Math.ceil((retryAt-Date.now())/1000)));return jsonResponse(res,paused?503:502,{status:'error',version:ASTRA_VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e),retryAt,upstreamStatus:e?.upstreamStatus||null,sourceState})}
     }
@@ -590,8 +601,8 @@ function server(){
     if(req.method==='GET'&&route.pathname==='/ui/pulse-theme.css')return serveRepoFile(res,'ui/pulse-theme.css','text/css; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/astra-scan.css')return serveRepoFile(res,'ui/astra-scan.css','text/css; charset=utf-8');
     if(req.method==='GET'&&route.pathname==='/ui/pulse-child-normalize.css')return serveRepoFile(res,'ui/pulse-child-normalize.css','text/css; charset=utf-8');
-    if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,uptimeMs:Date.now()-health.startedAt}))}
-    if(req.url==='/ready'){const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
+    if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({...health,database:{status:dbAvailable?'OK':'DEGRADED',error:dbStartupError||null},mode:dbAvailable?'full':'degraded-proxy',canonicalRuntime:CANONICAL_RUNTIME,uptimeMs:Date.now()-health.startedAt}))}
+    if(req.url==='/ready'){if(!dbAvailable){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({ready:true,mode:'degraded-proxy',database:{status:'DEGRADED',error:dbStartupError},canonicalRuntime:CANONICAL_RUNTIME}))}const bad=x=>['DEGRADED','CONFLICTED','STALE'].includes(String(x?.status||x?.state||''));const ok=!bad(health.evm)&&!bad(health.binanceSpot)&&!bad(health.binanceFutures)&&!bad(health.queues);res.writeHead(ok?200:503,{'content-type':'application/json'});return res.end(JSON.stringify({ready:ok,health}))}
     if(req.url==='/'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({service:'pulseradar-selector-runtime',status:'ok',health:'/health',ready:'/ready',stats:'/stats'}))}
     {
       const u=new URL(req.url,'http://runtime.local');
@@ -665,16 +676,17 @@ function server(){
     res.writeHead(404);res.end('not found');
   }).listen(port,'0.0.0.0');
 }
-await migrate();
-await chartbroOos.hydrate();
+try{
+  if(!DB_URL)throw new Error('DATABASE_URL missing');
+  await migrate();await chartbroOos.hydrate();health.database={status:'OK',updatedAt:Date.now()};
+}catch(e){
+  dbAvailable=false;dbStartupError=String(e?.message||e);health.database={status:'DEGRADED',error:dbStartupError,updatedAt:Date.now()};
+  health.selector={status:'DEGRADED',reason:'database unavailable',canonicalRuntime:CANONICAL_RUNTIME,updatedAt:Date.now()};
+  health.fullScan={status:'PROXY',source:'render-kv-full-scan',canonicalRuntime:CANONICAL_RUNTIME,updatedAt:Date.now()};
+  health.errors.push({source:'database-startup',at:Date.now(),error:dbStartupError});
+}
 server();
-runEvm();
-runBinance();
-runQueues();
-runEvidencePollers();
-runSelectorScanner();
-startFullUniverseWebsocket();
-scheduleFullUniverseScanner();
-schedulePreignitionOos();
-scheduleAstraChartBroTracker();
-process.on('SIGTERM',()=>{chartbroOos.flush().finally(()=>process.exit(0))});
+if(dbAvailable){
+  runEvm();runBinance();runQueues();runEvidencePollers();runSelectorScanner();startFullUniverseWebsocket();scheduleFullUniverseScanner();schedulePreignitionOos();scheduleAstraChartBroTracker();
+}
+process.on('SIGTERM',()=>{if(dbAvailable)chartbroOos.flush().finally(()=>process.exit(0));else process.exit(0)});

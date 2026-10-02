@@ -5,6 +5,7 @@ on:
     branches:
       - feature/full-universe-auto-scan-20260927
       - codex/mtf-whole-market-integration-20261002
+      - codex/fullscan-kv-canonical-20261002
   pull_request:
     paths:
       - 'lib/coin-scan/full-universe-auto-scan.js'
@@ -12,9 +13,12 @@ on:
       - 'lib/coin-scan/mtf-market-analyzer.test.js'
       - 'lib/coin-scan/market-cap-provider.js'
       - 'lib/coin-scan/postgres-full-scan-store.js'
+      - 'lib/coin-scan/kv-full-scan-store.js'
+      - 'lib/coin-scan/kv-full-scan-store.test.js'
       - 'lib/coin-scan/binance-ws-shards.js'
       - 'workers/full-universe-auto-scan.mjs'
       - 'workers/selector-runtime.mjs'
+      - 'workers/chartbro-oos-runtime.mjs'
       - 'full-scan.html'
       - 'ui/full-scan.js'
       - 'ui/full-scan.css'
@@ -44,6 +48,9 @@ jobs:
       - run: node --check lib/coin-scan/full-universe-auto-scan.js
       - run: node --check lib/coin-scan/market-cap-provider.js
       - run: node --check lib/coin-scan/postgres-full-scan-store.js
+      - run: node --check lib/coin-scan/kv-full-scan-store.js
+      - run: node --test lib/coin-scan/kv-full-scan-store.test.js
+      - run: node --check workers/chartbro-oos-runtime.mjs
       - run: node --check lib/coin-scan/binance-ws-shards.js
       - run: node --check ui/full-scan.js
       - run: node scripts/verify-binance-ws-raw-event.js

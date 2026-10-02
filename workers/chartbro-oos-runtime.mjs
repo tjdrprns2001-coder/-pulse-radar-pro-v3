@@ -6,6 +6,9 @@ const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createAstraAutoScanner}=require('../lib/coin-scan/astra-auto-scanner.js');
 const ChartBroOos=require('../lib/coin-scan/chartbro-oos-service.js');
 const {createRenderKvStateStore}=require('../lib/coin-scan/render-kv-state-store.js');
+const {createKvFullScanStore}=require('../lib/coin-scan/kv-full-scan-store.js');
+const {createFullUniverseScanService,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
+const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
 
 const env=process.env;
 const PORT=Number(env.PORT||10000);
@@ -19,8 +22,25 @@ const provider=createBinanceProvider({
   disableFuturesFallback:false
 });
 const scanner=createAstraAutoScanner({provider});
-const health={startedAt:Date.now(),status:'INIT',run:null,kv:{status:'INIT'},errors:[]};
-let active=false,universeCursor=0;
+const fullScanKv=createKvFullScanStore({url:env.CHARTBRO_KV_URL,prefix:env.FULL_SCAN_KV_PREFIX||'pulseradar:full-scan-v2'});
+const fullScanProvider=createBinanceProvider({
+  concurrency:Number(env.FULL_SCAN_PROVIDER_CONCURRENCY||6),
+  intervalConcurrency:Number(env.FULL_SCAN_INTERVAL_CONCURRENCY||2),
+  futuresMinIntervalMs:Number(env.FULL_SCAN_FUTURES_MIN_INTERVAL_MS||150),
+  disableSpotRest:false,
+  disableFuturesFallback:false
+});
+const fullScanMarketCaps=createMarketCapProvider({ttlMs:Number(env.FULL_SCAN_MARKET_CAP_TTL_MS||1800000)});
+const fullScan=createFullUniverseScanService({
+  provider:fullScanProvider,
+  marketCapProvider:fullScanMarketCaps,
+  store:fullScanKv,
+  maxWorkers:Number(env.FULL_SCAN_WORKERS||6),
+  requestsPerMinute:Number(env.FULL_SCAN_REQUESTS_PER_MINUTE||120),
+  klineRows:Number(env.FULL_SCAN_KLINE_ROWS||64)
+});
+const health={startedAt:Date.now(),status:'INIT',run:null,kv:{status:'INIT'},fullScan:{status:'INIT'},errors:[]};
+let active=false,fullScanActive=false,universeCursor=0;
 
 function send(res,status,body){
   res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store, max-age=0','access-control-allow-origin':'*'});
@@ -79,8 +99,37 @@ async function run(){
     health.errors.push({source:'tracker',at:Date.now(),error:String(e?.message||e)});health.errors=health.errors.slice(-20);
   }finally{active=false}
 }
+
+function compactFullScanItem(x){
+  if(!x)return x;const frames=x.frames||{},m=x.mtfAnalysis||{},mf=m.multiTimeframe||{},pf=m.preIgnition||{},ef=m.entryMap||{};
+  const pick=tf=>{const f=frames[tf]||{};return{available:Boolean(f.available),barChangePct:f.barChangePct??null,rvol20:f.rvol20??null,close:f.close??null}};
+  const mfFrames=Object.fromEntries(['1w','1d','4h','1h','15m','5m'].map(tf=>{const q=m.frames?.[tf]||{};return[tf,{available:Boolean(q.available),structure:q.structure||null,emaTrend:q.emaTrend||null,compressionState:q.compressionState||null,compressionPct:q.compressionPct??null,rsi:q.rsi??null,macdImproving:q.macdImproving??null,volumeEchoActive:Boolean(q.volumeEcho?.active)}]}));
+  return{symbol:x.symbol,baseAsset:x.baseAsset,tier:x.tier,marketCapUsd:x.marketCapUsd??null,fundingPct:x.fundingPct??null,priceChange24h:x.priceChange24h??null,spotPriceChange24h:x.spotPriceChange24h??null,oi:x.oi||{},complete:Boolean(x.complete),errors:Array.isArray(x.errors)?x.errors:[],updatedAt:x.updatedAt||null,
+    preIgnitionScore:x.preIgnitionScore??pf.score??null,preIgnitionStage:x.preIgnitionStage??pf.stage??null,mtf:{regime:mf.regime||null,execution:mf.execution?{longState:mf.execution.longState,shortState:mf.execution.shortState,longScore:mf.execution.longScore,shortScore:mf.execution.shortScore}:null,frames:mfFrames,risks:pf.risks||[],evidence:pf.evidence||[]},
+    entryMap:{status:ef.status||null,label:ef.label||null,entryVisible:Boolean(ef.entryVisible),plannedEntry:ef.plannedEntry??null,entry:ef.entry??null,stop:ef.stop??null,target:ef.target||null,riskReward:ef.riskReward??null,steps:ef.steps||{}},
+    frames:{'5m':pick('5m'),'15m':pick('15m'),'1h':pick('1h'),'4h':pick('4h'),'1d':pick('1d'),'1w':pick('1w')}};
+}
+async function runFullScan(){
+  if(fullScanActive||String(env.FULL_SCAN_ENABLED||'1')==='0')return;
+  fullScanActive=true;const started=Date.now();health.fullScan={...health.fullScan,status:'RUNNING',startedAt:started,updatedAt:started};
+  try{
+    const out=await fullScan.execute({kind:'auto',owner:'chartbro-kv-runtime'});
+    health.fullScan={status:out.status||'DONE',runId:out.id||null,startedAt:out.startedAt||started,updatedAt:Date.now(),completedAt:out.completedAt||null,universeCount:out.universeCount||0,selectedCount:out.selectedCount||0,completedCount:out.completedCount||0,errorCount:out.errorCount||0,cacheHit:Boolean(out.cacheHit),skipped:Boolean(out.skipped),source:'render-kv-full-scan'};
+  }catch(e){
+    health.fullScan={...health.fullScan,status:'DEGRADED',updatedAt:Date.now(),error:String(e?.message||e)};
+    health.errors.push({source:'full-scan',at:Date.now(),error:String(e?.message||e)});health.errors=health.errors.slice(-20);
+  }finally{fullScanActive=false}
+}
+function scheduleFullScan(){
+  if(String(env.FULL_SCAN_ENABLED||'1')==='0'){health.fullScan={status:'DISABLED'};return}
+  const delay=Math.max(5000,Number(env.FULL_SCAN_START_DELAY_MS||45000)),interval=Math.max(300000,Number(env.FULL_SCAN_INTERVAL_MS||AUTO_INTERVAL_MS));
+  setTimeout(runFullScan,delay).unref?.();setInterval(runFullScan,interval).unref?.();
+}
+function nextAutoBucketAt(){return(Math.floor(Date.now()/AUTO_INTERVAL_MS)+1)*AUTO_INTERVAL_MS}
+
 function schedule(){
-  if(String(env.CHARTBRO_TRACKER_ENABLED||'1')==='0'){health.status='DISABLED';return}
+  scheduleFullScan();
+  if(String(env.CHARTBRO_TRACKER_ENABLED||'1')==='0'){health.status=health.kv.status==='OK'?'READY':'DEGRADED';return}
   const interval=Math.max(300000,Number(env.CHARTBRO_INTERVAL_MS||900000)),delay=Math.max(1000,Number(env.CHARTBRO_START_DELAY_MS||5000));
   setTimeout(run,delay).unref?.();setInterval(run,interval).unref?.();
 }
@@ -88,17 +137,30 @@ const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://chartbro.local');
     if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'pulseradar-chartbro-oos-runtime',status:health.status,uptimeMs:Date.now()-health.startedAt,health});
+    if(req.method==='GET'&&u.pathname==='/api/v1/health')return send(res,200,{status:'ok',service:'pulseradar-chartbro-oos-runtime',version:ChartBroOos.VERSION,fullScan:{...health.fullScan,manualEnabled:false},nextAutoBucketAt:nextAutoBucketAt(),marketCaps:{source:'CoinGecko',count:health.fullScan?.universeCount||0},websocket:{shardCount:0,symbolCount:health.fullScan?.universeCount||0,latestCount:0}});
+    if(req.method==='GET'&&u.pathname==='/api/v1/results'){
+      const limit=Math.max(1,Math.min(2000,Number(u.searchParams.get('limit'))||500)),compact=u.searchParams.get('compact')!=='0',tiers=String(u.searchParams.get('tiers')||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const latest=await fullScanKv.latest({tiers,limit});if(!latest)return send(res,200,{status:'ok',source:'render-kv-full-scan',items:[]});
+      const items=(latest.items||[]).map(x=>compact?compactFullScanItem(x):x);
+      return send(res,200,{status:'ok',source:'render-kv-full-scan',version:latest.version||null,runId:latest.id,statusText:latest.status,updatedAt:latest.updatedAt,completedAt:latest.completedAt,universeCount:latest.universeCount,selectedCount:latest.selectedCount,completedCount:latest.completedCount,errorCount:latest.errorCount,items});
+    }
+    if(req.method==='GET'&&u.pathname.startsWith('/api/v1/runs/')){
+      const id=decodeURIComponent(u.pathname.slice('/api/v1/runs/'.length)),run=await fullScanKv.getRun(id);if(!run)return send(res,404,{status:'error',error:'run not found'});
+      const include=u.searchParams.get('items')==='1',compact=u.searchParams.get('compact')!=='0',limit=Math.max(1,Math.min(2000,Number(u.searchParams.get('limit'))||500));
+      const items=include?await fullScanKv.getItems(id,{limit}):undefined;return send(res,200,{...run,...(include?{items:(items||[]).map(x=>compact?compactFullScanItem(x):x)}:{})});
+    }
     if(req.method==='GET'&&u.pathname==='/api/chartbro-research'){
       const view=String(u.searchParams.get('view')||'stats').toLowerCase(),symbol=u.searchParams.get('symbol'),limit=Math.max(1,Math.min(500,Number(u.searchParams.get('limit'))||100)),out=research(view,symbol,limit);
       return out?send(res,200,out):send(res,400,{status:'error',error:'unknown view'});
     }
-    if(req.method==='GET'&&u.pathname==='/')return send(res,200,{service:'pulseradar-chartbro-oos-runtime',version:ChartBroOos.VERSION,health:'/health',research:'/api/chartbro-research?view=stats'});
+    if(req.method==='GET'&&u.pathname==='/')return send(res,200,{service:'pulseradar-chartbro-oos-runtime',version:ChartBroOos.VERSION,health:'/health',research:'/api/chartbro-research?view=stats',fullScanHealth:'/api/v1/health',fullScanResults:'/api/v1/results?compact=1&limit=500'});
     return send(res,404,{status:'error',error:'not found'});
   }catch(e){return send(res,500,{status:'error',error:String(e?.message||e)})}
 });
 
 try{
   const pong=await kv.ping();health.kv={status:pong==='PONG'?'OK':'UNKNOWN',value:pong,updatedAt:Date.now()};
+  const fullPong=await fullScanKv.ping();health.fullScan={...health.fullScan,store:fullPong==='PONG'?'OK':'UNKNOWN',source:'render-kv-full-scan'};
   await oos.hydrate();
 }catch(e){health.kv={status:'DEGRADED',error:String(e?.message||e),updatedAt:Date.now()};health.errors.push({source:'kv',at:Date.now(),error:String(e?.message||e)})}
 server.listen(PORT,'0.0.0.0',()=>{health.status=health.kv.status==='OK'?'READY':'DEGRADED';schedule()});

@@ -38,7 +38,7 @@ let checks=0;const ok=(cond,msg)=>{checks++;assert(cond,msg)},eq=(a,b,msg)=>{che
     async getFundingMap(){return new Map()},async getFuturesKlines(){return[]},async getV2OiProfile(){return{}}
   };
   const strictSvc=Core.createFullUniverseScanService({provider:strictProvider,marketCapProvider:{async resolve(){return new Map()}},store:Core.createMemoryFullScanStore(),now:()=>5000,sleep:async()=>{},requestsPerMinute:999999});
-  const strictUniverse=await strictSvc.loadUniverse();eq(strictUniverse.map(x=>x.symbol),['BINANCEONLYUSDT'],'strict Binance universe selected');eq(strictCalls,1,'strict universe called');eq(fallbackUniverseCalls,0,'venue fallback universe not called');
+  const strictUniverse=await strictSvc.loadUniverse();eq(strictUniverse.map(x=>x.symbol),['OTHERUSDT'],'resilient futures universe selected');eq(strictCalls,0,'strict-only universe is not preferred');eq(fallbackUniverseCalls,1,'resilient universe endpoint called');
   const provider={
     async getFuturesUniverse(){return{symbols:rows.map(x=>({symbol:x.symbol,baseAsset:x.baseAsset,quoteAsset:'USDT',contractType:'PERPETUAL',status:'TRADING'}))}},
     async getFundingMap(){return new Map(rows.map(x=>[x.symbol,.01]))},

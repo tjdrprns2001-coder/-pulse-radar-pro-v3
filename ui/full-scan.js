@@ -1,11 +1,11 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id);let filter='all',items=[];
+const $=id=>document.getElementById(id);const API_BASE='https://pulseradar-chartbro-oos-runtime.onrender.com';let filter='all',items=[];
 const num=v=>Number.isFinite(Number(v))?Number(v):null;
 const pct=v=>{const n=num(v);return n==null?'—':(n>=0?'+':'')+n.toFixed(2)+'%'};
 const cls=v=>{const n=num(v);return n==null?'':n>0?'pos':n<0?'neg':''};
 const age=t=>{const n=num(t);if(n==null)return'-';const s=Math.max(0,Math.floor((Date.now()-n)/1000));return s<60?s+'초 전':s<3600?Math.floor(s/60)+'분 전':Math.floor(s/3600)+'시간 전'};
 const time=t=>{const n=num(t);return n==null?'-':new Date(n).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})};
-async function j(url,opt={},timeout=12000){const c=new AbortController(),tm=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...opt,cache:'no-store',signal:c.signal});const b=await r.json();if(!r.ok)throw new Error(b.error||('HTTP '+r.status));return b}finally{clearTimeout(tm)}}
+async function j(url,opt={},timeout=12000){const c=new AbortController(),tm=setTimeout(()=>c.abort(),timeout);try{const target=url.startsWith('/api/v1/')?API_BASE+url:url;const r=await fetch(target,{...opt,cache:'no-store',signal:c.signal});const b=await r.json();if(!r.ok)throw new Error(b.error||('HTTP '+r.status));return b}finally{clearTimeout(tm)}}
 function badge(t,c=''){return '<span class="badge '+c+'">'+String(t??'')+'</span>'}
 function tfMini(x,tf){const q=x.mtf?.frames?.[tf]||{};if(!q.available)return tf.toUpperCase()+' N/A';const dir=q.emaTrend==='BULL'?'↑':q.emaTrend==='BEAR'?'↓':'·',comp=q.compressionState==='STRONG'?'강압축':q.compressionState==='COMPRESSED'?'압축':'';return tf.toUpperCase()+' '+dir+(comp?' '+comp:'')+(num(q.rsi)!=null?' RSI'+num(q.rsi).toFixed(0):'')}
 function stepText(x){const s=x.entryMap?.steps||{},arr=[];if(s.sslSweep)arr.push('Sweep');if(s.reclaim)arr.push('Reclaim');if(s.mss)arr.push('MSS');if(s.displacement)arr.push('Disp');if(s.zone)arr.push('FVG/OB');if(s.retest)arr.push('Retest');if(s.rebreak)arr.push('Rebreak');return arr.length?arr.join(' → '):'구조 형성 전'}
