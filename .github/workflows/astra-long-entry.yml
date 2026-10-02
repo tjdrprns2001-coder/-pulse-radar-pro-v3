@@ -11,6 +11,7 @@ on:
       - codex/chartbro-complete-context-20261002
       - codex/chartbro-oos-loop-20261002
       - codex/chartbro-oos-runtime-20261002
+      - codex/chartbro-oos-final-20261002
       - main
     paths:
       - "lib/coin-scan/amd-long-entry.js"
