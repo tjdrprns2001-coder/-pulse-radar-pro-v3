@@ -66,6 +66,26 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert(cloudFallbackCalls.some(x=>x.includes('api.bybit.com')),'Bybit should be attempted before OKX');
   assert(cloudFallbackCalls.some(x=>x.includes('www.okx.com')),'OKX fallback must be attempted');
   assert.equal(cloudProvider.getSourceState().marketSource,'okx-futures-fallback','runtime must report the actual fallback venue');
+  const discoveryCalls=[];
+  const discoveryFetch=async url=>{
+    discoveryCalls.push(url);const u=new URL(url);
+    if(u.host==='fapi.blocked.test')return{ok:false,status:451,headers:{get:()=>null},json:async()=>({})};
+    if(u.host==='api.bybit.com')return{ok:false,status:403,headers:{get:()=>null},json:async()=>({})};
+    if(u.host==='www.okx.com'&&u.pathname.endsWith('/public/instruments'))return{ok:true,status:200,json:async()=>({code:'0',data:[{instId:'BTC-USDT-SWAP',ctValCcy:'BTC',state:'live'}]})};
+    if(u.host==='www.okx.com'&&u.pathname.endsWith('/market/tickers'))return{ok:true,status:200,json:async()=>({code:'0',data:[{instId:'BTC-USDT-SWAP',last:'80000',open24h:'79000',volCcy24h:'1000',ts:'1700000000000'}]})};
+    return{ok:false,status:404,headers:{get:()=>null},json:async()=>({})};
+  };
+  const discoveryProvider=createBinanceProvider({
+    fetchImpl:discoveryFetch,now:()=>1700001000000,cache:createTtlCache({now:()=>1700001000000}),
+    futuresBases:['https://fapi.blocked.test'],crossOiProvider:{getProfile:async()=>({})}
+  });
+  const okxUniverse=await discoveryProvider.getFuturesUniverse();
+  const okxTickers=await discoveryProvider.getFuturesTickers();
+  assert.equal(okxUniverse.symbols[0].symbol,'BTCUSDT','OKX must recover futures universe when Binance and Bybit are blocked');
+  assert.equal(okxTickers[0].symbol,'BTCUSDT','OKX must recover 24h tickers when Binance and Bybit are blocked');
+  assert(discoveryCalls.some(x=>x.includes('/public/instruments')),'OKX instruments fallback must be requested');
+  assert(discoveryCalls.some(x=>x.includes('/market/tickers')),'OKX tickers fallback must be requested');
+
 
   const p=createBinanceProvider({fetchImpl,now:()=>now,concurrency:2,cache:createTtlCache({now:()=>now}),bases:['https://api.binance.test'],futuresBase:'https://fapi.binance.test',crossOiProvider});
   const a=await p.getUniverse();
