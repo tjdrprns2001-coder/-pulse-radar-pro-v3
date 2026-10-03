@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 
 const nav = [
   ["Desk", "/"],
+  ["Workspace", "/workspace"],
   ["Scanner", "/scanner"],
+  ["Performance", "/performance"],
   ["Risk Tools", "/book-tools"],
   ["Book Ref", "/book"],
-  ["Chart", "/chart-lab"],
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -21,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="main">
         <header className="topbar">
           <strong>Live Market Workflow</strong>
-          <div className="status"><span className="dot" />Chart · Risk · Scanner · Journal</div>
+          <div className="status"><span className="dot" />Desk · MTF · Scanner · Risk · Journal · Analytics</div>
         </header>
         <div className="content">{children}</div>
       </main>
