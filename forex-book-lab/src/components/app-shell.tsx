@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 const nav = [
   ["Desk", "/"],
+  ["Daily Plan", "/daily-plan"],
   ["Workspace", "/workspace"],
   ["Scanner", "/scanner"],
   ["Playbook", "/playbook"],
@@ -24,7 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="main">
         <header className="topbar">
           <strong>Live Market Workflow</strong>
-          <div className="status"><span className="dot" />Desk · MTF · Scanner · Playbook · Manage · Risk · Journal · Analytics</div>
+          <div className="status"><span className="dot" />Plan · Desk · MTF · Scanner · Playbook · Manage · Journal · Analytics</div>
         </header>
         <div className="content">{children}</div>
       </main>
