@@ -68,7 +68,7 @@ fixture 결과는 `npm run test:chartbro`에서 직접 확인합니다. 실시�
 
 ## PostgreSQL 운영 연결
 
-기존 `workers/chartbro-oos-runtime.mjs`에도 `/chartbro-lab.html`과 `/api/chartbro`를 연결했습니다. 기존 연구 tracker는 유지됩니다. 해당 worker의 `pg` 의존성을 사용합니다.
+기존 `workers/chartbro-oos-runtime.mjs`에도 `/chartbro-lab.html`과 `/api/chartbro`를 연결했습니다. 기존 연구 tracker는 유지됩니다. 루트 서버와 worker 모두 `pg` 의존성을 사용합니다. 싱가포르 DB의 내부 주소는 같은 리전의 서버에 연결해야 합니다.
 
 - `CHARTBRO_POSTGRES_ENABLED=1`
 - `CHARTBRO_DATABASE_URL` (차트브로 DB 연결 문자열을 직접 지정; 다른 서비스의 DATABASE_URL을 묵시적으로 사용하지 않음)
