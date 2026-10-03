@@ -1,10 +1,10 @@
 'use strict';
-const {getService}=require('../lib/chartbro/runtime'),{coverage}=require('../lib/chartbro/sources'),R=require('../lib/chartbro/research'),{timingSafeEqual,randomUUID}=require('node:crypto');
+const {withService}=require('../lib/chartbro/runtime'),{coverage}=require('../lib/chartbro/sources'),R=require('../lib/chartbro/research'),{timingSafeEqual,randomUUID}=require('node:crypto');
 function authorized(req){const expected=process.env.CHARTBRO_WRITE_TOKEN;if(!expected)return false;const value=String(req.headers?.authorization||req.headers?.Authorization||'').replace(/^Bearer /,'');const a=Buffer.from(value),b=Buffer.from(expected);return a.length===b.length&&timingSafeEqual(a,b);}
-module.exports=async function handler(req,res){res.setHeader('Cache-Control','no-store');const q=req.query||{},action=q.action||'analysis',method=req.method||'GET';const s=getService();try{if(method!=='GET'){if(!authorized(req))return res.status(403).json({ok:false,error:'Authenticated writes require CHARTBRO_WRITE_TOKEN'});if(!s.journal.durable||process.env.VERCEL||process.env.NETLIFY)return res.status(503).json({ok:false,error:'Durable disk worker required; serverless background writes disabled'});}
+async function handle(req,res,s){res.setHeader('Cache-Control','no-store');const q=req.query||{},action=q.action||'analysis',method=req.method||'GET';try{if(method!=='GET'){if(!authorized(req))return res.status(403).json({ok:false,error:'Authenticated writes require CHARTBRO_WRITE_TOKEN'});if(!s.journal.durable||process.env.VERCEL||process.env.NETLIFY)return res.status(503).json({ok:false,error:'Durable worker required; serverless background writes disabled'});}
  let body=req.body||{};if(typeof body==='string'){try{body=JSON.parse(body);}catch{return res.status(400).json({ok:false,error:'invalid JSON'});}}
  if(action==='sources'&&method==='GET')return res.status(200).json({ok:true,...coverage()});
- if(action==='health'&&method==='GET')return res.status(200).json({ok:true,engine_version:require('../lib/chartbro/engine').VERSION,durable:s.journal.durable,worker:process.env.CHARTBRO_WORKER_ENABLED==='1',source_verified:false});
+ if(action==='health'&&method==='GET')return res.status(200).json({ok:true,engine_version:require('../lib/chartbro/engine').VERSION,durable:s.journal.durable,storage:s.journal.kind||(s.journal.durable?'disk':'ephemeral'),worker:process.env.CHARTBRO_WORKER_ENABLED==='1',source_verified:false});
  if(action==='instruments'&&method==='GET')return res.status(200).json({ok:true,items:await s.provider.instruments({market:q.market||'perpetual'})});
  if(action==='analysis'&&method==='GET')return res.status(200).json({ok:true,analysis:await s.analysis({...q,flow:q.flow==='1'})});
  if(action==='matrix'&&method==='GET')return res.status(200).json({ok:true,...await s.matrix(q)});
@@ -22,3 +22,9 @@ module.exports=async function handler(req,res){res.setHeader('Cache-Control','no
  if(action==='cohorts'&&method==='GET')return res.status(200).json({ok:true,candidates:s.journal.all('candidates'),observations:s.journal.all('candidate_observations'),scan_population:s.journal.all('job_results'),outcomes:s.journal.all('research_outcomes'),status:'observations_only_no_verified_oos_performance'});
  return res.status(405).json({ok:false,error:'unsupported action or method'});
  }catch(e){return res.status(/invalid|unsupported|outside|exceeds|required/.test(e.message)?400:502).json({ok:false,error:e.message});}};
+
+module.exports=async function handler(req,res){
+ let status=200,body,headers={};const buffered={setHeader(k,v){headers[k]=v;},status(n){status=n;return this;},json(v){body=v;return this;}};
+ try{await withService(async s=>{await handle(req,buffered,s);if(status>=400){const e=new Error('request failed');e.response=true;throw e;}});}catch(e){if(!e.response){status=503;body={ok:false,error:'ChartBro storage unavailable'};}}
+ for(const [k,v] of Object.entries(headers))res.setHeader(k,v);return res.status(status).json(body);
+};

@@ -1,7 +1,7 @@
 name: ChartBro causal analyzer
 on:
   pull_request:
-    paths: ['lib/chartbro/**','handlers/chartbro.js','ui/chartbro/**','chartbro-lab.html','tests/chartbro/**','api/index.js','render-temp-server.js','vercel.json','netlify/functions/api-index.js','netlify.toml','package.json','.github/workflows/chartbro-causal-analyzer.yml']
+    paths: ['lib/chartbro/**','handlers/chartbro.js','ui/chartbro/**','chartbro-lab.html','tests/chartbro/**','api/index.js','render-temp-server.js','vercel.json','netlify/functions/api-index.js','netlify.toml','package.json','workers/chartbro-oos-runtime.mjs','.github/workflows/chartbro-causal-analyzer.yml']
   push:
     branches: [main]
     paths: ['lib/chartbro/**','handlers/chartbro.js','ui/chartbro/**','chartbro-lab.html','tests/chartbro/**','.github/workflows/chartbro-causal-analyzer.yml']
