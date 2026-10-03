@@ -174,7 +174,8 @@
     "test:common-preignition-stage": "node scripts/verify-common-preignition-stage.js",
     "test:auto-chart-lab": "node scripts/verify-auto-chart-lab.js",
     "test:auto-chart-transport": "node scripts/verify-auto-chart-transport.js",
-    "test:mtf-market-analyzer": "node --test lib/coin-scan/mtf-market-analyzer.test.js"
+    "test:mtf-market-analyzer": "node --test lib/coin-scan/mtf-market-analyzer.test.js",
+    "test:chartbro": "node --test tests/chartbro/*.test.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"

@@ -1,0 +1,4 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ChartBroCoordinator=api;})(globalThis,function(){'use strict';
+function createCoordinator(){const slots=new Map();return {async run(key,fn){const old=slots.get(key);old?.controller.abort();const slot={generation:(old?.generation||0)+1,controller:new AbortController()};slots.set(key,slot);try{const value=await fn(slot.controller.signal);return {accepted:slots.get(key)===slot&&!slot.controller.signal.aborted,value};}catch(error){if(slots.get(key)!==slot||error.name==='AbortError')return {accepted:false};throw error;}},cancel(key){const x=slots.get(key);if(x){x.controller.abort();slots.delete(key);}},cancelAll(){for(const x of slots.values())x.controller.abort();slots.clear();}};}
+return {createCoordinator};
+});
