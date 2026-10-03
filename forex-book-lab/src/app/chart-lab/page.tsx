@@ -1,5 +1,5 @@
-import { ForexToolkit } from "@/features/tools/forex-toolkit";
+import { LiveTradingDesk } from "@/features/live/live-desk";
 
 export default function ChartLabPage() {
-  return <ForexToolkit />;
+  return <LiveTradingDesk />;
 }
