@@ -13,7 +13,7 @@ npm run test:chartbro
 PORT=10000 node render-temp-server.js
 ```
 
-분석 API와 정적 페이지는 기존 서버에서 실행됩니다. 데이터 공급자는 Binance 현물/선물을 구분하며 다른 거래소 또는 현물로 묵시적으로 대체하지 않습니다. 공급자 실패는 오류입니다.
+분석 API와 정적 페이지는 기존 서버에서 실행됩니다. 화면의 기본 데이터 공급자는 자동 모드입니다. OKX·Bybit·Bitget·Gate·Binance 순서로 사용 가능한 거래소의 데이터 전체를 선택하고 실제 거래소를 표시합니다. 현물/선물과 서로 다른 거래소의 봉·수급은 혼합하지 않습니다. 거래소를 직접 선택하면 다른 거래소로 자동 전환하지 않습니다.
 
 영속 스캔 작업을 사용할 때는 서버 외부의 영속 디스크 경로와 쓰기 토큰을 환경변수로 설정합니다:
 
@@ -62,7 +62,7 @@ fixture 결과는 `npm run test:chartbro`에서 직접 확인합니다. 실시�
 - PostgreSQL 계약은 `db/chartbro-v1.sql`에 있습니다. 실행 저장소는 디스크 저널 또는 PostgreSQL입니다. PostgreSQL의 전체 요청/작업 단계는 전역 advisory transaction lock으로 직렬화합니다. 고처리량 분산 큐, 포트폴리오 계정 동기화, 실거래 주문, 경제일정, 체결 기반 VP, 1m/tick 모호성 해소, 정기 스캔 예약은 별도 운영 통합이 필요합니다.
 - 성과 계산/OOS 분리/ablation 함수는 `research.js`에 있습니다. 실제 과거 모집단을 수집한 Champion/Challenger 실험이나 검증 성과가 아직 생성된 것은 아닙니다.
 
-검증 기록: 새 fixture 50개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 운영 배포나 실시간 공급자 성공 조회를 이 결과로 주장하지 않습니다.
+검증 기록: 새 fixture 62개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 운영 배포나 실시간 공급자 성공 조회를 이 결과로 주장하지 않습니다.
 
 로컬 HTTP smoke: 차트 HTML·JS·리플레이 worker·공유 엔진 200, health 정상 응답, source 대장 73개, 인증 없는 작업 POST 403 확인.
 
@@ -78,3 +78,13 @@ fixture 결과는 `npm run test:chartbro`에서 직접 확인합니다. 실시�
 연결 시 `chartbro_runtime_events`와 `chartbro_runtime_records`를 자동 생성합니다. 기존 OOS 테이블은 변경하지 않습니다. 이벤트 이력과 현재 projection을 한 트랜잭션으로 저장하고, commit 실패 시 메모리도 복구하며 성공 응답을 보내지 않습니다. 재시작·다른 프로세스에서는 DB projection을 다시 읽습니다. 단일 전역 잠금과 전체 projection 로드는 초기 소규모 작업용이며 고처리량 구현은 아닙니다.
 
 Render 무료 PostgreSQL의 만료일은 서비스 정책을 확인해 관리해야 합니다. 구성만으로 데이터베이스 연결 검증이 끝난 것은 아니며 운영 health와 실제 DB 테이블을 확인합니다.
+
+## 다중 거래소 및 요청 제한 복구
+
+화면에서 자동 또는 Binance·Bybit·OKX·Bitget·Gate를 선택합니다. API `venue=auto|binance|bybit|okx|bitget|gate`도 같습니다. 자동 모드는 24초 전체 한도와 거래소당 6초 한도로 진행합니다. 타임프레임 비교는 선택된 실제 거래소에 고정합니다. Gate는 이 모듈에서 5m·15m·1h·4h·1d를 지원하며 나머지는 명시적으로 미지원입니다. 긴 조회는 페이지 수 제한으로 요청 history보다 짧을 수 있어 장기 EMA 준비 상태를 그대로 노출합니다.
+
+거래소별 원본 시장·심볼·캔들 경계·거래량 단위를 보존합니다. OKX 파생상품 거래량은 계약 수가 아닌 base/quote 필드를 사용하고 Gate 계약 수는 contract multiplier로 변환합니다. Binance 외 수급 adapter가 없는 경우 OI·펀딩·true taker는 N/A이며 Binance 수급으로 대신 채우지 않습니다. 현재 영속 scan universe/jobs는 Binance 전용입니다. 다중 거래소 지원은 분석 화면/API이며 전 거래소 universe scanner가 완성됐다는 뜻은 아닙니다.
+
+418/429에서는 Retry-After와 응답의 ban 종료 시각을 저장하고 대기열·신규 요청을 중단합니다. 자동 조회는 다른 거래소의 독립 데이터를 선택할 수 있습니다. 고정 거래소에서 제한을 만났고 정상 snapshot이 있으면 원래 시각·ID를 유지한 stale 복사본을 반환합니다. 저장된 snapshot은 바꾸지 않으며 현재 신호 확인/순위 대상에 넣지 않습니다. 정상 snapshot이 없으면 재시도 시각과 오류를 표시합니다. 캐시는 같은 확정 봉의 요청을 재사용하며 명시한 과거 cutoff의 정확성은 유지합니다. 제한이 해제됐다고 가정하거나 다른 Binance 호스트로 우회하지 않습니다.
+
+공식 API 형식 참고: [Bybit Kline](https://bybit-exchange.github.io/docs/v5/market/kline), [OKX V5](https://app.okx.com/docs-v5/en/), [Bitget 계약 시장](https://www.bitget.com/docs/catalog/classic-contract-market/classic-contract-market), [Gate API V4](https://www.gate.com/docs/developers/apiv4/en/). TradingView 이미지에서 OHLC/거래량을 추정해 확정 계산에 넣는 기능은 포함하지 않습니다.
