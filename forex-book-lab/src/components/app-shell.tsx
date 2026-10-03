@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 const nav = [
   ["Home", "/"],
   ["Book", "/book"],
+  ["Book Tools", "/book-tools"],
   ["Chart Lab", "/chart-lab"],
   ["Scanner", "/scanner"],
 ] as const;
@@ -20,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="main">
         <header className="topbar">
           <strong>Interactive Forex Learning Lab</strong>
-          <div className="status"><span className="dot" />Pages 001–006 · Core tools live</div>
+          <div className="status"><span className="dot" />Book concepts → working tools</div>
         </header>
         <div className="content">{children}</div>
       </main>
