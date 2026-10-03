@@ -4,7 +4,7 @@ function authorized(req){const expected=process.env.CHARTBRO_WRITE_TOKEN;if(!exp
 async function handle(req,res,s){res.setHeader('Cache-Control','no-store');const q=req.query||{},action=q.action||'analysis',method=req.method||'GET';try{if(method!=='GET'){if(!authorized(req))return res.status(403).json({ok:false,error:'Authenticated writes require CHARTBRO_WRITE_TOKEN'});if(!s.journal.durable||process.env.VERCEL||process.env.NETLIFY)return res.status(503).json({ok:false,error:'Durable worker required; serverless background writes disabled'});}
  let body=req.body||{};if(typeof body==='string'){try{body=JSON.parse(body);}catch{return res.status(400).json({ok:false,error:'invalid JSON'});}}
  if(action==='sources'&&method==='GET')return res.status(200).json({ok:true,...coverage()});
- if(action==='health'&&method==='GET')return res.status(200).json({ok:true,engine_version:require('../lib/chartbro/engine').VERSION,durable:s.journal.durable,storage:s.journal.kind||(s.journal.durable?'disk':'ephemeral'),worker:process.env.CHARTBRO_WORKER_ENABLED==='1',source_verified:false});
+ if(action==='health'&&method==='GET')return res.status(200).json({ok:true,engine_version:require('../lib/chartbro/engine').VERSION,durable:s.journal.durable,storage:s.journal.kind||(s.journal.durable?'disk':'ephemeral'),worker:process.env.CHARTBRO_WORKER_ENABLED==='1',source_verified:false,upstream:{perpetual:s.provider.cooldown?.('perpetual')?.retry_at??null,spot:s.provider.cooldown?.('spot')?.retry_at??null}});
  if(action==='instruments'&&method==='GET')return res.status(200).json({ok:true,items:await s.provider.instruments({market:q.market||'perpetual'})});
  if(action==='analysis'&&method==='GET')return res.status(200).json({ok:true,analysis:await s.analysis({...q,flow:q.flow==='1'})});
  if(action==='matrix'&&method==='GET')return res.status(200).json({ok:true,...await s.matrix(q)});
@@ -21,7 +21,7 @@ async function handle(req,res,s){res.setHeader('Cache-Control','no-store');const
  if(action==='journal'&&method==='GET'){if(!authorized(req))return res.status(403).json({ok:false,error:'Authentication required'});return res.status(200).json({ok:true,items:s.journal.all('trade_journal')});}
  if(action==='cohorts'&&method==='GET')return res.status(200).json({ok:true,candidates:s.journal.all('candidates'),observations:s.journal.all('candidate_observations'),scan_population:s.journal.all('job_results'),outcomes:s.journal.all('research_outcomes'),status:'observations_only_no_verified_oos_performance'});
  return res.status(405).json({ok:false,error:'unsupported action or method'});
- }catch(e){return res.status(/invalid|unsupported|outside|exceeds|required/.test(e.message)?400:502).json({ok:false,error:e.message});}};
+ }catch(e){if(e.retry_at)res.setHeader('Retry-After',String(Math.max(1,Math.ceil((e.retry_at-Date.now())/1000))));return res.status(e.statusCode||(/invalid|unsupported|outside|exceeds|required/.test(e.message)?400:502)).json({ok:false,error:e.message,code:e.code||null,retry_at:e.retry_at||null,upstream_status:e.upstream_status||null});}};
 
 module.exports=async function handler(req,res){
  let status=200,body,headers={};const buffered={setHeader(k,v){headers[k]=v;},status(n){status=n;return this;},json(v){body=v;return this;}};
