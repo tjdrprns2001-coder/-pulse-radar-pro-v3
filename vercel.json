@@ -145,6 +145,10 @@
     {
       "source": "/api/chart-snapshots",
       "destination": "/api/index?route=chart-snapshots"
+    },
+    {
+      "source": "/api/chartbro",
+      "destination": "/api/index?route=chartbro"
     }
   ],
   "regions": [

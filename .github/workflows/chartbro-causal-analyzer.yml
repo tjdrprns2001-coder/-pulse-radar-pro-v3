@@ -1,0 +1,20 @@
+name: ChartBro causal analyzer
+on:
+  pull_request:
+    paths: ['lib/chartbro/**','handlers/chartbro.js','ui/chartbro/**','chartbro-lab.html','tests/chartbro/**','api/index.js','render-temp-server.js','vercel.json','netlify/functions/api-index.js','netlify.toml','package.json','.github/workflows/chartbro-causal-analyzer.yml']
+  push:
+    branches: [main]
+    paths: ['lib/chartbro/**','handlers/chartbro.js','ui/chartbro/**','chartbro-lab.html','tests/chartbro/**','.github/workflows/chartbro-causal-analyzer.yml']
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - run: npm install --omit=dev
+      - run: npm run test:chartbro
+      - run: npm run test:auto-chart-lab
+      - run: npm run test:auto-chart-transport
+      - run: npm run test:vercel-hobby
+      - run: node --test tests/*.test.js lib/coin-scan/*.test.js

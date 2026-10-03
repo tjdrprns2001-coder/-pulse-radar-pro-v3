@@ -233,3 +233,9 @@
   to = "/pulse-unified.html"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/chartbro"
+  to = "/.netlify/functions/api-index?route=chartbro"
+  status = 200
+  force = true

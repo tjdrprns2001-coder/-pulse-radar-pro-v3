@@ -24,7 +24,7 @@ const indexRoutes=new Set([
   'backtest','calibration-freeze','calibration-health','detail','historical-structure-study','htf',
   'independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
   'dante-backtest','structure','temporal-features','trendline-study','signal-alerts','signal-backfill',
-  'signal-calibration','signal-health','signal-performance','learning-ai','ignition-results','chartbro-research','chart-snapshots'
+  'signal-calibration','signal-health','signal-performance','learning-ai','ignition-results','chartbro-research','chart-snapshots','chartbro'
 ]);
 
 function contentType(file){
@@ -172,4 +172,4 @@ const server=http.createServer(async(req,res)=>{
     send(res,500,'Server error: '+String(e&&e.message||e),{'Content-Type':'text/plain; charset=utf-8'});
   }
 });
-server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);scheduleChartBroTracker()});
+server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);scheduleChartBroTracker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
