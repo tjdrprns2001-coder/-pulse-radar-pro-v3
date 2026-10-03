@@ -1,5 +1,5 @@
-import { SetupScanner } from "@/features/scanner/setup-scanner";
+import { LiveForexScanner } from "@/features/live/live-scanner";
 
 export default function ScannerPage() {
-  return <SetupScanner />;
+  return <LiveForexScanner />;
 }
