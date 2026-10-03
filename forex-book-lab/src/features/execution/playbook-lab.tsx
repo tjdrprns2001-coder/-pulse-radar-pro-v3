@@ -92,8 +92,8 @@ export function PlaybookLab(){
   const preset=presets[presetIndex];
   const [pair,setPair]=useState("EURUSD");
   const [bias,setBias]=useState<Bias>(preset.bias);
-  const [session,setSession]=useState(preset.session);
-  const [minRR,setMinRR]=useState(preset.minRR);
+  const [session,setSession]=useState<string>(preset.session);
+  const [minRR,setMinRR]=useState<string>(preset.minRR);
   const [checks,setChecks]=useState<Record<string,boolean>>({});
   const [level,setLevel]=useState("");
   const [invalidation,setInvalidation]=useState("");
