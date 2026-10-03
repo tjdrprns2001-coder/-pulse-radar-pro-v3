@@ -59,9 +59,22 @@ fixture 결과는 `npm run test:chartbro`에서 직접 확인합니다. 실시�
 - CISD, institutional swing, Breaker/Mitigation, IOF, Three Drive, AMD/MMXM는 독립 proxy입니다.
 - SMT·세션은 명시된 비교 입력/세션 설정으로 호출하는 모듈입니다. 기본 화면은 임의의 강사 세션 시간이나 상관관계를 자동 삽입하지 않습니다.
 - 메타데이터 73개 대장은 사용자 제공 내용이며 원문 검증 0개입니다. 회원 규칙, 세 가지 캔들 패턴의 정확한 이름, 정식 스토캐스틱 설정, ICT Gap 고유 분류, 시간론의 고유 예외는 미확인입니다.
-- PostgreSQL 계약은 `db/chartbro-v1.sql`에 있습니다. 실제 초기 저장소는 단일 워커 디스크 저널입니다. 다중 워커 PostgreSQL 실행, 포트폴리오 계정 동기화, 실거래 주문, 경제일정, 체결 기반 VP, 1m/tick 모호성 해소, 정기 스캔 예약은 별도 운영 통합이 필요합니다.
+- PostgreSQL 계약은 `db/chartbro-v1.sql`에 있습니다. 실행 저장소는 디스크 저널 또는 PostgreSQL입니다. PostgreSQL의 전체 요청/작업 단계는 전역 advisory transaction lock으로 직렬화합니다. 고처리량 분산 큐, 포트폴리오 계정 동기화, 실거래 주문, 경제일정, 체결 기반 VP, 1m/tick 모호성 해소, 정기 스캔 예약은 별도 운영 통합이 필요합니다.
 - 성과 계산/OOS 분리/ablation 함수는 `research.js`에 있습니다. 실제 과거 모집단을 수집한 Champion/Challenger 실험이나 검증 성과가 아직 생성된 것은 아닙니다.
 
-검증 기록: 새 fixture 46개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 운영 배포나 실시간 공급자 성공 조회를 이 결과로 주장하지 않습니다.
+검증 기록: 새 fixture 50개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 운영 배포나 실시간 공급자 성공 조회를 이 결과로 주장하지 않습니다.
 
 로컬 HTTP smoke: 차트 HTML·JS·리플레이 worker·공유 엔진 200, health 정상 응답, source 대장 73개, 인증 없는 작업 POST 403 확인.
+
+## PostgreSQL 운영 연결
+
+기존 `workers/chartbro-oos-runtime.mjs`에도 `/chartbro-lab.html`과 `/api/chartbro`를 연결했습니다. 기존 연구 tracker는 유지됩니다. 루트 서버와 worker 모두 `pg` 의존성을 사용합니다. 싱가포르 DB의 내부 주소는 같은 리전의 서버에 연결해야 합니다.
+
+- `CHARTBRO_POSTGRES_ENABLED=1`
+- `CHARTBRO_DATABASE_URL` (차트브로 DB 연결 문자열을 직접 지정; 다른 서비스의 DATABASE_URL을 묵시적으로 사용하지 않음)
+- `CHARTBRO_WORKER_ENABLED=1` (작업 큐 실행 시)
+- `CHARTBRO_WRITE_TOKEN` (쓰기 인증; 미설정이면 읽기 전용)
+
+연결 시 `chartbro_runtime_events`와 `chartbro_runtime_records`를 자동 생성합니다. 기존 OOS 테이블은 변경하지 않습니다. 이벤트 이력과 현재 projection을 한 트랜잭션으로 저장하고, commit 실패 시 메모리도 복구하며 성공 응답을 보내지 않습니다. 재시작·다른 프로세스에서는 DB projection을 다시 읽습니다. 단일 전역 잠금과 전체 projection 로드는 초기 소규모 작업용이며 고처리량 구현은 아닙니다.
+
+Render 무료 PostgreSQL의 만료일은 서비스 정책을 확인해 관리해야 합니다. 구성만으로 데이터베이스 연결 검증이 끝난 것은 아니며 운영 health와 실제 DB 테이블을 확인합니다.

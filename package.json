@@ -178,6 +178,7 @@
     "test:chartbro": "node --test tests/chartbro/*.test.js"
   },
   "dependencies": {
-    "@netlify/blobs": "11.1.0"
+    "@netlify/blobs": "11.1.0",
+    "pg": "8.16.3"
   }
 }

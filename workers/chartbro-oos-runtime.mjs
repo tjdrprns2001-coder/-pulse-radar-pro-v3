@@ -10,6 +10,7 @@ const {createKvFullScanStore}=require('../lib/coin-scan/kv-full-scan-store.js');
 const {createFullUniverseScanService,AUTO_INTERVAL_MS}=require('../lib/coin-scan/full-universe-auto-scan.js');
 const {createMarketCapProvider}=require('../lib/coin-scan/market-cap-provider.js');
 
+const chartbroHttp=require('../lib/chartbro/http.js');
 const env=process.env;
 const PORT=Number(env.PORT||10000);
 const kv=createRenderKvStateStore({url:env.CHARTBRO_KV_URL,prefix:env.CHARTBRO_KV_PREFIX||'pulseradar:chartbro-oos'});
@@ -143,6 +144,7 @@ function schedule(){
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://chartbro.local');
+    if(env.CHARTBRO_ANALYZER_ENABLED==='1'&&await chartbroHttp.route(req,res,u))return;
     if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'pulseradar-chartbro-oos-runtime',status:health.status,uptimeMs:Date.now()-health.startedAt,health});
     if(req.method==='GET'&&u.pathname==='/api/v1/health')return send(res,200,{status:'ok',service:'pulseradar-chartbro-oos-runtime',version:ChartBroOos.VERSION,fullScan:{...health.fullScan,manualEnabled:false},nextAutoBucketAt:nextAutoBucketAt(),marketCaps:{source:'CoinGecko',count:health.fullScan?.universeCount||0},websocket:{shardCount:0,symbolCount:health.fullScan?.universeCount||0,latestCount:0}});
     if(req.method==='GET'&&u.pathname==='/api/v1/results'){
@@ -171,4 +173,5 @@ try{
   await oos.hydrate();
 }catch(e){health.kv={status:'DEGRADED',error:String(e?.message||e),updatedAt:Date.now()};health.errors.push({source:'kv',at:Date.now(),error:String(e?.message||e)})}
 server.listen(PORT,'0.0.0.0',()=>{health.status=health.kv.status==='OK'?'READY':'DEGRADED';schedule()});
+if(env.CHARTBRO_WORKER_ENABLED==='1')require('../lib/chartbro/runtime.js').startWorker();
 process.on('SIGTERM',()=>{oos.flush().finally(()=>process.exit(0))});
