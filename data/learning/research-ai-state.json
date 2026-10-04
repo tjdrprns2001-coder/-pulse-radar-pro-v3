@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1791103749636,
+  "updatedAt": 1791124766779,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -1356,8 +1356,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2720,10 +2720,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 4.133800759567641,
+        "mfePct": 4.1776219690330185,
         "maePct": -1.5337423312883347,
         "mae_72h_pct": -1.5337423312883347,
-        "mfe_72h_pct": 4.133800759567641,
+        "mfe_72h_pct": 4.1776219690330185,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -2789,8 +2789,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2848,7 +2848,7 @@
       "outcome12hPct": 1.9281332164767795,
       "outcome24hPct": 1.3146362839614456,
       "outcome72hPct": null,
-      "mfe72hPct": 4.133800759567641,
+      "mfe72hPct": 4.1776219690330185,
       "mae72hPct": -1.5337423312883347,
       "signal_close": 68.03,
       "next_open": 68.46,
@@ -4225,8 +4225,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -5619,8 +5619,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -16151,10 +16151,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 4.133800759567641,
+        "mfePct": 4.1776219690330185,
         "maePct": -1.5337423312883347,
         "mae_72h_pct": -1.5337423312883347,
-        "mfe_72h_pct": 4.133800759567641,
+        "mfe_72h_pct": 4.1776219690330185,
         "barriers": {
           "status": "NONE",
           "at": null,
@@ -16220,8 +16220,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -16299,7 +16299,7 @@
       "outcome12hPct": 1.9281332164767795,
       "outcome24hPct": 1.3146362839614456,
       "outcome72hPct": null,
-      "mfe72hPct": 4.133800759567641,
+      "mfe72hPct": 4.1776219690330185,
       "mae72hPct": -1.5337423312883347,
       "signal_close": 67.1,
       "next_open": 68.46,
@@ -16684,8 +16684,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -21650,8 +21650,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -23083,8 +23083,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -24508,8 +24508,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -25949,8 +25949,8 @@
           "h72": null
         },
         "failureType": "FAIL_BREAKOUT",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -27376,8 +27376,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -28789,8 +28789,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -30190,8 +30190,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -31616,8 +31616,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -32060,8 +32060,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -32526,8 +32526,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -32989,8 +32989,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -33453,8 +33453,8 @@
           "h72": null
         },
         "failureType": "FAIL_BREAKOUT",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -33919,8 +33919,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -34387,8 +34387,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -34853,8 +34853,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -35316,8 +35316,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -35779,8 +35779,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -38289,8 +38289,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -44267,8 +44267,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791103749636,
-        "confirmedBars": 58
+        "evaluatedAt": 1791124766779,
+        "confirmedBars": 64
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -65593,7 +65593,7 @@
     "researchNotes": [
       {
         "id": "RN-08KN2O7",
-        "at": 1791103752360,
+        "at": 1791124769138,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -67068,7 +67068,7 @@
       "notes": [
         {
           "id": "RN-08KN2O7",
-          "at": 1791103752360,
+          "at": 1791124769138,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -67126,7 +67126,7 @@
     "hypothesisGeneratorAccess": false
   },
   "referenceSampleCount": 23,
-  "exportedAt": 1791103752360,
+  "exportedAt": 1791124769139,
   "featureNames": [
     "scannerScore",
     "change24h",
