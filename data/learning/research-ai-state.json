@@ -1,6 +1,6 @@
 {
   "version": "RESEARCH_AI_v2",
-  "updatedAt": 1791081613415,
+  "updatedAt": 1791103749636,
   "source": "runtime-outcome",
   "observations": [
     {
@@ -1356,8 +1356,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -2789,8 +2789,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -4225,8 +4225,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -5619,8 +5619,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -16220,8 +16220,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -16684,8 +16684,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -21554,25 +21554,25 @@
             "status": "CONFIRMED",
             "targetAt": 1790902800000,
             "closeAt": 1790906399999,
-            "returnPct": -0.19805194805194715
+            "returnPct": -0.2272727272727204
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790913600000,
             "closeAt": 1790917199999,
-            "returnPct": 2.3636363636363455
+            "returnPct": 2.370129870129878
           },
           "h12": {
             "status": "CONFIRMED",
             "targetAt": 1790935200000,
             "closeAt": 1790938799999,
-            "returnPct": 2.6071428571428523
+            "returnPct": 2.5974025974025983
           },
           "h24": {
             "status": "CONFIRMED",
             "targetAt": 1790978400000,
             "closeAt": 1790981999999,
-            "returnPct": 0.19155844155842594
+            "returnPct": 0.16233766233766378
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -21581,10 +21581,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 4.766233766233774,
-        "maePct": -4.0357142857142865,
-        "mae_72h_pct": -4.0357142857142865,
-        "mfe_72h_pct": 4.766233766233774,
+        "mfePct": 4.642857142857149,
+        "maePct": -3.961038961038954,
+        "mae_72h_pct": -3.961038961038954,
+        "mfe_72h_pct": 4.642857142857149,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790967599999,
@@ -21650,8 +21650,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -21704,17 +21704,17 @@
         "experimentCountBeforeThis": 24
       },
       "outcome1hPct": 0.3571428571428559,
-      "outcome3hPct": -0.19805194805194715,
-      "outcome6hPct": 2.3636363636363455,
-      "outcome12hPct": 2.6071428571428523,
-      "outcome24hPct": 0.19155844155842594,
+      "outcome3hPct": -0.2272727272727204,
+      "outcome6hPct": 2.370129870129878,
+      "outcome12hPct": 2.5974025974025983,
+      "outcome24hPct": 0.16233766233766378,
       "outcome72hPct": null,
-      "mfe72hPct": 4.766233766233774,
-      "mae72hPct": -4.0357142857142865,
+      "mfe72hPct": 4.642857142857149,
+      "mae72hPct": -3.961038961038954,
       "signal_close": 307,
       "next_open": 308,
       "direction": "LONG",
-      "mae_72h_pct": -4.0357142857142865,
+      "mae_72h_pct": -3.961038961038954,
       "tpSlOrder": "SL_FIRST"
     },
     {
@@ -23083,8 +23083,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -24508,8 +24508,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -25949,8 +25949,8 @@
           "h72": null
         },
         "failureType": "FAIL_BREAKOUT",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -27376,8 +27376,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -28721,8 +28721,8 @@
           }
         },
         "mfePct": 24.3483099375251,
-        "maePct": -35.7635391647943,
-        "mae_72h_pct": -35.7635391647943,
+        "maePct": -39.42117385210281,
+        "mae_72h_pct": -39.42117385210281,
         "mfe_72h_pct": 24.3483099375251,
         "barriers": {
           "status": "SL_FIRST",
@@ -28789,8 +28789,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -28849,11 +28849,11 @@
       "outcome24hPct": -2.396867098191957,
       "outcome72hPct": null,
       "mfe72hPct": 24.3483099375251,
-      "mae72hPct": -35.7635391647943,
+      "mae72hPct": -39.42117385210281,
       "signal_close": 1.43736,
       "next_open": 1.41977,
       "direction": "LONG",
-      "mae_72h_pct": -35.7635391647943,
+      "mae_72h_pct": -39.42117385210281,
       "tpSlOrder": "SL_FIRST"
     },
     {
@@ -30190,8 +30190,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -31616,8 +31616,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -31964,25 +31964,25 @@
             "status": "CONFIRMED",
             "targetAt": 1790902800000,
             "closeAt": 1790906399999,
-            "returnPct": -0.19805194805194715
+            "returnPct": -0.2272727272727204
           },
           "h6": {
             "status": "CONFIRMED",
             "targetAt": 1790913600000,
             "closeAt": 1790917199999,
-            "returnPct": 2.3636363636363455
+            "returnPct": 2.370129870129878
           },
           "h12": {
             "status": "CONFIRMED",
             "targetAt": 1790935200000,
             "closeAt": 1790938799999,
-            "returnPct": 2.6071428571428523
+            "returnPct": 2.5974025974025983
           },
           "h24": {
             "status": "CONFIRMED",
             "targetAt": 1790978400000,
             "closeAt": 1790981999999,
-            "returnPct": 0.19155844155842594
+            "returnPct": 0.16233766233766378
           },
           "h72": {
             "status": "PENDING_OR_GAP",
@@ -31991,10 +31991,10 @@
             "returnPct": null
           }
         },
-        "mfePct": 4.766233766233774,
-        "maePct": -4.0357142857142865,
-        "mae_72h_pct": -4.0357142857142865,
-        "mfe_72h_pct": 4.766233766233774,
+        "mfePct": 4.642857142857149,
+        "maePct": -3.961038961038954,
+        "mae_72h_pct": -3.961038961038954,
+        "mfe_72h_pct": 4.642857142857149,
         "barriers": {
           "status": "SL_FIRST",
           "at": 1790967599999,
@@ -32060,8 +32060,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -32134,17 +32134,17 @@
         "experimentCountBeforeThis": 32
       },
       "outcome1hPct": 0.3571428571428559,
-      "outcome3hPct": -0.19805194805194715,
-      "outcome6hPct": 2.3636363636363455,
-      "outcome12hPct": 2.6071428571428523,
-      "outcome24hPct": 0.19155844155842594,
+      "outcome3hPct": -0.2272727272727204,
+      "outcome6hPct": 2.370129870129878,
+      "outcome12hPct": 2.5974025974025983,
+      "outcome24hPct": 0.16233766233766378,
       "outcome72hPct": null,
-      "mfe72hPct": 4.766233766233774,
-      "mae72hPct": -4.0357142857142865,
+      "mfe72hPct": 4.642857142857149,
+      "mae72hPct": -3.961038961038954,
       "signal_close": 309.2,
       "next_open": 308,
       "direction": "LONG",
-      "mae_72h_pct": -4.0357142857142865,
+      "mae_72h_pct": -3.961038961038954,
       "tpSlOrder": "SL_FIRST"
     },
     {
@@ -32526,8 +32526,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -32989,8 +32989,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -33453,8 +33453,8 @@
           "h72": null
         },
         "failureType": "FAIL_BREAKOUT",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 1,
       "labelStatus": "RESOLVED",
@@ -33919,8 +33919,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -34319,8 +34319,8 @@
           }
         },
         "mfePct": 24.3483099375251,
-        "maePct": -35.7635391647943,
-        "mae_72h_pct": -35.7635391647943,
+        "maePct": -39.42117385210281,
+        "mae_72h_pct": -39.42117385210281,
         "mfe_72h_pct": 24.3483099375251,
         "barriers": {
           "status": "SL_FIRST",
@@ -34387,8 +34387,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -34467,11 +34467,11 @@
       "outcome24hPct": -2.396867098191957,
       "outcome72hPct": null,
       "mfe72hPct": 24.3483099375251,
-      "mae72hPct": -35.7635391647943,
+      "mae72hPct": -39.42117385210281,
       "signal_close": 1.4151,
       "next_open": 1.41977,
       "direction": "LONG",
-      "mae_72h_pct": -35.7635391647943,
+      "mae_72h_pct": -39.42117385210281,
       "tpSlOrder": "SL_FIRST"
     },
     {
@@ -34853,8 +34853,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -35316,8 +35316,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -35779,8 +35779,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -38289,8 +38289,8 @@
           "h72": null
         },
         "failureType": null,
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": null,
       "labelStatus": "UNRESOLVED",
@@ -44267,8 +44267,8 @@
           "h72": null
         },
         "failureType": "FAIL_TIMING",
-        "evaluatedAt": 1791081613415,
-        "confirmedBars": 52
+        "evaluatedAt": 1791103749636,
+        "confirmedBars": 58
       },
       "label": 0,
       "labelStatus": "RESOLVED",
@@ -65593,7 +65593,7 @@
     "researchNotes": [
       {
         "id": "RN-08KN2O7",
-        "at": 1791081615798,
+        "at": 1791103752360,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -65705,8 +65705,8 @@
           "key": "50-59",
           "count": 4,
           "successRate": 0,
-          "avgMfePct": 9.390451351333684,
-          "avgMaePct": -13.39827303540262
+          "avgMfePct": 9.359607195489527,
+          "avgMaePct": -14.294012876060913
         }
       ],
       "byRegime": [
@@ -65716,8 +65716,8 @@
           "success": 2,
           "failure": 8,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "key": "RISK_OFF",
@@ -65736,8 +65736,8 @@
           "success": 0,
           "failure": 3,
           "successRate": 0,
-          "avgMfePct": 5.246886399477524,
-          "avgMaePct": -4.347602956746207
+          "avgMfePct": 5.205760858351982,
+          "avgMaePct": -4.322711181854429
         },
         {
           "key": "A",
@@ -65746,7 +65746,7 @@
           "failure": 2,
           "successRate": 0,
           "avgMfePct": 16.31410478755263,
-          "avgMaePct": -34.79004948203473
+          "avgMaePct": -36.61886682568898
         },
         {
           "key": "C",
@@ -65792,8 +65792,8 @@
           "success": 2,
           "failure": 8,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "key": "astra-astra",
@@ -65827,8 +65827,8 @@
           "success": 2,
           "failure": 8,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989,
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307,
           "avgEvidenceScore": null,
           "avgProgressPct": null
         },
@@ -65933,8 +65933,8 @@
           "success": 2,
           "failure": 8,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989,
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307,
           "avgEvidenceScore": null,
           "avgProgressPct": null
         },
@@ -65959,8 +65959,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_2",
@@ -65968,8 +65968,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_3",
@@ -65977,8 +65977,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_4",
@@ -65986,8 +65986,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_5",
@@ -65995,8 +65995,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_6",
@@ -66004,8 +66004,8 @@
           "count": 10,
           "success": 2,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307
         },
         {
           "ruleId": "SCANNER_BOOK_7",
@@ -66013,8 +66013,8 @@
           "count": 9,
           "success": 2,
           "successRate": 0.2222222222222222,
-          "avgMfePct": 8.384827502615435,
-          "avgMaePct": -12.529535685251822
+          "avgMfePct": 8.371118988906922,
+          "avgMaePct": -12.927642281099955
         },
         {
           "ruleId": "SCANNER_BOOK_8",
@@ -66064,8 +66064,8 @@
           "regime": "UNKNOWN",
           "count": 10,
           "successRate": 0.2,
-          "avgMfePct": 8.072168374854254,
-          "avgMaePct": -11.745579383306989,
+          "avgMfePct": 8.05983071251659,
+          "avgMaePct": -12.103875319570307,
           "productionEligible": false
         }
       ]
@@ -67068,7 +67068,7 @@
       "notes": [
         {
           "id": "RN-08KN2O7",
-          "at": 1791081615798,
+          "at": 1791103752360,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -67126,7 +67126,7 @@
     "hypothesisGeneratorAccess": false
   },
   "referenceSampleCount": 23,
-  "exportedAt": 1791081615799,
+  "exportedAt": 1791103752360,
   "featureNames": [
     "scannerScore",
     "change24h",
