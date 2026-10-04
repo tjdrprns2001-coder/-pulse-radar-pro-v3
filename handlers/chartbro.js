@@ -5,9 +5,10 @@ async function handle(req,res,s){res.setHeader('Cache-Control','no-store');const
  let body=req.body||{};if(typeof body==='string'){try{body=JSON.parse(body);}catch{return res.status(400).json({ok:false,error:'invalid JSON'});}}
  if(action==='sources'&&method==='GET')return res.status(200).json({ok:true,...coverage()});
  if(action==='health'&&method==='GET')return res.status(200).json({ok:true,engine_version:require('../lib/chartbro/engine').VERSION,durable:s.journal.durable,storage:s.journal.kind||(s.journal.durable?'disk':'ephemeral'),worker:process.env.CHARTBRO_WORKER_ENABLED==='1',source_verified:false,upstream:{perpetual:s.provider.cooldown?.('perpetual')?.retry_at??null,spot:s.provider.cooldown?.('spot')?.retry_at??null}});
- if(action==='instruments'&&method==='GET')return res.status(200).json({ok:true,items:await s.provider.instruments({market:q.market||'perpetual'})});
+ if(action==='instruments'&&method==='GET')return res.status(200).json({ok:true,items:await s.provider.instruments({venue:q.venue||'binance',symbol:q.symbol,market:q.market||'perpetual'})});
+ if(action==='universe'&&method==='GET')return res.status(200).json({ok:true,...await s.universe({...q,volume_cut:q.volume_cut!=='0'})});
  if(action==='analysis'&&method==='GET')return res.status(200).json({ok:true,analysis:await s.analysis({...q,flow:q.flow==='1'})});
- if(action==='matrix'&&method==='GET')return res.status(200).json({ok:true,...await s.matrix(q)});
+ if(action==='matrix'&&method==='GET')return res.status(200).json({ok:true,...await s.matrix({...q,flow:q.flow==='1'})});
  if(action==='snapshot'&&method==='GET'){const a=s.getAnalysis(q.id);return res.status(a?200:404).json(a?{ok:true,analysis:a}:{ok:false,error:'snapshot not found'});}
  if(['objects','evidence'].includes(action)&&method==='GET'){const a=s.getAnalysis(q.id);if(!a)return res.status(404).json({ok:false,error:'snapshot not found'});return res.status(200).json({ok:true,analysis_id:a.analysis_id,items:action==='objects'?a.objects:a.events});}
  if(action==='replay'&&method==='GET'){const a=s.getAnalysis(q.id);if(!a)return res.status(404).json({ok:false,error:'snapshot not found'});const at=Number(q.at);if(!Number.isFinite(at))throw new Error('valid at required');const r=require('../lib/chartbro/engine').analyze(a.bars,{...a.config,at,capture_snapshots:false});return res.status(200).json({ok:true,snapshot:r.last,events:r.events,bars:r.bars});}

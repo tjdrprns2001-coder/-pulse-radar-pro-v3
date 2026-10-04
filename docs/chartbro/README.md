@@ -34,7 +34,8 @@ PORT=10000 node render-temp-server.js
 |snapshot|GET|id|stored immutable snapshot|
 |objects / evidence|GET|id|objects / events from same snapshot|
 |replay|GET|id, at|recompute only bars closed by cutoff|
-|instruments|GET|market|current Binance USDT instruments|
+|instruments|GET|venue, market, symbol optional|native USDT instruments at selected venue|
+|universe|GET|venue=auto/all/specific, market, volume_cut=0/1|per-venue current population, quiet filter, missing metrics and failures|
 |sources|GET|none|73 metadata records and explicit unverified definitions|
 |health|GET|none|engine/storage/worker state|
 |jobs|POST|symbols optional, timeframes optional, tf(single mode), market, volume_cut=false optional, flow=false optional|job ID and locked decision cutoff|
@@ -62,7 +63,7 @@ fixture 결과는 `npm run test:chartbro`에서 직접 확인합니다. 실시�
 - PostgreSQL 계약은 `db/chartbro-v1.sql`에 있습니다. 실행 저장소는 디스크 저널 또는 PostgreSQL입니다. PostgreSQL의 전체 요청/작업 단계는 전역 advisory transaction lock으로 직렬화합니다. 고처리량 분산 큐, 포트폴리오 계정 동기화, 실거래 주문, 경제일정, 체결 기반 VP, 1m/tick 모호성 해소, 정기 스캔 예약은 별도 운영 통합이 필요합니다.
 - 성과 계산/OOS 분리/ablation 함수는 `research.js`에 있습니다. 실제 과거 모집단을 수집한 Champion/Challenger 실험이나 검증 성과가 아직 생성된 것은 아닙니다.
 
-검증 기록: 새 fixture 63개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 2026-10-03 운영 API에서 Bybit·OKX·Bitget·Gate의 BTC 4H 분석 성공을 확인했습니다. Bitget의 배타적 페이지 경계는 별도 fixture로 검증합니다.
+검증 기록: 새 fixture 80개와 기존 Node 테스트 291개 통과. `npm run verify`, Auto Chart Lab/transport, Vercel 함수 한도 검사 통과. 브라우저 바이너리 설치가 인증서/다운로드 제한으로 실패하여 실제 브라우저 화면 검증은 미완료입니다. 2026-10-03 운영 API에서 Bybit·OKX·Bitget·Gate의 BTC 4H 분석 성공을 확인했습니다. Bitget의 배타적 페이지 경계는 별도 fixture로 검증합니다.
 
 로컬 HTTP smoke: 차트 HTML·JS·리플레이 worker·공유 엔진 200, health 정상 응답, source 대장 73개, 인증 없는 작업 POST 403 확인.
 
@@ -83,8 +84,18 @@ Render 무료 PostgreSQL의 만료일은 서비스 정책을 확인해 관리해
 
 화면에서 자동 또는 Binance·Bybit·OKX·Bitget·Gate를 선택합니다. API `venue=auto|binance|bybit|okx|bitget|gate`도 같습니다. 자동 모드는 24초 전체 한도와 거래소당 6초 한도로 진행합니다. 타임프레임 비교는 선택된 실제 거래소에 고정합니다. Gate는 이 모듈에서 5m·15m·1h·4h·1d를 지원하며 나머지는 명시적으로 미지원입니다. 긴 조회는 페이지 수 제한으로 요청 history보다 짧을 수 있어 장기 EMA 준비 상태를 그대로 노출합니다.
 
-거래소별 원본 시장·심볼·캔들 경계·거래량 단위를 보존합니다. OKX 파생상품 거래량은 계약 수가 아닌 base/quote 필드를 사용하고 Gate 계약 수는 contract multiplier로 변환합니다. Binance 외 수급 adapter가 없는 경우 OI·펀딩·true taker는 N/A이며 Binance 수급으로 대신 채우지 않습니다. 현재 영속 scan universe/jobs는 Binance 전용입니다. 다중 거래소 지원은 분석 화면/API이며 전 거래소 universe scanner가 완성됐다는 뜻은 아닙니다.
+거래소별 원본 시장·심볼·캔들 경계·거래량 단위를 보존합니다. OKX 파생상품 거래량은 계약 수가 아닌 base/quote 필드를 사용하고 Gate 계약 수는 contract multiplier로 변환합니다. Bybit·Gate OI 이력은 수량 기준 4H 변화율과 정확한 관측 창으로 계산합니다. Bybit의 OI 수량 단위는 base이며 notional 변화율을 추정하지 않습니다. OKX·Bitget의 현재 OI는 변화율이 없는 별도 참고 객체입니다. 기준 시각 이후 값은 확인 근거에 넣지 않습니다. 정산 펀딩은 4개 대체 거래소에서 조회하고 기준 시각 이하의 기록만 사용합니다. Bybit 최근 체결은 잘린 표본으로 표시하며 완전한 15m true taker로 승격하지 않습니다. 다른 거래소 수급을 Binance 값으로 채우지 않습니다.
 
 418/429에서는 Retry-After와 응답의 ban 종료 시각을 저장하고 대기열·신규 요청을 중단합니다. 자동 조회는 다른 거래소의 독립 데이터를 선택할 수 있습니다. 고정 거래소에서 제한을 만났고 정상 snapshot이 있으면 원래 시각·ID를 유지한 stale 복사본을 반환합니다. 저장된 snapshot은 바꾸지 않으며 현재 신호 확인/순위 대상에 넣지 않습니다. 정상 snapshot이 없으면 재시도 시각과 오류를 표시합니다. 캐시는 같은 확정 봉의 요청을 재사용하며 명시한 과거 cutoff의 정확성은 유지합니다. 제한이 해제됐다고 가정하거나 다른 Binance 호스트로 우회하지 않습니다.
 
 공식 API 형식 참고: [Bybit Kline](https://bybit-exchange.github.io/docs/v5/market/kline), [OKX V5](https://app.okx.com/docs-v5/en/), [Bitget 계약 시장](https://www.bitget.com/docs/catalog/classic-contract-market/classic-contract-market), [Gate API V4](https://www.gate.com/docs/developers/apiv4/en/). TradingView 이미지에서 OHLC/거래량을 추정해 확정 계산에 넣는 기능은 포함하지 않습니다.
+
+## 전체 종목 스캔 v2
+
+화면의 전체 스캔은 자동/연결된 거래소 5곳 전체/개별 거래소와 USDT 현물/무기한 선물을 선택합니다. 각 거래소 전체 목록을 조회하고 가격 변화율 ±10% 필터 및 선택한 quote 거래대금 필터를 적용합니다. Bybit 목록은 cursor pagination을 완료하며 잘린 목록은 성공으로 표시하지 않습니다. Gate와 OKX의 원본 심볼은 정규화하되 동일 코인을 거래소 간 합치지 않습니다. OKX 선물 ticker의 base 수량을 현재 가격으로 곱해 quote 거래대금을 추정하지 않습니다. 정확한 quote turnover가 없으면 거래대금 조건을 통과하지 못하며 결측 수를 표시합니다. 거래대금 필터를 끄면 변화율이 있는 종목은 관찰 가능합니다.
+
+4H 관찰 또는 전체 시간봉 모드를 순차 실행합니다. 전체는 1W/1D/12H/4H/1H/15m/5m이며 Gate의 미지원 봉도 실패로 남깁니다. 모든 종목은 모집단 조회 후 고정한 한 cutoff로 분석합니다. 체크포인트는 같은 탭의 sessionStorage에 저장하고 페이지 복귀 후 이어갑니다. 저장 용량/브라우저 정책으로 실패하면 메모리에서만 유지하며 JSON으로 내보낼 수 있습니다. 페이지를 닫으면 실행은 중단됩니다. 자동 예약/서버 영속 worker가 활성화됐다는 뜻은 아닙니다.
+
+서버의 durable scan job API도 선택 거래소를 고정하며 취소/재개 뒤 유지합니다. `venue=all`은 거래소별 job을 만들어야 하며 한 job의 봉을 서로 다른 거래소로 대체하지 않습니다. 쓰기 인증/영속 저장소 요구사항은 유지됩니다.
+
+테스트: 모든 거래소 모집단 부분 실패, Bybit 페이지네이션, 수량/거래대금 단위, 미래 수급 제외, capped trade 미승격, 스캔 source/cutoff 고정, 일시정지/재개/취소 이후 중복 방지를 포함합니다.
