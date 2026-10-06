@@ -1285,12 +1285,13 @@ def classify_stage(
 
 async def dante_daily_scan(
     api: Binance, universe: set[str], asof: int, cfg: Config
-) -> tuple[list[dict], list[dict]]:
-    """Run the daily A→F screen over the full futures universe."""
+) -> tuple[list[dict], list[dict], dict[str, dict]]:
+    """Run the daily A→F screen and reuse those candles as market snapshot."""
     queue = asyncio.Queue()
     for symbol in sorted(universe):
         queue.put_nowait(symbol)
     rows, errors = [], []
+    market = {}
 
     async def worker():
         while True:
@@ -1300,6 +1301,25 @@ async def dante_daily_scan(
                 return
             try:
                 daily = await api.candles(symbol, "1d", asof, cfg)
+                last = daily.iloc[-1]
+                prev = daily.iloc[-2] if len(daily) >= 2 else last
+                price = float(last.close)
+                quote_volume = (
+                    float(last.quote_volume)
+                    if "quote_volume" in daily.columns and _finite(last.quote_volume)
+                    else 0.0
+                )
+                change = (
+                    pct_change(price, float(prev.close))
+                    if _finite(prev.close) and float(prev.close) != 0
+                    else 0.0
+                )
+                market[symbol] = {
+                    "price": price,
+                    "volume": max(quote_volume, 0.0),
+                    "change": float(change),
+                    "source": str(daily.attrs.get("source", "BINANCE_FUTURES")) + ":1D_CLOSED",
+                }
                 cycle = dante_ma_cloud_cycle(daily, cfg)
                 if cycle["stage"] != "PRE":
                     rows.append({"symbol": symbol, **cycle})
@@ -1309,7 +1329,7 @@ async def dante_daily_scan(
                 queue.task_done()
 
     await asyncio.gather(*(worker() for _ in range(cfg.workers)))
-    return rows, errors
+    return rows, errors, market
 
 
 async def dante_deep_context(
@@ -1599,7 +1619,7 @@ async def scan(args, cfg: Config) -> dict:
             universe &= liquid
 
         # 거래대금과 무관하게 전체 USDT 무기한에 일봉 DANTE 사이클을 먼저 적용한다.
-        dante_rows, dante_errors = await dante_daily_scan(
+        dante_rows, dante_errors, market_snapshot = await dante_daily_scan(
             api, set(universe), asof, cfg
         )
 
@@ -1711,6 +1731,10 @@ async def scan(args, cfg: Config) -> dict:
         "dante_candidates": [r for r in dante_rows if r["candidate"]],
         "dante_manage": [r for r in dante_rows if r["manage"]],
         "dante_errors": dante_errors,
+        # Internal handoff for validate.py. This is popped before persistence.
+        # Reuses already-fetched closed 1D candles so collection does not
+        # depend on Binance /fapi/v1/ticker/24hr.
+        "_market_snapshot": market_snapshot,
     }
 
 
