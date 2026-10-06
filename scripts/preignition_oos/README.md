@@ -62,3 +62,19 @@ The scanner intentionally keeps:
 - OI missing => no A/A+B promotion.
 
 Generated SQLite and JSON outputs are ignored by git.
+
+## 112/224/448 + Ichimoku A-F full-universe scan
+
+The scanner also runs an independent daily structural pass over the complete Binance USDT perpetual universe. It uses SMA 112/224/448 and standard Ichimoku (9/26/52, projected 26 bars) and does **not** reject symbols by 24h quote volume.
+
+Lifecycle output:
+
+- A: 112 recovery with room toward 224
+- B: first 112 pullback/hold
+- C: cloud/224 resistance zone
+- D: cloud-top + 224 breakout/retest/hold
+- TREND_PULLBACK: 112 > 224 > 448 with a 112/cloud pullback
+- E: 448 target/management zone; excluded from new-entry candidates
+- F: 224/cloud failure; excluded from new-entry candidates
+
+Top A/B/C/D candidates are enriched with 1H readiness, 15m/5m execution gates, OI and futures taker flow. Candle RVOL is a confirmation/quality input only; quote volume remains disabled as a hard filter.
