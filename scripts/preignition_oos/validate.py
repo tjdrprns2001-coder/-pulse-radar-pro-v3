@@ -255,9 +255,19 @@ async def build_collection_payload():
         SimpleNamespace(symbols=None),
         Config(),
     )
-    ts, market = await market_snapshot(
-        result.get("universe_symbols")
-    )
+
+    # The full-universe DANTE pass has already fetched a closed 1D candle for
+    # each usable symbol. Reuse that data for price/control snapshots instead
+    # of making a second all-symbol /fapi/v1/ticker/24hr request, which can
+    # intermittently return 502 via the proxy after a long scan.
+    market = result.pop("_market_snapshot", {}) or {}
+    if market:
+        ts = int(time.time())
+    else:
+        ts, market = await market_snapshot(
+            result.get("universe_symbols")
+        )
+
     return {
         "result": json_safe(result),
         "ts": ts,
@@ -331,9 +341,24 @@ async def collect_once(
     market = payload["market"]
 
     if sink_url:
-        remote = await post_collection(
-            payload, sink_url, sink_token, cooldown_hours
-        )
+        try:
+            remote = await post_collection(
+                payload, sink_url, sink_token, cooldown_hours
+            )
+        except Exception as exc:
+            # A persistence outage must not erase a valid live scan from the
+            # dashboard. Surface a degraded state and keep the fresh result.
+            remote = {
+                "status": "degraded",
+                "error": "sink unavailable",
+                "prices": len(market),
+                "added": 0,
+                "fresh": True,
+            }
+            print(
+                f"원격 저장 경고: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
         print(
             f"원격 저장: 가격 {remote.get('prices', len(market))}개, "
             f"신규 신호 {remote.get('added', 0)}개, "
