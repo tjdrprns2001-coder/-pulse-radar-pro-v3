@@ -1,0 +1,18 @@
+name: Dante cloud scanner
+on:
+  push:
+    paths: ['ui/dante/cloud-*.js', 'handlers/dante-cloud.js', 'dante-cloud.html', 'tests/dante/**', 'lib/coin-scan/binance-provider.js', '.github/workflows/dante-cloud.yml']
+  pull_request:
+    paths: ['ui/dante/cloud-*.js', 'handlers/dante-cloud.js', 'dante-cloud.html', 'tests/dante/**', 'lib/coin-scan/binance-provider.js', '.github/workflows/dante-cloud.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: node --test tests/dante/cloud.test.js
+      - run: node scripts/verify-coin-scan-provider.js
+      - run: node scripts/verify-dante-contract.js
+      - run: node scripts/verify-dante-api.js
+      - run: node --check handlers/dante-cloud.js && node --check ui/dante/cloud-ui.js
