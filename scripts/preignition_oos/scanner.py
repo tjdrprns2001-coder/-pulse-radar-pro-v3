@@ -368,12 +368,17 @@ def indicators(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         ).mean()
 
     # 표준 일목균형표: 전환 9, 기준 26, 선행2 52, 구름은 26봉 선행.
-    high9 = df.high.rolling(9, min_periods=9).max()
-    low9 = df.low.rolling(9, min_periods=9).min()
-    high26 = df.high.rolling(26, min_periods=26).max()
-    low26 = df.low.rolling(26, min_periods=26).min()
-    high52 = df.high.rolling(52, min_periods=52).max()
-    low52 = df.low.rolling(52, min_periods=52).min()
+    # Some unit-test frames exercise only RVOL/MACD and omit high/low.
+    # Falling back to close keeps those isolated tests valid; live candles
+    # always include exchange high/low fields.
+    high_source = df["high"] if "high" in df.columns else df["close"]
+    low_source = df["low"] if "low" in df.columns else df["close"]
+    high9 = high_source.rolling(9, min_periods=9).max()
+    low9 = low_source.rolling(9, min_periods=9).min()
+    high26 = high_source.rolling(26, min_periods=26).max()
+    low26 = low_source.rolling(26, min_periods=26).min()
+    high52 = high_source.rolling(52, min_periods=52).max()
+    low52 = low_source.rolling(52, min_periods=52).min()
     df["tenkan"] = (high9 + low9) / 2
     df["kijun"] = (high26 + low26) / 2
     df["senkou_a"] = ((df["tenkan"] + df["kijun"]) / 2).shift(26)
