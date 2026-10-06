@@ -61,7 +61,11 @@ async def run_collection() -> None:
         dashboard = result.pop("_dashboard", {}) if isinstance(result, dict) else {}
         state["dashboard"] = dashboard
         state["last_result"] = result
-        state["last_status"] = "OK"
+        if str(result.get("status", "")).lower() == "degraded":
+            state["last_status"] = "DEGRADED"
+            state["last_error"] = result.get("error") or "sink unavailable"
+        else:
+            state["last_status"] = "OK"
     except Exception as exc:
         # 상세 예외는 서버 로그에만 남기고 공개 API에는 일반화된 상태만 노출한다.
         state["last_error"] = "collection failed"
