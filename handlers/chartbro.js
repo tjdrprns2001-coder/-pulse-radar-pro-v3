@@ -9,6 +9,7 @@ async function handle(req,res,s){res.setHeader('Cache-Control','no-store');const
  if(action==='universe'&&method==='GET')return res.status(200).json({ok:true,...await s.universe({...q,volume_cut:q.volume_cut!=='0'})});
  if(action==='analysis'&&method==='GET')return res.status(200).json({ok:true,analysis:await s.analysis({...q,flow:q.flow==='1'})});
  if(action==='matrix'&&method==='GET')return res.status(200).json({ok:true,...await s.matrix({...q,flow:q.flow==='1'})});
+ if(action==='candidate-history'&&method==='GET'){const a=s.getAnalysis(q.id);if(!a)return res.status(404).json({ok:false,error:'snapshot not found'});return res.status(200).json({ok:true,...s.candidateHistory(a)});}
  if(action==='snapshot'&&method==='GET'){const a=s.getAnalysis(q.id);return res.status(a?200:404).json(a?{ok:true,analysis:a}:{ok:false,error:'snapshot not found'});}
  if(['objects','evidence'].includes(action)&&method==='GET'){const a=s.getAnalysis(q.id);if(!a)return res.status(404).json({ok:false,error:'snapshot not found'});return res.status(200).json({ok:true,analysis_id:a.analysis_id,items:action==='objects'?a.objects:a.events});}
  if(action==='replay'&&method==='GET'){const a=s.getAnalysis(q.id);if(!a)return res.status(404).json({ok:false,error:'snapshot not found'});const at=Number(q.at);if(!Number.isFinite(at))throw new Error('valid at required');const r=require('../lib/chartbro/engine').analyze(a.bars,{...a.config,at,capture_snapshots:false});return res.status(200).json({ok:true,snapshot:r.last,events:r.events,bars:r.bars});}
