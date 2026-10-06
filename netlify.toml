@@ -239,3 +239,9 @@
   to = "/.netlify/functions/api-index?route=chartbro"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/dante-cloud"
+  to = "https://pulseradar-pro-unified-0926.onrender.com/api/dante-cloud"
+  status = 200
+  force = true

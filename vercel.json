@@ -31,6 +31,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/dante-cloud",
+      "destination": "https://pulseradar-pro-unified-0926.onrender.com/api/dante-cloud"
+    },
+    {
       "source": "/astra-scan",
       "destination": "/astra-scan.html"
     },
