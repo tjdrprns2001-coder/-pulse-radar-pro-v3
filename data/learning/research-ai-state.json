@@ -71836,7 +71836,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71860,7 +71860,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71884,7 +71884,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71908,7 +71908,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71932,7 +71932,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71956,7 +71956,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71980,7 +71980,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -72004,7 +72004,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72028,7 +72028,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72052,7 +72052,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -72076,7 +72076,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72100,7 +72100,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791236386788,
+      "lastSeenAt": 1791251718907,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72484,7 +72484,7 @@
     "researchNotes": [
       {
         "id": "RN-14VS5GH",
-        "at": 1791236386785,
+        "at": 1791251718904,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -72501,7 +72501,7 @@
       },
       {
         "id": "RN-0Z1L63V",
-        "at": 1791236386785,
+        "at": 1791251718904,
         "type": "HYPOTHESIS",
         "title": "가장 강한 관측 가설",
         "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
@@ -72528,7 +72528,7 @@
       },
       {
         "id": "RN-05ASK2S",
-        "at": 1791236386785,
+        "at": 1791251718904,
         "type": "IDEA",
         "title": "새 연구 아이디어 생성",
         "body": "돌연변이 12개 · 교배 1개. 실험 예산을 넘는 변형은 생성하지 않는다.",
@@ -78795,7 +78795,7 @@
       "notes": [
         {
           "id": "RN-14VS5GH",
-          "at": 1791236386785,
+          "at": 1791251718904,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -78812,7 +78812,7 @@
         },
         {
           "id": "RN-0Z1L63V",
-          "at": 1791236386785,
+          "at": 1791251718904,
           "type": "HYPOTHESIS",
           "title": "가장 강한 관측 가설",
           "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
@@ -78839,7 +78839,7 @@
         },
         {
           "id": "RN-05ASK2S",
-          "at": 1791236386785,
+          "at": 1791251718904,
           "type": "IDEA",
           "title": "새 연구 아이디어 생성",
           "body": "돌연변이 12개 · 교배 1개. 실험 예산을 넘는 변형은 생성하지 않는다.",
@@ -78991,28 +78991,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.08695652173913043,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.08695652173913043,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.08695652173913043,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.08695652173913043,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.08695652173913043,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -79156,28 +79156,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.10526315789473684,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.10526315789473684,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.10526315789473684,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.10526315789473684,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.10526315789473684,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -79336,28 +79336,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.1,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.1,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.1,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.1,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.1,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -79509,6 +79509,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07407407407407407,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -79523,14 +79531,6 @@
               "score": 0.07407407407407407,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07407407407407407,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -79674,6 +79674,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07407407407407407,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -79688,14 +79696,6 @@
               "score": 0.07407407407407407,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07407407407407407,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -79839,6 +79839,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.08,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -79853,14 +79861,6 @@
               "score": 0.08,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.08,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -80012,6 +80012,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07407407407407407,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -80026,14 +80034,6 @@
               "score": 0.07407407407407407,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07407407407407407,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -80177,6 +80177,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07407407407407407,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -80191,14 +80199,6 @@
               "score": 0.07407407407407407,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07407407407407407,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -80342,6 +80342,14 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.08,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
@@ -80356,14 +80364,6 @@
               "score": 0.08,
               "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-44372ADF5CE459FE"
-            },
-            {
-              "noteId": "RN-08KN2O7",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.08,
-              "body": "동일 모집단 확정 라벨 11개 · 성공 2개 · 실패 9개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-7C9E5F7FB062416E"
             }
           ],
           "budget": {
@@ -80517,28 +80517,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07142857142857142,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.07142857142857142,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.07142857142857142,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.07142857142857142,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07142857142857142,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -80684,28 +80684,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07142857142857142,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.07142857142857142,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.07142857142857142,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.07142857142857142,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07142857142857142,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -80851,28 +80851,28 @@
           },
           "memoryMatches": [
             {
+              "noteId": "RN-14VS5GH",
+              "title": "학습 표본 점검",
+              "type": "DATASET",
+              "score": 0.07692307692307693,
+              "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
+              "noteId": "RN-0Z1L63V",
+              "title": "가장 강한 관측 가설",
+              "type": "HYPOTHESIS",
+              "score": 0.07692307692307693,
+              "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
+              "datasetSnapshotId": "DS-AC3C5AD179694E18"
+            },
+            {
               "noteId": "RN-11PTI3K",
               "title": "학습 표본 점검",
               "type": "DATASET",
               "score": 0.07692307692307693,
               "body": "동일 모집단 확정 라벨 34개 · 성공 16개 · 실패 18개. Locked OOS는 가설 생성 입력에서 제외한다.",
               "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-1207VCW",
-              "title": "가장 강한 관측 가설",
-              "type": "HYPOTHESIS",
-              "score": 0.07692307692307693,
-              "body": "MACD + RSI · 표본 15개 · 성공률 73% · 반례 4개.",
-              "datasetSnapshotId": "DS-326B68EB04EB87BA"
-            },
-            {
-              "noteId": "RN-0UZ3024",
-              "title": "학습 표본 점검",
-              "type": "DATASET",
-              "score": 0.07692307692307693,
-              "body": "동일 모집단 확정 라벨 23개 · 성공 7개 · 실패 16개. Locked OOS는 가설 생성 입력에서 제외한다.",
-              "datasetSnapshotId": "DS-44372ADF5CE459FE"
             }
           ],
           "budget": {
@@ -80953,7 +80953,7 @@
     "hypothesisGeneratorAccess": false
   },
   "referenceSampleCount": 23,
-  "exportedAt": 1791236386789,
+  "exportedAt": 1791251718908,
   "featureNames": [
     "scannerScore",
     "change24h",
