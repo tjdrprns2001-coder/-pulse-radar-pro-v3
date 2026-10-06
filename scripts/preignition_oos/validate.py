@@ -368,6 +368,39 @@ async def collect_once(
                 "oi_1h_pct": oi.get("change_1h_pct"),
                 "warnings": row.get("warnings", [])[:4],
             })
+        dante_preview = []
+        for row in result.get("dante_candidates", [])[:120]:
+            deep = row.get("deep") or {}
+            oi = deep.get("oi") or {}
+            gate15 = deep.get("gate_15m") or {}
+            gate5 = deep.get("gate_5m") or {}
+            ready = deep.get("ready_1h") or {}
+            distance = row.get("distance_pct") or {}
+            cloud = row.get("cloud") or {}
+            dante_preview.append({
+                "symbol": row.get("symbol"),
+                "price": row.get("price"),
+                "stage": row.get("stage"),
+                "stage_label": row.get("stage_label"),
+                "score": row.get("score"),
+                "distance_112_pct": distance.get("112"),
+                "distance_224_pct": distance.get("224"),
+                "distance_448_pct": distance.get("448"),
+                "gap_112_224_pct": row.get("gap_112_224_pct"),
+                "cloud_position": cloud.get("position"),
+                "rvol_1d": row.get("rvol"),
+                "oi_known": bool(oi.get("known")),
+                "oi_1h_pct": oi.get("change_1h_pct"),
+                "oi_15m_pct": oi.get("change_15m_pct"),
+                "flow_15m": gate15.get("flow"),
+                "rvol_15m": gate15.get("rvol"),
+                "gate_15m": bool(gate15.get("passed")),
+                "gate_5m": bool(gate5.get("passed")),
+                "ready_1h": bool(ready.get("ready")),
+                "deep_source": deep.get("source"),
+                "deep_error": deep.get("error"),
+            })
+
         return {
             **remote,
             "_dashboard": {
@@ -376,6 +409,9 @@ async def collect_once(
                 "rejected_4h_count": result.get("rejected_4h_count"),
                 "scanner_errors": len(result.get("errors", [])),
                 "candidates": preview,
+                "dante_scan": result.get("dante_scan") or {},
+                "dante_candidates": dante_preview,
+                "dante_manage": result.get("dante_manage", [])[:80],
             },
         }
 

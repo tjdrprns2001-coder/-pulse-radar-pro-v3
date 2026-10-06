@@ -18,6 +18,7 @@ import pandas as pd
 BASE_URL = "https://fapi.binance.com"
 SPOT_BASE_URL = "https://api.binance.com"
 EMA_PERIODS = (14, 28, 57, 92)
+LONG_SMA_PERIODS = (112, 224, 448)
 TF_MS = {
     "1d": 86_400_000,
     "4h": 14_400_000,
@@ -30,7 +31,7 @@ TF_MS = {
 @dataclass(frozen=True)
 class Config:
     # EMA92 + 최근 구조 계산 + 5m 24H 변화율을 위한 충분한 봉 확보.
-    bars: int = 400
+    bars: int = 520
     workers: int = 6
     rvol_window: int = 20
 
@@ -87,6 +88,16 @@ class Config:
     extended_daily_ema_pct: float = 18.0
     extended_4h_ema_pct: float = 10.0
 
+    # 주식단테 공개 규칙 기반 112·224·448 + 구름대 단계.
+    # 거래대금(quote volume)은 hard filter로 사용하지 않는다.
+    dante_gap_min_pct: float = -20.0
+    dante_gap_max_pct: float = -8.0
+    dante_near_112_pct: float = 6.0
+    dante_near_224_pct: float = 3.0
+    dante_near_cloud_pct: float = 3.0
+    dante_near_448_pct: float = 8.0
+    dante_deep_limit: int = 16
+
     # 기본적으로 거래대금 필터를 적용하지 않는다.
     min_quote_volume: float = 0.0
 
@@ -135,6 +146,7 @@ class Binance:
         # OI 통계 API는 더 보수적으로 호출한다.
         self.oi_gate = RateGate(0.40)
         self.blocked = False
+        self.candle_cache = {}
 
     async def get(self, path: str, base_url: str = BASE_URL, **params):
         is_oi = path.startswith("/futures/data/")
@@ -246,6 +258,11 @@ class Binance:
     async def candles(
         self, symbol: str, interval: str, asof: int, cfg: Config
     ) -> pd.DataFrame:
+        cache_key = (symbol, interval, int(asof), self.kline_mode, self.kline_fallback, cfg.bars)
+        cached = self.candle_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         source = "BINANCE_FUTURES"
         spot_symbol = symbol
         spot_scale = 1.0
@@ -321,7 +338,8 @@ class Binance:
         out = indicators(df, cfg)
         out.attrs["source"] = source
         out.attrs["history_bars"] = len(df)
-        out.attrs["short_history"] = bool(interval == "1d" and len(df) < 100)
+        out.attrs["short_history"] = bool(interval == "1d" and len(df) < 448)
+        self.candle_cache[cache_key] = out
         return out
 
 
@@ -341,6 +359,36 @@ def indicators(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         df[f"ema{period}"] = df.close.ewm(
             span=period, adjust=False
         ).mean()
+
+    # 이 전략은 사용자가 제공한 문서의 '일선' 의미를 보존하기 위해
+    # 112/224/448을 SMA로 계산한다. 기존 Astra EMA 계열과 분리한다.
+    for period in LONG_SMA_PERIODS:
+        df[f"sma{period}"] = df.close.rolling(
+            period, min_periods=period
+        ).mean()
+
+    # 표준 일목균형표: 전환 9, 기준 26, 선행2 52, 구름은 26봉 선행.
+    # Some unit-test frames exercise only RVOL/MACD and omit high/low.
+    # Falling back to close keeps those isolated tests valid; live candles
+    # always include exchange high/low fields.
+    high_source = df["high"] if "high" in df.columns else df["close"]
+    low_source = df["low"] if "low" in df.columns else df["close"]
+    high9 = high_source.rolling(9, min_periods=9).max()
+    low9 = low_source.rolling(9, min_periods=9).min()
+    high26 = high_source.rolling(26, min_periods=26).max()
+    low26 = low_source.rolling(26, min_periods=26).min()
+    high52 = high_source.rolling(52, min_periods=52).max()
+    low52 = low_source.rolling(52, min_periods=52).min()
+    df["tenkan"] = (high9 + low9) / 2
+    df["kijun"] = (high26 + low26) / 2
+    df["senkou_a"] = ((df["tenkan"] + df["kijun"]) / 2).shift(26)
+    df["senkou_b"] = ((high52 + low52) / 2).shift(26)
+    df["cloud_top"] = pd.concat(
+        [df["senkou_a"], df["senkou_b"]], axis=1
+    ).max(axis=1)
+    df["cloud_bottom"] = pd.concat(
+        [df["senkou_a"], df["senkou_b"]], axis=1
+    ).min(axis=1)
 
     macd = (
         df.close.ewm(span=12, adjust=False).mean()
@@ -381,6 +429,222 @@ def indicators(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
     daily_base = df.volume.groupby(day).cumsum().replace(0, np.nan)
     df["vwap"] = daily_quote / daily_base
     return df
+
+
+def _finite(value) -> bool:
+    try:
+        return bool(np.isfinite(float(value)))
+    except (TypeError, ValueError):
+        return False
+
+
+def _distance_pct(price, level):
+    if not (_finite(price) and _finite(level)) or float(level) == 0:
+        return None
+    return (float(price) / float(level) - 1) * 100
+
+
+def _recent_cross(close: pd.Series, line: pd.Series, lookback: int = 6) -> bool:
+    start = max(1, len(close) - lookback)
+    for i in range(start, len(close)):
+        if not (_finite(line.iloc[i]) and _finite(line.iloc[i - 1])):
+            continue
+        if close.iloc[i] >= line.iloc[i] and close.iloc[i - 1] < line.iloc[i - 1]:
+            return True
+    return False
+
+
+def dante_ma_cloud_cycle(df: pd.DataFrame, cfg: Config) -> dict:
+    """Classify the public 112/224/448 + Ichimoku A→F lifecycle.
+
+    Price/MA/cloud logic is a structural screen. Candle RVOL may raise the
+    score, but 24h quote volume never rejects a symbol here.
+    """
+    row = df.iloc[-1]
+    history = len(df)
+    price = float(row.close)
+    m112 = float(row.sma112) if _finite(row.sma112) else None
+    m224 = float(row.sma224) if _finite(row.sma224) else None
+    m448 = float(row.sma448) if _finite(row.sma448) else None
+    cloud_top = float(row.cloud_top) if _finite(row.cloud_top) else None
+    cloud_bottom = float(row.cloud_bottom) if _finite(row.cloud_bottom) else None
+    kijun = float(row.kijun) if _finite(row.kijun) else None
+
+    d112 = _distance_pct(price, m112)
+    d224 = _distance_pct(price, m224)
+    d448 = _distance_pct(price, m448)
+    gap = _distance_pct(m224, m112) if m112 is not None and m224 is not None else None
+
+    above112 = bool(m112 is not None and price > m112)
+    above224 = bool(m224 is not None and price > m224)
+    above448 = bool(m448 is not None and price > m448)
+    above_cloud = bool(cloud_top is not None and price > cloud_top)
+    below_cloud = bool(cloud_bottom is not None and price < cloud_bottom)
+    inside_cloud = bool(
+        cloud_top is not None and cloud_bottom is not None
+        and cloud_bottom <= price <= cloud_top
+    )
+
+    cross112 = bool(
+        m112 is not None
+        and _recent_cross(df.close, df.sma112, 6)
+    )
+    cross224 = bool(
+        m224 is not None
+        and _recent_cross(df.close, df.sma224, 6)
+    )
+
+    near112 = d112 is not None and abs(d112) <= cfg.dante_near_112_pct
+    near224 = d224 is not None and abs(d224) <= cfg.dante_near_224_pct
+    near_cloud = bool(
+        cloud_top is not None
+        and abs(_distance_pct(price, cloud_top)) <= cfg.dante_near_cloud_pct
+    )
+    gap_recovery = bool(
+        gap is not None
+        and cfg.dante_gap_min_pct <= gap <= cfg.dante_gap_max_pct
+    )
+
+    lows = df.low.iloc[-5:]
+    low5 = float(lows.min())
+    retest224 = bool(
+        m224 is not None and price > m224
+        and low5 <= m224 * (1 + cfg.dante_near_224_pct / 100)
+    )
+    retest_cloud = bool(
+        cloud_top is not None and price > cloud_top
+        and low5 <= cloud_top * (1 + cfg.dante_near_cloud_pct / 100)
+    )
+
+    def hold_line(name: str) -> bool:
+        line = df[name]
+        count = 0
+        for i in range(max(0, len(df) - 3), len(df)):
+            if _finite(line.iloc[i]) and df.close.iloc[i] > line.iloc[i]:
+                count += 1
+        return count >= 2
+
+    hold112 = above112 and hold_line("sma112")
+    hold224 = above224 and hold_line("sma224")
+
+    prior_above224 = False
+    prior_above_cloud = False
+    for i in range(max(0, len(df) - 8), len(df) - 1):
+        if _finite(df.sma224.iloc[i]) and df.close.iloc[i] > df.sma224.iloc[i]:
+            prior_above224 = True
+        if (
+            _finite(df.cloud_top.iloc[i])
+            and df.close.iloc[i] > df.cloud_top.iloc[i]
+        ):
+            prior_above_cloud = True
+
+    failed224 = bool(m224 is not None and price < m224 and prior_above224)
+    failed_cloud = bool((inside_cloud or below_cloud) and prior_above_cloud)
+    aligned = bool(
+        m112 is not None and m224 is not None and m448 is not None
+        and m112 > m224 > m448
+    )
+
+    # Pullback volume: the newest 3 closed candles should contract versus
+    # the preceding 3. It is a quality bonus, not a volume gate.
+    volumes = df.volume.iloc[-6:].to_numpy(dtype=float)
+    pullback_volume_decreasing = bool(
+        len(volumes) == 6
+        and np.mean(volumes[-3:]) <= np.mean(volumes[:3]) * 0.90
+    )
+    rvol = float(row.rvol) if _finite(row.rvol) else None
+
+    stage = "PRE"
+    score = 20
+    matched = False
+    if failed224 or failed_cloud:
+        stage, score = "F", 5
+    elif (
+        d448 is not None
+        and -cfg.dante_near_448_pct <= d448 <= cfg.dante_near_448_pct
+        and m448 is not None and m224 is not None and m448 > m224
+    ):
+        stage, score = "E", 35
+    elif above224 and above_cloud and (retest224 or retest_cloud) and hold224:
+        stage, score, matched = "D", 90, True
+    elif aligned and near112 and above_cloud:
+        stage, score, matched = "TREND_PULLBACK", 84, True
+    elif above112 and not above224 and (inside_cloud or near224 or near_cloud):
+        stage, score = "C", 58
+    elif above112 and not above224 and near112 and hold112:
+        stage, score, matched = "B", 82, True
+    elif above112 and not above224 and gap_recovery and cross112:
+        stage, score = "A", 70
+    elif above112 and not above224 and gap_recovery:
+        stage, score = "A_WAIT", 62
+    elif above224 and above_cloud:
+        stage, score = "D_HOLD", 72
+
+    if rvol is not None and rvol >= 1.5:
+        score += 6
+    if pullback_volume_decreasing and stage in {"B", "D", "TREND_PULLBACK"}:
+        score += 5
+    if cross224 and above224:
+        score += 4
+    score = int(max(0, min(100, round(score))))
+
+    stage_labels = {
+        "A": "A · 112 돌파",
+        "A_WAIT": "A · 112 회복 대기",
+        "B": "B · 112 눌림",
+        "C": "C · 구름/224 저항",
+        "D": "D · 224 재테스트",
+        "D_HOLD": "D · 224 안착",
+        "E": "E · 448 접근",
+        "F": "F · 돌파 실패",
+        "TREND_PULLBACK": "정배열 · 112 눌림",
+        "PRE": "PRE",
+    }
+    candidate = stage in {
+        "A", "A_WAIT", "B", "C", "D", "D_HOLD", "TREND_PULLBACK"
+    }
+    manage = stage in {"E", "F"}
+    return {
+        "stage": stage,
+        "stage_label": stage_labels[stage],
+        "score": score,
+        "matched": matched,
+        "candidate": candidate,
+        "manage": manage,
+        "price": price,
+        "history_bars": history,
+        "lines": {"112": m112, "224": m224, "448": m448},
+        "distance_pct": {"112": d112, "224": d224, "448": d448},
+        "gap_112_224_pct": gap,
+        "cloud": {
+            "position": (
+                "ABOVE" if above_cloud else "INSIDE" if inside_cloud
+                else "BELOW" if below_cloud else "N/A"
+            ),
+            "top": cloud_top,
+            "bottom": cloud_bottom,
+            "kijun": kijun,
+        },
+        "rvol": rvol,
+        "flags": {
+            "cross112": cross112,
+            "cross224": cross224,
+            "hold112": hold112,
+            "hold224": hold224,
+            "retest224": retest224,
+            "retest_cloud": retest_cloud,
+            "aligned": aligned,
+            "pullback_volume_decreasing": pullback_volume_decreasing,
+        },
+        "targets": {
+            "next": (
+                "224" if stage in {"A", "A_WAIT", "B", "C"}
+                else "448" if stage in {"D", "D_HOLD"}
+                else "MANAGE" if stage == "E"
+                else "OBSERVE"
+            )
+        },
+    }
 
 
 def above_all(df: pd.DataFrame) -> bool:
@@ -1019,6 +1283,67 @@ def classify_stage(
     return "PRE"
 
 
+async def dante_daily_scan(
+    api: Binance, universe: set[str], asof: int, cfg: Config
+) -> tuple[list[dict], list[dict]]:
+    """Run the daily A→F screen over the full futures universe."""
+    queue = asyncio.Queue()
+    for symbol in sorted(universe):
+        queue.put_nowait(symbol)
+    rows, errors = [], []
+
+    async def worker():
+        while True:
+            try:
+                symbol = queue.get_nowait()
+            except asyncio.QueueEmpty:
+                return
+            try:
+                daily = await api.candles(symbol, "1d", asof, cfg)
+                cycle = dante_ma_cloud_cycle(daily, cfg)
+                if cycle["stage"] != "PRE":
+                    rows.append({"symbol": symbol, **cycle})
+            except Exception as exc:
+                errors.append({"symbol": symbol, "error": str(exc)})
+            finally:
+                queue.task_done()
+
+    await asyncio.gather(*(worker() for _ in range(cfg.workers)))
+    return rows, errors
+
+
+async def dante_deep_context(
+    api: Binance, symbol: str, asof: int, cfg: Config
+) -> dict:
+    """Attach lower-TF execution and futures flow to a top Dante candidate."""
+    h1, m15, m5, oi, taker_h1, taker_m15, taker_m5 = await asyncio.gather(
+        api.candles(symbol, "1h", asof, cfg),
+        api.candles(symbol, "15m", asof, cfg),
+        api.candles(symbol, "5m", asof, cfg),
+        oi_features(api, symbol, asof, cfg),
+        taker_series(api, symbol, "1h", asof),
+        taker_series(api, symbol, "15m", asof),
+        taker_series(api, symbol, "5m", asof),
+    )
+    h1 = apply_futures_taker(h1, taker_h1)
+    m15 = apply_futures_taker(m15, taker_m15)
+    m5 = apply_futures_taker(m5, taker_m5)
+    ready = ready_1h(h1, cfg)
+    g15 = gate_15m(m15, cfg)
+    g5 = gate_5m(m5, cfg)
+    return {
+        "ready_1h": ready,
+        "oi": oi,
+        "gate_15m": g15,
+        "gate_5m": g5,
+        "taker": {
+            "1h": taker_h1,
+            "15m": taker_m15,
+            "5m": taker_m5,
+        },
+    }
+
+
 async def analyze(
     api: Binance, symbol: str, asof: int, cfg: Config
 ) -> dict | None:
@@ -1273,6 +1598,11 @@ async def scan(args, cfg: Config) -> dict:
             }
             universe &= liquid
 
+        # 거래대금과 무관하게 전체 USDT 무기한에 일봉 DANTE 사이클을 먼저 적용한다.
+        dante_rows, dante_errors = await dante_daily_scan(
+            api, set(universe), asof, cfg
+        )
+
         queue = asyncio.Queue()
         for symbol in sorted(universe):
             queue.put_nowait(symbol)
@@ -1298,6 +1628,49 @@ async def scan(args, cfg: Config) -> dict:
                     queue.task_done()
 
         await asyncio.gather(*(worker() for _ in range(cfg.workers)))
+
+        dante_rank = {
+            "B": 8,
+            "D": 7,
+            "A": 6,
+            "C": 5,
+            "D_HOLD": 4,
+            "TREND_PULLBACK": 3,
+            "A_WAIT": 2,
+            "E": 1,
+            "F": 0,
+        }
+        dante_rows.sort(
+            key=lambda row: (dante_rank.get(row["stage"], -1), row["score"]),
+            reverse=True,
+        )
+        deep_by_symbol = {row["symbol"]: row for row in rows}
+        top_candidates = [r for r in dante_rows if r["candidate"]][
+            :cfg.dante_deep_limit
+        ]
+        for row in top_candidates:
+            existing = deep_by_symbol.get(row["symbol"])
+            if existing is not None:
+                row["deep"] = {
+                    "source": "PREIGNITION_REUSE",
+                    "type": existing.get("type"),
+                    "stage": existing.get("stage"),
+                    "ready_1h": existing.get("ready_1h"),
+                    "oi": existing.get("oi"),
+                    "gate_15m": existing.get("gate_15m"),
+                    "gate_5m": existing.get("gate_5m"),
+                }
+                continue
+            try:
+                row["deep"] = {
+                    "source": "DANTE_DEEP",
+                    **await dante_deep_context(api, row["symbol"], asof, cfg),
+                }
+            except Exception as exc:
+                row["deep"] = {
+                    "source": "DANTE_DEEP",
+                    "error": str(exc),
+                }
 
     stage_rank = {
         "EARLY_IGNITION": 6,
@@ -1325,6 +1698,19 @@ async def scan(args, cfg: Config) -> dict:
         "candidates": [r for r in rows if not r["extended"]],
         "extended": [r for r in rows if r["extended"]],
         "errors": errors,
+        "dante_scan": {
+            "method": "SMA112_224_448_ICHIMOKU_A_F",
+            "quote_volume_filter": False,
+            "screened": len(universe),
+            "classified": len(dante_rows),
+            "candidate_count": sum(1 for r in dante_rows if r["candidate"]),
+            "manage_count": sum(1 for r in dante_rows if r["manage"]),
+            "deep_limit": cfg.dante_deep_limit,
+            "errors": len(dante_errors),
+        },
+        "dante_candidates": [r for r in dante_rows if r["candidate"]],
+        "dante_manage": [r for r in dante_rows if r["manage"]],
+        "dante_errors": dante_errors,
     }
 
 
@@ -1332,6 +1718,8 @@ def self_test():
     cfg = Config()
 
     assert min_bars_for("1d", cfg) == 40
+    assert cfg.bars >= 448
+    assert cfg.min_quote_volume == 0.0
     assert spot_symbol_candidates("1000PEPEUSDT") == [
         ("1000PEPEUSDT", 1.0),
         ("PEPEUSDT", 1000.0),
@@ -1439,6 +1827,29 @@ def self_test():
     # 같은 스파이크가 있어도 가격이 무너지면 Echo 취소.
     echo_frame.loc[n - 1, ["close", "low"]] = [90.0, 89.0]
     assert not volume_echo(echo_frame, cfg)["detected"]
+
+    # 112/224/448 + 구름대: 224/구름 돌파 후 눌림은 D, 재이탈은 F.
+    n = 500
+    close = np.r_[np.full(474, 100.0), np.full(23, 103.0), [102.4, 102.6, 102.8]]
+    daily_frame = pd.DataFrame({
+        "open_time": np.arange(n) * TF_MS["1d"],
+        "high": close + 0.8,
+        "low": close - 0.8,
+        "close": close,
+        "volume": np.full(n, 100.0),
+        "quote_volume": np.full(n, 10_000.0),
+        "taker_buy_quote": np.full(n, 6_000.0),
+    })
+    daily_frame.loc[n - 3:, "low"] = [100.4, 100.5, 100.6]
+    daily_calc = indicators(daily_frame, cfg)
+    dante = dante_ma_cloud_cycle(daily_calc, cfg)
+    assert dante["stage"] == "D", dante
+    assert dante["flags"]["retest224"]
+
+    failed_frame = daily_frame.copy()
+    failed_frame.loc[n - 1, ["close", "low", "high", "volume"]] = [99.1, 98.7, 100.2, 220.0]
+    failed = dante_ma_cloud_cycle(indicators(failed_frame, cfg), cfg)
+    assert failed["stage"] == "F", failed
 
     print("self-test passed")
 

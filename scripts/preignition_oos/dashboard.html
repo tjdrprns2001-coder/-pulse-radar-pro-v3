@@ -28,11 +28,16 @@
   <div class="controls"><input id="q" placeholder="코인 검색" oninput="renderCandidates()"><select id="stage" onchange="renderCandidates()"><option value="">전체 단계</option><option>PRE</option><option>COMPRESSED</option><option>ARMED</option><option>IGNITION</option><option>CONFIRM</option><option>EARLY_IGNITION</option></select><select id="type" onchange="renderCandidates()"><option value="">전체 유형</option><option>A</option><option>B</option><option>A+B</option><option>C</option><option>N/A</option></select></div>
   <div class="table-wrap"><table><thead><tr><th>코인</th><th>Stage</th><th>Type</th><th>Score</th><th>24H</th><th>Volume</th><th>압축</th><th>15m Flow</th><th>OI 1H</th></tr></thead><tbody id="candidates"></tbody></table></div>
 </section>
+<section class="section card">
+  <div class="section-head"><h2>112·224·448 + 구름대 전체스캔</h2><span id="danteMeta">거래대금 필터 없음</span></div>
+  <div class="controls"><input id="dq" placeholder="코인 검색" oninput="renderDante()"><select id="dstage" onchange="renderDante()"><option value="">전체 A-F</option><option value="B">B · 112 눌림</option><option value="D">D · 224 재테스트</option><option value="A">A · 112 돌파</option><option value="C">C · 구름/224 저항</option><option value="D_HOLD">D · 224 안착</option><option value="TREND_PULLBACK">정배열 눌림</option><option value="A_WAIT">A · 회복 대기</option></select></div>
+  <div class="table-wrap"><table><thead><tr><th>코인</th><th>A-F</th><th>Score</th><th>112 이격</th><th>224 이격</th><th>448 이격</th><th>112↔224</th><th>Cloud</th><th>OI 1H</th><th>15m</th><th>5m</th></tr></thead><tbody id="danteCandidates"></tbody></table></div>
+</section>
 <section class="section"><div class="section-head"><h2>OOS 성과</h2><span>대조군 대비 초과수익 · 수수료/슬리피지 미포함</span></div><div class="perf" id="performance"></div></section>
 <div class="footer">15분 자동 수집 · PRE 입력에는 미래 점화봉 정보를 사용하지 않음 · 성공확률이 아닌 실시간 검증 데이터</div>
 </main>
 <script>
-let data={};let candidates=[];
+let data={};let candidates=[];let danteCandidates=[];
 const validNum=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const fmt=(v,d=2)=>validNum(v)?Number(v).toFixed(d):'-';
 const pct=v=>validNum(v)?((Number(v)>=0?'+':'')+Number(v).toFixed(2)+'%'):'-';
@@ -43,6 +48,11 @@ function renderCandidates(){
  const q=document.getElementById('q').value.trim().toUpperCase(),st=document.getElementById('stage').value,ty=document.getElementById('type').value;
  const rows=candidates.filter(x=>(!q||String(x.symbol).includes(q))&&(!st||x.stage===st)&&(!ty||x.type===ty));
  document.getElementById('candidates').innerHTML=rows.length?rows.map(x=>`<tr><td class="sym">${esc(x.symbol)}</td><td>${pill(x.stage)}</td><td><span class="pill">${esc(x.type||'-')}</span></td><td class="score">${fmt(x.score,0)}</td><td class="${validNum(x.change_24h_pct)&&Number(x.change_24h_pct)>=0?'pos':'neg'}">${pct(x.change_24h_pct)}</td><td>${esc(x.volume_state||'QUIET')}${x.echo?' · Echo':''}</td><td>${esc(x.compression_label||'-')} ${esc(x.compression_count??'-')}/4</td><td>${esc(x.flow_15m||'-')}</td><td>${x.oi_known?pct(x.oi_1h_pct):'N/A'}</td></tr>`).join(''):'<tr><td colspan="9" class="empty">표시할 후보가 없습니다.</td></tr>';
+}
+function renderDante(){
+ const q=document.getElementById('dq').value.trim().toUpperCase(),st=document.getElementById('dstage').value;
+ const rows=danteCandidates.filter(x=>(!q||String(x.symbol).includes(q))&&(!st||x.stage===st));
+ document.getElementById('danteCandidates').innerHTML=rows.length?rows.map(x=>`<tr><td class="sym">${esc(x.symbol)}</td><td>${pill(x.stage_label||x.stage)}</td><td class="score">${fmt(x.score,0)}</td><td>${pct(x.distance_112_pct)}</td><td>${pct(x.distance_224_pct)}</td><td>${pct(x.distance_448_pct)}</td><td>${pct(x.gap_112_224_pct)}</td><td>${esc(x.cloud_position||'-')}</td><td>${x.oi_known?pct(x.oi_1h_pct):'N/A'}</td><td>${esc(x.flow_15m||'-')} · ${fmt(x.rvol_15m,2)}x</td><td>${x.gate_5m?'확인':'대기'}</td></tr>`).join(''):'<tr><td colspan="11" class="empty">현재 A/B/C/D 후보가 없습니다.</td></tr>';
 }
 function renderPerf(report){
  const defs=[
@@ -69,6 +79,10 @@ async function load(){
   if(!data||data.status!=='ok')throw new Error('invalid dashboard payload');
   const sc=data.scanner||{}, sink=sc.last_result||{}, dash=sc.dashboard||{};
   candidates=dash.candidates||[];
+  danteCandidates=dash.dante_candidates||[];
+  const ds=dash.dante_scan||{};
+  const dm=document.getElementById('danteMeta');
+  if(dm)dm.textContent=`전체 ${ds.screened??'-'} · 후보 ${ds.candidate_count??danteCandidates.length} · 관리 ${ds.manage_count??'-'} · 거래대금 필터 없음`;
   const active=!!sc.active,status=active?'RUNNING':(sc.last_status||'IDLE');
   document.getElementById('status').textContent=status; document.getElementById('dot').className='dot '+(active?'run':status==='OK'?'ok':status==='FAILED'?'fail':'');
   document.getElementById('asof').textContent=dash.asof_utc?new Date(dash.asof_utc).toLocaleString('ko-KR'):'최신 스캔 대기';
@@ -77,11 +91,12 @@ async function load(){
    ['스캔 상태',status,sc.last_error||'오류 없음'],
    ['Futures Universe',dash.universe_count??sink.universe_count??'-','실제 스캔 대상'],
    ['현재 후보',candidates.length,'PRE~CONFIRM'],
+   ['DANTE 후보',danteCandidates.length,'A/B/C/D · 거래대금 무관'],
    ['누적 이벤트',em.count??0,'OOS 신규 신호'],
    ['누적 가격',pm.count??0,'성과 측정 스냅샷']
   ];
   document.getElementById('metrics').innerHTML=metrics.map(x=>`<div class="card metric"><div class="k">${esc(x[0])}</div><div class="v">${esc(x[1])}</div><div class="s">${esc(x[2])}</div></div>`).join('');
-  renderCandidates(); renderPerf(data.report?.report||[]);
+  renderCandidates(); renderDante(); renderPerf(data.report?.report||[]);
  }catch(e){document.getElementById('status').textContent='ERROR';document.getElementById('dot').className='dot fail';document.getElementById('metrics').innerHTML='<div class="card empty">대시보드 데이터를 불러오지 못했습니다: '+esc(String(e))+'</div>'}
 }
 load();setInterval(load,30000);
