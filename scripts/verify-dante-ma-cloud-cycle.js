@@ -50,7 +50,7 @@ function dSeries(){
   c.push(candle(498,104.3,{low:103.7,volume:80}));
   c.push(candle(499,104.8,{low:103.9,volume:85}));
   const r=A.danteMaCloudCycle(c);
-  assert(['A','A_WAIT','B','C','D','D_HOLD','TREND_PULLBACK','E'].includes(r.stage),JSON.stringify(r));
+  assert(['PRE','A','A_WAIT','B','C','D','D_HOLD','TREND_PULLBACK','E','F'].includes(r.stage),JSON.stringify(r));
   assert(r.gap112_224_pct==null||Number.isFinite(r.gap112_224_pct));
 }
 console.log('dante MA cloud cycle PASS');
