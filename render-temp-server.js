@@ -189,7 +189,7 @@ function wsSymbol(v){
 }
 function wsAsset(v){const s=wsSymbol(v);return s.endsWith('USDT')?s.slice(0,-4):s}
 function wsSend(ws,payload){if(ws.readyState!==1||ws.bufferedAmount>1024*1024)return false;try{ws.send(JSON.stringify(payload));return true}catch{return false}}
-function wsEventAllowed(channels,event){
+function wsEventAllowed(channels,event,data=null){
   const e=String(event||'');
   return channels.some(c=>{
     const n=String(c.name||'');
@@ -197,7 +197,7 @@ function wsEventAllowed(channels,event){
     if(n==='liquidations'&&e==='liquidation')return true;
     if(n==='orderbook'&&e==='orderbook')return true;
     if(n==='funding'&&e==='funding')return true;
-    if(n==='candles'&&e==='candle.update')return true;
+    if(n==='candles'&&e==='candle.update')return String(c.timeframe||'1m')===String(data?.interval||'1m');
     return false;
   })
 }
@@ -209,7 +209,7 @@ wss.on('connection',(ws)=>{
     const symbols=[...new Set(channels.map(c=>wsSymbol(c.instrument_id||c.symbol||c.asset_id)).filter(Boolean))].slice(0,12);
     for(const symbol of symbols){
       const off=chartRuntime.hub.subscribe(symbol,(evt)=>{
-        if(wsEventAllowed(channels,evt.event))wsSend(ws,{event:evt.event,instrument_id:'perp:'+symbol,symbol,data:evt.data??null,occurred_at:evt.time||Date.now()});
+        if(wsEventAllowed(channels,evt.event,evt.data))wsSend(ws,{event:evt.event,instrument_id:'perp:'+symbol,symbol,data:evt.data??null,occurred_at:evt.time||Date.now()});
       });cleanups.push(off);
       const snap=chartRuntime.hub.snapshot(symbol,{profileBins:100});
       wsSend(ws,{event:'market.snapshot',instrument_id:'perp:'+symbol,symbol,data:{status:snap.status,orderbook:snap.orderbook,funding:snap.funding,liquidations:snap.liquidations?.summary_1h||null,trade_profile:snap.trade_profile},occurred_at:Date.now()});
