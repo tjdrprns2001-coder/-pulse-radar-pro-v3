@@ -98,7 +98,10 @@ async function handleApi(req,res,u){
   const apiRes=makeRes(res);
   try{
     let handler;
-    if(name==='index'){
+    if(name==='v1'||name.startsWith('v1/')){
+      apiReq.query.routePath=name==='v1'?String(apiReq.query.path||''):name.slice(3);
+      handler=require(path.join(ROOT,'api','v1.js'));
+    }else if(name==='index'){
       handler=require(path.join(ROOT,'api','index.js'));
     }else if(indexRoutes.has(name)){
       apiReq.query.route=name;
