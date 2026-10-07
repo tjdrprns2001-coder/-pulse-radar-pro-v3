@@ -1,5 +1,6 @@
 const assert=require('assert');
 const {createDerivativesCapabilityProvider,historyDeltas,normalizeFunding,statusFor}=require('../lib/coin-scan/derivatives-capability.js');
+const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 
 function ok(body){return{ok:true,status:200,async json(){return body}}}
 function bad(status=503){return{ok:false,status,async json(){return{}}}}
@@ -44,5 +45,13 @@ function mockFetch(url){
 
   const many=await p.probeMany(['DOGEUSDT','DOGEUSDT'],{concurrency:2});
   assert.equal(many.length,1);
+  const provider=createBinanceProvider({fetchImpl:mockFetch,crossOiProvider:{async getProfile(){return{}}},futuresBases:['https://fapi.binance.com']});
+  const reportDeriv=await provider.getCoinReportDerivatives('DOGEUSDT');
+  assert.equal(reportDeriv.fundingPct,-.01,'representative funding must come from a venue that actually returned funding');
+  assert.equal(reportDeriv.fundingIntervalHours,8);
+  assert.equal(reportDeriv.openInterest,1000000,'representative OI must come from a venue that actually returned current OI');
+  assert.equal(reportDeriv.representativeSources.funding,'BYBIT');
+  assert.equal(reportDeriv.representativeSources.openInterest,'BYBIT');
+  assert.equal(reportDeriv.source,'multi-venue derivatives');
   console.log('derivatives capability PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
