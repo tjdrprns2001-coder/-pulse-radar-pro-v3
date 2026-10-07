@@ -6,11 +6,17 @@ const {URL}=require('url');
 const {createBinanceProvider}=require('./lib/coin-scan/binance-provider.js');
 const {createAstraAutoScanner}=require('./lib/coin-scan/astra-auto-scanner.js');
 const ChartBroOos=require('./lib/coin-scan/chartbro-oos-service.js');
+const {createChartV1Service}=require('./lib/chart-v1/service.js');
+const {defaultChartRuntime}=require('./lib/chart-v1/runtime.js');
+const {WebSocketServer}=require('ws');
 
 const ROOT=__dirname;
 const PORT=Number(process.env.PORT||10000);
 const chartbroHealth={status:String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now()};
 let chartbroActive=false,chartbroScanner=null;
+const chartProvider=createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false,disableFuturesFallback:false});
+const chartRuntime=defaultChartRuntime({provider:chartProvider});
+const chartV1Service=createChartV1Service({provider:chartProvider,runtime:chartRuntime});
 
 const aliases={
   '/':'/pulse-unified.html',
@@ -111,7 +117,7 @@ async function handleApi(req,res,u){
       if(!fs.existsSync(mod))return apiRes.status(404).json({ok:false,error:'Unknown API route',route:name});
       handler=require(mod);
     }
-    const out=await handler(apiReq,apiRes);
+    const out=await handler(apiReq,apiRes,name==='v1'||name.startsWith('v1/')?{service:chartV1Service}:{});
     if(apiRes.headersSent)return;
     if(out&&typeof out.statusCode==='number'){
       const h=out.headers||{};
@@ -175,4 +181,72 @@ const server=http.createServer(async(req,res)=>{
     send(res,500,'Server error: '+String(e&&e.message||e),{'Content-Type':'text/plain; charset=utf-8'});
   }
 });
-server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);scheduleChartBroTracker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
+
+function wsSymbol(v){
+  const raw=String(v||'').toUpperCase().replace(/[^A-Z0-9:]/g,'');
+  const s=raw.includes(':')?raw.split(':').pop():raw;
+  return s.endsWith('USDT')?s:s+'USDT';
+}
+function wsAsset(v){const s=wsSymbol(v);return s.endsWith('USDT')?s.slice(0,-4):s}
+function wsSend(ws,payload){if(ws.readyState!==1||ws.bufferedAmount>1024*1024)return false;try{ws.send(JSON.stringify(payload));return true}catch{return false}}
+function wsEventAllowed(channels,event){
+  const e=String(event||'');
+  return channels.some(c=>{
+    const n=String(c.name||'');
+    if(n==='trades'&&e==='trade')return true;
+    if(n==='liquidations'&&e==='liquidation')return true;
+    if(n==='orderbook'&&e==='orderbook')return true;
+    if(n==='funding'&&e==='funding')return true;
+    if(n==='candles'&&e==='candle.update')return true;
+    return false;
+  })
+}
+const wss=new WebSocketServer({noServer:true,maxPayload:65536,clientTracking:true});
+wss.on('connection',(ws)=>{
+  let channels=[],cleanups=[],timer=null,closed=false;
+  const resetSubscriptions=()=>{
+    for(const fn of cleanups)try{fn()}catch{}cleanups=[];
+    const symbols=[...new Set(channels.map(c=>wsSymbol(c.instrument_id||c.symbol||c.asset_id)).filter(Boolean))].slice(0,12);
+    for(const symbol of symbols){
+      const off=chartRuntime.hub.subscribe(symbol,(evt)=>{
+        if(wsEventAllowed(channels,evt.event))wsSend(ws,{event:evt.event,instrument_id:'perp:'+symbol,symbol,data:evt.data??null,occurred_at:evt.time||Date.now()});
+      });cleanups.push(off);
+      const snap=chartRuntime.hub.snapshot(symbol,{profileBins:100});
+      wsSend(ws,{event:'market.snapshot',instrument_id:'perp:'+symbol,symbol,data:{status:snap.status,orderbook:snap.orderbook,funding:snap.funding,liquidations:snap.liquidations?.summary_1h||null,trade_profile:snap.trade_profile},occurred_at:Date.now()});
+    }
+    clearInterval(timer);timer=setInterval(async()=>{
+      if(closed||ws.readyState!==1)return;
+      for(const ch of channels.slice(0,20)){
+        const symbol=wsSymbol(ch.instrument_id||ch.symbol||ch.asset_id),asset=wsAsset(symbol),name=String(ch.name||''),tf=String(ch.timeframe||'4h');
+        try{
+          if(name==='open_interest'){
+            const r=await chartV1Service.openInterest('perp:'+symbol,{timeframe:tf});
+            wsSend(ws,{event:'open_interest',instrument_id:'perp:'+symbol,symbol,data:r.data?.at(-1)||null,meta:r.meta,occurred_at:Date.now()});
+          }else if(name==='analysis_events'){
+            const r=await chartV1Service.overview(asset,{timeframe:tf,market:'spot',visible:200,warmup:300,total:500,priceBins:80});
+            wsSend(ws,{event:'analysis.snapshot',asset_id:'asset:'+asset,timeframe:tf,data:{market_structure:r.data?.market_structure,breakout:r.data?.breakout,smart_money:r.data?.smart_money,confidence:r.data?.confidence,as_of:r.data?.as_of},occurred_at:Date.now()});
+          }
+        }catch(e){wsSend(ws,{event:'channel.error',channel:name,symbol,error:String(e?.message||e),occurred_at:Date.now()})}
+      }
+    },30000);timer.unref?.();
+  };
+  ws.on('message',(buf)=>{
+    let msg;try{msg=JSON.parse(String(buf))}catch{return wsSend(ws,{event:'error',code:'INVALID_JSON'})}
+    const op=String(msg?.op||'');
+    if(op==='subscribe'){
+      const incoming=Array.isArray(msg.channels)?msg.channels:[];channels=incoming.slice(0,20).map(x=>({name:String(x?.name||''),instrument_id:x?.instrument_id||null,asset_id:x?.asset_id||null,symbol:x?.symbol||null,timeframe:String(x?.timeframe||'4h')})).filter(x=>x.name&&(x.instrument_id||x.asset_id||x.symbol));
+      resetSubscriptions();wsSend(ws,{event:'subscribed',channels,occurred_at:Date.now()});
+    }else if(op==='ping')wsSend(ws,{event:'pong',occurred_at:Date.now()});
+    else if(op==='unsubscribe'){channels=[];resetSubscriptions();wsSend(ws,{event:'unsubscribed',occurred_at:Date.now()})}
+    else wsSend(ws,{event:'error',code:'UNSUPPORTED_OPERATION'});
+  });
+  ws.on('close',()=>{closed=true;clearInterval(timer);for(const fn of cleanups)try{fn()}catch{}cleanups=[]});
+  wsSend(ws,{event:'hello',version:'ws-v1',max_channels:20,occurred_at:Date.now()});
+});
+server.on('upgrade',(req,socket,head)=>{
+  let u;try{u=new URL(req.url,'http://localhost')}catch{return socket.destroy()}
+  if(u.pathname!=='/ws/v1/market')return socket.destroy();
+  wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req));
+});
+
+server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);chartRuntime.init().catch(()=>{});scheduleChartBroTracker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
