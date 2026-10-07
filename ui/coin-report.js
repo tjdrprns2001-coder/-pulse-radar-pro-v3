@@ -20,7 +20,24 @@ function renderPro(){
  const fp=$('proFibPivot');clear(fp);if(p.fibonacci?.levels){fp.append(row('Fib 스윙',`${fmt(p.fibonacci.low?.price)} → ${fmt(p.fibonacci.high?.price)}`));for(const k of['23.6','38.2','50','61.8','78.6'])fp.append(row(`Fib ${k}%`,fmt(p.fibonacci.levels[k])))}else fp.append(row('Fibonacci','확인 불가'));if(p.pivot){for(const k of['p','s1','s2','s3','r1','r2','r3'])fp.append(row(k.toUpperCase(),fmt(p.pivot[k])))}else fp.append(row('Pivot','확인 불가'));
  const d=$('proDerivatives'),dv=p.derivatives||{};clear(d);
  const statusKo={data_normal:'정상',partial_venue_data:'일부 거래소만 가능',provider_data_unavailable:'지원되지만 데이터 없음',unsupported:'지원 안 됨',query_error:'조회 오류',unknown:'확인 불가'}[dv.status]||'확인 불가';
- const usd=v=>v==null?'확인 불가':'
+ const usd=v=>v==null?'확인 불가':Number(v).toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+ d.append(
+  row('파생상품 지원',dv.derivativesSupported==null?'확인 불가':dv.derivativesSupported?'예':'아니오'),
+  row('실제 데이터',dv.dataAvailable==null?'확인 불가':dv.dataAvailable?'있음':'현재 제공되지 않음'),
+  row('상태',statusKo),
+  row('지원 거래소',(dv.supportedVenues||[]).join(' · ')||'확인 불가'),
+  row('값 제공 거래소',(dv.dataVenues||[]).join(' · ')||'없음'),
+  row('통합 OI USD',usd(dv.openInterestUsd)),
+  row('OI 1H',pctFmt(dv.oi1hPct)),row('OI 4H',pctFmt(dv.oi4hPct)),row('OI 24H',pctFmt(dv.oi24hPct)),
+  row('대표 Funding',dv.fundingPct==null?'확인 불가':pctFmt(dv.fundingPct,4)+' / '+(dv.fundingIntervalHours==null?'주기 확인 불가':fmt(dv.fundingIntervalHours,1)+'h')),
+  row('통합 Funding 8H 환산',pctFmt(dv.funding8hPct,4)),
+  row('Taker 1H',dv.taker1hRatio==null?'확인 불가':fmt(dv.taker1hRatio,3)),
+  row('전체 Long/Short',dv.globalLongShortRatio==null?'확인 불가':fmt(dv.globalLongShortRatio,3)),
+  row('Top Position L/S',dv.topTraderPositionRatio==null?'확인 불가':fmt(dv.topTraderPositionRatio,3)),
+  row('추정값 사용','아니오'),
+  row('해석',dv.oiInterpretation||'확인 불가')
+ );
+ for(const v of(dv.venues||[])){const bits=[v.status||'unknown'];if(v.openInterestUsd!=null)bits.push('OI '+usd(v.openInterestUsd));if(v.fundingRatePct!=null)bits.push('Funding '+pctFmt(v.fundingRatePct,4)+(v.fundingIntervalHours!=null?'/'+fmt(v.fundingIntervalHours,1)+'h':''));if(v.queryError)bits.push('오류 '+v.queryError);d.append(row(v.venue,bits.join(' · ')))}
  const rs=$('proRelative'),rv=p.relativeStrength||{};clear(rs);rs.append(row('DOGE/대상 24H',pctFmt(rv.asset24hPct)),row('BTC 24H',pctFmt(rv.btc24hPct)),row('ETH 24H',pctFmt(rv.eth24hPct)),row('BTC 대비 24H',pctFmt(rv.vsBtc24hPct)),row('ETH 대비 24H',pctFmt(rv.vsEth24hPct)),row('BTC 대비 7D',pctFmt(rv.vsBtc7dPct)),row('ETH 대비 7D',pctFmt(rv.vsEth7dPct)));
  const sg=$('proScenarios');clear(sg);for(const [key,title] of[['bullish','강세'],['neutral','중립'],['bearish','약세']]){const x=p.scenarios?.[key]||{},box=document.createElement('div');box.className=`scenario ${key}`;const h=document.createElement('b');h.textContent=title;const q=document.createElement('p');q.textContent=key==='neutral'?`박스 ${fmt(x.boxLow)} ~ ${fmt(x.boxHigh)} · ${x.reason||''}`:`${x.trigger||''} · 다음 ${x.next||'-'} · 무효화 ${x.invalidatedBy||'-'}${x.volumeCondition?' · '+x.volumeCondition:''}`;box.append(h,q);sg.append(box)}
  const risk=$('proRisk');clear(risk);risk.append(row('현재 판단',judgmentKo(j.state)),row('판단 변경',j.changeCondition||'확인 불가'),row('4H 변동성',p.risk?.volatility4hPct==null?'확인 불가':`${fmt(p.risk.volatility4hPct,2)}%`),row('레버리지 과밀',p.risk?.leverageCrowding==null?'확인 불가':p.risk.leverageCrowding?'주의':'뚜렷하지 않음'),row('데이터 경고',(p.risk?.dataWarnings||[]).join(' · ')||'없음'))
