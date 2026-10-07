@@ -7,6 +7,7 @@ module.exports=async function handler(req,res,ctx={}){
  if(req?.method&&req.method!=='GET')return res.status(405).json({status:'error',error:'method not allowed'});
  const p=ctx.provider||getProvider(),q=req?.query||{};
  try{
+  if(String(q.mode||'').toLowerCase()==='universe')return res.status(200).json(await p.getDerivativesSupportUniverse());
   const many=String(q.symbols||'').split(',').map(cleanSymbol).filter(Boolean).slice(0,50);
   if(many.length){
    const items=await p.getDerivativesCapabilities(many,{concurrency:Math.min(4,Number(q.concurrency)||4)});
