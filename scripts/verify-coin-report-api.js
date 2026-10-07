@@ -8,7 +8,7 @@ function frame(){const a=[];for(let i=0;i<260;i++){const c=10+i*.03;a.push([i,c-
   async getDerivativesContext(){return{oiChangePct:1,fundingPct:.01}}
  };
  const gateway={available:false},service=createCoinReportService({provider,gateway,now:()=>123}),r=await service.getReport('AAAUSDT');
- assert.equal(r.symbol,'AAAUSDT');assert.equal(r.updatedAt,123);assert(r.dataWarnings.some(x=>x.includes('1w')));
+ assert.equal(r.symbol,'AAAUSDT');assert.equal(r.updatedAt,123);assert(r.dataWarnings.some(x=>x.includes('1w')));assert.equal(r.analysisPipeline.version,'COIN_ANALYSIS_PIPELINE_v1.0.0');assert(r.analysisPipeline.dataQuality.closedCandlesOnly);
  const news=await service.getNews('AAAUSDT',r);assert.equal(news.available,false);
  let code,body;const res={status(n){code=n;return this},json(v){body=v;return v}};
  await handler({method:'GET',query:{symbol:'AAAUSDT'}},res,{service});assert.equal(code,200);assert.equal(body.status,'ok');
@@ -32,6 +32,6 @@ function frame(){const a=[];for(let i=0;i<260;i++){const c=10+i*.03;a.push([i,c-
  assert.equal(fr.dataSources.frames['4h'],'OKX_SWAP');
  assert(fr.dataWarnings.some(x=>x.includes('대체 소스')));
  assert.equal(fr.professional.dataSources.frames['1h'],'OKX_SWAP');
- assert.equal(fr.professional.market.currentPrice,.1);
+ assert.equal(fr.professional.market.currentPrice,.1);assert.equal(fr.analysisPipeline.primaryTimeframe,'4h');assert(fr.analysisPipeline.dataQuality.missingFields.includes('orderbook_depth'));
  console.log('coin report api PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
