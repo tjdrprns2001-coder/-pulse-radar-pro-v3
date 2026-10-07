@@ -13,7 +13,8 @@ const {WebSocketServer}=require('ws');
 const ROOT=__dirname;
 const PORT=Number(process.env.PORT||10000);
 const chartbroHealth={status:String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now()};
-let chartbroActive=false,chartbroScanner=null;
+const chartV1AlertHealth={status:String(process.env.CHART_V1_ALERT_WORKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now(),runs:0,alertsSaved:0};
+let chartbroActive=false,chartbroScanner=null,chartV1AlertActive=false;
 const chartProvider=createBinanceProvider({concurrency:2,intervalConcurrency:2,disableSpotRest:false,disableFuturesFallback:false});
 const chartRuntime=defaultChartRuntime({provider:chartProvider});
 const chartV1Service=createChartV1Service({provider:chartProvider,runtime:chartRuntime});
@@ -160,6 +161,25 @@ async function runChartBroTracker(){
   }catch(e){Object.assign(chartbroHealth,{status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)})}
   finally{chartbroActive=false}
 }
+async function runChartV1AlertWorker(){
+  if(String(process.env.CHART_V1_ALERT_WORKER_ENABLED||'0')!=='1'||chartV1AlertActive)return;
+  chartV1AlertActive=true;chartV1AlertHealth.status='RUNNING';chartV1AlertHealth.startedAt=Date.now();chartV1AlertHealth.updatedAt=Date.now();
+  const raw=String(process.env.CHART_V1_ALERT_SYMBOLS||'BTCUSDT,ETHUSDT,DOGEUSDT').split(',').map(x=>x.trim().toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(Boolean),symbols=[...new Set(raw)].slice(0,24),tf=String(process.env.CHART_V1_ALERT_TIMEFRAME||'4h');
+  let completed=0,saved=0,errors=[];
+  try{
+    for(const symbol of symbols){
+      try{const asset=symbol.endsWith('USDT')?symbol.slice(0,-4):symbol,a=await chartV1Service.analyze(asset,{timeframe:tf,market:'spot',visible:500,warmup:300,total:800,priceBins:100}),r=await chartRuntime.observeAnalysis(a);completed++;saved+=(r?.saved?.length||0)}catch(e){errors.push({symbol,error:String(e?.message||e)})}
+    }
+    Object.assign(chartV1AlertHealth,{status:errors.length&&completed===0?'FAILED':errors.length?'PARTIAL':'DONE',updatedAt:Date.now(),runs:Number(chartV1AlertHealth.runs||0)+1,symbols,completed,alertsSaved:Number(chartV1AlertHealth.alertsSaved||0)+saved,lastRunSaved:saved,errors:errors.slice(0,8)})
+  }catch(e){Object.assign(chartV1AlertHealth,{status:'FAILED',updatedAt:Date.now(),error:String(e?.message||e)})}
+  finally{chartV1AlertActive=false}
+}
+function scheduleChartV1AlertWorker(){
+  if(String(process.env.CHART_V1_ALERT_WORKER_ENABLED||'0')!=='1')return;
+  const interval=Math.max(300000,Number(process.env.CHART_V1_ALERT_INTERVAL_MS||900000)),delay=Math.max(10000,Number(process.env.CHART_V1_ALERT_START_DELAY_MS||60000));
+  setTimeout(runChartV1AlertWorker,delay).unref?.();setInterval(runChartV1AlertWorker,interval).unref?.();
+}
+
 function scheduleChartBroTracker(){
   if(String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')!=='1')return;
   const interval=Math.max(300000,Number(process.env.CHARTBRO_TRACKER_INTERVAL_MS||900000)),delay=Math.max(5000,Number(process.env.CHARTBRO_TRACKER_START_DELAY_MS||45000));
@@ -169,7 +189,7 @@ function scheduleChartBroTracker(){
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
-    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth}),{'Content-Type':'application/json; charset=utf-8'});
+    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth,chart_v1_alerts:chartV1AlertHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
     const file=safeFile(u.pathname);
     if(!file||!fs.existsSync(file)||fs.statSync(file).isDirectory())return send(res,404,'Not Found',{'Content-Type':'text/plain; charset=utf-8'});
@@ -249,4 +269,4 @@ server.on('upgrade',(req,socket,head)=>{
   wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req));
 });
 
-server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);chartRuntime.init().catch(()=>{});scheduleChartBroTracker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
+server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);chartRuntime.init().catch(()=>{});scheduleChartBroTracker();scheduleChartV1AlertWorker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
