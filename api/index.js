@@ -26,7 +26,8 @@ const handlers = {
   'learning-ai': require('../handlers/learning-ai'),
   'ignition-results': require('../handlers/ignition-results'),
   'chartbro-research': require('../handlers/chartbro-research'),
-  'chart-snapshots': require('../handlers/chart-snapshots')
+  'chart-snapshots': require('../handlers/chart-snapshots'),
+  'derivatives-capability': require('../handlers/derivatives-capability')
 };
 
 const structureEdgeCache=new Map();
