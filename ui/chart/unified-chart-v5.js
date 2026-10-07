@@ -61,6 +61,15 @@ function renderChartMeta(data,analysis){
   if($('metaVersion'))$('metaVersion').textContent=data?((data.algorithm_version||'-')+' / '+(data.parameter_version||'-')):'legacy';
   if($('dataState')&&data)$('dataState').dataset.quality=q.status||'unknown';
 }
+function displaySnapshot(normalized,data){
+  const candles=[...(normalized?.candles||[])],volume=[...(normalized?.volume||[])],live=data?.current_candle;
+  if(live&&live.is_closed===false){
+    const time=toSec(live.open_time),row={time,open:Number(live.open),high:Number(live.high),low:Number(live.low),close:Number(live.close)};
+    if(time!=null&&[row.open,row.high,row.low,row.close].every(Number.isFinite)){if(candles.at(-1)?.time===time)candles[candles.length-1]=row;else if(!candles.length||Number(candles.at(-1).time)<time)candles.push(row)}
+    const vv=Number(live.volume_base);if(time!=null&&Number.isFinite(vv)){const vr={time,value:vv};if(volume.at(-1)?.time===time)volume[volume.length-1]=vr;else if(!volume.length||Number(volume.at(-1).time)<time)volume.push(vr)}
+  }
+  return{candles,volume}
+}
 function syncDerivatives(){
   if(!core)return;
   const oi=(chartV1?.open_interest?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.open_interest)})).filter(x=>x.time!=null&&Number.isFinite(x.value));
@@ -95,7 +104,7 @@ function bindZoneClick(){
   core.chart.subscribeClick(handler);zoneClickCleanup=()=>{try{core?.chart?.unsubscribeClick?.(handler)}catch{}}
 }
 function fitVisibleCandles(count=500){
-  const n=lastState?.candles?.length||0;if(!core?.chart?.timeScale||!n)return;const visible=Math.max(50,Math.min(1000,Number(count)||500));try{core.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,n-visible),to:n-1+5})}catch{}
+  const n=(lastState?.candles?.length||0)+(chartV1?.current_candle?.is_closed===false?1:0);if(!core?.chart?.timeScale||!n)return 0;const base=Math.max(50,Math.min(1000,Number(count)||500)),visible=innerWidth<=600?Math.min(base,300):innerWidth<=1000?Math.min(base,500):innerWidth>=1400?Math.min(n,Math.max(base,700)):Math.min(base,500);try{core.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,n-visible),to:n-1+5})}catch{}return visible
 }
 function bindViewportRefresh(){
   try{viewportCleanup?.()}catch{}viewportCleanup=null;const ts=core?.chart?.timeScale?.();if(!ts)return;
@@ -114,12 +123,12 @@ async function run(){
     const rs=await Promise.allSettled(jobs);if(rs[0].status!=='fulfilled')throw rs[0].reason;
     const analysis=rs[0].value,htf=rs[1]?.status==='fulfilled'?rs[1].value:null;chartV1=rs[2]?.status==='fulfilled'?rs[2].value:null;
     const smc=buildSmc(analysis,htf?.bias||null),liquidity=buildLiquidity(analysis,smc,tf),htfSmc=htf?buildSmc(htf,null):null,technical=TA.summarize({candles:analysis.candles,analysis,smc,liquidity}),classic=ST.analyze({candles:analysis.candles}),ictContext=buildIct({smc,liquidity,htfSmc,htfTf,tf,currentIndex:(analysis.candles||[]).length-1}),forexBook=FB.analyze({candles:analysis.candles,smc,liquidity,ictContext}),bookConfluence=BC.analyze({candles:analysis.candles,forexBook,classic});
-    const normalized=CD.normalizeCandles(analysis.candles||[]);indicatorCache={rsi:CD.rsiSeries(analysis.candles),macd:CD.macdSeries(analysis.candles),stoch:CD.stochRsiSeries(analysis.candles),kdj:CD.kdjSeries(analysis.candles),obv:CD.obvSeries(analysis.candles)};
+    const normalized=CD.normalizeCandles(analysis.candles||[]),display=displaySnapshot(normalized,chartV1);indicatorCache={rsi:CD.rsiSeries(analysis.candles),macd:CD.macdSeries(analysis.candles),stoch:CD.stochRsiSeries(analysis.candles),kdj:CD.kdjSeries(analysis.candles),obv:CD.obvSeries(analysis.candles)};
     try{viewportCleanup?.()}catch{}viewportCleanup=null;try{zoneClickCleanup?.()}catch{}zoneClickCleanup=null;registry?.disposeAll();core?.dispose();
-    core=CC.createUnifiedChart({container:$('unifiedChart'),library:window.LightweightCharts,preset:{id:'v5',panes:[]}});core.setData({...normalized,indicators:{}});
+    core=CC.createUnifiedChart({container:$('unifiedChart'),library:window.LightweightCharts,preset:{id:'v5',panes:[]}});core.setData({...display,indicators:{}});
     registry=CP.createPluginRegistry();registry.register(window.PulseStructurePlugin.createStructurePlugin({maxItems:10}));registry.register(window.PulseSmcPlugin.createSmcPlugin());if(window.PulseIctPlugin)registry.register(window.PulseIctPlugin.createIctPlugin());registry.register(window.PulseLiquidityPlugin.createLiquidityPlugin());registry.register(window.PulseVolumeProfilePlugin.createVolumeProfilePlugin());registry.register(window.PulseMovingAveragePlugin.createMovingAveragePlugin());registry.register(window.PulseDantePlugin.createDantePlugin());if(window.PulseSimpleTradingPlugin)registry.register(window.PulseSimpleTradingPlugin.createSimpleTradingPlugin());if(window.PulseForexBookPlugin)registry.register(window.PulseForexBookPlugin.createForexBookPlugin());if(window.PulseBookConfluencePlugin)registry.register(window.PulseBookConfluencePlugin.createBookConfluencePlugin());registry.mountAll(core);applyPluginVisibility();
     lastState={analysis,smc,liquidity,ictContext,technical,classic,forexBook,bookConfluence,chartV1,rawCandles:analysis.candles,candles:normalized.candles,dataApi:CD,timeframe:tf,tf,preset:currentPreset,maMode:'standard',viewportLevel:innerWidth<=620?'compact':'normal',htfTf,htfBias:stateText(htf?.bias||'neutral'),overlayFocus:Object.keys(overlays).find(k=>overlays[k])||'structure'};
-    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderZoneList(chartV1);bindZoneClick();fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);
+    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderZoneList(chartV1);bindZoneClick();const viewportCount=fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);if($('metaCandles')&&chartV1)$('metaCandles').textContent+=(viewportCount?' · 화면 '+viewportCount:'');
     const loaded=analysis.candles?.length||0,visible=chartV1?.chart?.visible_candle_count||Math.min(500,loaded),quality=chartV1?.data_quality?.status||'legacy';$('status').textContent=symbol+' · '+tf.toUpperCase()+' · 로드 '+loaded+' · 표시 '+visible+' · '+quality+(htfTf?' · HTF '+htfTf.toUpperCase():'');
     setState(chartV1?.data_quality?.status==='stale'||chartV1?.data_quality?.status==='invalid'?'api-degraded':'confirmed');
     $('snapshotLink').href='/mtf-snapshot-pro.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('ictTrainerLink').href='/ict-trainer.html?symbol='+encodeURIComponent(symbol);$('reportLink').href='/coin-report.html?symbol='+encodeURIComponent(symbol);$('danteLink').href='/dante-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('simpleTradingLink').href='/simple-trading-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('forexBookLink').href='/forex-book-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('bookConfluenceLink').href='/book-confluence-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);
