@@ -71836,7 +71836,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71860,7 +71860,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71884,7 +71884,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71908,7 +71908,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -71932,7 +71932,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71956,7 +71956,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -71980,7 +71980,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -72004,7 +72004,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72028,7 +72028,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72052,7 +72052,7 @@
       "state": "SAMPLE_INSUFFICIENT",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": "SAMPLE_INSUFFICIENT",
       "rankWeight": 0,
       "budget": {
@@ -72076,7 +72076,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72100,7 +72100,7 @@
       "state": "WAITING_FOR_MATCHES",
       "testCount": 1,
       "firstSeenAt": 1791236386788,
-      "lastSeenAt": 1791318642904,
+      "lastSeenAt": 1791331767721,
       "stopReason": null,
       "rankWeight": 0,
       "budget": {
@@ -72484,7 +72484,7 @@
     "researchNotes": [
       {
         "id": "RN-14VS5GH",
-        "at": 1791318642900,
+        "at": 1791331767718,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -72501,7 +72501,7 @@
       },
       {
         "id": "RN-0Z1L63V",
-        "at": 1791318642900,
+        "at": 1791331767718,
         "type": "HYPOTHESIS",
         "title": "가장 강한 관측 가설",
         "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
@@ -72528,7 +72528,7 @@
       },
       {
         "id": "RN-05ASK2S",
-        "at": 1791318642900,
+        "at": 1791331767718,
         "type": "IDEA",
         "title": "새 연구 아이디어 생성",
         "body": "돌연변이 12개 · 교배 1개. 실험 예산을 넘는 변형은 생성하지 않는다.",
@@ -78795,7 +78795,7 @@
       "notes": [
         {
           "id": "RN-14VS5GH",
-          "at": 1791318642900,
+          "at": 1791331767718,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 45개 · 성공 22개 · 실패 23개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -78812,7 +78812,7 @@
         },
         {
           "id": "RN-0Z1L63V",
-          "at": 1791318642900,
+          "at": 1791331767718,
           "type": "HYPOTHESIS",
           "title": "가장 강한 관측 가설",
           "body": "MACD + RSI · 표본 26개 · 성공률 65% · 반례 9개.",
@@ -78839,7 +78839,7 @@
         },
         {
           "id": "RN-05ASK2S",
-          "at": 1791318642900,
+          "at": 1791331767718,
           "type": "IDEA",
           "title": "새 연구 아이디어 생성",
           "body": "돌연변이 12개 · 교배 1개. 실험 예산을 넘는 변형은 생성하지 않는다.",
@@ -80953,7 +80953,7 @@
     "hypothesisGeneratorAccess": false
   },
   "referenceSampleCount": 23,
-  "exportedAt": 1791318642952,
+  "exportedAt": 1791331767809,
   "featureNames": [
     "scannerScore",
     "change24h",
