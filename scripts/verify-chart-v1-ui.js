@@ -1,10 +1,10 @@
 const assert=require('assert'),fs=require('fs');
-const html=fs.readFileSync('unified-chart.html','utf8'),js=fs.readFileSync('ui/chart/unified-chart-v5.js','utf8'),data=fs.readFileSync('ui/chart/chart-data.js','utf8'),core=fs.readFileSync('ui/chart/chart-core.js','utf8'),css=fs.readFileSync('ui/chart/unified-chart.css','utf8');
+const html=fs.readFileSync('unified-chart.html','utf8'),js=fs.readFileSync('ui/chart/unified-chart-v5.js','utf8'),data=fs.readFileSync('ui/chart/chart-data.js','utf8'),core=fs.readFileSync('ui/chart/chart-core.js','utf8'),css=fs.readFileSync('ui/chart/unified-chart.css','utf8'),micro=fs.readFileSync('ui/chart/plugins/microstructure-plugin.js','utf8'),vp=fs.readFileSync('ui/chart/plugins/volume-profile-plugin.js','utf8');
 for(const id of ['metaCandles','metaQuality','metaOi','metaFunding','zoneDetail','microTradeVp','microTradePoc','microSpread','microDepth','microWalls','microCancel','microLongLiq','microShortLiq','replayAt','runReplay','runBacktest','researchResult','alertsList','refreshAlerts','exportCsv','shareChart','savePng'])assert(html.includes('id="'+id+'"'),id);
-for(const d of ['oi','funding','liquidation'])assert(html.includes('data-derivative="'+d+'"'),d);
+for(const d of ['oi','funding','liquidation'])assert(html.includes('data-derivative="'+d+'"'),d);assert(html.includes('data-overlay="microstructure"'));assert(html.includes('microstructure-plugin.js'));
 assert(/<option selected>4h<\/option>/.test(html));
 for(const s of ['limit:800','visible:500','warmup:300','total:800','fitVisibleCandles','displaySnapshot','current_candle','bindZoneClick','renderZoneDetail','downloadCsv','shareChart','savePng','renderMicro','runReplay','runBacktest','loadAlerts','connectMarketStream','/ws/v1/market','analysis_events','liquidations','orderbook'])assert(js.includes(s),s);
 assert(data.includes('fetchChartV1'));assert(data.includes('/api/v1/chart/'));
-for(const s of ['setDerivativeData','setDerivativeVisibility',"name==='liquidation'"])assert(core.includes(s),s);
+for(const s of ['setDerivativeData','setDerivativeVisibility',"name==='liquidation'"])assert(core.includes(s),s);assert(micro.includes('LIQUIDATION HEAT'));assert(micro.includes('L2 WALL HEAT'));assert(vp.includes('trade_volume_profile'));
 for(const s of ['.chartMeta','.zoneInspector','.zoneDetail','.microPanel','.researchPanel','.alertsPanel'])assert(css.includes(s),s);
 console.log('chart v1 ui PASS');
