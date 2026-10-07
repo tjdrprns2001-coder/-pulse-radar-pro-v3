@@ -160,7 +160,7 @@ function scheduleChartBroTracker(){
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
-    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',chartbro:chartbroHealth}),{'Content-Type':'application/json; charset=utf-8'});
+    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
     const file=safeFile(u.pathname);
     if(!file||!fs.existsSync(file)||fs.statSync(file).isDirectory())return send(res,404,'Not Found',{'Content-Type':'text/plain; charset=utf-8'});
