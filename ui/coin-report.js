@@ -12,16 +12,39 @@ function renderLevelList(id,levels,empty){const el=$(id);clear(el);if(!levels?.l
 function renderIndicators(p){const el=$('proIndicators');clear(el);for(const tf of ['1h','4h','1d']){const m=p.timeframes?.[tf];if(!m?.available){el.append(row(tf.toUpperCase(),'확인 불가'));continue}const e=[20,50,100,200].map(n=>`E${n} ${m.ema?.[n]?.value==null?'-':fmt(m.ema[n].value)}`).join(' · ');el.append(row(tf.toUpperCase(),`${e} | RSI ${fmt(m.rsi14,1)} | MACD H ${fmt(m.macd?.hist,6)}`))}}
 function renderPro(){
  const p=report.professional;if(!p){$('proTldr').textContent='전문 분석 데이터 확인 불가';return}
- const j=p.judgement||{},s=p.levels?.supports?.[0],r=p.levels?.resistances?.[0],badge=$('proJudgement');badge.textContent=judgmentKo(j.state);badge.dataset.state=String(j.state||'neutral').toUpperCase();
+ const j=p.judgement||{},s=p.levels?.supports?.[0],r=p.levels?.resistances?.[0],badge=$('proJudgement');
+ badge.textContent=judgmentKo(j.state);badge.dataset.state=String(j.state||'neutral').toUpperCase();
  $('proTldr').textContent=`현재 ${fmt(p.currentPrice)} · 1H ${trendLabel(p.timeframes?.['1h']?.trend)}, 4H ${trendLabel(p.timeframes?.['4h']?.trend)}, 1D ${trendLabel(p.timeframes?.['1d']?.trend)}. 핵심 지지 ${zoneFmt(s)}, 핵심 저항 ${zoneFmt(r)}. 현재 판단은 ${judgmentKo(j.state)}이며, 판단 변경 조건은 ${j.changeCondition||'확인 불가'}입니다.`;
- const ms=$('proMarket');clear(ms);[['현재가',fmt(p.market?.currentPrice)],['24h',pctFmt(p.market?.change24hPct)],['7d',pctFmt(p.market?.change7dPct)],['24h 거래대금',p.market?.quoteVolume24h==null?'확인 불가':`${Number(p.market.quoteVolume24h).toLocaleString('en-US',{maximumFractionDigits:0})}`]].forEach(([k,v])=>{const d=document.createElement('div');d.className='proStat';const a=document.createElement('span');a.textContent=k;const b=document.createElement('b');b.textContent=v;d.append(a,b);ms.append(d)});
+ const ms=$('proMarket');clear(ms);
+ [['현재가',fmt(p.market?.currentPrice)],['24h',pctFmt(p.market?.change24hPct)],['7d',pctFmt(p.market?.change7dPct)],['24h 거래대금',p.market?.quoteVolume24h==null?'확인 불가':Number(p.market.quoteVolume24h).toLocaleString('en-US',{maximumFractionDigits:0})+' USD']].forEach(([k,v])=>{const d=document.createElement('div');d.className='proStat';const a=document.createElement('span');a.textContent=k;const b=document.createElement('b');b.textContent=v;d.append(a,b);ms.append(d)});
  renderProTf('proTf1h',p.timeframes?.['1h']);renderProTf('proTf4h',p.timeframes?.['4h']);renderProTf('proTf1d',p.timeframes?.['1d']);
  renderLevelList('proSupports',p.levels?.supports,'지지 구간 확인 불가');renderLevelList('proResistances',p.levels?.resistances,'저항 구간 확인 불가');renderIndicators(p);
- const fp=$('proFibPivot');clear(fp);if(p.fibonacci?.levels){fp.append(row('Fib 스윙',`${fmt(p.fibonacci.low?.price)} → ${fmt(p.fibonacci.high?.price)}`));for(const k of['23.6','38.2','50','61.8','78.6'])fp.append(row(`Fib ${k}%`,fmt(p.fibonacci.levels[k])))}else fp.append(row('Fibonacci','확인 불가'));if(p.pivot){for(const k of['p','s1','s2','s3','r1','r2','r3'])fp.append(row(k.toUpperCase(),fmt(p.pivot[k])))}else fp.append(row('Pivot','확인 불가'));
- const d=$('proDerivatives'),dv=p.derivatives||{};clear(d);d.append(row('OI 1H',pctFmt(dv.oi1hPct)),row('OI 4H',pctFmt(dv.oi4hPct)),row('OI 24H',pctFmt(dv.oi24hPct)),row('Funding',pctFmt(dv.fundingPct,4)),row('Taker 1H',dv.taker1hRatio==null?'확인 불가':fmt(dv.taker1hRatio,3)),row('전체 Long/Short',dv.globalLongShortRatio==null?'확인 불가':fmt(dv.globalLongShortRatio,3)),row('Top Position L/S',dv.topTraderPositionRatio==null?'확인 불가':fmt(dv.topTraderPositionRatio,3)),row('해석',dv.oiInterpretation||'확인 불가'));
- const rs=$('proRelative'),rv=p.relativeStrength||{};clear(rs);rs.append(row('DOGE/대상 24H',pctFmt(rv.asset24hPct)),row('BTC 24H',pctFmt(rv.btc24hPct)),row('ETH 24H',pctFmt(rv.eth24hPct)),row('BTC 대비 24H',pctFmt(rv.vsBtc24hPct)),row('ETH 대비 24H',pctFmt(rv.vsEth24hPct)),row('BTC 대비 7D',pctFmt(rv.vsBtc7dPct)),row('ETH 대비 7D',pctFmt(rv.vsEth7dPct)));
- const sg=$('proScenarios');clear(sg);for(const [key,title] of[['bullish','강세'],['neutral','중립'],['bearish','약세']]){const x=p.scenarios?.[key]||{},box=document.createElement('div');box.className=`scenario ${key}`;const h=document.createElement('b');h.textContent=title;const q=document.createElement('p');q.textContent=key==='neutral'?`박스 ${fmt(x.boxLow)} ~ ${fmt(x.boxHigh)} · ${x.reason||''}`:`${x.trigger||''} · 다음 ${x.next||'-'} · 무효화 ${x.invalidatedBy||'-'}${x.volumeCondition?' · '+x.volumeCondition:''}`;box.append(h,q);sg.append(box)}
- const risk=$('proRisk');clear(risk);risk.append(row('현재 판단',judgmentKo(j.state)),row('판단 변경',j.changeCondition||'확인 불가'),row('4H 변동성',p.risk?.volatility4hPct==null?'확인 불가':`${fmt(p.risk.volatility4hPct,2)}%`),row('레버리지 과밀',p.risk?.leverageCrowding==null?'확인 불가':p.risk.leverageCrowding?'주의':'뚜렷하지 않음'),row('데이터 경고',(p.risk?.dataWarnings||[]).join(' · ')||'없음'))
+ const fp=$('proFibPivot');clear(fp);
+ if(p.fibonacci?.levels){fp.append(row('Fib 스윙',`${fmt(p.fibonacci.low?.price)} → ${fmt(p.fibonacci.high?.price)}`));for(const k of['23.6','38.2','50','61.8','78.6'])fp.append(row(`Fib ${k}%`,fmt(p.fibonacci.levels[k])))}else fp.append(row('Fibonacci','확인 불가'));
+ if(p.pivot){for(const k of['p','s1','s2','s3','r1','r2','r3'])fp.append(row(k.toUpperCase(),fmt(p.pivot[k])))}else fp.append(row('Pivot','확인 불가'));
+ const d=$('proDerivatives'),dv=p.derivatives||{};clear(d);
+ const statusKo={data_normal:'정상',partial_venue_data:'일부 거래소만 가능',provider_data_unavailable:'지원되지만 데이터 없음',unsupported:'지원 안 됨',query_error:'조회 오류',unknown:'확인 불가'}[dv.status]||'확인 불가';
+ const usd=v=>v==null?'확인 불가':Number(v).toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+ d.append(
+  row('파생상품 지원',dv.derivativesSupported==null?'확인 불가':dv.derivativesSupported?'예':'아니오'),
+  row('실제 데이터',dv.dataAvailable==null?'확인 불가':dv.dataAvailable?'있음':'현재 제공되지 않음'),
+  row('상태',statusKo),
+  row('지원 거래소',(dv.supportedVenues||[]).join(' · ')||'확인 불가'),
+  row('값 제공 거래소',(dv.dataVenues||[]).join(' · ')||'없음'),
+  row('통합 OI USD',usd(dv.openInterestUsd)),
+  row('OI 1H',pctFmt(dv.oi1hPct)),row('OI 4H',pctFmt(dv.oi4hPct)),row('OI 24H',pctFmt(dv.oi24hPct)),
+  row('대표 Funding',dv.fundingPct==null?'확인 불가':pctFmt(dv.fundingPct,4)+' / '+(dv.fundingIntervalHours==null?'주기 확인 불가':fmt(dv.fundingIntervalHours,1)+'h')),
+  row('통합 Funding 8H 환산',pctFmt(dv.funding8hPct,4)),
+  row('Taker 1H',dv.taker1hRatio==null?'확인 불가':fmt(dv.taker1hRatio,3)),
+  row('전체 Long/Short',dv.globalLongShortRatio==null?'확인 불가':fmt(dv.globalLongShortRatio,3)),
+  row('Top Position L/S',dv.topTraderPositionRatio==null?'확인 불가':fmt(dv.topTraderPositionRatio,3)),
+  row('추정값 사용','아니오'),row('해석',dv.oiInterpretation||'확인 불가')
+ );
+ for(const v of(dv.venues||[])){const bits=[v.status||'unknown'];if(v.openInterestUsd!=null)bits.push('OI '+usd(v.openInterestUsd));if(v.fundingRatePct!=null)bits.push('Funding '+pctFmt(v.fundingRatePct,4)+(v.fundingIntervalHours!=null?'/'+fmt(v.fundingIntervalHours,1)+'h':''));if(v.queryError)bits.push('오류 '+v.queryError);d.append(row(v.venue,bits.join(' · ')))}
+ const rs=$('proRelative'),rv=p.relativeStrength||{};clear(rs);rs.append(row('대상 24H',pctFmt(rv.asset24hPct)),row('BTC 24H',pctFmt(rv.btc24hPct)),row('ETH 24H',pctFmt(rv.eth24hPct)),row('BTC 대비 24H',pctFmt(rv.vsBtc24hPct)),row('ETH 대비 24H',pctFmt(rv.vsEth24hPct)),row('BTC 대비 7D',pctFmt(rv.vsBtc7dPct)),row('ETH 대비 7D',pctFmt(rv.vsEth7dPct)));
+ const sg=$('proScenarios');clear(sg);
+ for(const [key,title] of[['bullish','강세'],['neutral','중립'],['bearish','약세']]){const x=p.scenarios?.[key]||{},box=document.createElement('div');box.className=`scenario ${key}`;const h=document.createElement('b');h.textContent=title;const q=document.createElement('p');q.textContent=key==='neutral'?`박스 ${fmt(x.boxLow)} ~ ${fmt(x.boxHigh)} · ${x.reason||''}`:`${x.trigger||''} · 다음 ${x.next||'-'} · 무효화 ${x.invalidatedBy||'-'}${x.volumeCondition?' · '+x.volumeCondition:''}`;box.append(h,q);sg.append(box)}
+ const risk=$('proRisk');clear(risk);risk.append(row('현재 판단',judgmentKo(j.state)),row('판단 변경',j.changeCondition||'확인 불가'),row('4H 변동성',p.risk?.volatility4hPct==null?'확인 불가':`${fmt(p.risk.volatility4hPct,2)}%`),row('레버리지 과밀',p.risk?.leverageCrowding==null?'확인 불가':p.risk.leverageCrowding?'주의':'뚜렷하지 않음'),row('데이터 경고',(p.risk?.dataWarnings||[]).join(' · ')||'없음'));
 }
 function renderSmart(){const st=$('structure');clear(st);st.append(row('구조 신호',text(report.smartMoney?.structure?.type||'none')),row('구조 기준 가격',fmt(report.smartMoney?.structure?.price)));const sm=$('smartMoney');clear(sm);const ob=report.smartMoney?.orderBlockLike||{};sm.append(row('수요/방어 구간',ob.demand?.map(x=>fmt(x)).join(' ~ ')||'-'),row('공급/매도 구간',ob.supply?.map(x=>fmt(x)).join(' ~ ')||'-'));for(const f of report.smartMoney?.fvg||[])sm.append(row(`${f.type==='bullish'?'상승':'하락'} FVG`,`${fmt(f.from)} ~ ${fmt(f.to)}`));for(const l of report.smartMoney?.liquidity||[])sm.append(row(l.type==='buy_side'?'상단 유동성':'하단 유동성',`${fmt(l.price)} · ${l.touches}회 근접`))}
 function priceMapper(candles,H,pad){const lo=Math.min(...candles.map(x=>x.l)),hi=Math.max(...candles.map(x=>x.h)),range=hi-lo||1;return p=>pad+(hi-p)/range*(H-pad*2)}
