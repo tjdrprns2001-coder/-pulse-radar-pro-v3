@@ -41,7 +41,7 @@
     "test:coin-report-core": "node scripts/verify-coin-report-core.js",
     "test:pro-coin-analysis": "node scripts/verify-pro-coin-analysis.js",
     "test:modular-analysis-pipeline": "node scripts/verify-modular-analysis-pipeline.js",
-    "test:chart-v1": "node scripts/verify-chart-v1.js && node scripts/verify-chart-v1-api.js && node scripts/verify-chart-v1-ui.js",
+    "test:chart-v1": "node scripts/verify-chart-v1.js && node scripts/verify-chart-v1-api.js && node scripts/verify-chart-v1-ui.js && npm run test:chart-v1-live",
     "test:coin-report-api": "node scripts/verify-coin-report-api.js",
     "test:coin-report-ui": "node scripts/verify-coin-report-ui.js",
     "test:coin-report-wiring": "node scripts/verify-coin-report-wiring.js",
@@ -181,10 +181,12 @@
     "test:auto-chart-lab": "node scripts/verify-auto-chart-lab.js",
     "test:auto-chart-transport": "node scripts/verify-auto-chart-transport.js",
     "test:mtf-market-analyzer": "node --test lib/coin-scan/mtf-market-analyzer.test.js",
-    "test:chartbro": "node --test tests/chartbro/*.test.js"
+    "test:chartbro": "node --test tests/chartbro/*.test.js",
+    "test:chart-v1-live": "node scripts/verify-chart-v1-live.js && node scripts/verify-chart-v1-replay.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0",
-    "pg": "8.16.3"
+    "pg": "8.16.3",
+    "ws": "8.18.0"
   }
 }
