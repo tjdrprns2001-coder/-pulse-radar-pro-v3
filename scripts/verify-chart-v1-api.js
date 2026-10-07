@@ -1,5 +1,5 @@
 const assert=require('assert');
-const handler=require('../api/v1.js');
+const handler=require('../handlers/v1.js');
 function makeRes(){let code=200,body=null;return{status(n){code=n;return this},json(v){body=v;return v},get code(){return code},get body(){return body}}}
 const service={
   async searchAssets(){return{data:[{asset_id:'asset:DOGE',symbol:'DOGE'}],pagination:{limit:20,next_cursor:null}}},
