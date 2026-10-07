@@ -31,7 +31,7 @@ const indexRoutes=new Set([
   'backtest','calibration-freeze','calibration-health','detail','historical-structure-study','htf',
   'independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
   'dante-cloud','dante-backtest','structure','temporal-features','trendline-study','signal-alerts','signal-backfill',
-  'signal-calibration','signal-health','signal-performance','learning-ai','ignition-results','chartbro-research','chart-snapshots','chartbro'
+  'signal-calibration','signal-health','signal-performance','learning-ai','ignition-results','chartbro-research','chart-snapshots','derivatives-capability','chartbro'
 ]);
 
 function contentType(file){
@@ -107,7 +107,7 @@ async function handleApi(req,res,u){
     let handler;
     if(name==='v1'||name.startsWith('v1/')){
       apiReq.query.routePath=name==='v1'?String(apiReq.query.path||''):name.slice(3);
-      handler=require(path.join(ROOT,'api','v1.js'));
+      handler=require(path.join(ROOT,'handlers','v1.js'));
     }else if(name==='index'){
       handler=require(path.join(ROOT,'api','index.js'));
     }else if(indexRoutes.has(name)){
