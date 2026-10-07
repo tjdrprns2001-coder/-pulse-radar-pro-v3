@@ -72,9 +72,10 @@ function displaySnapshot(normalized,data){
 }
 function syncDerivatives(){
   if(!core)return;
-  const oi=(chartV1?.open_interest?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.open_interest)})).filter(x=>x.time!=null&&Number.isFinite(x.value));
-  const funding=(chartV1?.funding?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.funding_rate_pct)})).filter(x=>x.time!=null&&Number.isFinite(x.value));
-  const liquidation=(chartV1?.liquidations?.series||[]).map(x=>({time:toSec(x.event_time),value:Number(x.notional_usd)*(String(x.side)==='long'?-1:1)})).filter(x=>x.time!=null&&Number.isFinite(x.value));
+  const latest=(rows=[])=>[...new Map(rows.map(x=>[x.time,x])).values()].sort((a,b)=>a.time-b.time);
+  const oi=latest((chartV1?.open_interest?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.open_interest)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
+  const funding=latest((chartV1?.funding?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.funding_rate_pct)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
+  const liqMap=new Map();for(const x of chartV1?.liquidations?.series||[]){const time=toSec(x.event_time),v=Number(x.notional_usd)*(String(x.side)==='long'?-1:1);if(time!=null&&Number.isFinite(v))liqMap.set(time,(liqMap.get(time)||0)+v)}const liquidation=[...liqMap.entries()].sort((a,b)=>a[0]-b[0]).map(([time,value])=>({time,value}));
   if(oi.length)core.setDerivativeData?.('oi',oi);
   if(funding.length)core.setDerivativeData?.('funding',funding);
   if(liquidation.length)core.setDerivativeData?.('liquidation',liquidation);
