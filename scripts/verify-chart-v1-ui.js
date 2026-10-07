@@ -1,6 +1,10 @@
 const assert=require('assert'),fs=require('fs');
 const html=fs.readFileSync('unified-chart.html','utf8'),js=fs.readFileSync('ui/chart/unified-chart-v5.js','utf8'),data=fs.readFileSync('ui/chart/chart-data.js','utf8'),core=fs.readFileSync('ui/chart/chart-core.js','utf8'),css=fs.readFileSync('ui/chart/unified-chart.css','utf8');
-assert(html.includes('id="metaCandles"'));assert(html.includes('id="metaQuality"'));assert(html.includes('id="metaOi"'));assert(html.includes('id="metaFunding"'));assert(html.includes('id="zoneDetail"'));assert(html.includes('data-derivative="oi"'));assert(html.includes('data-derivative="funding"'));assert(html.includes('id="exportCsv"'));assert(html.includes('id="shareChart"'));assert(html.includes('id="savePng"'));assert(/<option selected>4h<\/option>/.test(html));
-assert(js.includes('limit:800'));assert(js.includes('visible:500'));assert(js.includes('warmup:300'));assert(js.includes('total:800'));assert(js.includes('fitVisibleCandles'));assert(js.includes('displaySnapshot'));assert(js.includes('current_candle'));assert(js.includes('bindZoneClick'));assert(js.includes('renderZoneDetail'));assert(js.includes('downloadCsv'));assert(js.includes('shareChart'));assert(js.includes('savePng'));
-assert(data.includes('fetchChartV1'));assert(data.includes('/api/v1/chart/'));assert(core.includes('setDerivativeData'));assert(core.includes('setDerivativeVisibility'));assert(css.includes('.chartMeta'));assert(css.includes('.zoneInspector'));assert(css.includes('.zoneDetail'));
+for(const id of ['metaCandles','metaQuality','metaOi','metaFunding','zoneDetail','microTradeVp','microTradePoc','microSpread','microDepth','microWalls','microCancel','microLongLiq','microShortLiq','replayAt','runReplay','runBacktest','researchResult','alertsList','refreshAlerts','exportCsv','shareChart','savePng'])assert(html.includes('id="'+id+'"'),id);
+for(const d of ['oi','funding','liquidation'])assert(html.includes('data-derivative="'+d+'"'),d);
+assert(/<option selected>4h<\/option>/.test(html));
+for(const s of ['limit:800','visible:500','warmup:300','total:800','fitVisibleCandles','displaySnapshot','current_candle','bindZoneClick','renderZoneDetail','downloadCsv','shareChart','savePng','renderMicro','runReplay','runBacktest','loadAlerts','connectMarketStream','/ws/v1/market','analysis_events','liquidations','orderbook'])assert(js.includes(s),s);
+assert(data.includes('fetchChartV1'));assert(data.includes('/api/v1/chart/'));
+for(const s of ['setDerivativeData','setDerivativeVisibility',"name==='liquidation'"])assert(core.includes(s),s);
+for(const s of ['.chartMeta','.zoneInspector','.zoneDetail','.microPanel','.researchPanel','.alertsPanel'])assert(css.includes(s),s);
 console.log('chart v1 ui PASS');
