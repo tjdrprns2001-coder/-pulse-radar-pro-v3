@@ -1,5 +1,5 @@
 const assert=require('assert');
-const {createDerivativesCapabilityProvider,historyDeltas,normalizeFunding,statusFor}=require('../lib/coin-scan/derivatives-capability.js');
+const {createDerivativesCapabilityProvider,historyDeltas,normalizeFunding,statusFor,availabilityStatus}=require('../lib/coin-scan/derivatives-capability.js');
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 
 function ok(body){return{ok:true,status:200,async json(){return body}}}
@@ -24,12 +24,15 @@ function mockFetch(url){
   assert(Number.isFinite(d.oi1hPct));assert(Number.isFinite(d.oi4hPct));assert(Number.isFinite(d.oi24hPct));
   const f=normalizeFunding(.0001,8);assert.equal(f.fundingRatePct,.01);assert.equal(f.funding8hEquivalentPct,.01);
   assert.equal(statusFor({supported:true,openInterest:null,fundingRatePct:null}),'provider_data_unavailable');
+  assert.equal(availabilityStatus({derivativesSupported:true,dataAvailable:false,status:'provider_data_unavailable'}),'supported_but_empty');
+  assert.equal(availabilityStatus({derivativesSupported:false,dataAvailable:false,status:'unsupported'}),'not_supported');
 
   const p=createDerivativesCapabilityProvider({fetchImpl:mockFetch,now:()=>99999999,timeoutMs:1000});
   const r=await p.probe('DOGEUSDT');
   assert.equal(r.derivativesSupported,true);
   assert.equal(r.dataAvailable,true);
   assert.equal(r.status,'partial_venue_data');
+  assert.equal(r.availabilityStatus,'partial');
   assert(r.supportedVenues.includes('BYBIT'));
   assert(r.supportedVenues.includes('OKX'));
   assert(r.dataVenues.includes('BYBIT'));
@@ -53,5 +56,6 @@ function mockFetch(url){
   assert.equal(reportDeriv.representativeSources.funding,'BYBIT');
   assert.equal(reportDeriv.representativeSources.openInterest,'BYBIT');
   assert.equal(reportDeriv.source,'multi-venue derivatives');
+  assert.equal(reportDeriv.availabilityStatus,'partial');
   console.log('derivatives capability PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
