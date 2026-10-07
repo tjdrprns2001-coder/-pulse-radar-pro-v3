@@ -22,4 +22,12 @@ assert.equal(r.relativeStrength.vsBtc24hPct,-1.5);
 assert(!r.timeframes['1h'].candles.some(x=>x.v===999999),'in-progress candle must be excluded');
 assert(['bullish','bearish','neutral'].includes(r.judgement.state));
 assert(r.scenarios.bullish&&r.scenarios.bearish&&r.scenarios.neutral);
+
+const missing=A.analyzeProfessional({symbol:'MISSUSDT',frames,nowMs:now,market:{currentPrice:.34},derivatives:{globalLongShortRatio:null,topTraderPositionRatio:undefined,openInterest:null,v2Profile:{oi24hPct:null,taker1h:[{ratio:null}]}}});
+assert.equal(missing.derivatives.globalLongShortRatio,null,'null long/short must stay unavailable');
+assert.equal(missing.derivatives.topTraderPositionRatio,null,'undefined top trader ratio must stay unavailable');
+assert.equal(missing.derivatives.openInterest,null,'null OI must stay unavailable');
+assert.equal(missing.derivatives.taker1hRatio,null,'null taker ratio must stay unavailable');
+if(r.levels.resistances.length>1)assert(r.levels.resistances[0].mid<=r.levels.resistances[1].mid,'resistances must be ordered nearest-up first');
+if(r.levels.supports.length>1)assert(r.levels.supports[0].mid>=r.levels.supports[1].mid,'supports must be ordered nearest-down first');
 console.log('professional coin analysis PASS');
