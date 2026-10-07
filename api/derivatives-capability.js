@@ -7,7 +7,15 @@ module.exports=async function handler(req,res,ctx={}){
  if(req?.method&&req.method!=='GET')return res.status(405).json({status:'error',error:'method not allowed'});
  const p=ctx.provider||getProvider(),q=req?.query||{};
  try{
-  if(String(q.mode||'').toLowerCase()==='universe')return res.status(200).json(await p.getDerivativesSupportUniverse());
+  const mode=String(q.mode||'').toLowerCase();
+  if(mode==='universe')return res.status(200).json(await p.getDerivativesSupportUniverse());
+  if(mode==='scan'){
+   const universe=await p.getDerivativesSupportUniverse(),offset=Math.max(0,Math.floor(Number(q.offset)||0)),limit=Math.max(1,Math.min(50,Math.floor(Number(q.limit)||25))),slice=(universe.items||[]).slice(offset,offset+limit),symbols=slice.map(x=>x.symbol);
+   const items=await p.getDerivativesCapabilities(symbols,{concurrency:Math.max(1,Math.min(4,Number(q.concurrency)||4))});
+   const counts={available:0,partial:0,supported_but_empty:0,not_supported:0,mapping_missing:0,query_error:0};
+   for(const x of items){const k=x.availabilityStatus||'query_error';counts[k]=(counts[k]||0)+1}
+   return res.status(200).json({status:'ok',mode:'scan',universeCount:universe.count,offset,limit,returned:items.length,nextOffset:offset+items.length<universe.count?offset+items.length:null,counts,universeErrors:universe.errors||[],items});
+  }
   const many=String(q.symbols||'').split(',').map(cleanSymbol).filter(Boolean).slice(0,50);
   if(many.length){
    const items=await p.getDerivativesCapabilities(many,{concurrency:Math.min(4,Number(q.concurrency)||4)});
