@@ -23,7 +23,7 @@ const provider={
   async getKlines(_s,_tf,n){return rowsWithSource(master.slice(-n),'AUTO_MOCK')},
   async getKlinesAt(_s,_tf,{endTime,rows}){return rowsWithSource(master.filter(r=>r[0]<=endTime).slice(-rows),'HISTORY_MOCK')},
   async getSpotUniverse(){return{symbols:[{symbol:'DOGEUSDT',baseAsset:'DOGE',quoteAsset:'USDT',status:'TRADING'}]}},
-  async getDerivativesSupportUniverse(){return{count:1,items:[{symbol:'DOGEUSDT',baseAsset:'DOGE',supportedVenues:['BYBIT']}],errors:[]}},
+  async getDerivativesSupportUniverse(){return{count:2,items:[{symbol:'1000000BABYDOGEUSDT',baseAsset:'1000000BABYDOGE',supportedVenues:['BYBIT']},{symbol:'DOGEUSDT',baseAsset:'DOGE',supportedVenues:['BYBIT']}],errors:[]}},
   async getCoinReportDerivatives(){return{derivativesSupported:true,dataAvailable:true,status:'data_normal',availabilityStatus:'available',supportedVenues:['BYBIT'],dataVenues:['BYBIT'],openInterest:1024000,openInterestUsd:95000,fundingPct:.005,funding8hPct:.005,fundingIntervalHours:8,capability:{aggregate:{openInterestUsd:95000,oi1hPct:.2,oi4hPct:.7,oi24hPct:2.5,funding8hPct:.005}},v2Profile:{rows:oiRows,oi1hPct:.2,oi4hPct:.7,oi24hPct:2.5},representativeSources:{funding:'BYBIT',openInterest:'BYBIT'}}},
   async getExecutionContext(){return{futures:{available:true,venue:'BYBIT',bid:.0924,ask:.0926,mid:.0925,spreadBps:2.16,depthUsd:{bid10bps:200000,ask10bps:180000,bid25bps:500000,ask25bps:450000},slippage:{}}}},
   async getV2OiProfile(){return{rows:oiRows,oi1hPct:.2,oi4hPct:.7,oi24hPct:2.5}},
@@ -32,7 +32,7 @@ const provider={
 (async()=>{
   assert.equal(profileFor('4h',{total:99999}).total,2000);
   const service=createChartV1Service({provider,now:()=>NOW+STEP/2});
-  const assets=await service.searchAssets('DOGE',20);assert.equal(assets.data[0].asset_id,'asset:DOGE');
+  const assets=await service.searchAssets('DOGE',20);assert.equal(assets.data[0].asset_id,'asset:DOGE','exact symbol must rank before BABYDOGE-style partial matches');
   const markets=await service.getMarkets('DOGE');assert(markets.data.some(x=>x.instrument_id==='spot:DOGEUSDT'));assert(markets.data.some(x=>x.instrument_id==='perp:DOGEUSDT'));
   const candles=await service.getCandles('spot:DOGEUSDT',{timeframe:'4h',limit:800,visible:500,warmup:300,includeWarmup:true});
   assert.equal(candles.data.candles.length,800);assert.equal(candles.data.visible_range.count,500);assert.equal(candles.data.warmup_range.count,300);
@@ -44,6 +44,6 @@ const provider={
   assert(Array.isArray(chart.zones));assert(chart.zones.every(z=>['high','medium','limited','unknown'].includes(z.confidence)));assert(chart.zones.every(z=>z.asset_id==='asset:DOGE'));
   assert(chart.structure_events.every(e=>e.confirmed_at>=e.event_time));assert(chart.structure_events.every(e=>e.repaint_state==='confirmed'));
   assert(['valid','needs_confirmation','failed','fakeout_candidate','insufficient_data'].includes(chart.breakout.up.state));
-  const q=await service.quality('DOGE',{timeframe:'4h',total:800});assert.equal(q.data.coverage.open_interest,true);assert.equal(q.data.coverage.funding,true);assert.equal(q.data.coverage.liquidations,false);
+  const q=await service.quality('DOGE',{timeframe:'4h',total:800});assert.equal(q.data.coverage.open_interest,true);assert.equal(q.data.coverage.funding,true);assert.equal(q.data.coverage.liquidations,false);assert.equal(q.data.confidence,'medium','missing trade-level profile/liquidations must cap confidence below high');
   console.log('chart v1 service PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
