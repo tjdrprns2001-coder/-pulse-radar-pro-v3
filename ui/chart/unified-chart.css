@@ -17,3 +17,20 @@
 .microPanel,.researchPanel,.alertsPanel{margin-top:8px;padding:12px}.microPanel h2,.researchPanel h2,.alertsPanel h2{font-size:13px;margin:0 0 4px;color:#9fc2e0}.microGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.microGrid>div{min-width:0;background:#08131e;border:1px solid #1d3247;border-radius:10px;padding:8px}.microGrid span{display:block;color:#7188a0;font-size:7px}.microGrid b{display:block;margin-top:3px;color:#dce8f4;font-size:9px;overflow-wrap:anywhere}.microWarning{margin:8px 0 0;color:#8299ae;font-size:8px;line-height:1.45}.researchControls{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:7px;margin-top:10px}.researchControls input{min-width:0;border:1px solid #22354d;background:#0b1420;color:#fff;border-radius:9px;padding:8px 10px}.researchResult{margin-top:9px;background:#08131e;border:1px solid #1d3247;border-radius:10px;padding:9px;min-height:48px;font-size:9px;line-height:1.55;color:#c7d7e7}.researchResult .rrGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.researchResult .rrGrid>div{background:#0a1724;border-radius:8px;padding:7px}.researchResult span{color:#7890a6;font-size:7px;display:block}.researchResult b{font-size:9px}.alertsList{display:grid;gap:6px;margin-top:10px}.alertRow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:#08131e;border:1px solid #1d3247;border-radius:9px;padding:8px}.alertRow .alertType{font-size:8px;font-weight:800;color:#d8e7f6}.alertRow .alertBody{font-size:8px;color:#90a7bc;overflow-wrap:anywhere}.alertRow time{font-size:7px;color:#6f879d}.ucBadge[data-live="live"]{border-color:#2f8f6b;color:#75dfb2}.ucBadge[data-live="connecting"],.ucBadge[data-live="reconnect_wait"]{border-color:#967e39;color:#eacb70}.ucBadge[data-live="unavailable"],.ucBadge[data-live="error"]{border-color:#9c4956;color:#ff9cab}
 @media(max-width:900px){.microGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.researchResult .rrGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.microGrid{grid-template-columns:1fr 1fr}.researchControls{grid-template-columns:1fr 1fr}.researchControls input{grid-column:1/-1;font-size:14px}.alertsPanel .zoneInspectorHead{display:flex}.alertRow{grid-template-columns:1fr auto}.alertRow .alertType{grid-column:1/2}.alertRow .alertBody{grid-column:1/-1;grid-row:2}}
+
+/* Closed-candle MTF strip: light DOM and readable mobile cards */
+.mtfPanel{padding:11px 12px;margin:0 0 8px}
+.mtfHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.mtfHeader strong{display:block;color:#dce9f7;font-size:12px}
+.mtfHeader span{display:block;color:#8198b0;font-size:9px;margin-top:4px;line-height:1.45}
+.mtfHeader b{flex:none;font-size:10px;color:#9fc2e0;border:1px solid #274663;padding:5px 8px;border-radius:8px}
+.mtfFrames{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:10px}
+.mtfItem{border:1px solid #274058;border-radius:10px;background:#0a1726;padding:9px;min-width:0;display:flex;flex-direction:column;gap:5px}
+.mtfItem strong{font-size:12px;color:#b4cce2}.mtfItem b{font-size:11px;color:#b1bfcb}
+.mtfItem[data-stage="bullish_alignment"] b{color:#67dfb2}
+.mtfItem[data-stage="bearish_alignment"] b{color:#ff899c}
+.mtfItem small{font-size:9px;line-height:1.4;color:#c1d0e0;overflow-wrap:anywhere}
+.mtfItem span{font-size:8px;color:#8498ae;line-height:1.35;overflow-wrap:anywhere}
+.mtfItem[data-status="unavailable"],.mtfItem[data-status="invalid"]{border-style:dashed;opacity:.75}
+@media(max-width:1000px){.mtfFrames{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.mtfPanel{padding:9px}.mtfHeader{flex-wrap:wrap}.mtfHeader span{font-size:10px}.mtfFrames{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.mtfItem{padding:8px}.mtfItem strong{font-size:12px}.mtfItem b{font-size:11px}.mtfItem small{font-size:9px}.mtfItem span{font-size:8px}.ucToolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.ucToolbar input{grid-column:1/-1}.ucToolbar select{grid-column:1/-1}.ucToolbar .ucBtn{min-height:38px;font-size:11px}.ucChart{touch-action:pan-y}}
