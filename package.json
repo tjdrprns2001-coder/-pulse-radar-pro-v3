@@ -182,7 +182,7 @@
     "test:auto-chart-transport": "node scripts/verify-auto-chart-transport.js",
     "test:mtf-market-analyzer": "node --test lib/coin-scan/mtf-market-analyzer.test.js",
     "test:chartbro": "node --test tests/chartbro/*.test.js",
-    "test:chart-v1-live": "node scripts/verify-chart-v1-live.js && node scripts/verify-chart-v1-replay.js && node scripts/verify-chart-historical-fallback.js && node scripts/verify-chart-postgres-readiness.js"
+    "test:chart-v1-live": "node scripts/verify-chart-v1-live.js && node scripts/verify-chart-v1-replay.js && node scripts/verify-chart-historical-fallback.js && node scripts/verify-chart-postgres-readiness.js && node scripts/verify-chart-mtf.js"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0",
