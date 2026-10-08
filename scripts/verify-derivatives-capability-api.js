@@ -1,5 +1,5 @@
 const assert=require('assert');
-const handler=require('../api/derivatives-capability.js');
+const handler=require('../handlers/derivatives-capability.js');
 function res(){let code=200,body=null;return{status(n){code=n;return this},json(v){body=v;return v},get code(){return code},get body(){return body}}}
 (async()=>{
  const provider={
