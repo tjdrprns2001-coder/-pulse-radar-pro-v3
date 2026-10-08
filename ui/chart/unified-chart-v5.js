@@ -83,6 +83,33 @@ async function loadMtf(symbol,token){
  try{const res=await fetch('/api/v1/assets/'+encodeURIComponent(assetBase(symbol))+'/analysis/mtf',{cache:'no-store'});const body=await res.json();if(!res.ok||body.error)throw Error(body.error?.message||'MTF unavailable');if(token!==mtfToken)return;renderMtf(body.data)}
  catch(e){if(token===mtfToken)renderMtf(null,e)}
 }
+function renderFlow(report,error=null){
+ const root=$('flowGrid'),badge=$('flowStatus'),reasons=$('flowReasons');if(!root||!badge)return;
+ root.textContent='';
+ if(error||!report){badge.textContent='조회 제한';if(reasons)reasons.textContent='현물·선물 동기화 자료 조회 실패. 차트 본체 분석에는 영향이 없습니다.';return}
+ const f=report.spot_futures||{},oi=report.open_interest||{},fund=report.funding||{},p=report.candidate||{},feat=p.features||{};
+ const label={pre:'PRE · 관찰',early_ignition:'초기 점화 후보',needs_spot_confirmation:'현물 확인 대기',watch:'대기',extended:'과열·추격 제외',data_unreliable:'데이터 신뢰 부족',insufficient_data:'데이터 부족'};
+ badge.textContent=(label[p.stage]||'관찰')+' · '+(p.type||'-');
+ badge.dataset.stage=p.stage||'watch';
+ const item=(name,value,description)=>{const d=document.createElement('div');d.className='flowItem';const h=document.createElement('span');h.textContent=name;const b=document.createElement('strong');b.textContent=value;const s=document.createElement('small');s.textContent=description||'';d.append(h,b,s);root.append(d)};
+ item('확정 시각 일치',f.matched_closed_candles==null?'N/A':f.matched_closed_candles+'봉',String(f.status||'unavailable')+' · '+(f.venue_comparability||'-')+' · '+(report.timeframe||'4h'));
+ item('현물/선물 거래대금',f.quote_volume_last_3?.spot_to_futures_ratio==null?'N/A':fmt(f.quote_volume_last_3.spot_to_futures_ratio,3)+'배',(f.source?.spot||'spot 없음')+' / '+(f.source?.futures||'futures 없음'));
+ item('현물 Taker 매수',f.spot_taker_buy_share==null?'N/A':fmt(f.spot_taker_buy_share*100,1)+'%',f.spot_buy_confirmation||'unknown');
+ item('OI 변화',oi.delta_pct==null?'N/A':fmt(oi.delta_pct,2)+'%',(oi.status||'unavailable')+' · '+(oi.source||'-')+' · '+(oi.as_of!=null?stamp(oi.as_of):'-'));
+ item('펀딩',fund.rate_pct==null?'N/A':fmt(fund.rate_pct,4)+'%',(fund.status||'unavailable')+' · '+(fund.source||'-'));
+ item('압축 / RVOL',feat.ema_width_pct==null?'N/A':fmt(feat.ema_width_pct,2)+'% / '+(feat.rvol20==null?'N/A':fmt(feat.rvol20,2)+'x'),'24H '+(feat.change_24h_pct==null?'N/A':fmt(feat.change_24h_pct,2)+'%')+' · 종가 돌파 '+(feat.breakout_12bar_close?'예':'아니오'));
+ if(reasons)reasons.textContent='기준 '+(report.as_of==null?'-':stamp(report.as_of))+' · 자료 제한: '+([...(f.missing_data||[]),...(p.missing_data||[])].filter((v,i,a)=>a.indexOf(v)===i).join(', ')||'없음')+' · '+(p.warning||'매수 신호가 아닌 관찰 후보입니다.');
+}
+async function loadFlow(symbol,tf,token){
+ const root=$('flowGrid'),badge=$('flowStatus');if(root)root.textContent='현물·선물 및 급등 전 구조 조회 중…';if(badge)badge.textContent='분석 중';
+ const useTf=['15m','1h','4h','1d'].includes(tf)?tf:'4h';
+ try{
+  const res=await fetch('/api/v1/assets/'+encodeURIComponent(assetBase(symbol))+'/analysis/flow-ignition?timeframe='+encodeURIComponent(useTf),{cache:'no-store'}),data=await res.json();
+  if(!res.ok||data.error)throw Error(data.error?.message||'flow unavailable');
+  if(token!==mtfToken)return;
+  renderFlow(data.data);
+ }catch(e){if(token===mtfToken)renderFlow(null,e)}
+}
 function displaySnapshot(normalized,data){
   const candles=[...(normalized?.candles||[])],volume=[...(normalized?.volume||[])],live=data?.current_candle;
   if(live&&live.is_closed===false){
@@ -224,7 +251,7 @@ async function run(){
     core=CC.createUnifiedChart({container:$('unifiedChart'),library:window.LightweightCharts,preset:{id:'v5',panes:[]}});core.setData({...display,indicators:{}});
     registry=CP.createPluginRegistry();registry.register(window.PulseStructurePlugin.createStructurePlugin({maxItems:10}));registry.register(window.PulseSmcPlugin.createSmcPlugin());if(window.PulseIctPlugin)registry.register(window.PulseIctPlugin.createIctPlugin());registry.register(window.PulseLiquidityPlugin.createLiquidityPlugin());registry.register(window.PulseVolumeProfilePlugin.createVolumeProfilePlugin());if(window.PulseMicrostructurePlugin)registry.register(window.PulseMicrostructurePlugin.createMicrostructurePlugin());registry.register(window.PulseMovingAveragePlugin.createMovingAveragePlugin());registry.register(window.PulseDantePlugin.createDantePlugin());if(window.PulseSimpleTradingPlugin)registry.register(window.PulseSimpleTradingPlugin.createSimpleTradingPlugin());if(window.PulseForexBookPlugin)registry.register(window.PulseForexBookPlugin.createForexBookPlugin());if(window.PulseBookConfluencePlugin)registry.register(window.PulseBookConfluencePlugin.createBookConfluencePlugin());registry.mountAll(core);applyPluginVisibility();
     lastState={analysis,smc,liquidity,ictContext,technical,classic,forexBook,bookConfluence,chartV1,rawCandles:analysis.candles,candles:normalized.candles,dataApi:CD,timeframe:tf,tf,preset:currentPreset,maMode:'standard',viewportLevel:innerWidth<=620?'compact':'normal',htfTf,htfBias:stateText(htf?.bias||'neutral'),overlayFocus:Object.keys(overlays).find(k=>overlays[k])||'structure'};
-    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderMicro(chartV1);renderZoneList(chartV1);bindZoneClick();connectMarketStream(symbol,tf);loadAlerts();loadMtf(symbol,mtfRunToken);const viewportCount=fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);if($('metaCandles')&&chartV1)$('metaCandles').textContent+=(viewportCount?' · 화면 '+viewportCount:'');
+    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderMicro(chartV1);renderZoneList(chartV1);bindZoneClick();connectMarketStream(symbol,tf);loadAlerts();loadMtf(symbol,mtfRunToken);loadFlow(symbol,tf,mtfRunToken);const viewportCount=fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);if($('metaCandles')&&chartV1)$('metaCandles').textContent+=(viewportCount?' · 화면 '+viewportCount:'');
     const loaded=analysis.candles?.length||0,visible=chartV1?.chart?.visible_candle_count||Math.min(500,loaded),quality=chartV1?.data_quality?.status||'legacy';$('status').textContent=symbol+' · '+tf.toUpperCase()+' · 로드 '+loaded+' · 표시 '+visible+' · '+quality+(htfTf?' · HTF '+htfTf.toUpperCase():'');
     setState(chartV1?.data_quality?.status==='stale'||chartV1?.data_quality?.status==='invalid'?'api-degraded':'confirmed');
     $('snapshotLink').href='/mtf-snapshot-pro.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('ictTrainerLink').href='/ict-trainer.html?symbol='+encodeURIComponent(symbol);$('reportLink').href='/coin-report.html?symbol='+encodeURIComponent(symbol);$('danteLink').href='/dante-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('simpleTradingLink').href='/simple-trading-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('forexBookLink').href='/forex-book-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('bookConfluenceLink').href='/book-confluence-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);
