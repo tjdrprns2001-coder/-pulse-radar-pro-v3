@@ -1,9 +1,9 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),P=window.PulsePresets,D=window.PulseDataState,CD=window.PulseChartData,CP=window.PulseChartPlugins,CC=window.PulseChartCore,SE=window.PulseSmcEngine,LE=window.PulseLiquidityEngine,IE=window.PulseIctContextEngine,TA=window.PulseTraderAnalysis,ST=window.PulseSimpleTradingEngine,FB=window.PulseForexBookEngine,BC=window.PulseBookConfluenceEngine;
-let core=null,registry=null,currentPreset=null,indicatorCache={},lastState=null,chartV1=null,viewportCleanup=null,viewportRaf=0,zoneClickCleanup=null,marketWs=null,marketWsRetry=null,closedRefreshTimer=null,streamGeneration=0;
+let core=null,registry=null,currentPreset=null,indicatorCache={},lastState=null,chartV1=null,viewportCleanup=null,viewportRaf=0,zoneClickCleanup=null,marketWs=null,marketWsRetry=null,closedRefreshTimer=null,streamGeneration=0,mtfToken=0;
 const overlays={'structure':true,smc:false,ict:false,liquidity:false,'volume-profile':false,microstructure:true,'moving-average':false,dante:false,'simple-trading':false,'forex-book':false,'book-confluence':false};
 function clean(v){v=String(v||'BTCUSDT').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');return v||'BTCUSDT'}
-function fmt(v,d=2){return Number.isFinite(Number(v))?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d}):'-'}
+function fmt(v,d=2){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d}):'-'}
 function htfFor(tf){return tf==='5m'?'1h':tf==='15m'?'1h':tf==='1h'?'4h':tf==='4h'?'1d':tf==='12h'?'1d':tf==='1d'?'1w':tf==='3d'?'1w':null}
 function setState(id){if(!D)return;const m=D.formatDataState(id),el=$('dataState');el.dataset.pulseDataState=m.id;el.dataset.severity=m.severity;el.textContent=m.label}
 function presetDefaults(id){Object.keys(overlays).forEach(k=>overlays[k]=false);overlays.structure=true;overlays.microstructure=true;if(id==='structure')return;if(id==='smc'){overlays.smc=overlays.ict=overlays.liquidity=true;return}if(id==='dante'){overlays['moving-average']=overlays.dante=overlays['volume-profile']=true;return}if(id==='full'){Object.keys(overlays).forEach(k=>overlays[k]=true)}}
@@ -55,13 +55,33 @@ function renderChartMeta(data,analysis){
   const q=data?.data_quality||{},chart=data?.chart||{},oi=data?.open_interest||{},fund=data?.funding||{};
   if($('metaCandles'))$('metaCandles').textContent=data?((chart.visible_candle_count??'-')+'/'+(chart.total_candle_count??'-')+' · W '+(chart.warmup_candle_count??'-')):((analysis?.candles?.length||0)+' loaded');
   if($('metaLastClosed'))$('metaLastClosed').textContent=data?stamp(q.last_closed_candle??data.as_of):stamp(analysis?.candles?.at(-1)?.time);
-  if($('metaQuality'))$('metaQuality').textContent=data?((q.status||'unknown')+(Number.isFinite(Number(q.stale_seconds))?' · '+Math.round(q.stale_seconds)+'s':'')):'legacy';
+  if($('metaQuality'))$('metaQuality').textContent=data?((q.status||'unknown')+(q.stale_seconds!=null&&Number.isFinite(Number(q.stale_seconds))?' · '+Math.round(q.stale_seconds)+'s':'')):'legacy';
   if($('metaMarket'))$('metaMarket').textContent=data?((q.requested_market||'-')+' → '+(q.actual_market||'-')):'-';
   if($('metaOi'))$('metaOi').textContent=data?((oi.status||'unavailable')+' · '+(oi.series?.length||0)):'-';
   if($('metaFunding'))$('metaFunding').textContent=data?((fund.status||'unavailable')+' · '+(fund.series?.length||0)):'-';
   if($('metaRepaint'))$('metaRepaint').textContent=data?(q.repaint_state||'unknown'):'-';
   if($('metaVersion'))$('metaVersion').textContent=data?((data.algorithm_version||'-')+' / '+(data.parameter_version||'-')):'legacy';
   if($('dataState')&&data)$('dataState').dataset.quality=q.status||'unknown';
+}
+function renderMtf(report,error=null){
+ const root=$('mtfFrames'),badge=$('mtfConsensus');if(!root||!badge)return;
+ root.textContent='';
+ if(error||!report){badge.textContent='조회 제한';const d=document.createElement('span');d.className='ucMuted';d.textContent='MTF 자료 조회 제한 · 기존 차트는 계속 사용할 수 있습니다.';root.append(d);return}
+ const c=report.consensus||{};badge.textContent=(c.bias||'unknown')+' · '+(c.observed??0)+' / '+(c.expected??6)+'TF';
+ const label={bullish_alignment:'상승 정렬',bearish_alignment:'하락 정렬',transition:'전환 관찰',range_or_unclear:'횡보·혼재',insufficient_data:'자료 부족'};
+ for(const x of report.frames||[]){
+  const card=document.createElement('div');card.className='mtfItem';card.dataset.stage=x.stage||'insufficient_data';card.dataset.status=x.status||'unavailable';
+  const name=document.createElement('strong');name.textContent=(x.timeframe||'-').toUpperCase();
+  const stage=document.createElement('b');stage.textContent=label[x.stage]||'자료 부족';
+  const meta=document.createElement('small');meta.textContent=(x.trend||'unknown')+' · EMA14/28 '+(x.ema14_above_ema28===null?'N/A':x.ema14_above_ema28?'14 > 28':'14 ≤ 28')+' · RVOL '+(x.rvol20==null?'N/A':fmt(x.rvol20,2)+'x');
+  const source=document.createElement('span');source.textContent=(x.status||'unavailable')+' · '+(x.source||'자료 없음')+' · '+(x.as_of!=null?stamp(x.as_of):'기준시각 없음');
+  card.append(name,stage,meta,source);root.append(card)
+ }
+}
+async function loadMtf(symbol,token){
+ const el=$('mtfFrames'),badge=$('mtfConsensus');if(el)el.textContent='확정봉 구조 비교 조회 중…';if(badge)badge.textContent='분석 중';
+ try{const res=await fetch('/api/v1/assets/'+encodeURIComponent(assetBase(symbol))+'/analysis/mtf',{cache:'no-store'});const body=await res.json();if(!res.ok||body.error)throw Error(body.error?.message||'MTF unavailable');if(token!==mtfToken)return;renderMtf(body.data)}
+ catch(e){if(token===mtfToken)renderMtf(null,e)}
 }
 function displaySnapshot(normalized,data){
   const candles=[...(normalized?.candles||[])],volume=[...(normalized?.volume||[])],live=data?.current_candle;
@@ -75,9 +95,9 @@ function displaySnapshot(normalized,data){
 function syncDerivatives(){
   if(!core)return;
   const latest=(rows=[])=>[...new Map(rows.map(x=>[x.time,x])).values()].sort((a,b)=>a.time-b.time);
-  const oi=latest((chartV1?.open_interest?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.open_interest)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
-  const funding=latest((chartV1?.funding?.series||[]).map(x=>({time:toSec(x.time),value:Number(x.funding_rate_pct)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
-  const liqMap=new Map();for(const x of chartV1?.liquidations?.series||[]){const time=toSec(x.event_time),v=Number(x.notional_usd)*(String(x.side)==='long'?-1:1);if(time!=null&&Number.isFinite(v))liqMap.set(time,(liqMap.get(time)||0)+v)}const liquidation=[...liqMap.entries()].sort((a,b)=>a[0]-b[0]).map(([time,value])=>({time,value}));
+  const oi=latest((chartV1?.open_interest?.series||[]).filter(x=>x.open_interest!==null&&x.open_interest!==undefined&&x.open_interest!=='').map(x=>({time:toSec(x.time),value:Number(x.open_interest)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
+  const funding=latest((chartV1?.funding?.series||[]).filter(x=>x.funding_rate_pct!==null&&x.funding_rate_pct!==undefined&&x.funding_rate_pct!=='').map(x=>({time:toSec(x.time),value:Number(x.funding_rate_pct)})).filter(x=>x.time!=null&&Number.isFinite(x.value)));
+  const liqMap=new Map();for(const x of chartV1?.liquidations?.series||[]){if(x.notional_usd===null||x.notional_usd===undefined||x.notional_usd==='')continue;const time=toSec(x.event_time),v=Number(x.notional_usd)*(String(x.side)==='long'?-1:1);if(time!=null&&Number.isFinite(v))liqMap.set(time,(liqMap.get(time)||0)+v)}const liquidation=[...liqMap.entries()].sort((a,b)=>a[0]-b[0]).map(([time,value])=>({time,value}));
   if(oi.length)core.setDerivativeData?.('oi',oi);
   if(funding.length)core.setDerivativeData?.('funding',funding);
   if(liquidation.length)core.setDerivativeData?.('liquidation',liquidation);
@@ -132,10 +152,10 @@ function renderMicro(data=chartV1){
   const tp=data?.trade_volume_profile||{},ob=data?.orderbook||{},walls=ob?.wall_state||{},liq=data?.liquidations||{},s1=liq?.summary_1h||{};
   if($('microTradeVp'))$('microTradeVp').textContent=tp.available?((tp.precision||'trade')+' · '+(tp.trade_count||0)+'건'):'N/A';
   if($('microTradePoc'))$('microTradePoc').textContent=fmt(tp.poc?.price,8);
-  if($('microSpread'))$('microSpread').textContent=Number.isFinite(Number(ob.spread_bps))?fmt(ob.spread_bps,2)+' bps':'N/A';
+  if($('microSpread'))$('microSpread').textContent=ob.spread_bps!=null&&Number.isFinite(Number(ob.spread_bps))?fmt(ob.spread_bps,2)+' bps':'N/A';
   if($('microDepth'))$('microDepth').textContent=ob.depth_usd?('B '+money(ob.depth_usd.bid_0_5_pct)+' / A '+money(ob.depth_usd.ask_0_5_pct)):'N/A';
   if($('microWalls'))$('microWalls').textContent=walls.persistent_walls?String(walls.persistent_walls.length):'N/A';
-  if($('microCancel'))$('microCancel').textContent=Number.isFinite(Number(walls.cancel_rate_estimated))?pctText(walls.cancel_rate_estimated,1)+' · 추정':'N/A';
+  if($('microCancel'))$('microCancel').textContent=walls.cancel_rate_estimated!=null&&Number.isFinite(Number(walls.cancel_rate_estimated))?pctText(walls.cancel_rate_estimated,1)+' · 추정':'N/A';
   if($('microLongLiq'))$('microLongLiq').textContent=money(s1.long_usd);
   if($('microShortLiq'))$('microShortLiq').textContent=money(s1.short_usd);
   if($('microWarning'))$('microWarning').textContent=walls.warning||((tp.available&&tp.coverage?.complete!==true)?'체결 매물대는 현재 수집 가능한 체결 구간 기준이며 전체 800봉 구간 정밀값이 아닙니다.':'체결/호가 데이터 상태를 확인하세요.');
@@ -190,6 +210,7 @@ function bindViewportRefresh(){
   viewportCleanup=()=>{for(const fn of clean)try{fn()}catch{}};
 }
 async function run(){
+  const mtfRunToken=++mtfToken;
   const symbol=clean($('symbol').value),tf=$('tf').value;$('symbol').value=symbol;$('fallback').classList.remove('show');setState('live');$('status').textContent='800봉 구조·SMC·ICT·매물대·파생 분석 중…';
   const q=new URLSearchParams(location.search);currentPreset=P?.getPreset(q.get('preset')||P?.loadPreset()?.id||'clean')||{id:'clean'};presetDefaults(currentPreset.id);syncOverlayButtons();
   try{
@@ -203,7 +224,7 @@ async function run(){
     core=CC.createUnifiedChart({container:$('unifiedChart'),library:window.LightweightCharts,preset:{id:'v5',panes:[]}});core.setData({...display,indicators:{}});
     registry=CP.createPluginRegistry();registry.register(window.PulseStructurePlugin.createStructurePlugin({maxItems:10}));registry.register(window.PulseSmcPlugin.createSmcPlugin());if(window.PulseIctPlugin)registry.register(window.PulseIctPlugin.createIctPlugin());registry.register(window.PulseLiquidityPlugin.createLiquidityPlugin());registry.register(window.PulseVolumeProfilePlugin.createVolumeProfilePlugin());if(window.PulseMicrostructurePlugin)registry.register(window.PulseMicrostructurePlugin.createMicrostructurePlugin());registry.register(window.PulseMovingAveragePlugin.createMovingAveragePlugin());registry.register(window.PulseDantePlugin.createDantePlugin());if(window.PulseSimpleTradingPlugin)registry.register(window.PulseSimpleTradingPlugin.createSimpleTradingPlugin());if(window.PulseForexBookPlugin)registry.register(window.PulseForexBookPlugin.createForexBookPlugin());if(window.PulseBookConfluencePlugin)registry.register(window.PulseBookConfluencePlugin.createBookConfluencePlugin());registry.mountAll(core);applyPluginVisibility();
     lastState={analysis,smc,liquidity,ictContext,technical,classic,forexBook,bookConfluence,chartV1,rawCandles:analysis.candles,candles:normalized.candles,dataApi:CD,timeframe:tf,tf,preset:currentPreset,maMode:'standard',viewportLevel:innerWidth<=620?'compact':'normal',htfTf,htfBias:stateText(htf?.bias||'neutral'),overlayFocus:Object.keys(overlays).find(k=>overlays[k])||'structure'};
-    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderMicro(chartV1);renderZoneList(chartV1);bindZoneClick();connectMarketStream(symbol,tf);loadAlerts();const viewportCount=fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);if($('metaCandles')&&chartV1)$('metaCandles').textContent+=(viewportCount?' · 화면 '+viewportCount:'');
+    registry.updateAll(lastState);updateOverlayLegend(lastState.overlayFocus);bindViewportRefresh();syncIndicators();syncDerivatives();renderSummary(lastState);renderChartMeta(chartV1,analysis);renderMicro(chartV1);renderZoneList(chartV1);bindZoneClick();connectMarketStream(symbol,tf);loadAlerts();loadMtf(symbol,mtfRunToken);const viewportCount=fitVisibleCandles(chartV1?.chart?.visible_candle_count||500);if($('metaCandles')&&chartV1)$('metaCandles').textContent+=(viewportCount?' · 화면 '+viewportCount:'');
     const loaded=analysis.candles?.length||0,visible=chartV1?.chart?.visible_candle_count||Math.min(500,loaded),quality=chartV1?.data_quality?.status||'legacy';$('status').textContent=symbol+' · '+tf.toUpperCase()+' · 로드 '+loaded+' · 표시 '+visible+' · '+quality+(htfTf?' · HTF '+htfTf.toUpperCase():'');
     setState(chartV1?.data_quality?.status==='stale'||chartV1?.data_quality?.status==='invalid'?'api-degraded':'confirmed');
     $('snapshotLink').href='/mtf-snapshot-pro.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('ictTrainerLink').href='/ict-trainer.html?symbol='+encodeURIComponent(symbol);$('reportLink').href='/coin-report.html?symbol='+encodeURIComponent(symbol);$('danteLink').href='/dante-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('simpleTradingLink').href='/simple-trading-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('forexBookLink').href='/forex-book-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);$('bookConfluenceLink').href='/book-confluence-lab.html?symbol='+encodeURIComponent(symbol)+'&tf='+encodeURIComponent(tf);
