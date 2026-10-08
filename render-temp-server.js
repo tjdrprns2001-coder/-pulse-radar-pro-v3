@@ -189,6 +189,12 @@ function scheduleChartBroTracker(){
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
+    if(u.pathname==='/health/live')return send(res,200,JSON.stringify({ok:true,status:'alive',release:process.env.PULSERADAR_RELEASE||null}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    if(u.pathname==='/health/ready'){
+      const runtime=await chartRuntime.health();
+      const ready=runtime.storage_ready===true;
+      return send(res,ready?200:503,JSON.stringify({ok:ready,status:ready?'ready':'degraded',reason:runtime.reason||null,storage:runtime.persistence,release:process.env.PULSERADAR_RELEASE||null}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    }
     if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth,chart_v1_alerts:chartV1AlertHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
     const file=safeFile(u.pathname);
