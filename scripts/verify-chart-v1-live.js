@@ -51,7 +51,12 @@ class FakeWS{
   ws.emit('message',JSON.stringify({stream:'dogeusdt@depth20@100ms',data:{bids:[['0.149','10000']],asks:[['0.151','9000']]}}));
   // Malformed stream messages must be isolated rather than throwing from the websocket handler.
   assert.doesNotThrow(()=>ws.emit('message',{data:{toString(){throw new Error('malformed market payload')}}}));
-  assert(hub.stateFor('DOGEUSDT').last_error?.includes('malformed market payload'));
+  const liveState=hub.stateFor('DOGEUSDT');
+  liveState.trades=null;
+  assert.doesNotThrow(()=>ws.emit('message',JSON.stringify({data:{e:'aggTrade',p:'0.15',q:'5',T:10030,m:false,a:5}})));
+  assert(liveState.last_error?.includes('market event error'));
+  assert.equal(liveState.status,'live');
+  liveState.trades=[];
   const snap=hub.snapshot('DOGEUSDT',{profileBins:50});assert.equal(snap.status,'live');assert.equal(snap.klines['4h'].interval,'4h');assert.equal(snap.liquidations.series.length,1);assert.equal(snap.orderbook.available,true);assert(seen.some(x=>x.event==='candle.update'));assert(seen.some(x=>x.event==='liquidation'));
   try{fs.unlinkSync(file)}catch{}
   console.log('chart v1 live telemetry PASS');
