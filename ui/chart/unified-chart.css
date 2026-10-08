@@ -34,3 +34,18 @@
 .mtfItem[data-status="unavailable"],.mtfItem[data-status="invalid"]{border-style:dashed;opacity:.75}
 @media(max-width:1000px){.mtfFrames{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.mtfPanel{padding:9px}.mtfHeader{flex-wrap:wrap}.mtfHeader span{font-size:10px}.mtfFrames{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.mtfItem{padding:8px}.mtfItem strong{font-size:12px}.mtfItem b{font-size:11px}.mtfItem small{font-size:9px}.mtfItem span{font-size:8px}.ucToolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.ucToolbar input{grid-column:1/-1}.ucToolbar select{grid-column:1/-1}.ucToolbar .ucBtn{min-height:38px;font-size:11px}.ucChart{touch-action:pan-y}}
+
+/* Optional causal flow cards: paint only once scrolled into view. */
+.flowPanel{margin:0 0 9px;padding:11px 12px;content-visibility:auto;contain-intrinsic-size:auto 185px}
+.flowGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:11px 0}
+.flowItem{min-width:0;display:flex;flex-direction:column;gap:5px;padding:10px;border:1px solid #28435e;border-radius:9px;background:#0b1827}
+.flowItem span{font-size:10px;color:#89a8c3}
+.flowItem strong{font-size:13px;color:#e6f2ff;overflow-wrap:anywhere}
+.flowItem small{font-size:9px;color:#97adc5;overflow-wrap:anywhere;line-height:1.4}
+.flowReasons{font-size:9px;line-height:1.5;color:#90a9be;overflow-wrap:anywhere}
+#flowStatus[data-stage="pre"],#flowStatus[data-stage="early_ignition"]{color:#72dbc4;border-color:#376d66}
+#flowStatus[data-stage="extended"],#flowStatus[data-stage="data_unreliable"]{color:#f3a3a3;border-color:#894b57}
+.mtfPanel,.microPanel,.researchPanel,.alertsPanel,.zoneInspector,.techSummary{content-visibility:auto;contain-intrinsic-size:auto 160px}
+@media(max-width:900px){.flowGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.flowPanel{padding:9px}.flowGrid{gap:5px;margin:9px 0}.flowItem{padding:8px}.flowItem strong{font-size:12px}.flowItem span{font-size:10px}.flowItem small{font-size:9px}.flowReasons{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.flowItem,.mtfItem{animation:none!important;transition:none!important}}
