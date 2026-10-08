@@ -31,6 +31,18 @@
   ],
   "rewrites": [
     {
+      "source": "/api/v1",
+      "destination": "https://pulseradar-pro-unified-0926.onrender.com/api/v1"
+    },
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://pulseradar-pro-unified-0926.onrender.com/api/v1/:path*"
+    },
+    {
+      "source": "/api/derivatives-capability",
+      "destination": "/api/index?route=derivatives-capability"
+    },
+    {
       "source": "/api/dante-cloud",
       "destination": "https://pulseradar-pro-unified-0926.onrender.com/api/dante-cloud"
     },
