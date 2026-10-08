@@ -24,12 +24,13 @@ module.exports=async function handler(req,res,ctx={}){
   if(req?.method&&req.method!=='GET')return error(res,405,'INVALID_PARAMETER','Only GET is supported.',{},req);
   const service=ctx.service||defaultService(),q=req?.query||{},path=pathOf(req),parts=path.split('/').filter(Boolean).map(decodeURIComponent);
   try{
-    if(!parts.length)return res.status(200).json({data:{version:'v1.1',endpoints:['assets','markets/{instrument_id}/candles','markets/{instrument_id}/open-interest','markets/{instrument_id}/funding','markets/{instrument_id}/liquidations','markets/{instrument_id}/orderbook-telemetry','assets/{asset_id}/analysis/structure','assets/{asset_id}/analysis/zones','assets/{asset_id}/analysis/overview','assets/{asset_id}/alerts','assets/{asset_id}/replay','assets/{asset_id}/backtest','chart/{asset_id}','data-quality/{asset_id}','runtime/health'],websocket:'/ws/v1/market'}});
+    if(!parts.length)return res.status(200).json({data:{version:'v1.1',endpoints:['assets','markets/{instrument_id}/candles','markets/{instrument_id}/open-interest','markets/{instrument_id}/funding','markets/{instrument_id}/liquidations','markets/{instrument_id}/orderbook-telemetry','assets/{asset_id}/analysis/structure','assets/{asset_id}/analysis/zones','assets/{asset_id}/analysis/overview','assets/{asset_id}/analysis/mtf','assets/{asset_id}/alerts','assets/{asset_id}/replay','assets/{asset_id}/backtest','chart/{asset_id}','data-quality/{asset_id}','runtime/health'],websocket:'/ws/v1/market'}});
     if(parts[0]==='assets'&&parts.length===1)return res.status(200).json(await service.searchAssets(q.query||'',int(q.limit,20,1,100)));
     if(parts[0]==='assets'&&parts.length===2)return res.status(200).json(await service.getAsset(parts[1]));
     if(parts[0]==='assets'&&parts.length===3&&parts[2]==='markets')return res.status(200).json(await service.getMarkets(parts[1]));
     if(parts[0]==='assets'&&parts.length===4&&parts[2]==='analysis'){
       const o=opts(q);
+      if(parts[3]==='mtf')return res.status(200).json(await service.mtf(parts[1]));
       if(parts[3]==='structure')return res.status(200).json(await service.structure(parts[1],o));
       if(parts[3]==='zones')return res.status(200).json(await service.zones(parts[1],o));
       if(parts[3]==='overview')return res.status(200).json(await service.overview(parts[1],o));
