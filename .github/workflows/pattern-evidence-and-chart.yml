@@ -9,6 +9,7 @@ on:
       - 'lib/research-backtest-v2/bowl224/**'
       - 'lib/research-backtest-v2/bowl-walk-forward.js'
       - 'lib/research-backtest-v2/bowl-portfolio-summary.js'
+      - 'lib/research-backtest-v2/bowl-parameter-grid.js'
       - 'ui/auto-chart/**'
       - 'auto-chart-lab.html'
       - 'scripts/verify-bowl-symmetry.js'
@@ -17,6 +18,8 @@ on:
       - 'scripts/verify-bowl224-shadow.js'
       - 'scripts/verify-bowl-walk-forward.js'
       - 'scripts/verify-bowl-portfolio-summary.js'
+      - 'scripts/verify-bowl-parameter-grid.js'
+      - 'scripts/verify-bowl-parameter-grid-cli.js'
       - 'package.json'
       - '.github/workflows/pattern-evidence-and-chart.yml'
   pull_request:
@@ -49,3 +52,4 @@ jobs:
       - run: node scripts/verify-bowl224-patterns.js
       - run: node scripts/verify-bowl224-shadow.js
       - run: npm run test:bowl-walk-forward
+      - run: npm run test:bowl-parameter-grid
