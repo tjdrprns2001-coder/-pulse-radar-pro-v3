@@ -14,6 +14,8 @@ assert.equal(a.status,'READY');
 assert.equal(a.source,'BINANCE_FUTURES');
 assert(a.bySplit.train.eligibleBars>0&&a.bySplit.validation.eligibleBars>0&&a.bySplit.test.eligibleBars>0);
 assert(a.bySplit.train.signals.count>=1,JSON.stringify(a.bySplit.train));
+assert(a.rawPatternHits>=a.patternCount,'overlapping breakout hits cannot exceed independent events');
+for(const split of ['train','validation','test']){const events=a.events[split];for(let i=1;i<events.length;i++)assert(events[i].at-events[i-1].at>=7*DAY,'independent events cannot overlap in 7D window')}
 const event=a.events.train.find(x=>x.price===110);
 assert(event,'synthetic breakout must have an event');
 assert.equal(event.hit72h10,true);
