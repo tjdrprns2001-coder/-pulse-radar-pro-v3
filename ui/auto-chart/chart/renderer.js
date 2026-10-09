@@ -1,7 +1,7 @@
 (function(root,factory){
  const dep=typeof module==='object'&&module.exports?require('./overlays.js'):root.PulseAutoChartOverlays;const api=factory(dep);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartRenderer=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Overlays){'use strict';
-function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box:true,bowl:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fib:false,vpvr:true,ichimoku:false},visible=180}={}){
+function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box:true,bowl:true,longma:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fib:false,vpvr:true,ichimoku:false},visible=180}={}){
   const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07111d';ctx.fillRect(0,0,W,H);
   if(!analysis?.available){ctx.fillStyle='#8ea4ba';ctx.font='20px system-ui';ctx.fillText('확정봉 데이터 없음',30,48);return}
   const all=analysis.candles,c=all.slice(-visible),offset=all.length-c.length,padL=68,padR=92,padT=42,volH=layers.volume?Math.round(H*.20):0,gap=layers.volume?18:0,priceBottom=H-volH-gap-30,priceH=priceBottom-padT,chartR=W-padR,step=(chartR-padL)/Math.max(1,c.length),bw=Math.max(2,Math.min(10,step*.58));
@@ -18,6 +18,7 @@ function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box
   if(layers.fib)Overlays.drawFib(ctx,analysis,view);
   if(layers.ma)Overlays.drawMa(ctx,analysis,view);
   if(layers.ema)Overlays.drawEmaPack(ctx,analysis,view);
+  if(layers.longma)Overlays.drawLongSma(ctx,analysis,view);
   for(let i=0;i<c.length;i++){const k=c[i],gi=offset+i,xx=x(gi),up=k.close>=k.open,col=up?'#38d6a3':'#ff6677';ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(xx,y(k.high));ctx.lineTo(xx,y(k.low));ctx.stroke();ctx.fillRect(xx-bw/2,Math.min(y(k.open),y(k.close)),bw,Math.max(2,Math.abs(y(k.open)-y(k.close))))}
   if(layers.bowl)Overlays.drawBowl(ctx,analysis,view);
   if(layers.liquidity)Overlays.drawLiquidity(ctx,analysis,view);
