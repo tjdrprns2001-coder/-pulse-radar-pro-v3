@@ -27,6 +27,14 @@ const provider={async getFuturesKlines(symbol,tf,n){
  });
  assert.equal(resultsNoRisk.length,2);
  assert.equal('hypotheticalCostRisk' in log,false,'flag opt-in only');
+ await main(['BTCUSDT','ETHUSDT','--tf=4h','--funding-audit'],{
+  provider,now,fundingFetch:async()=>{throw Error('unexpected funding network call without any candidates')},
+  write:s=>{log=JSON.parse(s)}
+ });
+ assert.equal(log.hypotheticalCostRisk.holdout,'LOCKED_BY_DESIGN');
+ assert.equal(log.hypotheticalCostRisk.splits.train.fundingAudit.status,'OBSERVED_ONLY');
+ assert(log.hypotheticalCostRisk.splits.train.fundingAudit.markets.every(m=>m.status==='NO_TRADES'));
+ assert.equal('test' in log.hypotheticalCostRisk.splits,false);
  const noSource={getFuturesKlines:async()=>[]};
  await main(['BTCUSDT','ETHUSDT','--tf=4h','--risk'],{provider:noSource,now,
   write:s=>{log=JSON.parse(s)}});
