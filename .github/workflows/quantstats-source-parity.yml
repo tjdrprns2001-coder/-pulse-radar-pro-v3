@@ -1,0 +1,36 @@
+name: QuantStats source parity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/research-backtest-v2/quantstyle-performance.js'
+      - 'scripts/quantstats-parity-reference.py'
+      - 'scripts/verify-quantstats-parity.js'
+      - '.github/workflows/quantstats-source-parity.yml'
+  pull_request:
+    paths:
+      - 'lib/research-backtest-v2/quantstyle-performance.js'
+      - 'scripts/quantstats-parity-reference.py'
+      - 'scripts/verify-quantstats-parity.js'
+      - '.github/workflows/quantstats-source-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python3 -m pip install --disable-pip-version-check 'quantstats==0.0.86'
+      - run: node --check scripts/verify-quantstats-parity.js
+      - run: node scripts/verify-quantstats-parity.js
+      - run: npm run test:quantstyle-performance
