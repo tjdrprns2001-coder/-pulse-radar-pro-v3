@@ -37,7 +37,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: npm ci --omit=dev --ignore-scripts
       - run: npm run test:pattern-evidence
       - run: npm run test:auto-chart-lab
       - run: node scripts/verify-bowl224-patterns.js
