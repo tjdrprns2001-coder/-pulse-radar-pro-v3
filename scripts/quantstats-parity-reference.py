@@ -24,7 +24,7 @@ def safe(v):
     return f if math.isfinite(f) else None
 
 
-def calculate(items):
+def calculate(items, annual_risk_free_pct=0.0):
     equity = pd.Series(
         [float(row["equity"]) for row in items],
         index=pd.to_datetime([int(row["time"]) for row in items], unit="ms", utc=True),
@@ -40,22 +40,22 @@ def calculate(items):
         "annualizedVolPct": safe(
             qs.stats.volatility(returns, periods=PERIODS, annualize=True) * 100
         ),
-        "sharpe": safe(qs.stats.sharpe(returns, rf=0, periods=PERIODS)),
-        "sortino": safe(qs.stats.sortino(returns, rf=0, periods=PERIODS)),
+        "sharpe": safe(qs.stats.sharpe(returns, rf=annual_risk_free_pct / 100, periods=PERIODS)),
+        "sortino": safe(qs.stats.sortino(returns, rf=annual_risk_free_pct / 100, periods=PERIODS)),
         "maxDrawdownPct": safe(qs.stats.max_drawdown(equity) * 100),
     }
 
 
 def main():
     payload = json.load(sys.stdin)
-    results = {key: calculate(rows) for key, rows in payload["fixtures"].items()}
+    results = {key: {"rf0": calculate(rows, 0.0), "rf4p25": calculate(rows, 4.25)} for key, rows in payload["fixtures"].items()}
     print(
         json.dumps(
             {
                 "reference": "quantstats",
                 "version": qs.__version__,
                 "periodsPerYear": PERIODS,
-                "riskFreeRate": 0,
+                "annualRiskFreePct": [0, 4.25],
                 "results": results,
             },
             separators=(",", ":"),
