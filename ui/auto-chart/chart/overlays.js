@@ -50,5 +50,22 @@ function drawDealingRange(ctx,analysis,{y,left,right}){
 function drawIchimoku(ctx,analysis,view){
  const a=analysis.advanced?.ichimoku;if(!a)return;const {x,y,offset}=view,sa=a.spanA||[],sb=a.spanB||[];ctx.save();for(let i=Math.max(offset+1,1);i<analysis.candles.length;i++){if(!Number.isFinite(Number(sa[i]))||!Number.isFinite(Number(sb[i])))continue;const x1=x(i-1),x2=x(i),a1=y(sa[i-1]),a2=y(sa[i]),b1=y(sb[i-1]),b2=y(sb[i]);if([a1,a2,b1,b2].some(v=>!Number.isFinite(v)))continue;ctx.fillStyle=sa[i]>=sb[i]?'rgba(70,190,145,.055)':'rgba(220,90,110,.055)';ctx.beginPath();ctx.moveTo(x1,a1);ctx.lineTo(x2,a2);ctx.lineTo(x2,b2);ctx.lineTo(x1,b1);ctx.closePath();ctx.fill()}ctx.restore()
 }
-return{drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
+function drawBowl(ctx,analysis,{x,y,offset,left,right}){
+ const e=analysis?.patternEvidence,b=e?.bowl;
+ if(!b||!Number.isInteger(b.baseStartIndex)||!Number.isInteger(b.baseEndIndex)||b.baseEndIndex<offset)return;
+ const from=Math.max(offset,b.baseStartIndex),to=Math.min(analysis.candles.length-1,b.baseEndIndex);
+ if(from>to||![b.baseHigh,b.baseLow].every(Number.isFinite))return;
+ const x0=Math.max(left,x(from)),x1=Math.min(right,x(to)),top=Math.min(y(b.baseHigh),y(b.baseLow)),height=Math.abs(y(b.baseHigh)-y(b.baseLow));
+ if(![x0,x1,top,height].every(Number.isFinite)||x1<=x0)return;
+ const confirmed=b.status==='BREAKOUT_CONFIRMED',colored=confirmed?'#58e5bb':'#ffd47e';
+ const label=confirmed?'밥그릇 돌파 관찰':'밥그릇 횡보 감시';
+ ctx.save();ctx.fillStyle=confirmed?'rgba(71,214,163,.11)':'rgba(255,196,85,.075)';
+ ctx.strokeStyle=colored;ctx.lineWidth=1.8;ctx.setLineDash(confirmed?[]:[7,4]);
+ ctx.fillRect(x0,top,x1-x0,Math.max(3,height));ctx.strokeRect(x0,top,x1-x0,Math.max(3,height));
+ ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(x0,y(b.baseHigh));ctx.lineTo(right,y(b.baseHigh));ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle=colored;ctx.font='bold 11px system-ui';
+ ctx.fillText(label+' · 대칭 '+Number(b.symmetryRatio).toFixed(2)+'배',Math.max(left+4,Math.min(x0+5,right-165)),Math.max(12,top-5));
+ ctx.restore();
+}
+return{drawBowl,drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
 });
