@@ -1,0 +1,34 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {evaluateBowlWalkForward,outcome,splitOf}=require('../lib/research-backtest-v2/bowl-walk-forward.js');
+const DAY=86400000,t0=1700000000000,rows=[];
+function add(p,v=100){const t=t0+rows.length*DAY;rows.push([t,String(p),String(p*1.004),String(p*.996),String(p),String(v),t+DAY-1])}
+for(let i=0;i<560;i++)add(100);
+for(let i=0;i<30;i++)add(100-20*(i+1)/30);
+for(let i=0;i<35;i++)add(80+Math.sin(i/5)*.6);
+add(110,500); // closed confirmed longMA & base breakout (index 625)
+for(let i=0;i<10;i++)add(122+(i>2?i*.1:0),100);
+for(let i=rows.length;i<1100;i++)add(115+(i%15)*.005,100);
+const at=rows.at(-1)[6],a=evaluateBowlWalkForward({symbol:'TESTUSDT',rows,asOf:at});
+assert.equal(a.status,'READY');
+assert.equal(a.source,'BINANCE_FUTURES');
+assert(a.bySplit.train.eligibleBars>0&&a.bySplit.validation.eligibleBars>0&&a.bySplit.test.eligibleBars>0);
+assert(a.bySplit.train.signals.count>=1,JSON.stringify(a.bySplit.train));
+const event=a.events.train.find(x=>x.price===110);
+assert(event,'synthetic breakout must have an event');
+assert.equal(event.hit72h10,true);
+assert.equal(event.hit72h30,false);
+assert(event.return7dPct>10);
+assert(a.bySplit.train.controls.count>=1);
+assert.equal(a.bySplit.train.signals.hit72h10Rate,1);
+assert.deepEqual(evaluateBowlWalkForward({symbol:'TESTUSDT',rows:[...rows,[at+1,'100','900','10','900','5000',at+DAY]],asOf:at}),a,'future partial bar must not change analysis');
+const prefix=evaluateBowlWalkForward({symbol:'TESTUSDT',rows:rows.slice(0,450),asOf:rows[449][6]});
+assert.equal(prefix.status,'INSUFFICIENT_HISTORY');
+assert.equal(evaluateBowlWalkForward({symbol:'TESTUSDT',rows,asOf:at,source:'BYBIT_LINEAR'}).status,'UNSUPPORTED_SOURCE');
+assert.equal(evaluateBowlWalkForward({symbol:'INVALID',rows,asOf:at}).status,'INVALID_INPUT');
+const step=DAY;assert.equal(outcome([{openTime:0,closeTime:DAY-1,open:1,high:1,low:1,close:1}],0,step),null);
+assert.equal(splitOf(640,1000,7,447),null,'purge at training boundary');
+const gapped=rows.slice();gapped[627]=[...gapped[627]];gapped[627][0]+=1000;const gap=evaluateBowlWalkForward({symbol:'TESTUSDT',rows:gapped,asOf:at});
+assert(gap.gapsExcluded>=2,'gap must be flagged');
+assert.equal(gap.events.train.some(e=>e.price===110),false,'future label crossing a gap must not count');
+console.log('causal bowl walk-forward split / controls / missing bars PASS');
