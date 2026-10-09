@@ -56,7 +56,7 @@ module.exports=async function handler(req,res,ctx={}){
       if(!question)return res.status(400).json({status:'error',error:'question required'});
       if(question.length>1000)return res.status(400).json({status:'error',error:'question too long'});
       return res.status(200).json(await service.chat({
-        question,selectedSymbol:b.selectedSymbol||null,deep:Boolean(b.deep)
+        question,selectedSymbol:b.selectedSymbol||null,deep:Boolean(b.deep),llmRoles:b.llmRoles===true
       }));
     }
     return res.status(405).json({status:'error',error:'method/mode not allowed'});
