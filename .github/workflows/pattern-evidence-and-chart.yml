@@ -6,11 +6,13 @@ on:
       - 'lib/coin-scan/bowl-symmetry.js'
       - 'lib/coin-scan/pattern-evidence.js'
       - 'lib/coin-scan/scan-service.js'
+      - 'lib/research-backtest-v2/bowl224/**'
       - 'ui/auto-chart/**'
       - 'auto-chart-lab.html'
       - 'scripts/verify-bowl-symmetry.js'
       - 'scripts/verify-pattern-evidence.js'
       - 'scripts/verify-bowl-auto-chart.js'
+      - 'scripts/verify-bowl224-shadow.js'
       - 'package.json'
       - '.github/workflows/pattern-evidence-and-chart.yml'
   pull_request:
@@ -21,6 +23,7 @@ on:
       - 'ui/auto-chart/**'
       - 'auto-chart-lab.html'
       - 'scripts/verify-bowl-*.js'
+      - 'scripts/verify-bowl224-shadow.js'
       - 'scripts/verify-pattern-evidence.js'
       - 'package.json'
   workflow_dispatch:
@@ -40,3 +43,4 @@ jobs:
       - run: npm run test:pattern-evidence
       - run: npm run test:auto-chart-lab
       - run: node scripts/verify-bowl224-patterns.js
+      - run: node scripts/verify-bowl224-shadow.js
