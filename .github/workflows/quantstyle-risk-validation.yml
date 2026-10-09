@@ -7,6 +7,7 @@ on:
       - 'lib/research-backtest-v2/binance-funding-audit.js'
       - 'scripts/verify-quantstyle-performance.js'
       - 'scripts/verify-binance-funding-audit.js'
+      - 'scripts/verify-binance-funding-integration.js'
       - 'scripts/verify-quantstyle-integration.js'
       - 'scripts/run-bowl-walk-forward.js'
       - 'package.json'
