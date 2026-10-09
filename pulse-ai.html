@@ -6,7 +6,7 @@
 <title>Pulse AI v2</title>
 <link rel="stylesheet" href="/ui/pulse-child-normalize.css?v=20260921-v5">
 <link rel="stylesheet" href="/ui/pulse-ai.css?v=20260926-v2">
-<script src="/ui/pulse-ai.js?v=20260926-v2" defer></script>
+<script src="/ui/pulse-ai.js?v=20261010-review-v1" defer></script>
 </head>
 <body>
 <main class="pulseAI" aria-live="polite">
@@ -69,6 +69,15 @@
     </article>
   </section>
 
+  <section class="card reviewBoardCard" id="multiPerspectiveCard" aria-label="다각도 연구 심의">
+    <div class="sectionHead">
+      <div><span class="kicker">MULTI-PERSPECTIVE · RESEARCH</span><h2>다각도 근거 심의</h2></div>
+      <span class="stateChip">규칙 기반 · 연구 전용</span>
+    </div>
+    <p class="reviewDisclaimer">시장·기술·수급·상승 반론·하락 반론·위험의 여섯 관점으로 분석합니다. 독립 LLM 에이전트의 토론이나 확정 매수 신호는 아닙니다.</p>
+    <div id="reviewPanel" class="reviewPanel" aria-live="polite">근거 자료를 불러오는 중…</div>
+  </section>
+
   <section class="card eventCard">
     <div class="sectionHead"><div><span class="kicker">CATALYST</span><h2>이벤트 · 뉴스</h2></div><span id="eventCount" class="countBadge">0</span></div>
     <p id="eventSummary" class="eventSummary">이벤트 정보를 확인하는 중…</p>
@@ -105,6 +114,7 @@
       <button type="button" data-q="지금 어떤 섹터가 순환매 중심이야?">섹터 흐름</button>
       <button type="button" data-q="선택한 종목 상태와 핵심 근거를 설명해줘">선택 종목</button>
       <button type="button" data-q="Research AI 학습 상태를 알려줘">학습 상태</button>
+      <button type="button" data-q="선택한 종목을 다각도로 분석하고 찬반 근거를 알려줘">다각도 심의</button>
     </div>
     <div id="chatHistory" class="chatHistory" aria-live="polite"></div>
     <div class="chatRow">
