@@ -1,7 +1,7 @@
 (function(root,factory){
  const dep=typeof module==='object'&&module.exports?require('./overlays.js'):root.PulseAutoChartOverlays;const api=factory(dep);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartRenderer=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Overlays){'use strict';
-function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fib:false,vpvr:true,ichimoku:false},visible=180}={}){
+function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box:true,bowl:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fib:false,vpvr:true,ichimoku:false},visible=180}={}){
   const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07111d';ctx.fillRect(0,0,W,H);
   if(!analysis?.available){ctx.fillStyle='#8ea4ba';ctx.font='20px system-ui';ctx.fillText('확정봉 데이터 없음',30,48);return}
   const all=analysis.candles,c=all.slice(-visible),offset=all.length-c.length,padL=68,padR=92,padT=42,volH=layers.volume?Math.round(H*.20):0,gap=layers.volume?18:0,priceBottom=H-volH-gap-30,priceH=priceBottom-padT,chartR=W-padR,step=(chartR-padL)/Math.max(1,c.length),bw=Math.max(2,Math.min(10,step*.58));
