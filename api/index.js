@@ -10,6 +10,7 @@ const handlers = {
   'historical-structure-study': require('../handlers/historical-structure-study'),
   htf: require('../handlers/htf'),
   'independent-temporal': require('../handlers/independent-temporal'),
+  'period-symmetry': require('../handlers/period-symmetry'),
   market: require('../handlers/market'),
   'micro-features': require('../handlers/micro-features'),
   pattern: require('../handlers/pattern'),
