@@ -24,8 +24,7 @@ def as_json_array(series):
 def main():
     bars = json.load(sys.stdin)["candles"]
     df = pd.DataFrame(bars)
-    close = pd.to_numeric(df["close"]), 
-    c = close[0]
+    c = pd.to_numeric(df["close"])
     high, low = pd.to_numeric(df["high"]), pd.to_numeric(df["low"])
     m = MACD(close=c, window_slow=26, window_fast=12, window_sign=9, fillna=False)
     values = {
