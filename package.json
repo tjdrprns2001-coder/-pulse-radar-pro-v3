@@ -5,7 +5,7 @@
   "scripts": {
     "check:calibration": "node scripts/calibration-self-check.js",
     "test:pattern-evidence": "node scripts/verify-bowl-symmetry.js && node scripts/verify-pattern-evidence.js && node scripts/verify-bowl-auto-chart.js",
-    "test:bowl-walk-forward": "node scripts/verify-bowl-walk-forward.js",
+    "test:bowl-walk-forward": "node scripts/verify-bowl-walk-forward.js && node scripts/verify-bowl-portfolio-summary.js",
     "research:bowl-walk-forward": "node scripts/run-bowl-walk-forward.js",
     "freeze:calibration": "node scripts/print-calibration-freeze.js",
     "gate:release": "node scripts/release-gate.js",
