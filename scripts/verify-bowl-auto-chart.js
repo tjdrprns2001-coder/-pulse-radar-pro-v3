@@ -18,6 +18,9 @@ assert.equal(analysis.available,true);
 assert.equal(analysis.patternEvidence.status,'READY');
 assert.equal(analysis.patternEvidence.bowl.status,'BREAKOUT_CONFIRMED');
 assert.equal(analysis.patternEvidence.bowl.signal,true);
+const closes=candles.slice(-448).map(x=>x.close),independentSma=closes.reduce((sum,x)=>sum+x,0)/448;
+assert(Math.abs(analysis.patternSma[448].at(-1)-independentSma)<1e-8,'SMA448 must be true simple average');
+assert.equal(analysis.patternSma[112].length,candles.length);
 assert.equal(Core.analyze({...ds,market:{...ds.market,interval:'1d'}}).patternEvidence.bowl.signal,false,'1D must enforce daily long MA confirmation');
 const lines=[],rects=[];
 const ctx={save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fill(){},clearRect(){},fillRect(){},strokeRect(...x){rects.push(x)},setLineDash(){},fillText(t){lines.push(String(t))}};
@@ -26,7 +29,7 @@ Draw.draw(canvas,analysis,{layers:{volume:false,box:false,bowl:true},visible:180
 assert(lines.some(s=>s.includes('밥그릇 돌파')),'bowl overlay label must render');
 assert(rects.length>0,'bowl accumulation box must render');
 const html=fs.readFileSync(path.resolve(__dirname,'../auto-chart-lab.html'),'utf8');
-for(const s of ['/ui/auto-chart/analysis/bowl-symmetry.js','/ui/auto-chart/analysis/pattern-evidence.js','data-layer="bowl"','id="cardBowl"'])assert(html.includes(s),'missing UI wiring: '+s);
+for(const s of ['/ui/auto-chart/analysis/bowl-symmetry.js','/ui/auto-chart/analysis/pattern-evidence.js','data-layer="bowl"','data-layer="longma"','id="cardBowl"'])assert(html.includes(s),'missing UI wiring: '+s);
 assert(html.indexOf('analysis/bowl-symmetry.js')<html.indexOf('analysis/pattern-evidence.js')&&html.indexOf('analysis/pattern-evidence.js')<html.indexOf('analysis/core.js'),'UMD load order wrong');
 const e=Shared.frameEvidence([...candles,{...last,openTime:last.openTime+step,closeTime:last.closeTime+step,close:200,high:201}],last.closeTime,{timeframe:'4h',options:{requireLongMa:false}});
 assert.equal(e.closedBars,candles.length,'future candle leaked');
