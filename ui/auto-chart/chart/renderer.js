@@ -19,6 +19,7 @@ function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box
   if(layers.ma)Overlays.drawMa(ctx,analysis,view);
   if(layers.ema)Overlays.drawEmaPack(ctx,analysis,view);
   for(let i=0;i<c.length;i++){const k=c[i],gi=offset+i,xx=x(gi),up=k.close>=k.open,col=up?'#38d6a3':'#ff6677';ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(xx,y(k.high));ctx.lineTo(xx,y(k.low));ctx.stroke();ctx.fillRect(xx-bw/2,Math.min(y(k.open),y(k.close)),bw,Math.max(2,Math.abs(y(k.open)-y(k.close))))}
+  if(layers.bowl)Overlays.drawBowl(ctx,analysis,view);
   if(layers.liquidity)Overlays.drawLiquidity(ctx,analysis,view);
   if(layers.structure)Overlays.drawSwings(ctx,analysis,view);
   if(layers.volume){const volOf=x=>Number.isFinite(Number(x?.volume))&&x?.volume!=null&&!(typeof x.volume==='string'&&x.volume.trim()==='')?Number(x.volume):0,volTop=priceBottom+gap,max=Math.max(...c.map(volOf),1);ctx.strokeStyle='#173149';ctx.beginPath();ctx.moveTo(padL,volTop);ctx.lineTo(chartR,volTop);ctx.stroke();for(let i=0;i<c.length;i++){const k=c[i],h=volOf(k)/max*(H-volTop-34);ctx.fillStyle=k.close>=k.open?'rgba(57,214,163,.42)':'rgba(255,111,127,.42)';ctx.fillRect(x(offset+i)-bw/2,H-28-h,bw,h)}ctx.fillStyle='#71899d';ctx.fillText('거래량 · 확정봉',padL,H-10)}
