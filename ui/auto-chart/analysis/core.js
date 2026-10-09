@@ -1,10 +1,10 @@
 (function(root,factory){
  const deps=typeof module==='object'&&module.exports?{
-  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js'),Advanced:require('./advanced.js'),MultiTf:require('./multi-timeframe.js'),Reference:require('./reference-levels.js')
- }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume,Advanced:root.PulseAutoChartAdvanced,MultiTf:root.PulseAutoChartMultiTf,Reference:root.PulseAutoChartReferenceLevels};
+  MathX:require('./math.js'),Swings:require('./swings.js'),Levels:require('./levels.js'),LevelState:require('./level-state.js'),Replay:require('./replay.js'),Indicators:require('./indicators.js'),Volume:require('./volume.js'),Advanced:require('./advanced.js'),MultiTf:require('./multi-timeframe.js'),Reference:require('./reference-levels.js'),PatternEvidence:require('./pattern-evidence.js')
+ }:{MathX:root.PulseAutoChartMath,Swings:root.PulseAutoChartSwings,Levels:root.PulseAutoChartLevels,LevelState:root.PulseAutoChartLevelState,Replay:root.PulseAutoChartReplay,Indicators:root.PulseAutoChartIndicators,Volume:root.PulseAutoChartVolume,Advanced:root.PulseAutoChartAdvanced,MultiTf:root.PulseAutoChartMultiTf,Reference:root.PulseAutoChartReferenceLevels,PatternEvidence:root.PulsePatternEvidence};
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
-const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf,Reference}=dep;
+const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf,Reference,PatternEvidence}=dep;
 const VERSION='AUTO_CHART_CORE_v2_0';
 function keyLevels(displayLevels,currentPrice){
   return{
@@ -21,7 +21,10 @@ function analyze(dataset,settings={}){
   const levelStates=LevelState.evaluate(rawLevels,candles,{atrSeries,atrNow,breakoutAtr:settings.breakoutAtr??.10,retestAtr:settings.retestAtr??.25});
   const localDisplayLevels=LevelState.select(levelStates,{atrNow,currentPrice:last.close,timeframe:dataset.market.interval,maxEachSide:settings.maxDisplayEachSide});
   const keys=keyLevels(localDisplayLevels,last.close);
-  return{available:true,version:VERSION,asOf:last.closeTime,timeframe:dataset.market.interval,market:dataset.market,currentPrice:last.close,atrNow,candles,swings,provisionalSwings,structure,levels:rawLevels,levelStates,localDisplayLevels,displayLevels:localDisplayLevels,htfLevels:[],range,setup,setupHistory:replay.history,indicators:{ma},advanced,volume,keyLevels:{...keys,invalidation:setup.invalidation||null},dataStatus:dataset.status};
+  const timeframe=String(dataset.market.interval||'').toLowerCase();
+  const asOf=Number(dataset.status?.updatedAt)||Number(last.closeTime);
+  const patternEvidence=PatternEvidence&&['1d','4h'].includes(timeframe)?PatternEvidence.frameEvidence(candles,asOf,{timeframe,options:{requireLongMa:timeframe==='1d'}}):null;
+  return{available:true,version:VERSION,asOf:last.closeTime,timeframe:dataset.market.interval,market:dataset.market,currentPrice:last.close,atrNow,candles,swings,provisionalSwings,structure,levels:rawLevels,levelStates,localDisplayLevels,displayLevels:localDisplayLevels,htfLevels:[],range,setup,setupHistory:replay.history,indicators:{ma},advanced,volume,keyLevels:{...keys,invalidation:setup.invalidation||null},dataStatus:dataset.status,patternEvidence};
 }
 function tfRank(tf){return({'1w':5,'1d':4,'4h':3,'1h':2,'15m':1,'5m':0})[String(tf||'').toLowerCase()]??0}
 function htfCoreLevels(frame,basePrice){
