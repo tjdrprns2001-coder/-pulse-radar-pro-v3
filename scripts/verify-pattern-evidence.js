@@ -25,4 +25,16 @@ const hammer=[{open:12,high:12.3,low:11.7,close:11.9},{open:11.9,high:12,low:11.
 assert(candlePatterns(hammer).some(x=>x.key==='HAMMER'));
 const engulf=[{open:10,close:9,high:10.2,low:8.9},{open:8.9,close:10.3,high:10.5,low:8.8}];
 assert(candlePatterns(engulf).some(x=>x.key==='BULLISH_ENGULFING'));
+const morning=[
+ {open:10,close:8,high:10.1,low:7.9},
+ {open:8,close:8.1,high:8.3,low:7.9},
+ {open:8.1,close:9.5,high:9.6,low:8.05}
+];
+assert(candlePatterns(morning).some(x=>x.key==='MORNING_STAR'));
+const shooting=[8,8.3,8.6,8.9,9.2].map(x=>({open:x,close:x+.25,high:x+.3,low:x-.05}));
+shooting.push({open:9.5,close:9.6,high:10.2,low:9.47});
+assert(candlePatterns(shooting).some(x=>x.key==='SHOOTING_STAR'));
+assert(candlePatterns([{open:11,close:9,high:11.2,low:8.8},{open:9.5,close:10,high:10.1,low:9.4}]).some(x=>x.key==='BULLISH_HARAMI'));
+assert(candlePatterns([{open:10,close:9,high:10.2,low:8.9},{open:9,close:9.7,high:9.8,low:8.8}]).some(x=>x.key==='PIERCING'));
+assert(candlePatterns(morning).every(x=>x.confirmed===false),'pattern geometry alone cannot confirm a trade');
 console.log('pattern evidence adapter PASS');
