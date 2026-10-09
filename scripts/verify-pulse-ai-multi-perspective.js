@@ -90,6 +90,8 @@ assert(css.includes('.reviewRoles')&&css.includes('@media(max-width:620px)'));
  const answer=await service.chat({question:'AAA 다각도 찬반 토론 해줘',selectedSymbol:'AAAUSDT'});
  assert.equal(answer.answerMode,'role-review');
  assert.equal(answer.intent,'multi-perspective');
+ const spaced=await service.chat({question:'멀티 에이전트 심의',selectedSymbol:'AAAUSDT'});
+ assert.equal(spaced.answerMode,'role-review','spaced multi-agent intent must route to grounded review');
  assert.equal(answer.aiGenerated,false);
  assert(answer.answer.includes('위험 심의'));
  const health=await service.health();
