@@ -42,6 +42,7 @@
     "test:coin-scan-api": "node scripts/verify-coin-scan-api.js",
     "test:coin-scan-ui": "node scripts/verify-coin-scan-ui.js",
     "test:coin-scan-shell": "node scripts/verify-coin-scan-shell.js",
+    "test:pulse-ai-multi-perspective": "node scripts/verify-pulse-ai-multi-perspective.js",
     "test:pulse-ai-core": "node scripts/verify-pulse-ai-core.js",
     "test:pulse-ai-gateway": "node scripts/verify-pulse-ai-gateway.js",
     "test:pulse-ai-api": "node scripts/verify-pulse-ai-api.js",
