@@ -31,5 +31,6 @@ jobs:
         with:
           node-version: '24'
       - run: node --check lib/research-backtest-v2/quantstyle-performance.js
+      - run: node --check scripts/run-bowl-walk-forward.js
       - run: npm run test:quantstyle-performance
       - run: npm run test:bowl-walk-forward
