@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {detectBowlSymmetry,sma}=require('../lib/coin-scan/bowl-symmetry.js');
+const {detectBowlSymmetry,sma,smaSeries}=require('../lib/coin-scan/bowl-symmetry.js');
 const c=[];
 function add(price,volume=100){c.push({open:price,high:price*1.004,low:price*.996,close:price,volume});}
 // Warm-up contains 448 observations, then a clear decline, base and breakout.
@@ -18,4 +18,6 @@ assert.equal(detectBowlSymmetry(c.slice(0,10)).status,'INSUFFICIENT_HISTORY');
 assert.equal(detectBowlSymmetry([...c.slice(0,-1),{...c.at(-1),close:NaN}]).status,'INVALID_CANDLES');
 assert.equal(detectBowlSymmetry(c,{requireLongMa:true}).signal,false,'Long MA confirmation must be enforced');
 assert.equal(sma([1,2,3,4],3),3);
+assert.deepEqual(smaSeries([1,2,3,4],3),[null,null,2,3]);
+assert.equal(smaSeries([1,2,NaN,4],3)[3],null,'missing close must not become a fake SMA');
 console.log('bowl symmetry detector PASS');
