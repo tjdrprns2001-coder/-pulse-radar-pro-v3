@@ -27,7 +27,7 @@ assert.equal(prefix.status,'INSUFFICIENT_HISTORY');
 assert.equal(evaluateBowlWalkForward({symbol:'TESTUSDT',rows,asOf:at,source:'BYBIT_LINEAR'}).status,'UNSUPPORTED_SOURCE');
 assert.equal(evaluateBowlWalkForward({symbol:'INVALID',rows,asOf:at}).status,'INVALID_INPUT');
 const step=DAY;assert.equal(outcome([{openTime:0,closeTime:DAY-1,open:1,high:1,low:1,close:1}],0,step),null);
-assert.equal(splitOf(640,1000,7,447),null,'purge at training boundary');
+assert.equal(splitOf(603,1000,7,447),null,'purge at training boundary');
 const gapped=rows.slice();gapped[627]=[...gapped[627]];gapped[627][0]+=1000;const gap=evaluateBowlWalkForward({symbol:'TESTUSDT',rows:gapped,asOf:at});
 assert(gap.gapsExcluded>=2,'gap must be flagged');
 assert.equal(gap.events.train.some(e=>e.price===110),false,'future label crossing a gap must not count');
