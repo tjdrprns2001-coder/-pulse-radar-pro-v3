@@ -20,12 +20,15 @@
     },
     "api/astra-scan.js": {
       "maxDuration": 20
+    },
+    "api/scanner-core.js": {
+      "maxDuration": 60
     }
   },
   "redirects": [
     {
       "source": "/",
-      "destination": "/pulse-unified.html",
+      "destination": "/scanner-standalone.html",
       "permanent": false
     }
   ],
