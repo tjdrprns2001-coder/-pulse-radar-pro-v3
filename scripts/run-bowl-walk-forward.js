@@ -3,6 +3,7 @@
 // Read-only study, never submits orders. Uses only Binance USDT futures direct klines.
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {evaluateBowlWalkForward}=require('../lib/research-backtest-v2/bowl-walk-forward.js');
+const {summarizeWalkForwardCohort}=require('../lib/research-backtest-v2/bowl-portfolio-summary.js');
 async function main(argv=process.argv.slice(2)){
  const tf=(argv.find(s=>s.startsWith('--tf='))||'--tf=1d').slice(5),symbols=argv.filter(x=>!x.startsWith('--')).map(s=>s.toUpperCase()).slice(0,8);
  const lim=Math.min(1500,Math.max(750,Number((argv.find(s=>s.startsWith('--limit='))||'--limit=1200').slice(8))||1200));
@@ -18,7 +19,7 @@ async function main(argv=process.argv.slice(2)){
  }
  console.log(JSON.stringify({study:'BOWL_WALK_FORWARD_v1',requestedAt:new Date(asOf).toISOString(),
    testedUniverse:[...new Set(symbols)],selection:'user-supplied; not whole-market',
-   results,notice:'Historical observational outcomes. Not a trade recommendation.'},null,2));
+   results,cohortSummary:summarizeWalkForwardCohort(results),notice:'Historical observational outcomes. Not a trade recommendation.'},null,2));
  if(results.every(x=>x.status!=='READY'))process.exitCode=2;
  return results;
 }
