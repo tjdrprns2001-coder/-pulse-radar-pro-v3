@@ -164,7 +164,8 @@ try:
         page.on("pageerror", lambda error: shell_errors.append(str(error)))
         page.goto(BASE + "/pulse-unified.html")
         expect(page.frame_locator("#frame").locator(".deskCallout")).to_be_visible()
-        assert page.locator(".navBtn[data-view]").count() == 33
+        assert page.locator(".navBtn[data-view]").count() == 34
+        expect(page.locator(".navBtn[data-view=livepatterns]")).to_have_count(1)
         check_layout(page, "main-desktop")
         page.frame_locator("#frame").locator(".deskCallout button").click()
         expect(page.frame_locator("#frame").locator("#astraRun")).to_be_visible()
