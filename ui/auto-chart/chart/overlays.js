@@ -14,6 +14,10 @@ function drawRange(ctx,analysis,{y,left,right}){const active=analysis.setup&&ana
 function drawSwings(ctx,analysis,{x,y,offset}){ctx.save();ctx.font='bold 10px system-ui';for(const s of (analysis.swings||[]).filter(q=>q.pivotIndex>=offset).slice(-14)){ctx.fillStyle=s.type==='H'?'#ffc3c9':'#97e7c7';ctx.fillText(s.label,x(s.pivotIndex)-9,y(s.price)+(s.type==='H'?-8:16))}ctx.restore()}
 function plotSeries(ctx,series,{x,y,offset},style){ctx.save();ctx.strokeStyle=style.stroke;ctx.lineWidth=style.width||1.2;if(style.dash)ctx.setLineDash(style.dash);ctx.beginPath();let started=false;for(let i=offset;i<series.length;i++){if(!Number.isFinite(Number(series[i])))continue;const xx=x(i),yy=y(series[i]);if(!started){ctx.moveTo(xx,yy);started=true}else ctx.lineTo(xx,yy)}if(started)ctx.stroke();ctx.restore()}
 function drawMa(ctx,analysis,view){const ma=analysis.indicators?.ma||{};plotSeries(ctx,ma[20]||[],view,{stroke:'#5fc7ff',width:1.4});plotSeries(ctx,ma[60]||[],view,{stroke:'#ffd166',width:1.4})}
+function drawLongSma(ctx,analysis,view){
+ const tracks=analysis?.patternSma||{},colors={112:'#62e2ee',224:'#ffeb91',448:'#ddafff'};
+ for(const n of [112,224,448])if(Array.isArray(tracks[n]))plotSeries(ctx,tracks[n],view,{stroke:colors[n],width:n===448?2.1:1.7});
+}
 function drawEmaPack(ctx,analysis,view){
  const e=analysis.advanced?.ema||{},cfg={14:['#6dd6ff',1.7],28:['#b4e06d',1.45],57:['#ffd166',1.35],92:['#ff9f68',1.35],142:['#c7a3ff',1],224:['#9aa9ff',1],268:['#d3a0db',1],378:['#9b8cff',1],448:['#7f79cf',1]};
  for(const p of[14,28,57,92])if(e[p])plotSeries(ctx,e[p],view,{stroke:cfg[p][0],width:cfg[p][1]});
@@ -67,5 +71,5 @@ function drawBowl(ctx,analysis,{x,y,offset,left,right}){
  ctx.fillText(label+' · 대칭 '+Number(b.symmetryRatio).toFixed(2)+'배',Math.max(left+4,Math.min(x0+5,right-165)),Math.max(12,top-5));
  ctx.restore();
 }
-return{drawBowl,drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
+return{drawBowl,drawLongSma,drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
 });
