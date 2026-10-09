@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {bowlSnapshotAt}=require('../lib/research-backtest-v2/bowl224/runner.js');
+const {buildBowlStats}=require('../lib/research-backtest-v2/bowl224/stats.js');
+const day=86400000,t0=1700000000000,c=[];
+function add(px,v=100){const open=t0+c.length*day;c.push([open,String(px),String(px*1.004),String(px*.996),String(px),String(v),open+day-1])}
+for(let i=0;i<448;i++)add(100);
+for(let i=0;i<30;i++)add(100-20*(i+1)/30);
+for(let i=0;i<35;i++)add(80+Math.sin(i/5)*.6);
+add(88,300);
+const cutoff=c.at(-1)[6];
+const before=bowlSnapshotAt(c,cutoff),after=bowlSnapshotAt([...c,[cutoff+1,'88','999','1','999','9900',cutoff+day]],cutoff);
+assert.deepEqual(after,before,'future bars must not alter past signal evidence');
+assert.equal(before.shadowOnly,true);
+assert.equal(before.status,'BREAKOUT_UNCONFIRMED','daily should wait for long MA');
+assert.equal(before.lastClosedTime,cutoff);
+const event={source:'bowl224-formal',eventId:'evt1',cohort:'3A',group:'B',symbol:'TESTUSDT',features:{bowlSymmetryShadow:before}};
+const stat=buildBowlStats({events:[event],outcomes:[{eventId:'evt1',labels:{Hit_72H_10pct:false},horizons:{h72:{mfe_pct:2.1}}}]});
+assert.equal(stat.symmetryShadow.byState.BREAKOUT_UNCONFIRMED.sampleCount,1);
+assert.equal(stat.symmetryShadow.byState.BREAKOUT_UNCONFIRMED.hit72h10Pct.hitRate,0);
+assert.equal(stat.symmetryShadow.byState.BREAKOUT_CONFIRMED.hit72h10Pct.hitRate,null);
+console.log('bowl224 shadow outcome evidence PASS');
