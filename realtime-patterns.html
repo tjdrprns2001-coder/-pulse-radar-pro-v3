@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>실시간 패턴 감지 · Pulse Radar Pro</title><link rel="stylesheet" href="/ui/realtime-patterns/style.css?v=20261009-a"></head>
+<body><main class="app">
+<header class="masthead"><div><div class="eyebrow">PULSE RADAR PRO / LIVE PATTERN WATCH</div><h1>실시간 패턴 감지 <span>●</span></h1><p>바이낸스 확정봉 기반 · 형성 중 / 돌파 확정 구분 · 실시간 스냅샷</p></div><a href="/pulse-unified.html" class="home">← 시장 데스크</a></header>
+<section class="toolbar" aria-label="감시 설정">
+<label>시장<select id="market"><option value="futures">USDT 무기한 선물</option><option value="spot">현물</option></select></label>
+<label>시간봉<select id="tf"><option value="5m">5분</option><option value="15m" selected>15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">일봉</option><option value="1w">주봉</option></select></label>
+<label class="symbols">감시 종목 · 최대 8개<input id="symbols" value="BTC, ETH, SOL, DOGE, ONDO, NEAR" spellcheck="false" autocomplete="off" placeholder="BTC, ETH, SOL"></label>
+<button id="start" class="primary">감시 시작</button><button id="stop">중지</button>
+</section>
+<section class="summary"><div class="tile"><small>연결 상태</small><strong id="status" data-state="idle">대기</strong></div><div class="tile"><small>감시 중</small><strong id="count">0종목</strong></div><div class="tile"><small>현재 패턴</small><strong id="activeCount">0개</strong></div><div class="tile"><small>세션 확정 알림</small><strong id="eventCount">0건</strong></div><div class="tile"><small>마지막 수신</small><strong id="lastTick">-</strong></div></section>
+<div id="error" role="status" aria-live="polite"></div>
+<section class="layout"><aside class="panel watch"><div class="panelHead"><h2>실시간 감시 목록</h2><small>종목을 누르면 차트 변경</small></div><div id="watchlist" class="watchItems"><p class="empty">감시 시작을 누르세요.</p></div></aside>
+<section class="panel chartPanel"><div class="panelHead"><div><h2 id="chartTitle">차트 대기</h2><small id="chartSubtitle">확정봉만 패턴 검증 · 미완성봉 가격은 참고 표시</small></div><button id="exportPng">차트 PNG</button></div><canvas id="chart" width="1200" height="490" aria-label="캔들 차트와 패턴 돌파선"></canvas><div id="currentPatterns" class="patternItems"><p class="empty">데이터를 불러오면 패턴을 표시합니다.</p></div><p class="hint">패턴 점수는 규칙 충족 정도이며 수익 확률이 아닙니다. OI·펀딩 정보가 없는 신호는 가격·거래량만으로 판단합니다.</p></section>
+<aside class="panel events"><div class="panelHead"><h2>확정 패턴 스냅샷</h2><button id="exportCsv">기록 CSV</button></div><div id="eventFeed" class="eventFeed"><p class="empty">새 봉이 마감돼 패턴이 확정되면 여기 기록됩니다.</p></div></aside>
+</section>
+<footer>웹소켓을 통한 브라우저 감시입니다. 페이지를 닫으면 감시가 멈춥니다. 서버 전체시장 백그라운드 스캔이나 주문 자동 실행은 하지 않습니다.</footer>
+</main><script src="/ui/realtime-patterns/core.js?v=20261009-a"></script><script src="/ui/realtime-patterns/app.js?v=20261009-a" defer></script></body></html>
