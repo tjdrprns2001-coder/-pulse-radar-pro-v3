@@ -29,23 +29,25 @@ const oracle=JSON.parse(output);
 assert.equal(oracle.reference,'quantstats');
 assert.equal(oracle.version,'0.0.86','pinned reference version must not drift');
 assert.equal(oracle.periodsPerYear,365.25);
-assert.equal(oracle.riskFreeRate,0);
+assert.deepEqual(oracle.annualRiskFreePct,[0,4.25]);
 const metrics=['totalReturnPct','cagrPct','annualizedVolPct','sharpe','sortino','maxDrawdownPct'];
 const comparisons=[];
 for(const [name,series] of Object.entries(fixtures)){
- const js=riskFromDailyEquity(series,{annualRiskFreePct:0,minDays:30}),py=oracle.results[name];
+ for(const [rfKey,annualRiskFreePct] of [['rf0',0],['rf4p25',4.25]]){
+ const js=riskFromDailyEquity(series,{annualRiskFreePct,minDays:30}),py=oracle.results[name][rfKey];
  assert.equal(js.status,'READY',name);
  assert.equal(js.observationDays,py.observationDays,name);
  for(const metric of metrics){
   const current=js[metric],target=py[metric];
   if(current===null||target===null){
-   assert.equal(current,target,name+' '+metric+' null parity');
-   comparisons.push({fixture:name,metric,status:'BOTH_UNDEFINED'});
+   assert.equal(current,target,name+' '+rfKey+' '+metric+' null parity');
+   comparisons.push({fixture:name,rf:annualRiskFreePct,metric,status:'BOTH_UNDEFINED'});
    continue;
   }
   const diff=Math.abs(current-target),tolerance=1e-6;
-  assert(diff<=tolerance,JSON.stringify({fixture:name,metric,current,target,diff,tolerance}));
-  comparisons.push({fixture:name,metric,maxAbsDelta:diff,status:'PASS'});
+  assert(diff<=tolerance,JSON.stringify({fixture:name,rf:annualRiskFreePct,metric,current,target,diff,tolerance}));
+  comparisons.push({fixture:name,rf:annualRiskFreePct,metric,maxAbsDelta:diff,status:'PASS'});
+ }
  }
 }
 const first=fixtures.initial_loss_150;
