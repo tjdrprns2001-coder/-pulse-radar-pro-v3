@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "check:calibration": "node scripts/calibration-self-check.js",
+    "test:pattern-evidence": "node scripts/verify-bowl-symmetry.js && node scripts/verify-pattern-evidence.js",
     "freeze:calibration": "node scripts/print-calibration-freeze.js",
     "gate:release": "node scripts/release-gate.js",
     "test:foundation": "node scripts/verify-milestone1.js",
