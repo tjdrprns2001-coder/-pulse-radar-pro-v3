@@ -103,6 +103,10 @@
       "destination": "/api/index?route=micro-features"
     },
     {
+      "source": "/api/period-symmetry",
+      "destination": "/api/index?route=period-symmetry"
+    },
+    {
       "source": "/api/pattern",
       "destination": "/api/index?route=pattern"
     },
