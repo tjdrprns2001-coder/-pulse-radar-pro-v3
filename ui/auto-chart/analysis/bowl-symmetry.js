@@ -9,6 +9,17 @@ function sma(values, period) {
   return total/period;
 }
 function finitePositive(v){return typeof v==='number'&&Number.isFinite(v)&&v>0}
+function smaSeries(values,period){
+ const out=Array(values.length).fill(null);
+ if(!Number.isInteger(period)||period<1)return out;
+ let sum=0,invalid=0;
+ for(let i=0;i<values.length;i++){
+  const n=Number(values[i]);if(!Number.isFinite(n))invalid++;else sum+=n;
+  if(i>=period){const old=Number(values[i-period]);if(!Number.isFinite(old))invalid--;else sum-=old}
+  if(i>=period-1&&invalid===0)out[i]=sum/period;
+ }
+ return out;
+}
 function detectBowlSymmetry(candles, options={}) {
   const cfg={
     minDecline:options.minDecline??0.10,
@@ -66,6 +77,6 @@ function detectBowlSymmetry(candles, options={}) {
   }
   return best??{status:'NO_PATTERN',signal:false};
 }
-return{detectBowlSymmetry,sma};
+return{detectBowlSymmetry,sma,smaSeries};
 
 });
