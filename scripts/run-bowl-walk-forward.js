@@ -24,7 +24,7 @@ async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,n
   for(const split of ['train','validation']){
    const matching=results.filter(r=>r.status==='READY');
    const exportIncomplete=matching.some(r=>r.bySplit?.[split]?.signals?.count!==r.events?.[split]?.length);
-   if(exportIncomplete||matching.length!==datasets.length){risk[split]={status:'INCOMPLETE_SOURCE_OR_EVENT_EXPORT'};continue}
+   if(exportIncomplete||results.some(r=>r.status!=='READY')||matching.length!==datasets.length||datasets.length!==[...new Set(symbols)].length){risk[split]={status:'INCOMPLETE_SOURCE_OR_EVENT_EXPORT'};continue}
    const audits=datasets.map((d,i)=>simulateSignalCloseToNextOpen({symbol:d.symbol,rows:d.rows,events:matching[i].events[split],asOf,timeframe:tf}));
    const portfolio=buildHypotheticalPortfolio({datasets,audits});
    risk[split]={status:portfolio.status,accepted:portfolio.acceptedCount??0,rejected:portfolio.rejectedCount??0,
