@@ -42,7 +42,9 @@ jobs:
       - run: node --check lib/pulse-ai/briefing-service.js
       - run: node --check api/pulse-ai.js
       - run: node --check ui/pulse-ai.js
+      - run: node --check lib/pulse-ai/llm-role-debate.js
       - run: node scripts/verify-pulse-ai-multi-perspective.js
+      - run: node scripts/verify-pulse-ai-llm-role-debate.js
       - run: npm run test:pulse-ai-core
       - run: npm run test:pulse-ai-gateway
       - run: npm run test:pulse-ai-api
