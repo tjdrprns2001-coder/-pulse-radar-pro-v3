@@ -90,7 +90,7 @@ const roleService=createRoleDebateService({gateway,now:()=>TS});
     evidenceFields:['oiChangePct']};}},now:()=>TS});
  const incomplete=await partial.debate({context,selectedSymbol:'AAAUSDT'});
  assert.equal(incomplete.status,'FAILED');assert.equal(incomplete.roles,undefined);
- assert.equal(incomplete.modelCalls,0);
+ assert.equal(incomplete.modelCalls,3,'partial failure must disclose model calls actually attempted');
  assert.equal(partialCalls,3);
  const repeat=await partial.debate({context,selectedSymbol:'AAAUSDT'});
  assert.equal(repeat.status,'COOLDOWN','failure cannot return false success');
@@ -105,6 +105,18 @@ const roleService=createRoleDebateService({gateway,now:()=>TS});
  const second=await concur.debate({context,selectedSymbol:'AAAUSDT'});
  assert.equal(second.status,'IN_PROGRESS');
  resolveGate();assert.equal((await pending).status,'READY');assert.equal(concurrentCalls,3);
+ const budgetGateway={available:true,model:'mock',async reviewRole({role,symbol}){
+  return{role,symbol,stance:'NEUTRAL',summary:'스캐너의 일부 데이터만으로는 매매 결론을 확정할 수 없습니다.',evidenceFields:['oiChangePct']};
+ }};
+ const limited=createRoleDebateService({gateway:budgetGateway,now:()=>TS,maxReviewsPerHour:1});
+ assert.equal((await limited.debate({context,selectedSymbol:'AAAUSDT'})).status,'READY');
+ const secondSymbolScan=JSON.parse(JSON.stringify(scan));
+ secondSymbolScan.items[1]={...secondSymbolScan.items[0],symbol:'BBBUSDT'};
+ const secondContext=buildContext(secondSymbolScan,{events:[]},{selectedSymbol:'BBBUSDT'});
+ const tooMany=await limited.debate({context:secondContext,selectedSymbol:'BBBUSDT'});
+ assert.equal(tooMany.status,'BUDGET_LIMIT','distinct symbols cannot bypass hourly budget');
+ assert.equal(limited.health().reviewsStartedLastHour,1);
+
  const svc=createBriefingService({scanService:{run:async()=>JSON.parse(JSON.stringify(scan))},
   gateway:{...gateway,brief:async()=>({status:'ok',summary:'독립 브리핑',provider:'gemini',
     usedWeb:false,eventCatalysts:[],highlights:[],watch:[],dataWarnings:[],sources:[]})},
