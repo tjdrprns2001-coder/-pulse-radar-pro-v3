@@ -39,7 +39,8 @@ function render(analysis,{aux=null}={}){
   const status=b?.status==='BREAKOUT_CONFIRMED'?'확정봉 돌파':b?.status==='BREAKOUT_UNCONFIRMED'?'거래량 또는 이평 확인 대기':b?.status==='BASE_WATCH'?'횡보 구간 관찰':b?.status==='NO_PATTERN'?'패턴 없음':'데이터 부족';
   const label=b?.symmetryRatio!=null?('대칭 '+ratio(b.symmetryRatio)+'배 · 횡보 '+b.baseBars+'봉 · 폭 '+pct(b.baseWidthPct)+' · 박스상단 '+price(b.baseHigh)):'패턴 대칭 계산 N/A';
   const candleLabels=(p?.candlestickPatterns||[]).map(x=>x.label).join(', ');
-  setText('cardBowl',p?(status+' · '+label+(candleLabels?' · '+candleLabels:'')):'선택 시간봉 분석 없음');
+  const longSma=analysis.patternSma,maLabel=longSma?(' · SMA112 '+price(longSma[112]?.at(-1))+' / 224 '+price(longSma[224]?.at(-1))+' / 448 '+price(longSma[448]?.at(-1))):'';
+  setText('cardBowl',p?(status+' · '+label+(candleLabels?' · '+candleLabels:'')+maLabel):'선택 시간봉 분석 없음');
   const sp=a.specialSetups||{},d=sp.daily92142,h=sp.fourHLongEmaSupport;setText('cardSpecial',d?('1D 92→142 '+(d.ready?'READY':'WAIT')+' · 142거리 '+pct(d.distanceTo142Pct)):h?('4H '+(h.nearest?.period||'')+'EMA '+(h.reclaimed?'RECLAIM':h.holding?'HOLD':'AWAY')+' · 거리 '+pct(h.distancePct)):'선택 TF 전용 조건 없음');
   const inv=analysis.setup.invalidation;setText('cardInvalidation',inv?.price!=null?price(inv.price)+' · '+(inv.type==='range-low'?'박스 하단 이탈':'돌파 실패 기준'):'N/A');
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
