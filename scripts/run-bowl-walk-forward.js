@@ -37,7 +37,7 @@ async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,n
    results,cohortSummary:summarizeWalkForwardCohort(results),
    ...(risk?{hypotheticalCostRisk:{status:'RESEARCH_ONLY',splits:risk,holdout:'LOCKED_BY_DESIGN'}}:{}),
    notice:'Historical observational outcomes. Not a trade recommendation.'},null,2));
- if(results.every(x=>x.status!=='READY'))process.exitCode=2;
+ if(require.main===module&&results.every(x=>x.status!=='READY'))process.exitCode=2;
  return results;
 }
 if(require.main===module)main().catch(e=>{console.error(String(e?.message||e));process.exitCode=1});
