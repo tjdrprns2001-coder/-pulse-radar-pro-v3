@@ -5,7 +5,8 @@ const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {evaluateBowlWalkForward}=require('../lib/research-backtest-v2/bowl-walk-forward.js');
 const {summarizeWalkForwardCohort}=require('../lib/research-backtest-v2/bowl-portfolio-summary.js');
 const {simulateSignalCloseToNextOpen,buildHypotheticalPortfolio}=require('../lib/research-backtest-v2/quantstyle-performance.js');
-async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,now=()=>Date.now(),write=console.log}={}){
+const {fetchBinanceFundingWindow,auditFundingForTrades}=require('../lib/research-backtest-v2/binance-funding-audit.js');
+async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,now=()=>Date.now(),write=console.log,fundingFetch=globalThis.fetch}={}){
  const tf=(argv.find(s=>s.startsWith('--tf='))||'--tf=1d').slice(5),symbols=argv.filter(x=>!x.startsWith('--')).map(s=>s.toUpperCase()).slice(0,8);
  const lim=Math.min(1500,Math.max(750,Number((argv.find(s=>s.startsWith('--limit='))||'--limit=1200').slice(8))||1200));
  if(!['1d','4h'].includes(tf)||!symbols.length||symbols.some(x=>!/^([A-Z0-9]{2,25})USDT$/.test(x)))
@@ -19,7 +20,8 @@ async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,n
    results.push(evaluateBowlWalkForward({symbol,rows:candles,asOf,timeframe:tf,source:'BINANCE_FUTURES'}));
   }catch(error){results.push({symbol,timeframe:tf,status:'UNAVAILABLE',reason:String(error?.message||error)})}
  }
- const risk=argv.includes('--risk')?{}:null;
+ const doFunding=argv.includes('--funding-audit');
+ const risk=argv.includes('--risk')||doFunding?{}:null;
  if(risk){
   for(const split of ['train','validation']){
    const matching=results.filter(r=>r.status==='READY');
@@ -27,9 +29,27 @@ async function main(argv=process.argv.slice(2),{provider:injectedProvider=null,n
    if(exportIncomplete||results.some(r=>r.status!=='READY')||matching.length!==datasets.length||datasets.length!==[...new Set(symbols)].length){risk[split]={status:'INCOMPLETE_SOURCE_OR_EVENT_EXPORT'};continue}
    const audits=datasets.map((d,i)=>simulateSignalCloseToNextOpen({symbol:d.symbol,rows:d.rows,events:matching[i].events[split],asOf,timeframe:tf}));
    const portfolio=buildHypotheticalPortfolio({datasets,audits});
+   let fundingAudit=null;
+   if(doFunding){
+    const details=[];
+    for(let i=0;i<datasets.length;i++){
+     const trades=audits[i].trades;
+     if(!trades.length){details.push({symbol:datasets[i].symbol,status:'NO_TRADES',count:0});continue}
+     const startTime=Math.min(...trades.map(x=>x.entryTime)),endTime=Math.max(...trades.map(x=>x.exitTime));
+     const window=await fetchBinanceFundingWindow({symbol:datasets[i].symbol,startTime,endTime,fetchImpl:fundingFetch});
+     const result=auditFundingForTrades({symbol:datasets[i].symbol,trades,window});
+     details.push({symbol:datasets[i].symbol,status:result.status,observedCount:result.trades.filter(x=>x.status==='OBSERVED_SETTLEMENTS_ONLY').length,
+      incompleteCount:result.incompleteCount??0,verifiedNet:false,fetchPages:window.pageCount??null,
+      observedFundingPctSum:result.trades.reduce((sum,x)=>sum+(x.status==='OBSERVED_SETTLEMENTS_ONLY'?x.signedFundingCashflowPct:0),0),
+      note:'Observed funding cashflow for all candidate trades; NOT compounded or guaranteed comprehensive'});
+    }
+    fundingAudit={status:details.some(x=>!['OBSERVED_ONLY','NO_TRADES'].includes(x.status))?'PARTIAL':'OBSERVED_ONLY',
+      verifiedNet:false,markets:details,caution:'Historical funding interval adjustments and mark-to-market cash flows not independently verified. Unadjusted portfolio PnL remains ex funding'};
+   }
    risk[split]={status:portfolio.status,accepted:portfolio.acceptedCount??0,rejected:portfolio.rejectedCount??0,
      tradeStats:portfolio.tradeStats??null,dailyRisk:portfolio.dailyRisk??null,
-     notes:'Estimated next-open to 7D-close, conservative single-position; funding unavailable; not realized PnL'};
+     ...(fundingAudit?{fundingAudit}:{}),
+     notes:'Estimated next-open to 7D-close, conservative single-position; funding separate/provisional; not realized PnL'};
   }
  }
  write(JSON.stringify({study:'BOWL_WALK_FORWARD_v1',requestedAt:new Date(asOf).toISOString(),
