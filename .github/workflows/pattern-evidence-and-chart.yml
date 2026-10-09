@@ -1,0 +1,43 @@
+name: Pattern evidence and chart
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/coin-scan/bowl-symmetry.js'
+      - 'lib/coin-scan/pattern-evidence.js'
+      - 'lib/coin-scan/scan-service.js'
+      - 'ui/auto-chart/**'
+      - 'auto-chart-lab.html'
+      - 'scripts/verify-bowl-symmetry.js'
+      - 'scripts/verify-pattern-evidence.js'
+      - 'scripts/verify-bowl-auto-chart.js'
+      - 'package.json'
+      - '.github/workflows/pattern-evidence-and-chart.yml'
+  pull_request:
+    paths:
+      - 'lib/coin-scan/bowl-symmetry.js'
+      - 'lib/coin-scan/pattern-evidence.js'
+      - 'lib/coin-scan/scan-service.js'
+      - 'ui/auto-chart/**'
+      - 'auto-chart-lab.html'
+      - 'scripts/verify-bowl-*.js'
+      - 'scripts/verify-pattern-evidence.js'
+      - 'package.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --omit=dev --ignore-scripts
+      - run: npm run test:pattern-evidence
+      - run: npm run test:auto-chart-lab
+      - run: node scripts/verify-bowl224-patterns.js
