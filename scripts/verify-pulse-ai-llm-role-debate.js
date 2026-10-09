@@ -106,7 +106,9 @@ const roleService=createRoleDebateService({gateway,now:()=>TS});
  assert.equal(second.status,'IN_PROGRESS');
  resolveGate();assert.equal((await pending).status,'READY');assert.equal(concurrentCalls,3);
  const svc=createBriefingService({scanService:{run:async()=>JSON.parse(JSON.stringify(scan))},
-  gateway,roleDebate:roleService,now:()=>TS,cacheMs:0});
+  gateway:{...gateway,brief:async()=>({status:'ok',summary:'독립 브리핑',provider:'gemini',
+    usedWeb:false,eventCatalysts:[],highlights:[],watch:[],dataWarnings:[],sources:[]})},
+  roleDebate:roleService,now:()=>TS,cacheMs:0});
  const brief=await svc.getBrief({selectedSymbol:'AAAUSDT'});
  assert.equal(brief.roleDebate.available,true);
  assert.equal(requests.length,3,'ordinary brief never triggers LLM roles');
