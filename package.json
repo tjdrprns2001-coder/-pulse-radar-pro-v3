@@ -10,7 +10,7 @@
     "research:bowl-parameter-grid": "node scripts/run-bowl-parameter-grid.js",
     "test:bowl-parameter-grid": "node scripts/verify-bowl-parameter-grid.js && node scripts/verify-bowl-parameter-grid-cli.js",
     "test:quantstyle-performance": "node scripts/verify-quantstyle-performance.js && node scripts/verify-quantstyle-integration.js",
-    "test:funding-audit": "node scripts/verify-binance-funding-audit.js",
+    "test:funding-audit": "node scripts/verify-binance-funding-audit.js && node scripts/verify-binance-funding-integration.js",
     "freeze:calibration": "node scripts/print-calibration-freeze.js",
     "gate:release": "node scripts/release-gate.js",
     "test:foundation": "node scripts/verify-milestone1.js",
