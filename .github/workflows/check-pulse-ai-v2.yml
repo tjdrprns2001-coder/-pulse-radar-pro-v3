@@ -3,6 +3,7 @@ name: Pulse AI v2 checks
 on:
   push:
     branches:
+      - main
       - feature/pulse-ai-v2-20260926
     paths:
       - 'lib/pulse-ai/**'
@@ -41,6 +42,7 @@ jobs:
       - run: node --check lib/pulse-ai/briefing-service.js
       - run: node --check api/pulse-ai.js
       - run: node --check ui/pulse-ai.js
+      - run: node scripts/verify-pulse-ai-multi-perspective.js
       - run: npm run test:pulse-ai-core
       - run: npm run test:pulse-ai-gateway
       - run: npm run test:pulse-ai-api
