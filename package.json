@@ -7,6 +7,8 @@
     "test:pattern-evidence": "node scripts/verify-bowl-symmetry.js && node scripts/verify-pattern-evidence.js && node scripts/verify-bowl-auto-chart.js",
     "test:bowl-walk-forward": "node scripts/verify-bowl-walk-forward.js && node scripts/verify-bowl-portfolio-summary.js",
     "research:bowl-walk-forward": "node scripts/run-bowl-walk-forward.js",
+    "research:bowl-parameter-grid": "node scripts/run-bowl-parameter-grid.js",
+    "test:bowl-parameter-grid": "node scripts/verify-bowl-parameter-grid.js && node scripts/verify-bowl-parameter-grid-cli.js",
     "freeze:calibration": "node scripts/print-calibration-freeze.js",
     "gate:release": "node scripts/release-gate.js",
     "test:foundation": "node scripts/verify-milestone1.js",
