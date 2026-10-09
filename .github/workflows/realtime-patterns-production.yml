@@ -1,0 +1,32 @@
+name: Realtime patterns production smoke
+on:
+  pull_request:
+    paths:
+      - 'scripts/verify-realtime-patterns-production.py'
+      - '.github/workflows/realtime-patterns-production.yml'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/verify-realtime-patterns-production.py'
+      - '.github/workflows/realtime-patterns-production.yml'
+permissions:
+  contents: read
+jobs:
+  browser-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright==1.55.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python scripts/verify-realtime-patterns-production.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: realtime-patterns-production-screenshots
+          path: artifacts/realtime-patterns
+          if-no-files-found: ignore
