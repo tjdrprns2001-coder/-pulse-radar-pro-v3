@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),api=path.join(root,'api');
+const files=fs.readdirSync(api).filter(x=>x.endsWith('.js'));
+assert(files.length<=12,'Vercel Hobby supports 12 functions; found '+files.length);
+assert(!files.includes('period-symmetry.js'),'old redundant serverless entry should be removed');
+const config=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
+const r=config.rewrites.find(x=>x.source==='/api/period-symmetry');
+assert.equal(r?.destination,'/api/index?route=period-symmetry');
+const dispatcher=fs.readFileSync(path.join(root,'api/index.js'),'utf8');
+assert(dispatcher.includes("'period-symmetry': require('../handlers/period-symmetry')"));
+const handler=require('../handlers/period-symmetry.js');
+let response=null;
+const res={setHeader(){},status(n){response={status:n};return this},json(body){response.body=body;return response}};
+(async()=>{await handler({query:{}},res);assert.equal(response.status,400);assert.equal(response.body.error,'symbols required');console.log('period-symmetry route/function-budget PASS: '+files.length+' entrypoints')})().catch(e=>{console.error(e);process.exitCode=1});
