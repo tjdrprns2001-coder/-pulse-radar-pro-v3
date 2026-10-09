@@ -84,8 +84,8 @@ function renderResearch(r,t=null){
     el.append(node('div','researchDetail',`TypeSafe ${stateText} · ${t.shadowOnly===false?'ACTIVE':'SHADOW_ONLY'}${mode}`));
   }
 }
-let preferredReviewSymbol=null;
-function renderMultiPerspective(board){
+let preferredReviewSymbol=null,currentRoleDebate=null,roleDebateBusy=false,roleDebateError='';
+function renderMultiPerspective(board,roleHealth=null){
   const target=$('reviewPanel');if(!target)return;clear(target);
   const reviews=Array.isArray(board?.reviews)?board.reviews:[];
   if(!reviews.length){target.append(node('div','empty','심의 가능한 스캐너 근거가 없습니다.'));return}
@@ -95,7 +95,7 @@ function renderMultiPerspective(board){
     const select=node('select','reviewSelect');select.setAttribute('aria-label','다각도 심의 종목 선택');
     for(const x of reviews){const opt=node('option','',x.symbol);opt.value=x.symbol;select.append(opt)}
     select.value=review.symbol;
-    select.addEventListener('change',()=>{preferredReviewSymbol=select.value;renderMultiPerspective(board)});
+    select.addEventListener('change',()=>{preferredReviewSymbol=select.value;renderMultiPerspective(board,roleHealth)});
     target.append(select);
   }
   const head=node('div','reviewVerdict');
@@ -111,6 +111,27 @@ function renderMultiPerspective(board){
     if(parts.length)item.append(node('div','reviewEvidence','관측 근거: '+parts.join(' · ')));
     if(role.missing?.length)item.append(node('div','reviewMissing','추가 확인: '+role.missing.join(' · ')));
     roles.append(item);
+  }
+  const actions=node('div','roleDebateActions'),trigger=node('button','ghostBtn roleDebateBtn','AI 3역할 심의 실행');
+  trigger.type='button';trigger.disabled=roleDebateBusy||!roleHealth?.available||board.quality?.status!=='CHECKED'||
+    ['DATA_OR_RISK_BLOCKED','MISSING_DERIVATIVES'].includes(review.readiness);
+  trigger.addEventListener('click',()=>runRoleDebate(review.symbol));
+  actions.append(trigger,node('span','reviewMissing',!roleHealth?.available?'Gemini API 비활성 · 기존 규칙 심의만 사용':
+    roleDebateBusy?'AI 심의 실행 중…':'직접 요청 시 Gemini 세 번 호출 · 같은 모델 · 10분 제한'));
+  target.append(actions);
+  if(currentRoleDebate&&currentRoleDebate.symbol===review.symbol&&currentRoleDebate.sourceAsOf===board.quality?.updatedAt&&
+      ['READY','CACHED'].includes(currentRoleDebate.status)){
+    const result=node('div','llmReviewResult');
+    result.append(node('b','',review.symbol+' · Gemini 3역할 심의 · 연구 전용'));
+    for(const role of (currentRoleDebate.roles||[])){
+      const label=role.role==='bull'?'상승 분석':role.role==='bear'?'하락 반론':'위험 심의';
+      result.append(node('p','',label+' ('+role.stance+'): '+role.summary));
+      result.append(node('div','reviewEvidence','확인 필드: '+(role.evidenceFields||[]).join(' · ')));
+    }
+    result.append(node('div','reviewWarning','결론: '+currentRoleDebate.disposition+' · 독립 모델 아님 · 주문·순위 반영 없음'));
+    target.append(result);
+  }else if(roleDebateError){
+    target.append(node('div','reviewWarning','LLM 심의: '+roleDebateError));
   }
   target.append(roles,node('div','reviewWarning',board.quality?.warnings?.length?
     '데이터 경고: '+board.quality.warnings.join(' · '):
@@ -153,7 +174,7 @@ function render(data){
   renderList('candidates',candidates,candidateCard,'현재 과진행을 제외한 우선 후보가 없습니다.');
   renderList('sectors',data.sectors,x=>itemRow(`${x.sector} · 후보 ${x.candidates}개`,`평균 ${fmtPct(x.avgChange24h)} · ${(x.leaders||[]).join(', ')}`));
   renderResearch(r,t);
-  renderMultiPerspective(data.multiPerspective);
+  renderMultiPerspective(data.multiPerspective,data.roleDebate);
   $('eventSummary').textContent=text(data.eventSummary||'현재 확인된 이벤트 요약이 없습니다.');
   $('eventCount').textContent=fmtNum((data.eventCatalysts||[]).length);
   renderList('eventCatalysts',data.eventCatalysts,eventRow,'현재 확인된 공식·신뢰 이벤트가 없습니다.');
@@ -180,6 +201,25 @@ async function fetchJson(url,options={},timeout=45000){
   }finally{
     clearTimeout(timer);if(external)external.removeEventListener('abort',relay);
   }
+}
+async function runRoleDebate(symbol){
+  if(roleDebateBusy)return;
+  roleDebateBusy=true;roleDebateError='';renderMultiPerspective(current?.multiPerspective,current?.roleDebate);
+  const requested=symbol;
+  try{
+    const j=await fetchJson('/api/pulse-ai?mode=chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:'선택 종목의 상승 하락 위험을 역할별로 심의',selectedSymbol:requested,llmRoles:true})
+    },65000);
+    const debate=j.llmDebate;
+    if(debate&&['READY','CACHED'].includes(debate.status)){
+      currentRoleDebate=debate;roleDebateError='';
+      addChat('assistant',j.answer||'LLM 역할별 심의 완료','Gemini 3역할 · 같은 모델 · 연구 전용');
+    }else{
+      currentRoleDebate=null;roleDebateError=debate?.reason||'근거 부족 또는 API 비활성';
+    }
+  }catch(e){currentRoleDebate=null;roleDebateError='요청 실패 또는 시간 초과';}
+  finally{roleDebateBusy=false;renderMultiPerspective(current?.multiPerspective,current?.roleDebate);}
 }
 async function load(force=false){
   const my=++seq;if(loading)loading.abort();loading=new AbortController();
