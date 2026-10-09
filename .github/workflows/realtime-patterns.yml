@@ -1,0 +1,25 @@
+name: Realtime pattern detection
+on:
+  pull_request:
+    paths:
+      - 'ui/realtime-patterns/**'
+      - 'realtime-patterns.html'
+      - 'tests/realtime-patterns.test.js'
+      - '.github/workflows/realtime-patterns.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/realtime-patterns/**'
+      - 'realtime-patterns.html'
+      - 'tests/realtime-patterns.test.js'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check ui/realtime-patterns/core.js
+      - run: node --check ui/realtime-patterns/app.js
+      - run: node --test tests/realtime-patterns.test.js
