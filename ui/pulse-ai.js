@@ -84,6 +84,38 @@ function renderResearch(r,t=null){
     el.append(node('div','researchDetail',`TypeSafe ${stateText} · ${t.shadowOnly===false?'ACTIVE':'SHADOW_ONLY'}${mode}`));
   }
 }
+let preferredReviewSymbol=null;
+function renderMultiPerspective(board){
+  const target=$('reviewPanel');if(!target)return;clear(target);
+  const reviews=Array.isArray(board?.reviews)?board.reviews:[];
+  if(!reviews.length){target.append(node('div','empty','심의 가능한 스캐너 근거가 없습니다.'));return}
+  const targetSymbol=preferredReviewSymbol&&reviews.some(x=>x.symbol===preferredReviewSymbol)?preferredReviewSymbol:reviews[0].symbol;
+  const review=reviews.find(x=>x.symbol===targetSymbol)||reviews[0];
+  if(reviews.length>1){
+    const select=node('select','reviewSelect');select.setAttribute('aria-label','다각도 심의 종목 선택');
+    for(const x of reviews){const opt=node('option','',x.symbol);opt.value=x.symbol;select.append(opt)}
+    select.value=review.symbol;
+    select.addEventListener('change',()=>{preferredReviewSymbol=select.value;renderMultiPerspective(board)});
+    target.append(select);
+  }
+  const head=node('div','reviewVerdict');
+  head.append(node('b','',review.symbol+' · '+review.verdict));
+  head.append(node('span','',review.disagreement?'찬반 의견 상충 · 근거 재확인':'근거별 교차점검'));
+  target.append(head);
+  const roles=node('div','reviewRoles');
+  for(const role of (review.roles||[])){
+    const item=node('details','reviewRole'),h=node('summary','reviewRoleTitle');
+    h.append(node('b','',role.label),node('span','reviewStance',role.stanceKo||'자료 부족'));
+    item.append(h,node('p','reviewText',role.summary));
+    const parts=(role.evidence||[]).map(e=>e.detail+' '+e.value);
+    if(parts.length)item.append(node('div','reviewEvidence','관측 근거: '+parts.join(' · ')));
+    if(role.missing?.length)item.append(node('div','reviewMissing','추가 확인: '+role.missing.join(' · ')));
+    roles.append(item);
+  }
+  target.append(roles,node('div','reviewWarning',board.quality?.warnings?.length?
+    '데이터 경고: '+board.quality.warnings.join(' · '):
+    '스캐너 근거만 사용 · 점수 및 매매 신호 변경 없음 · 독립 LLM 토론 아님'));
+}
 function renderFocus(f){
   const card=$('focusCard');
   if(!f||!f.found){card.hidden=true;return}
@@ -121,6 +153,7 @@ function render(data){
   renderList('candidates',candidates,candidateCard,'현재 과진행을 제외한 우선 후보가 없습니다.');
   renderList('sectors',data.sectors,x=>itemRow(`${x.sector} · 후보 ${x.candidates}개`,`평균 ${fmtPct(x.avgChange24h)} · ${(x.leaders||[]).join(', ')}`));
   renderResearch(r,t);
+  renderMultiPerspective(data.multiPerspective);
   $('eventSummary').textContent=text(data.eventSummary||'현재 확인된 이벤트 요약이 없습니다.');
   $('eventCount').textContent=fmtNum((data.eventCatalysts||[]).length);
   renderList('eventCatalysts',data.eventCatalysts,eventRow,'현재 확인된 공식·신뢰 이벤트가 없습니다.');
