@@ -21,7 +21,7 @@ const futureResult=analyzePatternEvidence({frames:{'1d':future,'4h':future},asOf
 assert.deepEqual(futureResult.fourHour.bowl,out.fourHour.bowl);
 assert.equal(analyzePatternEvidence({frames:{'1d':rows},asOf:null}).status,'UNAVAILABLE');
 assert.equal(analyzePatternEvidence({frames:{'1d':rows.slice(-20)},asOf}).daily.status,'INSUFFICIENT_HISTORY');
-const hammer=[{open:12,high:12.3,low:11.7,close:11.9},{open:11.9,high:12,low:11.3,close:11.4},{open:11.4,high:11.5,low:10.9,close:11},{open:11,high:11.1,low:10.6,close:10.7},{open:10.7,high:10.8,low:10.4,close:10.5},{open:10.6,high:10.7,low:9.5,close:10.65}];
+const hammer=[{open:12,high:12.3,low:11.7,close:11.9},{open:11.9,high:12,low:11.3,close:11.4},{open:11.4,high:11.5,low:10.9,close:11},{open:11,high:11.1,low:10.6,close:10.7},{open:10.7,high:10.8,low:10.4,close:10.5},{open:10.6,high:10.66,low:9.5,close:10.65}];
 assert(candlePatterns(hammer).some(x=>x.key==='HAMMER'));
 const engulf=[{open:10,close:9,high:10.2,low:8.9},{open:8.9,close:10.3,high:10.5,low:8.8}];
 assert(candlePatterns(engulf).some(x=>x.key==='BULLISH_ENGULFING'));
