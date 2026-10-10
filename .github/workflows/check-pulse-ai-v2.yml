@@ -48,5 +48,6 @@ jobs:
       - run: npm run test:pulse-ai-core
       - run: npm run test:pulse-ai-gateway
       - run: node scripts/verify-pulse-ai-model-failover.js
+      - run: node scripts/verify-pulse-ai-provider-config-health.js
       - run: npm run test:pulse-ai-api
       - run: npm run test:pulse-ai-ui
