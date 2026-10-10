@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('assert');
 const Astra=require('../lib/coin-scan/astra-auto-scanner.js');
+const IntegratedSurge=require('../lib/coin-scan/integrated-surge-engine.js');
 
 function klineSeries({base=.1,count=160,step=.00005,volume=1000,lastVolume=4500,tfMs=300000}){
   const now=Date.now()-tfMs*(count+2),out=[];let p=base;
@@ -84,7 +85,9 @@ const provider={
   assert(d.items[0].samplingV3.alternativeBars.bars.tickCount>0&&d.items[0].samplingV3.alternativeBars.bars.volumeCount>0,'Astra tick/volume bars required');
   assert.equal(d.items[0].samplingV3.alternativeBars.policy.thresholdMode,'FROZEN_CALIBRATION','Astra alternative-bar thresholds must be train/eval separated');
   assert.equal(d.items[0].samplingV3.alternativeBars.diagnostics.futureDataUsedForThresholds,false,'Astra thresholds must not use evaluation/future trades');
-  assert.equal(d.items[0].integratedSurge.version,'INTEGRATED_SURGE_v1','integrated strategy must be attached');
+  assert.equal(d.items[0].integratedSurge.version,IntegratedSurge.VERSION,'integrated strategy must be attached');
+  assert(d.items[0].integratedSurge.conditionAudit,'integrated condition audit must be attached');
+  assert(Number.isFinite(d.items[0].integratedSurge.candleCloses['5m']),'audit must use a fixed closed-candle timestamp');
   assert.equal(d.items[0].verdict.integratedSurge.stage,d.items[0].integratedSurge.stage);
   assert.equal(d.items[0].integratedSurge.policy.negative5mMacdVeto,false);
   assert.equal(d.items[0].integratedSurge.oi.known,true,'integrated OI must use raw 15m rows while legacy keeps hourly rows');
