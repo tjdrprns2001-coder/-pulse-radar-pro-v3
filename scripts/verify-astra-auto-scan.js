@@ -87,7 +87,8 @@ const provider={
   assert.equal(d.items[0].samplingV3.alternativeBars.diagnostics.futureDataUsedForThresholds,false,'Astra thresholds must not use evaluation/future trades');
   assert.equal(d.items[0].integratedSurge.version,IntegratedSurge.VERSION,'integrated strategy must be attached');
   assert(d.items[0].integratedSurge.conditionAudit,'integrated condition audit must be attached');
-  assert(Number.isFinite(d.items[0].integratedSurge.candleCloses['5m']),'audit must use a fixed closed-candle timestamp');
+  assert.equal(d.items[0].integratedSurge.conditionAudit.validity.status,'MISSING','stale fixture candles must not get a renewed signal lifetime');
+  assert.equal(d.items[0].integratedSurge.conditionAudit.executionReady,false,'stale fixture candles must block audit readiness');
   assert.equal(d.items[0].verdict.integratedSurge.stage,d.items[0].integratedSurge.stage);
   assert.equal(d.items[0].integratedSurge.policy.negative5mMacdVeto,false);
   assert.equal(d.items[0].integratedSurge.oi.known,true,'integrated OI must use raw 15m rows while legacy keeps hourly rows');
