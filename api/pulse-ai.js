@@ -4,6 +4,7 @@ const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
 const {createPulseAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {providerEnvironmentHealth}=require('../lib/pulse-ai/provider-config-health.js');
 const {createTypeSafeJudgment}=require('../lib/pulse-ai/typesafe-judgment.js');
 const {createCoinGeckoProvider}=require('../lib/market-intel/coingecko.js');
 const {createCoinMarketCapProvider}=require('../lib/market-intel/coinmarketcap.js');
@@ -49,7 +50,8 @@ module.exports=async function handler(req,res,ctx={}){
       return res.status(200).json(await service.getBrief({selectedSymbol,force}));
     }
     if(method==='GET'&&mode==='health'){
-      return res.status(200).json(await service.health());
+      return res.status(200).json({...await service.health(),
+        providerEnvironment:providerEnvironmentHealth()});
     }
     if(method==='POST'&&mode==='chat'){
       const b=bodyOf(req),question=String(b.question||'').trim();
