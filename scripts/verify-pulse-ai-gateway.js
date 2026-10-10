@@ -29,14 +29,16 @@ const {createPulseAIGateway,createOpenAIGateway,normalizeBrief}=require('../lib/
   const fetchImpl=async(url,opts)=>{
     calls++;calledUrl=url;apiKeyHeader=opts.headers['x-goog-api-key'];auth=opts.headers.Authorization;body=opts.body;signalSeen=Boolean(opts.signal);
     assert(!String(opts.body).includes('secret-key'),'key must never appear in request payload');
-    if(calls===1)return{ok:false,status:429,text:async()=>'rate'};
-    return{ok:true,status:200,json:async()=>({modelVersion:'gemini-3.8-flash',candidates:[{content:{parts:[{text:JSON.stringify({summary:'brief',highlights:[],watch:[],eventCatalysts:[],dataWarnings:[],sources:[]})}]}}]})};
+    if(calls===1)return{ok:false,status:429,text:async()=>'model minute rate limited'};
+    return{ok:true,status:200,json:async()=>({modelVersion:'gemini-3.5-flash-lite',candidates:[{content:{parts:[{text:JSON.stringify({summary:'brief',highlights:[],watch:[],eventCatalysts:[],dataWarnings:[],sources:[]})}]}}]})};
   };
   const g=createPulseAIGateway({apiKey:'secret-key',fetchImpl,sleep:async()=>{},requestTimeoutMs:1234});
   const out=await g.brief({context:{symbols:[]},useWeb:false,deep:false});
-  assert.equal(out.summary,'brief');assert.equal(calls,2,'transient failure retries once');
+  assert.equal(out.summary,'brief');assert.equal(calls,2,'429 triggers one bounded alternative model');
+  assert.equal(out.model,'gemini-3.5-flash-lite');
+  assert.equal(g.health().model,'gemini-3.5-flash-lite');
   assert.equal(apiKeyHeader,'secret-key');assert.equal(auth,undefined);assert.equal(signalSeen,true,'gateway requests must be bounded by timeout signal');
-  assert.equal(calledUrl,'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent');
+  assert.equal(calledUrl,'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent');
   const sent=JSON.parse(body);
   assert(Array.isArray(sent.contents));assert(String(sent.system_instruction?.parts?.[0]?.text||'').includes('untrusted DATA'),'prompt-injection guard must be explicit');
   assert.equal(sent.messages,undefined);assert.equal(sent.generationConfig?.responseMimeType,'application/json');
