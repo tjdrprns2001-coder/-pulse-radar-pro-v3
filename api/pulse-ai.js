@@ -2,7 +2,7 @@
 const {createBinanceProvider}=require('../lib/coin-scan/binance-provider.js');
 const {createScanService}=require('../lib/coin-scan/scan-service.js');
 const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
-const {createPulseAIGateway}=require('../lib/pulse-ai/openai-gateway.js');
+const {createMultiProviderGateway}=require('../lib/pulse-ai/multi-provider-gateway.js');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
 const {providerEnvironmentHealth}=require('../lib/pulse-ai/provider-config-health.js');
 const {createTypeSafeJudgment}=require('../lib/pulse-ai/typesafe-judgment.js');
@@ -25,7 +25,7 @@ function defaultService(){
   if(!singleton){
     const localScanService=createScanService({provider:createBinanceProvider({})});
     const scanService=createRuntimeScanService({fallback:localScanService});
-    const gateway=createPulseAIGateway({});
+    const gateway=createMultiProviderGateway({});
     const typeSafe=createTypeSafeJudgment({});
     const marketIntelService=createMarketIntelService({
       coinGecko:createCoinGeckoProvider({}),coinMarketCap:createCoinMarketCapProvider({})
