@@ -48,6 +48,9 @@ const geminiFail={provider:'gemini',model:'test-gemini',available:true,
  assert.equal(brief.model,'openai/gpt-oss-20b');
  assert.deepEqual(trace.map(x=>new URL(x.url).hostname),['api.groq.com','openrouter.ai']);
  assert.equal(router.health().activeProvider,'openrouter');
+ assert.deepEqual(router.health().confirmedResponders,['openrouter']);
+ assert.equal(router.health().maxTaskMillis,36000);
+ assert.equal(router.health().maxProviderMillis,6500);
  assert.equal(router.health().configuredProviders.length,11);
  assert(router.health().coolingDown.includes('gemini'));
  assert(router.health().coolingDown.includes('groq'));
@@ -107,6 +110,13 @@ const geminiFail={provider:'gemini',model:'test-gemini',available:true,
  const broken=createMultiProviderGateway({env:{GROQ_API_KEY:'SECRETSHOULDNEVERAPPEAR'},
   geminiGateway:{available:false},now:clock,fetchImpl:async()=>fail(403)});
  await assert.rejects(broken.brief({context:{}}),e=>!JSON.stringify(e).includes('SECRETSHOULDNEVERAPPEAR'));
+ // Verify the global wall-clock budget stops routing before all providers are retried.
+ let time=200000,lateCalls=0;
+ const strictBudget=createMultiProviderGateway({env:allEnv,geminiGateway:{...geminiFail,available:false},
+  now:()=>time,maxTotalMs:9000,requestTimeoutMs:3000,
+  fetchImpl:async()=>{lateCalls++;time+=4000;return fail(429)}});
+ await assert.rejects(strictBudget.brief({context:{}}),e=>e.statusCode===429&&e.attempts<10);
+ assert(lateCalls<=2,'budget must stop after clock advances, not try 10 vendors');
  // No externally supplied endpoint or provider can bypass fixed registry.
  const safe=createMultiProviderGateway({env:{GROQ_API_KEY:'value'},geminiGateway:{available:false},
   providerOrder:['http://attacker.invalid','gemini','groq'],now:clock,fetchImpl:async(url)=>{
