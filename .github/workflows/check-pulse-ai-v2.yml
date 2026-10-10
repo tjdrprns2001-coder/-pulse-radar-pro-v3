@@ -47,5 +47,6 @@ jobs:
       - run: node scripts/verify-pulse-ai-llm-role-debate.js
       - run: npm run test:pulse-ai-core
       - run: npm run test:pulse-ai-gateway
+      - run: node scripts/verify-pulse-ai-model-failover.js
       - run: npm run test:pulse-ai-api
       - run: npm run test:pulse-ai-ui
