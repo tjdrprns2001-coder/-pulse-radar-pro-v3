@@ -117,7 +117,7 @@ function renderMultiPerspective(board,roleHealth=null){
     ['DATA_OR_RISK_BLOCKED','MISSING_DERIVATIVES'].includes(review.readiness);
   trigger.addEventListener('click',()=>runRoleDebate(review.symbol));
   actions.append(trigger,node('span','reviewMissing',!roleHealth?.available?'Gemini API 비활성 · 기존 규칙 심의만 사용':
-    roleDebateBusy?'AI 심의 실행 중…':'직접 요청 시 Gemini 세 번 호출 · 같은 모델 · 10분 제한'));
+    roleDebateBusy?'AI 심의 실행 중…':'직접 요청 시 최대 3역할 · Gemini 모델 자동 전환 · 10분 제한'));
   target.append(actions);
   if(currentRoleDebate&&currentRoleDebate.symbol===review.symbol&&currentRoleDebate.sourceAsOf===board.quality?.updatedAt&&
       ['READY','CACHED'].includes(currentRoleDebate.status)){
@@ -125,7 +125,7 @@ function renderMultiPerspective(board,roleHealth=null){
     result.append(node('b','',review.symbol+' · Gemini 3역할 심의 · 연구 전용'));
     for(const role of (currentRoleDebate.roles||[])){
       const label=role.role==='bull'?'상승 분석':role.role==='bear'?'하락 반론':'위험 심의';
-      result.append(node('p','',label+' ('+role.stance+'): '+role.summary));
+      result.append(node('p','',label+' ('+role.stance+')'+(role.modelUsed?' · '+role.modelUsed:'')+': '+role.summary));
       result.append(node('div','reviewEvidence','확인 필드: '+(role.evidenceFields||[]).join(' · ')));
     }
     result.append(node('div','reviewWarning','결론: '+currentRoleDebate.disposition+' · 독립 모델 아님 · 주문·순위 반영 없음'));
@@ -214,7 +214,7 @@ async function runRoleDebate(symbol){
     const debate=j.llmDebate;
     if(debate&&['READY','CACHED'].includes(debate.status)){
       currentRoleDebate=debate;roleDebateError='';
-      addChat('assistant',j.answer||'LLM 역할별 심의 완료','Gemini 3역할 · 같은 모델 · 연구 전용');
+      addChat('assistant',j.answer||'LLM 역할별 심의 완료','Gemini 3역할 · 모델 자동 전환 · 연구 전용');
     }else{
       currentRoleDebate=null;roleDebateError=debate?.reason||'근거 부족 또는 API 비활성';
     }
