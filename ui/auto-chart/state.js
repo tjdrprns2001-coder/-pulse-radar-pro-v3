@@ -3,7 +3,7 @@ function createState(initial={}){
   let requestSeq=0;
   const state={
     exchange:'binance',market:'futures',symbol:'BTCUSDT',timeframe:'4h',scale:'linear',
-    layers:{volume:true,ma:false,ema:true,sr:true,box:true,bowl:true,longma:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fib:false,vpvr:true,ichimoku:false},
+    layers:{volume:true,ma:false,ema:true,sr:true,box:true,bowl:true,longma:true,structure:true,liquidity:true,reference:true,dealing:true,zones:true,fvg:true,ob:true,fib:false,vpvr:true,ichimoku:false},
     historical:null,analysis:null,lastGood:null,aux:null,updatedAt:null,error:null,
     ...initial
   };

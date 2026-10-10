@@ -23,8 +23,12 @@ function drawEmaPack(ctx,analysis,view){
  for(const p of[14,28,57,92])if(e[p])plotSeries(ctx,e[p],view,{stroke:cfg[p][0],width:cfg[p][1]});
  if(['1d','4h'].includes(String(analysis.timeframe).toLowerCase()))for(const p of[142,224,268,378,448])if(e[p])plotSeries(ctx,e[p],view,{stroke:cfg[p][0],width:cfg[p][1],dash:[5,5]});
 }
-function drawAdvancedZones(ctx,analysis,{y,left,right}){
- const a=analysis.advanced||{},zones=[...(a.fvg||[]).slice(-4),...(a.orderBlocks||[]).slice(-4)];
+function selectAdvancedZones(analysis,layers={}){
+ const a=analysis.advanced||{};if(layers.zones===false)return[];
+ return[...(layers.fvg===false?[]:(a.fvg||[]).slice(-4)),...(layers.ob===false?[]:(a.orderBlocks||[]).slice(-4))];
+}
+function drawAdvancedZones(ctx,analysis,{y,left,right},layers={}){
+ const zones=selectAdvancedZones(analysis,layers);
  ctx.save();ctx.font='bold 9px system-ui';
  for(const z of zones){const top=Math.min(y(z.high),y(z.low)),h=Math.max(2,Math.abs(y(z.high)-y(z.low))),bull=z.side==='bull';ctx.fillStyle=bull?'rgba(71,210,164,.08)':'rgba(255,111,127,.08)';ctx.strokeStyle=bull?'rgba(71,210,164,.48)':'rgba(255,111,127,.48)';ctx.setLineDash(z.kind.includes('FVG')?[6,4]:[]);ctx.fillRect(left,top,right-left,h);ctx.strokeRect(left,top,right-left,h);ctx.setLineDash([]);ctx.fillStyle=bull?'#84e4bd':'#ffabb4';ctx.fillText(z.kind.replace('_',' '),left+6,top+11)}
  ctx.restore()
@@ -71,5 +75,5 @@ function drawBowl(ctx,analysis,{x,y,offset,left,right}){
  ctx.fillText(label+' · 대칭 '+Number(b.symmetryRatio).toFixed(2)+'배',Math.max(left+4,Math.min(x0+5,right-165)),Math.max(12,top-5));
  ctx.restore();
 }
-return{drawBowl,drawLongSma,drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
+return{selectAdvancedZones,drawBowl,drawLongSma,drawLevels,drawRange,drawSwings,drawMa,drawEmaPack,drawAdvancedZones,drawLiquidity,drawReferenceLevels,drawDealingRange,drawFib,drawVpvr,drawIchimoku,palette,source,roleName};
 });
