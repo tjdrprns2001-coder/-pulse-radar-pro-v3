@@ -43,6 +43,8 @@ const ok=({model,summary='Gemini 응답 정상',role=null,symbol='AAAUSDT'})=>({
  const role=await roleClient.reviewRole({role:'bull',symbol:'AAAUSDT',asOf:clock,
   evidence:[{field:'oiChangePct',value:1.7},{field:'takerRatio',value:1.3}],previous:[]});
  assert.equal(role._usedModel,'gemini-3.5-flash-lite');
+ assert.equal(role._attempts,2,'rate-limit fallback adds one actual HTTP attempt');
+ assert.equal(roleClient.health().totalRequests,2);
  assert.equal(Object.prototype.propertyIsEnumerable.call(role,'_usedModel'),false);
  assert.equal(role.role,'bull');
  assert.deepEqual(requests.map(x=>x.model),['gemini-3.8-flash','gemini-3.5-flash-lite']);
