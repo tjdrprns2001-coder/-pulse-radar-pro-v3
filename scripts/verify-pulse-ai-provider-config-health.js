@@ -19,8 +19,8 @@ function response(){let code=null,body=null;return{
  const full=providerEnvironmentHealth(sampleEnv);
  assert.equal(full.total,11);assert.equal(full.configured,11);assert.equal(full.allConfigured,true);
  assert(full.providers.every(x=>x.configured&&x.prerequisitesConfigured));
- assert.equal(full.providers.find(x=>x.id==='gemini').integration,'PULSE_AI_GATEWAY_IMPLEMENTED');
- assert(full.providers.filter(x=>x.integration==='NOT_CONNECTED_TO_PULSE_AI').length===10);
+ assert.equal(full.providers.find(x=>x.id==='gemini').integration,'PULSE_AI_ROUTER_IMPLEMENTED');
+ assert(full.providers.every(x=>x.integration==='PULSE_AI_ROUTER_IMPLEMENTED'));
  const emitted=JSON.stringify(full);
  assert(!emitted.includes('sensitive-'));
  assert(!emitted.includes('sensitive-account'));
