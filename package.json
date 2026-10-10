@@ -44,7 +44,7 @@
     "test:coin-scan-shell": "node scripts/verify-coin-scan-shell.js",
     "test:pulse-ai-multi-perspective": "node scripts/verify-pulse-ai-multi-perspective.js",
     "test:pulse-ai-core": "node scripts/verify-pulse-ai-core.js",
-    "test:pulse-ai-gateway": "node scripts/verify-pulse-ai-gateway.js",
+    "test:pulse-ai-gateway": "node scripts/verify-pulse-ai-gateway.js && node scripts/verify-pulse-ai-model-failover.js",
     "test:pulse-ai-api": "node scripts/verify-pulse-ai-api.js",
     "test:pulse-ai-ui": "node scripts/verify-pulse-ai-ui.js",
     "test:coin-report-core": "node scripts/verify-coin-report-core.js",
