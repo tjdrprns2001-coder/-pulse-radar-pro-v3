@@ -56,3 +56,4 @@
 @media(max-width:720px){.chartbroResearchGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.chartbroCompetition{grid-template-columns:1fr}.chartbroResearchPanel{padding:12px}}
 
 .mtfAnalysis{border-color:#315f7a;background:linear-gradient(180deg,rgba(31,81,108,.16),rgba(7,17,29,.2))}.mtfMini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.mtfMini span{font-size:10px;border:1px solid #24445c;border-radius:7px;padding:5px;color:#a9c3d8;background:#08131e}.mtfMini b{color:#d8ecff}@media(max-width:720px){.mtfMini{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.conditionAudit{margin-top:12px;padding:10px;border:1px solid #34465c;border-radius:8px}.conditionAudit summary{cursor:pointer;font-weight:700}.conditionAudit p,.conditionAudit li{font-size:12px;line-height:1.6}.conditionAudit .audit-pass{color:#72e3b5}.conditionAudit .audit-fail{color:#ff98a5}.conditionAudit .audit-missing{color:#ffd18a}

@@ -13,7 +13,7 @@ function draw(canvas,analysis,{layers={volume:true,ma:false,ema:true,sr:true,box
   if(layers.ichimoku)Overlays.drawIchimoku(ctx,analysis,view);
   if(layers.reference)Overlays.drawReferenceLevels(ctx,analysis,view);
   if(layers.sr)Overlays.drawLevels(ctx,analysis,view);
-  if(layers.zones)Overlays.drawAdvancedZones(ctx,analysis,view);
+  if(layers.zones)Overlays.drawAdvancedZones(ctx,analysis,view,layers);
   if(layers.box)Overlays.drawRange(ctx,analysis,view);
   if(layers.fib)Overlays.drawFib(ctx,analysis,view);
   if(layers.ma)Overlays.drawMa(ctx,analysis,view);
