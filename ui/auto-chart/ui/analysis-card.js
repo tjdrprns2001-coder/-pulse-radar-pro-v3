@@ -41,6 +41,17 @@ function render(analysis,{aux=null}={}){
   const candleLabels=(p?.candlestickPatterns||[]).map(x=>x.label).join(', ');
   const longSma=analysis.patternSma,maLabel=longSma?(' · SMA112 '+price(longSma[112]?.at(-1))+' / 224 '+price(longSma[224]?.at(-1))+' / 448 '+price(longSma[448]?.at(-1))):'';
   setText('cardBowl',p?(status+' · '+label+(candleLabels?' · '+candleLabels:'')+maLabel):'선택 시간봉 분석 없음');
+  const wy=analysis.wyckoffEvidence;
+  const wyNames={SPRING_CANDIDATE:'Spring · 하단 이탈 후 복귀',UPTHRUST_CANDIDATE:'Upthrust · 상단 돌파 후 복귀',
+    RANGE_WATCH:'횡보 박스 관찰',NO_PATTERN:'매집·분산 구조 미확인'};
+  setText('cardWyckoff',wy?.status==='READY'?
+    (wyNames[wy.pattern]||wy.pattern)+' · 박스 '+price(wy.range?.low)+'–'+price(wy.range?.high)+
+      ' · 거래량 '+ratio(wy.observed?.rvolMedian)+'배':'와이코프 분석 이력 부족');
+  setText('cardWyckoffEvidence',(wy?.evidence||[]).slice(0,5).map(x=>x.label+' '+ratio(x.value)).join(' · ')||'확인 근거 없음');
+  setText('cardWyckoffCounter',(wy?.contradictions||[]).join(' · ')||'명시적 반대 근거 없음');
+  setText('cardWyckoffInvalidation',wy?.invalidation?.price!=null?
+    price(wy.invalidation.price)+' · '+wy.invalidation.reason:'N/A');
+
   const sp=a.specialSetups||{},d=sp.daily92142,h=sp.fourHLongEmaSupport;setText('cardSpecial',d?('1D 92→142 '+(d.ready?'READY':'WAIT')+' · 142거리 '+pct(d.distanceTo142Pct)):h?('4H '+(h.nearest?.period||'')+'EMA '+(h.reclaimed?'RECLAIM':h.holding?'HOLD':'AWAY')+' · 거리 '+pct(h.distancePct)):'선택 TF 전용 조건 없음');
   const inv=analysis.setup.invalidation;setText('cardInvalidation',inv?.price!=null?price(inv.price)+' · '+(inv.type==='range-low'?'박스 하단 이탈':'돌파 실패 기준'):'N/A');
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
