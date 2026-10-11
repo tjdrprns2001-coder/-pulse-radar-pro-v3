@@ -7,3 +7,5 @@ Run `MARKET_RELAY_TOKEN=<32+ character secret> MARKET_RELAY_REGION=frankfurt POR
 Render free instance, Frankfurt. A free service can sleep after inactivity; first connection can take approximately a minute. A service-region probe must succeed before claiming blocked routes are repaired. Exchange terms and legal availability still apply; no guarantee if the exchange blocks the hosting provider or region.
 
 Site environment: `MARKET_RELAY_URL` (the confirmed onrender.com HTTPS URL), `MARKET_RELAY_TOKEN` (secret). Unconfigured sites keep their existing direct API behavior.
+
+Bybit regional routing activates when the URL and token are set. Binance derivatives activate only with `MARKET_RELAY_BINANCE=true`, after candle/ticker probes succeed; catalog success alone is insufficient. Frankfurt and the existing Singapore relay currently return Binance 418/429. Do not enable Binance regional routing until its live data passes.
