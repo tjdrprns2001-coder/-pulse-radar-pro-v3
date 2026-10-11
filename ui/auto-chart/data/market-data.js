@@ -12,6 +12,7 @@ async function fetchHistorical({exchange='binance',market='futures',symbol='BTCU
 }
 async function fetchMeta({market='futures',symbol='BTCUSDT',fetchImpl}={}){const CD=getCD();if(CD?.fetchMarketMeta)return CD.fetchMarketMeta({symbol,market,fetchImpl});return json('/api/structure?symbol='+encodeURIComponent(symbol)+'&meta=1&market='+encodeURIComponent(market),fetchImpl)}
 async function fetchLive({market='futures',symbol='BTCUSDT',fetchImpl}={}){const CD=getCD();if(CD?.fetchLive)return CD.fetchLive({symbol,interval:'1m',market,fetchImpl});return json('/api/structure?symbol='+encodeURIComponent(symbol)+'&interval=1m&live=1&market='+encodeURIComponent(market),fetchImpl)}
+async function fetchTradeFlow({market='futures',symbol='BTCUSDT',fetchImpl}={}){return json('/api/agg-trade-flow?symbol='+encodeURIComponent(symbol)+'&market='+encodeURIComponent(market),fetchImpl)}
 async function fetchDerivatives({symbol='BTCUSDT',fetchImpl}={}){const raw=await json('/api/structure?symbol='+encodeURIComponent(symbol)+'&derivatives=1',fetchImpl);return Normalize.normalizeDerivatives(raw)}
 function higherTimeframes(interval){
   const tf=String(interval||'').toLowerCase();
@@ -40,8 +41,9 @@ async function fetchAuxiliary({exchange='binance',market='futures',symbol='BTCUS
   const liveP=fetchLive({market,symbol,fetchImpl}).catch(e=>({available:false,error:e.message}));
   const derivativesP=market==='futures'?fetchDerivatives({symbol,fetchImpl}).catch(e=>({available:false,error:e.message})):Promise.resolve({available:false,spotMarket:true});
   const spotP=market==='futures'?fetchHistorical({exchange,market:'spot',symbol,interval,limit:300,fetchImpl}).catch(()=>null):Promise.resolve(null);
-  const [meta,live,derivatives,spot]=await Promise.all([metaP,liveP,derivativesP,spotP]);
-  return{meta,live,derivatives,spot};
+  const flowP=fetchTradeFlow({market,symbol,fetchImpl}).catch(e=>({available:false,reason:e.message}));
+  const [meta,live,derivatives,spot,tradeFlow]=await Promise.all([metaP,liveP,derivativesP,spotP,flowP]);
+  return{meta,live,derivatives,spot,tradeFlow};
 }
-return{ANALYSIS_TFS,historyLimit,fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchTimeframeStack,fetchHigherTimeframes,higherTimeframes,fetchAuxiliary};
+return{ANALYSIS_TFS,historyLimit,fetchHistorical,fetchMeta,fetchLive,fetchDerivatives,fetchTradeFlow,fetchTimeframeStack,fetchHigherTimeframes,higherTimeframes,fetchAuxiliary};
 });
