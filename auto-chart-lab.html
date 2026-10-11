@@ -68,6 +68,10 @@
   <div class="row invalid"><span>무효화 가격</span><b id="cardWyckoffInvalidation">N/A</b></div>
   <div class="layerNote">확정봉 기반 후보이며 특정 세력의 매집·분산을 확정하지 않습니다. CVD·호가 흡수는 실제 체결/호가 데이터 없이는 판정하지 않습니다.</div>
    <div class="row"><span>특수 셋업</span><b id="cardSpecial">N/A</b></div>
+  <h3>실제 체결 흐름 · 표본 CVD</h3>
+  <div class="row"><span>체결 델타</span><b id="cardCvd">N/A</b></div>
+  <div class="row"><span>흡수 징후</span><b id="cardAbsorption">N/A</b></div>
+  <div class="layerNote">Binance 최근 aggTrades 표본만 사용. CVD는 최근 조회 구간 누적값이며 24시간 전체값이 아닙니다. 흡수는 추정일 뿐 호가창 확인이나 세력 판정이 아닙니다.</div>
   <div class="row"><span>OI·Funding</span><b id="cardDerivatives">N/A</b></div>
   <div class="row"><span>현물/선물</span><b id="cardSpotLead">N/A</b></div>
   <div class="row"><span>거래량 기억</span><b id="cardVolume">N/A</b></div>
@@ -82,7 +86,7 @@
 <script src="/ui/chart/chart-data.js?v=20260929-market1"></script>
 <script src="/ui/auto-chart/state.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/data/normalize.js?v=20261010-condition-audit"></script>
-<script src="/ui/auto-chart/data/market-data.js?v=20261010-condition-audit"></script>
+<script src="/ui/auto-chart/data/market-data.js?v=20261011-trade-flow-v1"></script>
 <script src="/ui/auto-chart/analysis/math.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/analysis/swings.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/analysis/levels.js?v=20261010-condition-audit"></script>
@@ -102,7 +106,7 @@
 <script src="/ui/auto-chart/chart/overlays.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/chart/renderer.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/ui/controls.js?v=20261010-condition-audit"></script>
-<script src="/ui/auto-chart/ui/analysis-card.js?v=20261011-wyckoff-v1"></script>
+<script src="/ui/auto-chart/ui/analysis-card.js?v=20261011-trade-flow-v1"></script>
 <script src="/ui/auto-chart/export/png.js?v=20261010-condition-audit"></script>
 <script src="/ui/auto-chart/app.js?v=20261010-condition-audit"></script>
 </body></html>
