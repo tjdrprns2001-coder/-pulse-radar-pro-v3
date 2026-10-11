@@ -14,6 +14,7 @@ const {browserLibraries,publicFile}=require('./lib/http-boundary.js');
 const ROOT=__dirname;
 const publicLibraries=browserLibraries(ROOT);
 const PORT=Number(process.env.PORT||10000);
+const RELEASE=process.env.RENDER_GIT_COMMIT||process.env.PULSERADAR_RELEASE||null;
 const chartbroHealth={status:String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now()};
 const chartV1AlertHealth={status:String(process.env.CHART_V1_ALERT_WORKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now(),runs:0,alertsSaved:0};
 let chartbroActive=false,chartbroScanner=null,chartV1AlertActive=false;
@@ -188,13 +189,13 @@ function scheduleChartBroTracker(){
 const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
-    if(u.pathname==='/health/live')return send(res,200,JSON.stringify({ok:true,status:'alive',release:process.env.PULSERADAR_RELEASE||null}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    if(u.pathname==='/health/live')return send(res,200,JSON.stringify({ok:true,status:'alive',release:RELEASE}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
     if(u.pathname==='/health/ready'){
       const runtime=await chartRuntime.health();
       const ready=runtime.storage_ready===true;
-      return send(res,ready?200:503,JSON.stringify({ok:ready,status:ready?'ready':'degraded',reason:runtime.reason||null,storage:runtime.persistence,release:process.env.PULSERADAR_RELEASE||null}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+      return send(res,ready?200:503,JSON.stringify({ok:ready,status:ready?'ready':'degraded',reason:runtime.reason||null,storage:runtime.persistence,release:RELEASE}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
     }
-    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth,chart_v1_alerts:chartV1AlertHealth}),{'Content-Type':'application/json; charset=utf-8'});
+    if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:RELEASE,chartbro:chartbroHealth,chart_v1_alerts:chartV1AlertHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
     if(req.method!=='GET'&&req.method!=='HEAD')return send(res,405,'Method Not Allowed',{'Allow':'GET, HEAD'});
     const file=safeFile(u.pathname);

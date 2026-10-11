@@ -2,11 +2,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {spawn}=require('node:child_process');
 test('HTTP server serves every menu and browser asset, rejects private files and malformed input',async()=>{
- const child=spawn(process.execPath,['render-temp-server.js'],{env:{...process.env,PORT:'0',CHARTBRO_AUTO_TRACKER_ENABLED:'0',CHART_V1_ALERT_WORKER_ENABLED:'0',CHARTBRO_WORKER_ENABLED:'0'},stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,['render-temp-server.js'],{env:{...process.env,PORT:'0',RENDER_GIT_COMMIT:'fixture-current',PULSERADAR_RELEASE:'fixture-old',CHARTBRO_AUTO_TRACKER_ENABLED:'0',CHART_V1_ALERT_WORKER_ENABLED:'0',CHARTBRO_WORKER_ENABLED:'0'},stdio:['ignore','pipe','pipe']});
  let logs='';child.stderr.on('data',d=>logs+=d);
  try{
   const port=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('server startup timeout '+logs)),15000);child.stdout.on('data',d=>{const m=String(d).match(/listening on (\d+)/);if(m){clearTimeout(timer);resolve(Number(m[1]))}});child.once('exit',code=>{clearTimeout(timer);reject(new Error('server exited '+code+' '+logs))})});
-  const base='http://127.0.0.1:'+port;
+  const base='http://127.0.0.1:'+port;assert.equal((await (await fetch(base+'/health/live')).json()).release,'fixture-current');
   for(const p of ['/.git/HEAD','/%2egit/HEAD','/render-temp-server.js','/package.json','/api/index.js','/handlers/v1.js','/lib/coin-scan/binance-provider.js','/tests/http-boundary.test.js'])assert.equal((await fetch(base+p)).status,404,p);
   assert.equal((await fetch(base+'/bad%GG')).status,400);
   assert.equal((await fetch(base+'/api/not-a-route',{method:'POST',headers:{'content-type':'application/json'},body:'{bad'})).status,400);

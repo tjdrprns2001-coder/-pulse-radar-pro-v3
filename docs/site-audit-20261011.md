@@ -13,6 +13,7 @@ The shell routes to 35 distinct user-facing documents. The audit covers those ro
 | HTTP delivery | Repository and server files were publicly readable | Public documents/assets and explicitly referenced browser library modules remain available; internal paths and symlinks are denied |
 | HTTP input | Malformed URL produced 500; invalid JSON was passed through; request bodies were unbounded | 400/413/405 responses are explicit; API body errors return JSON |
 | Shell messages | Any window could change navigation/symbol via a message | Only the current same-origin child frame is accepted |
+| Health metadata | A manually pinned release could lag behind the deployed commit | Render commit metadata takes precedence over the manual fallback |
 | Installation | `ws` dependency was absent from the lock file | A clean `npm ci --ignore-scripts` succeeds |
 
 ## Regression coverage
