@@ -17,6 +17,8 @@ on:
       - 'auto-chart-lab.html'
       - 'ui/auto-chart/**'
       - 'scripts/verify-auto-chart-lab.js'
+      - 'scripts/verify-wyckoff-auto-chart.js'
+      - '.github/workflows/check-auto-chart-lab.yml'
 jobs:
   verify:
     runs-on: ubuntu-latest
