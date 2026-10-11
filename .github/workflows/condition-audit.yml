@@ -1,0 +1,20 @@
+name: Condition Audit Browser
+on:
+  pull_request:
+    paths: ['ui/condition-audit.js', 'ui/astra-scan.js', 'ui/astra-scan.css', 'astra-scan.html', 'ui/auto-chart/**', 'auto-chart-lab.html', 'tests/condition-audit*', 'scripts/verify-condition-audit-browser.cjs', '.github/workflows/condition-audit.yml']
+  push:
+    branches: [main]
+    paths: ['ui/condition-audit.js', 'ui/astra-scan.js', 'ui/astra-scan.css', 'astra-scan.html', 'ui/auto-chart/**', 'auto-chart-lab.html', 'tests/condition-audit*', 'scripts/verify-condition-audit-browser.cjs', '.github/workflows/condition-audit.yml']
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/condition-audit*.test.js
+      - run: npm install --prefix "$RUNNER_TEMP/audit-playwright" --no-save --package-lock=false playwright@1.55.0
+      - run: '"$RUNNER_TEMP/audit-playwright/node_modules/.bin/playwright" install --with-deps chromium'
+      - run: NODE_PATH="$RUNNER_TEMP/audit-playwright/node_modules" node scripts/verify-condition-audit-browser.cjs
