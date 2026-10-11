@@ -9,6 +9,9 @@ on:
       - 'api/index.js'
       - 'scripts/verify-auto-chart-lab.js'
       - 'scripts/verify-wyckoff-auto-chart.js'
+      - 'scripts/verify-agg-trade-flow.js'
+      - 'api/agg-trade-flow.js'
+      - 'lib/market-intel/aggressive-trade-flow.js'
       - 'package.json'
       - '.github/workflows/check-auto-chart-lab.yml'
   push:
@@ -46,5 +49,6 @@ jobs:
       - run: node -c ui/auto-chart/app.js
       - run: node -c ui/auto-chart/analysis/wyckoff-evidence.js
       - run: node scripts/verify-wyckoff-auto-chart.js
+      - run: node scripts/verify-agg-trade-flow.js
       - run: npm run test:auto-chart-lab
       - run: npm run test:auto-chart-transport
