@@ -9,8 +9,10 @@ const ChartBroOos=require('./lib/coin-scan/chartbro-oos-service.js');
 const {createChartV1Service}=require('./lib/chart-v1/service.js');
 const {defaultChartRuntime}=require('./lib/chart-v1/runtime.js');
 const {WebSocketServer}=require('ws');
+const {browserLibraries,publicFile}=require('./lib/http-boundary.js');
 
 const ROOT=__dirname;
+const publicLibraries=browserLibraries(ROOT);
 const PORT=Number(process.env.PORT||10000);
 const chartbroHealth={status:String(process.env.CHARTBRO_AUTO_TRACKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now()};
 const chartV1AlertHealth={status:String(process.env.CHART_V1_ALERT_WORKER_ENABLED||'0')==='1'?'INIT':'DISABLED',updatedAt:Date.now(),runs:0,alertsSaved:0};
@@ -45,7 +47,7 @@ function contentType(file){
 }
 
 function send(res,status,body,headers={}){
-  res.writeHead(status,{'Cache-Control':'no-store',...headers});
+  res.writeHead(status,{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});
   res.end(body);
 }
 
@@ -83,11 +85,12 @@ function makeRes(nodeRes){
 async function bodyOf(req){
   if(req.method==='GET'||req.method==='HEAD')return null;
   const chunks=[];
-  for await(const chunk of req)chunks.push(chunk);
+  let bytes=0;
+  for await(const chunk of req.iterator({destroyOnReturn:false})){bytes+=chunk.length;if(bytes>2*1024*1024){req.resume();const e=new Error('Request body too large');e.statusCode=413;throw e}chunks.push(chunk)}
   const raw=Buffer.concat(chunks).toString('utf8');
   if(!raw)return null;
   const ct=String(req.headers['content-type']||'');
-  if(ct.includes('application/json')){try{return JSON.parse(raw)}catch{return raw}}
+  if(ct.includes('application/json')){try{return JSON.parse(raw)}catch{const e=new Error('Invalid JSON');e.statusCode=400;throw e}}
   return raw;
 }
 
@@ -98,12 +101,13 @@ async function handleApi(req,res,u){
     method:req.method||'GET',
     headers:req.headers||{},
     query,
-    body:await bodyOf(req),
+    body:null,
     url:req.url,
     path:u.pathname
   };
   const apiRes=makeRes(res);
   try{
+    apiReq.body=await bodyOf(req);
     let handler;
     if(name==='v1'||name.startsWith('v1/')){
       apiReq.query.routePath=name==='v1'?String(apiReq.query.path||''):name.slice(3);
@@ -127,17 +131,12 @@ async function handleApi(req,res,u){
     return apiRes.end('');
   }catch(e){
     if(apiRes.headersSent)return;
-    return apiRes.status(500).json({ok:false,error:e&&e.message?e.message:String(e),route:name});
+    return apiRes.status(e.statusCode||500).json({ok:false,error:e&&e.message?e.message:String(e),route:name});
   }
 }
 
 function safeFile(pathname){
-  const mapped=aliases[pathname]||pathname;
-  const decoded=decodeURIComponent(mapped.split('?')[0]);
-  const rel=decoded.replace(/^\/+/, '');
-  const file=path.resolve(ROOT,rel);
-  if(!file.startsWith(ROOT+path.sep)&&file!==ROOT)return null;
-  return file;
+  return publicFile(ROOT,pathname,aliases,publicLibraries);
 }
 
 
@@ -197,14 +196,18 @@ const server=http.createServer(async(req,res)=>{
     }
     if(u.pathname==='/health')return send(res,200,JSON.stringify({ok:true,service:'pulseradar-temp-preview',release:process.env.PULSERADAR_RELEASE||null,chartbro:chartbroHealth,chart_v1_alerts:chartV1AlertHealth}),{'Content-Type':'application/json; charset=utf-8'});
     if(u.pathname.startsWith('/api/'))return await handleApi(req,res,u);
+    if(req.method!=='GET'&&req.method!=='HEAD')return send(res,405,'Method Not Allowed',{'Allow':'GET, HEAD'});
     const file=safeFile(u.pathname);
     if(!file||!fs.existsSync(file)||fs.statSync(file).isDirectory())return send(res,404,'Not Found',{'Content-Type':'text/plain; charset=utf-8'});
-    const headers={'Content-Type':contentType(file)};
+    const headers={'Content-Type':contentType(file),'X-Content-Type-Options':'nosniff'};
     if(file.endsWith('.html')||file.endsWith('.js')||file.endsWith('.css'))headers['Cache-Control']='public, max-age=0, must-revalidate';
     res.writeHead(200,headers);
-    fs.createReadStream(file).pipe(res);
+    if(req.method==='HEAD')return res.end();
+    fs.createReadStream(file).on('error',()=>res.destroy()).pipe(res);
   }catch(e){
-    send(res,500,'Server error: '+String(e&&e.message||e),{'Content-Type':'text/plain; charset=utf-8'});
+    const status=e.statusCode||500;
+    if(res.headersSent)return res.destroy();
+    send(res,status,status===500?'Server error':e.message,{'Content-Type':'text/plain; charset=utf-8'});
   }
 });
 
@@ -275,4 +278,4 @@ server.on('upgrade',(req,socket,head)=>{
   wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req));
 });
 
-server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',PORT);chartRuntime.init().catch(()=>{});scheduleChartBroTracker();scheduleChartV1AlertWorker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
+server.listen(PORT,'0.0.0.0',()=>{console.log('PulseRadar temp preview listening on',server.address().port);chartRuntime.init().catch(()=>{});scheduleChartBroTracker();scheduleChartV1AlertWorker();if(process.env.CHARTBRO_WORKER_ENABLED==='1')require('./lib/chartbro/runtime').startWorker()});
