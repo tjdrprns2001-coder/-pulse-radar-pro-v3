@@ -34,20 +34,28 @@ function manusCard(x){const v=x.verdict||{},b=v.scoreBreakdown||{},q=v.dataQuali
 function tagList(xs=[],cls='evidence'){return xs.slice(0,6).map(v=>`<span>${esc(v)}</span>`).join('')}
 function commonStageBar(x){const c=x.commonPreignition||x.verdict?.commonPreignition;if(!c)return'';const tags=(c.subtypes||[]).slice(0,6).map(v=>`<span>${esc(v)}</span>`).join(''),ev=(c.evidence||[]).slice(0,3).map(v=>`<span>${esc(v)}</span>`).join(''),counter=(c.counterEvidence||[]).slice(0,2).map(v=>`<span>${esc(v)}</span>`).join('');return `<div class="commonStage common-${esc(c.stage||'NO_SETUP')}"><div class="commonStageTop"><b>${esc(c.label||c.stage||'NO_SETUP')}</b><span>진행 ${fmt(c.progressPct,0)}% · 근거 ${fmt(c.evidenceScore,0)}/100 · SHADOW</span></div><div class="commonStageTags">${tags||'<span>TYPE 미분류</span>'}</div>${ev?`<div class="commonEvidence">${ev}</div>`:''}${counter?`<div class="commonCounter">${counter}</div>`:''}</div>`}
 function conditionAuditBar(s){
- const audit=globalThis.PulseConditionAudit?.evaluate(s,Date.now());if(!audit)return'';
- const labels={PASS:'충족',FAIL:'미충족',MISSING:'데이터 없음'};
- const tag=g=>'<span class="audit-'+g.status.toLowerCase()+'">'+esc(g.label)+' · '+labels[g.status]+'</span>';
- const expired=audit.validity.status==='EXPIRED',title=expired?'신호 만료 · 재조회 필요':audit.executionReady?'진입 확인 조건 충족':'진입 확인 대기';
- const expiry=audit.validity.expiresAt?timeFmt(audit.validity.expiresAt):'시각 미확인';
- return '<details class="conditionAudit"><summary>'+esc(title)+'</summary><p>필수 조건 모두 충족 · 후보 경로 A/B/C 중 하나 · 마감봉 기준 3봉 유효</p><div class="commonStageTags">'+Object.values(audit.paths).map(tag).join('')+'</div><div class="commonStageTags">'+Object.values(audit.groups).map(tag).join('')+'</div><p>유효기한 '+esc(expiry)+'</p>'+(audit.blockers.length?'<ul>'+audit.blockers.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul>':'')+'</details>';
+ return globalThis.PulseConditionAudit?.renderDetails(s,Date.now(),timeFmt)||'<p>조건 점검 모듈 미확인 · 새로고침 필요</p>';
 }
 function integratedSurgeBar(x){
  const s=x.integratedSurge||x.verdict?.integratedSurge;if(!s)return'';
  const v=s.volumeEcho||{},oi=s.oi||{},h4=s.setup4h||{},g15=s.gate15m||{},g5=s.gate5m||{};
  const oiText=oi.known?'OI1H '+pct(oi.change1hPct):'OI 미확인';
  const missing=(s.coverage?.missing||[]).join(', ');
- const expired=globalThis.PulseConditionAudit?.evaluate(s,Date.now()).validity.status==='EXPIRED';
- return '<div class="commonStage integratedSurge"><div class="commonStageTop"><b>통합 '+esc(expired?'신호 만료':s.stage||'INCOMPLETE')+' · '+esc(s.type||'PRE')+'</b><span>'+esc(v.state||'QUIET')+(s.extended?' · 과열 분리':'')+'</span></div><div class="commonStageTags"><span>4H EMA폭 '+fmt(h4.compressionPct,2)+'%</span><span>'+esc(oiText)+'</span><span>'+esc(g15.flow||'FLOW 미확인')+'</span><span>15m '+(!expired&&g15.passed?'확인':'대기')+' / 5m '+(!expired&&g5.passed?'확인':'대기')+'</span></div>'+(missing?'<div class="commonCounter">이력 미확인 '+esc(missing)+'</div>':'')+conditionAuditBar(s)+'</div>';
+ const view=globalThis.PulseConditionAudit?.presentation(s,Date.now())||{stage:'데이터 미확인'};
+ return '<div class="commonStage integratedSurge" data-audit-symbol="'+esc(x.symbol)+'" data-audit-state="'+esc(view.audit?.validity.status||'MISSING')+'"><div class="commonStageTop"><b>통합 '+esc(view.stage)+' · '+esc(s.type||'PRE')+'</b><span>'+esc(v.state||'QUIET')+(s.extended?' · 과열 분리':'')+'</span></div><div class="commonStageTags"><span>4H EMA폭 '+fmt(h4.compressionPct,2)+'%</span><span>'+esc(oiText)+'</span><span>'+esc(g15.flow||'FLOW 미확인')+'</span><span>15m '+(view.confirm15m?'확인':'대기')+' / 5m '+(view.confirm5m?'확인':'대기')+'</span></div>'+(missing?'<div class="commonCounter">이력 미확인 '+esc(missing)+'</div>':'')+conditionAuditBar(s)+'</div>';
+}
+function refreshConditionAudits(){
+ if(document.hidden||state.running)return;
+ const rows=new Map(state.rows.map(x=>[String(x.symbol),x]));
+ document.querySelectorAll('[data-audit-symbol]').forEach(band=>{
+  const row=rows.get(band.dataset.auditSymbol);if(!row)return;
+  const holder=document.createElement('div');holder.innerHTML=integratedSurgeBar(row);
+  const next=holder.firstElementChild;if(!next||next.dataset.auditState===band.dataset.auditState)return;
+  const details=band.querySelector('.conditionAudit'),open=details?.open,focused=band.contains(document.activeElement);
+  band.innerHTML=next.innerHTML;band.dataset.auditState=next.dataset.auditState;
+  const updated=band.querySelector('.conditionAudit');if(updated)updated.open=Boolean(open);
+  if(focused)updated?.querySelector('summary')?.focus();
+ });
 }
 
 
@@ -210,7 +218,7 @@ async function run(){if(state.running)return;if(state.retryAt>Date.now()){setSta
  else if(state.method==='manus')setStatus(`완료 · ${u.universeCount} → ${u.filteredCount} → OI ${pass.length} → A_FIRE ${count('A_FIRE')} · B_PREPARE ${count('B_PREPARE')} · C_WATCH ${count('C_WATCH')} · HOLD ${count('HOLD')} · EXCLUDE ${count('EXCLUDE')}`);
  else{const ign=count('IGNITION_CONFIRMED'),watch=count('WATCH_PRIORITY'),pre=state.rows.filter(x=>Number(x.preIgnitionScore)>=60&&!['LATE','INVALID'].includes(String(x.preIgnitionStage?.key||''))).length;setStatus(`완료 · ${u.universeCount} 전종목 → OI ${pass.length} + MTF SHADOW ${shadow.length} → 프리점화 60+ ${pre} · 점화 확정 ${ign} · 관찰 우선 ${watch}`)}
  }catch(e){if(e?.retryAt>Date.now())pauseRequests(e.retryAt);if(e?.name!=='AbortError')setStatus('스캔 실패 · '+String(e?.message||e))}finally{state.running=false;$('astraRun').disabled=state.retryAt>Date.now();$('scanMethod').disabled=false;$('quoteVolumeFilter').disabled=false}}
-setInterval(()=>{if(!document.hidden&&state.rows.length&&!state.running)render()},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.rows.length)render()});
+setInterval(refreshConditionAudits,30000);
+document.addEventListener('visibilitychange',refreshConditionAudits);
 loadChartbroResearch();setInterval(()=>{if(!document.hidden)loadChartbroResearch()},60000);$('resultSearch')?.addEventListener('input',render);$('stageFilter')?.addEventListener('change',render);$('astraRun')?.addEventListener('click',run);$('scanMethod')?.addEventListener('change',()=>{if(state.running)return;state.rows=[];syncMethod();render();setStatus('방식 변경됨 · 전체스캔 실행을 눌러 원점에서 검사합니다.')});$('quoteVolumeFilter')?.addEventListener('change',()=>{if(state.running)return;state.minQuoteVolume=selectedMinQuoteVolume();syncMethod();setStatus(`${volumeLabel(state.minQuoteVolume)} 적용 대기 · 전체스캔 실행 시 원점부터 다시 검사합니다.`)});syncMethod();
 })();
