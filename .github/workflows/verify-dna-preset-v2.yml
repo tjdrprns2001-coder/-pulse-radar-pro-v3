@@ -1,0 +1,30 @@
+name: Verify DNA v2
+on:
+  pull_request:
+    paths:
+      - 'data/presets/active-dna-v2.json'
+      - 'lib/coin-scan/dna-preset-v2.js'
+      - 'lib/coin-scan/astra-auto-scanner.js'
+      - 'api/astra-scan.js'
+      - 'scripts/verify-dna-preset-v2.js'
+      - '.github/workflows/verify-dna-preset-v2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/presets/active-dna-v2.json'
+      - 'lib/coin-scan/dna-preset-v2.js'
+      - 'scripts/verify-dna-preset-v2.js'
+  workflow_dispatch:
+jobs:
+  dna-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/coin-scan/dna-preset-v2.js
+      - run: node --check lib/coin-scan/astra-auto-scanner.js
+      - run: node --check api/astra-scan.js
+      - run: npm run test:dna-preset-v2

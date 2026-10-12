@@ -45,6 +45,10 @@ module.exports=async function handler(req,res,ctx={}){
   res.setHeader('Cache-Control','no-store, max-age=0');
   try{
     if(stage==='universe')return res.status(200).json(await scanner.universe({method,minQuoteVolume:n(q.minQuoteVolume)}));
+    if(stage==='prescan'){
+      const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
+      return res.status(200).json(await scanner.prescan(symbols,{method,asOf:n(q.asOf),market:marketOf(q)}));
+    }
     if(stage==='oi'){
       const symbols=symbolsOf(q);if(!symbols.length)return res.status(400).json({status:'error',version:VERSION,method,error:'symbols required'});
       return res.status(200).json(await scanner.oi(symbols,{method,asOf:n(q.asOf),market:marketOf(q)}));
@@ -60,6 +64,6 @@ module.exports=async function handler(req,res,ctx={}){
       if(method===METHODS.ASTRA){try{const canonical=await canonicalChartbroStats();if(canonical)applyCanonicalChartbro(result,canonical)}catch(_chartbroCanonicalError){}}
       return res.status(200).json(result);
     }
-    return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG},claude:{...CONFIG,...CLAUDE_CONFIG}}});
+    return res.status(400).json({status:'error',version:VERSION,method,error:'unknown stage',allowed:['universe','prescan','oi','deep'],methods:Object.values(METHODS),config:{astra:CONFIG,manus:{...CONFIG,...MANUS_CONFIG},perplexity:{...CONFIG,...PERPLEXITY_CONFIG},grok:{...CONFIG,...GROK_CONFIG},gemini:{...CONFIG,...GEMINI_CONFIG},claude:{...CONFIG,...CLAUDE_CONFIG}}});
   }catch(e){const sourceState=scanner.getSourceState?.()||null,retryAt=Number(e?.retryAt||sourceState?.futuresBlockedUntil)||null,paused=retryAt>Date.now();if(paused)res.setHeader('Retry-After',String(Math.ceil((retryAt-Date.now())/1000)));return res.status(paused?503:Number(e?.statusCode)||502).json({status:'error',version:VERSION,method,stage,updatedAt:Date.now(),error:String(e?.message||e),retryAt,upstreamStatus:e?.upstreamStatus||null,sourceState});}
 };

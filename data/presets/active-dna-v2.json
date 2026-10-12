@@ -1,0 +1,110 @@
+{
+  "version": "DNA_PRESETS_v2_2026-10-12",
+  "status": "SHADOW_RESEARCH",
+  "universe": "Binance USDT perpetual",
+  "note": "Research candidates only: 16 post-surge and 16 non-surge observations have strong selection bias; no predictive accuracy or win rate claimed.",
+  "active": [
+    {
+      "id": "BASE_RECLAIM",
+      "label": "기반 회복",
+      "role": "SETUP",
+      "signals": [
+        "4H EMA14/28/57/92 width <=5% as optional context",
+        "price stable or previous 12-bar high reclaim",
+        "market sweep/relative strength context"
+      ],
+      "hardRequired": [
+        "closed 4H bars"
+      ],
+      "notGates": [
+        "EMA compression alone",
+        "Wyckoff spring alone"
+      ]
+    },
+    {
+      "id": "FLOW_BREAKOUT",
+      "label": "거래량 동반 돌파",
+      "role": "CONFIRMATION",
+      "signals": [
+        "4H close > previous 12-bar high",
+        "4H RVOL >=1.5 using previous 20 completed bars"
+      ],
+      "hardRequired": [
+        "closed 4H bars"
+      ],
+      "notGates": [
+        "taker >=1.5 on any single 15m bar"
+      ]
+    },
+    {
+      "id": "OI_LEAD",
+      "label": "OI 선행형",
+      "role": "SUBTYPE",
+      "signals": [
+        "4H open interest change >=1%"
+      ],
+      "hardRequired": [
+        "observed OI with aligned timestamp"
+      ],
+      "notGates": [
+        "global OI gate"
+      ]
+    },
+    {
+      "id": "CLEAN_REBUILD",
+      "label": "정리 후 재구축",
+      "role": "SUBTYPE",
+      "signals": [
+        "OI drawdown <= -2%",
+        "1H OI rebound >=0.3%"
+      ],
+      "hardRequired": [
+        "OI history supporting BOTH phases"
+      ],
+      "notGates": [
+        "negative OI alone"
+      ]
+    }
+  ],
+  "supportingEvidence": [
+    "WYCKOFF_SWEEP_PROXY",
+    "VOLUME_ECHO_PROXY",
+    "BTC_RELATIVE_STRENGTH",
+    "SPOT_DIRECTION_ONLY",
+    "H1_M15_TRIGGER",
+    "M5_ENTRY_REFERENCE",
+    "FUNDING_RISK",
+    "OVEREXTENSION"
+  ],
+  "retiredFromActive": [
+    {
+      "id": "EMA_COMPRESSION_ONLY",
+      "reason": "2026-10-12 comparison: 12/16 surge and 15/16 control had EMA compression <=5%"
+    },
+    {
+      "id": "TAKER_SPIKE_ONLY",
+      "reason": "15/16 surge and 15/16 control showed 15m buy spike"
+    },
+    {
+      "id": "M5_EMA_VWAP_ONLY",
+      "reason": "14/16 surge vs 13/16 control"
+    },
+    {
+      "id": "OI_PLUS_1_GLOBAL_GATE",
+      "reason": "Only 6/16 surge samples had >=1% 4H OI lead"
+    },
+    {
+      "id": "SMA448_HARD_GATE",
+      "reason": "Only 4/15 with long daily history above 448MA"
+    },
+    {
+      "id": "GOLDEN_CROSS_ONLY",
+      "reason": "Unvalidated with matched control cohort"
+    },
+    {
+      "id": "BOWL_PERIOD_SYMMETRY_ONLY",
+      "reason": "Still research-only; no forward OOS evidence"
+    }
+  ],
+  "historyPolicy": "Never delete original OHLCV / OI observations, backtest samples, research records or other scanners; retire only ranking preset definitions."
+}
