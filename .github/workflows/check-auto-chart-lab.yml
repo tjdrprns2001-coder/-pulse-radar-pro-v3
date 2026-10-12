@@ -19,6 +19,7 @@ on:
     branches: [main]
     paths:
       - 'auto-chart-lab.html'
+      - 'scripts/verify-price-pattern-candidates.js'
       - 'ui/auto-chart/**'
       - 'scripts/verify-auto-chart-lab.js'
       - 'scripts/verify-wyckoff-auto-chart.js'
