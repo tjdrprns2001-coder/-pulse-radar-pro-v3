@@ -19,7 +19,7 @@ assert.equal(analyzeTrades([], {symbol:'BTCUSDT'}).reason,'NO_TRADES');
 assert.equal(analyzeTrades(rows.slice().reverse(),{market:'futures',symbol:'BTCUSDT'}).cvdEnd,flow.cvdEnd);
 (async()=>{
  let requested='';
- const live=await getFlow({symbol:'BTCUSDT',market:'futures',fetchImpl:async url=>{requested=url;return{ok:true,json:async()=>rows}}});
+ const live=await getFlow({symbol:'BTCUSDT',market:'futures',fetchImpl:async url=>{if(url.includes('aggTrades'))requested=url;return{ok:true,json:async()=>url.includes('aggTrades')?rows:{bids:[],asks:[]}}}});
  assert.equal(live.available,true);assert(requested.startsWith('https://fapi.binance.com/fapi/v1/aggTrades?'));
  const sampleDepth={bids:[['100','3'],['99','2']],asks:[['101','1'],['102','1']]};
  const snap=observe('futures:UNITTESTUSDT',rows,sampleDepth,1700000100000);
