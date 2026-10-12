@@ -57,6 +57,10 @@ function render(analysis,{aux=null}={}){
   const c=analysis.setup.confirmation;setText('cardWaiting',c?.type==='close-above'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 위 확정':c?.type==='retest-hold'?'돌파 구간 '+price(c.low)+'–'+price(c.high)+' 재시험 지지':c?.type==='close-reclaim'?String(c.timeframe).toUpperCase()+' 종가 '+price(c.price)+' 재회복':analysis.setup.state==='RETEST_CONFIRMED'?'조건 충족 · 구조 유지 관찰':analysis.setup.state==='INVALIDATED'?'기존 시나리오 종료':'관찰 조건 미충족');
   const tf=aux?.tradeFlow;
   setText('cardCvd',tf?.available?('최근 '+tf.tradeCount+'체결 · 순델타 '+Math.round(tf.netDeltaNotional).toLocaleString('en-US')+' USDT · '+pct(tf.deltaPct)):'체결 표본 없음 · N/A');
+  setText('cardCvdRolling',tf?.rolling?.minutes?
+    ('관측 '+tf.rolling.minutes+'분 · 순델타 '+Math.round(tf.rolling.netDeltaNotional).toLocaleString('en-US')+' USDT · 서버 메모리(재시작 시 초기화)'):'연속 관측 없음 · N/A');
+  setText('cardDepth',tf?.depth?.available?
+    ('상위 '+tf.depth.levels+'호가 · 매수/매도 불균형 '+pct(tf.depth.imbalance*100)):'호가 스냅샷 N/A');
   setText('cardAbsorption',tf?.available?(tf.possibleAbsorption==='POSSIBLE_BUY_ABSORPTION'?'매수 흡수 가능성 관찰':tf.possibleAbsorption==='POSSIBLE_SELL_ABSORPTION'?'매도 흡수 가능성 관찰':'뚜렷한 흡수 후보 없음')+' · 가격변동 '+pct(tf.priceChangePct):'체결·호가 확인 불가');
   if(aux?.derivatives?.available){const d=aux.derivatives;setText('cardDerivatives','OI4H '+pct(d.oi?.change4hPct)+' · Funding '+pct(d.funding?.ratePct,4)+' · Taker4H '+ratio(d.taker?.ratio4h))}
   else setText('cardDerivatives',analysis.market.marketType==='futures'?'OI/Funding/Taker N/A':'현물');
