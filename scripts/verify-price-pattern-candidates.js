@@ -5,7 +5,7 @@ const t=1700000000000,step=3600000;
 function candle(i,mid=100){return{openTime:t+i*step,closeTime:t+(i+1)*step-1,open:mid,high:mid+1,low:mid-1,close:mid,volume:100,closed:true}}
 const bars=Array.from({length:76},(_,i)=>candle(i));
 const b=bars.map(x=>({...x}));
-for(const [i,mid] of [[42,95],[48,101],[54,109],[60,100],[66,109.3],[70,104]])b[i]={...b[i],open:mid,close:mid,high:mid+1,low:mid-1};
+for(const [i,mid] of [[42,95],[48,101],[54,109],[60,96],[66,109.3],[70,104]])b[i]={...b[i],open:mid,close:mid,high:mid+1,low:mid-1};
 const at=b.at(-1).closeTime;
 const result=P.detect(b,{asOf:at});
 assert.equal(result.status,'READY');assert.equal(result.source,'CLOSED_OHLC_ONLY');
