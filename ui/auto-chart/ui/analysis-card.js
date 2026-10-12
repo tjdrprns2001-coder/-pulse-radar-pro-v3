@@ -41,6 +41,15 @@ function render(analysis,{aux=null}={}){
   const candleLabels=(p?.candlestickPatterns||[]).map(x=>x.label).join(', ');
   const longSma=analysis.patternSma,maLabel=longSma?(' · SMA112 '+price(longSma[112]?.at(-1))+' / 224 '+price(longSma[224]?.at(-1))+' / 448 '+price(longSma[448]?.at(-1))):'';
   setText('cardBowl',p?(status+' · '+label+(candleLabels?' · '+candleLabels:'')+maLabel):'선택 시간봉 분석 없음');
+  const pc=analysis.pricePatternCandidates;
+  const matches=pc?.candidates||[];
+  setText('cardPricePatterns',pc?.status==='READY'?(matches.length?
+    matches.map(x=>x.label+' · '+(x.status==='NECKLINE_BROKEN'?'넥라인 이탈 확정봉':'돌파 대기')).join(' / '):
+    '확정된 패턴 후보 없음'):'분석용 확정봉 부족');
+  setText('cardPricePatternEvidence',matches.length?matches.map(x=>
+    x.label+' : '+x.evidence.join('·')).join(' / '):'해당 없음');
+  setText('cardPricePatternInvalidation',matches.length?matches.map(x=>
+    x.label+' '+price(x.invalidation)).join(' / '):'N/A');
   const wy=analysis.wyckoffEvidence;
   const wyNames={SPRING_CANDIDATE:'Spring · 하단 이탈 후 복귀',UPTHRUST_CANDIDATE:'Upthrust · 상단 돌파 후 복귀',
     RANGE_WATCH:'횡보 박스 관찰',NO_PATTERN:'매집·분산 구조 미확인'};
