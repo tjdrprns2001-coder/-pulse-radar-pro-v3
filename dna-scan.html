@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PulseRadar · 급등 전 DNA v2</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#0b111c;color:#eff4ff}*{box-sizing:border-box}body{margin:0}main{max-width:1140px;margin:auto;padding:18px 16px 70px}.nav{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:28px}.nav a{color:#a7c6fa;text-decoration:none;font-size:13px}.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}h1{font-size:clamp(25px,5vw,38px);margin:8px 0}.sub{color:#a4b0c5;font-size:14px;line-height:1.7;max-width:760px}.eyebrow{font-size:12px;letter-spacing:.15em;color:#63bfff;font-weight:700}button,select,input{font:inherit}button{padding:13px 18px;border-radius:10px;border:1px solid #3d86f6;background:#3075f5;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}button.secondary{background:transparent;border-color:#536176;color:#d0def6}select,input{padding:10px;border-radius:9px;background:#141e2d;color:#fff;border:1px solid #35445b}section.panel{padding:18px;border:1px solid #29364d;border-radius:14px;background:#111a29;margin-top:16px}.group{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.group label{font-size:12px;color:#b3c1d6;display:grid;gap:6px}.status{display:block;font-size:14px;line-height:1.8;color:#afc0d7;margin-top:14px;white-space:pre-wrap}.bar{height:8px;border-radius:20px;background:#28364c;overflow:hidden;margin:12px 0}.fill{background:linear-gradient(90deg,#268ef4,#43caaa);width:0;height:100%;transition:width .2s}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:16px 0}.stat{background:#172236;padding:12px;border-radius:10px}.stat strong{font-size:23px;display:block;margin-top:4px}.stat small{color:#afbbcd;font-size:11px}h2{font-size:19px;margin:0 0 12px}.hint{color:#a5b5cc;font-size:12px;line-height:1.7}.tags{display:flex;gap:7px;flex-wrap:wrap}.tag{border:1px solid #38506c;border-radius:30px;padding:6px 9px;font-size:12px;color:#cee3fd}.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px}.card{background:#152338;border:1px solid #324560;border-radius:12px;padding:15px}.card .top{display:flex;gap:8px;justify-content:space-between;align-items:center}.symbol{font-weight:800;font-size:19px}.stage{font-size:11px;color:#9cd6ff}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:#abb9cd;margin:15px 0}.grid b{display:block;color:white;font-size:15px;margin-top:3px}.notice{padding:12px;background:#18243a;border-radius:10px;color:#b7c7dd;font-size:12px;line-height:1.7}.small{font-size:11px;color:#8498b1}.error{color:#ffa5a5}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}main{padding:14px 12px 60px}.group{align-items:stretch}.group>*{flex:1}}
+</style></head><body><main>
+<nav class="nav"><b>PulseRadar / DNA v2</b><div><a href="/">시장 데스크</a> · <a href="/astra-scan.html">기존 Astra (보관·비교)</a> · <a href="/coin-scan.html">차트 검색</a></div></nav>
+<div class="head"><div><div class="eyebrow">급등 전 DNA · 연구 프리셋</div><h1>원점부터 찾는 급등 초기 구조</h1><p class="sub">가격·이평 압축은 보조 근거로만 사용합니다. 4시간봉 저항 돌파와 거래량 확대, BTC 대비 상대강도, OI 유형(A/B/C), 스윕과 Volume Echo를 따로 검사합니다.</p></div></div>
+<section class="panel"><div class="group"><label>거래대금 필터 <select id="volume"><option value="0">제한 없음</option><option value="1000000">100만 USDT+</option><option value="10000000">1,000만 USDT+</option></select></label><button id="run">전체 선물 사전검사 시작</button><button class="secondary" id="stop" disabled>중단</button></div>
+<div class="bar"><div id="progress" class="fill"></div></div><div id="status" class="status" role="status" aria-live="polite">대기 중 · 원본 데이터와 이전 연구 기록은 보존됩니다.</div><div class="stats"><div class="stat"><small>전체 대상</small><strong id="total">0</strong></div><div class="stat"><small>4H 검사 완료</small><strong id="screened">0</strong></div><div class="stat"><small>정밀 후보</small><strong id="selected">0</strong></div><div class="stat"><small>정밀 검사 완료</small><strong id="deep">0</strong></div></div>
+<p class="hint">1차: 전체 종목 4H 확정봉 조회 → 점수화 · 2차: 예비 후보 중 상위 최대 40종목의 1D/4H/1H/15m/5m, OI와 체결 흐름 확인. 전체 종목에 대해 모든 시간봉을 조회한 것은 아닙니다. 실패·미조회는 통과로 간주하지 않습니다.</p></section>
+<section class="panel"><h2>활성 프리셋 4개</h2><div class="tags"><span class="tag">기반 회복</span><span class="tag">거래량 돌파 확인</span><span class="tag">OI 선행 A</span><span class="tag">OI 정리·재구축 C</span></div><p class="hint">EMA 압축 단독 · taker 단독 급증 · 5분봉 단독 신호 · OI +1% 공통 필수 · 448일선 강제 통과는 운영 프리셋에서 제외. 와이코프 스윕·Volume Echo·5분봉 신호는 근거 및 실행 참고로만 사용.</p></section>
+<section class="panel"><div class="group" style="justify-content:space-between"><h2>정밀 결과</h2><label>코인 검색<input id="search" placeholder="RSR, ZRO, METIS" /></label></div><div id="results" class="list"><p class="hint">스캔을 시작하면 후보가 표시됩니다.</p></div></section>
+<section class="panel notice">연구용 프리셋입니다. 2026년 10월 급등 16종목과 비급등 16종목 비교는 표본 선정 편향이 있어 승률·예측 확률을 뜻하지 않습니다. 진입은 확정봉·호가·수수료·손절 및 추가 검증이 필요합니다.</section>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),fmt=(x,n=2)=>x==null||!Number.isFinite(Number(x))?'-':Number(x).toFixed(n);
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ctrl=null,rows=[];const part=(a,n)=>{const x=[];for(let i=0;i<a.length;i+=n)x.push(a.slice(i,i+n));return x};
+function state(msg,n=null){$('status').textContent=msg;if(n!=null)$('progress').style.width=Math.max(0,Math.min(100,n))+'%'}
+async function get(stage,symbols=[],extras={}){
+ const q=new URLSearchParams({stage,method:'dna',...extras});if(symbols.length)q.set('symbols',symbols.join(','));
+ const urls=['/api/astra-scan?'+q,'https://pulseradar-selector-runtime.onrender.com/api/astra-scan?'+q];
+ let failure;
+ for(const url of (location.hostname==='pulseradar-selector-runtime.onrender.com'?urls.slice(0,1):urls)){
+  try{const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'});const json=await r.json();if(!r.ok)throw Error(json.error||'HTTP '+r.status);if(json.status!=='ok'||json.method!=='dna')throw Error('배포된 서버의 DNA v2 엔진 버전이 맞지 않습니다.');return json}
+  catch(e){if(e.name==='AbortError')throw e;failure=e}
+ }
+ throw failure||Error('API 연결 실패');
+}
+function card(x){let d=x.dnaPreset||{},i=d.indicators||{},ev=(d.evidence||[]).slice(0,6).map(z=>'<span class="tag">'+esc(z)+'</span>').join('');
+return '<div class="card"><div class="top"><span class="symbol">'+esc(x.symbol)+'</span><span class="stage">'+esc(d.stage||'INCOMPLETE')+'</span></div><p class="small">'+esc(d.type||'UNKNOWN')+'형 · 연구 점수 '+fmt(d.score,0)+'</p><div class="grid"><div>24h 변동<b>'+fmt(x.priceChange24h)+'%</b></div><div>4H EMA 폭<b>'+fmt(i.emaWidthPct)+'%</b></div><div>4H RVOL<b>'+fmt(i.rvol4h)+'x</b></div><div>OI4H<b>'+fmt(i.oi4hPct)+'%</b></div><div>BTC 대비 24H<b>'+fmt(i.btcRelative24hPp)+'%p</b></div><div>저항 돌파<b>'+(i.breakout4h?'확인':'대기')+'</b></div></div><div class="tags">'+(ev||'<span class="small">분류 근거 부족</span>')+'</div><p class="hint">'+esc((d.warnings||[]).join(' / ')||'진입 허가 아님 · 검증 필요')+'</p></div>';
+}
+function render(){let search=$('search').value.trim().toUpperCase();$('results').innerHTML=rows.filter(x=>!search||x.symbol.includes(search)).map(card).join('')||'<p class="hint">조건에 맞는 정밀 후보가 없습니다.</p>'}
+$('search').oninput=render;
+$('stop').onclick=()=>ctrl?.abort();
+$('run').onclick=async()=>{if(ctrl)return;ctrl=new AbortController();$('run').disabled=true;$('stop').disabled=false;rows=[];render();$('total').textContent='0';$('screened').textContent='0';$('deep').textContent='0';$('selected').textContent='0';
+ try{
+  state('1/3 · 바이낸스 USDT 무기한 전체 목록 확인 중',1);
+  const u=await get('universe',[],{minQuoteVolume:$('volume').value});const all=u.items||[],market=u.marketState||{};
+  $('total').textContent=u.universeCount??all.length;
+  const ctx={asOf:u.asOf,btc:market.btc24hChange,eth:market.eth24hChange,breadth:market.breadthRatio};
+  const shallow=[];
+  for(const chunk of part(all.map(x=>x.symbol),16)){
+   const r=await get('prescan',chunk,ctx);shallow.push(...(r.items||[]));
+   $('screened').textContent=shallow.length;
+   state('2/3 · 4시간봉 전체 사전검사 '+shallow.length+'/'+all.length,10+Math.round(60*shallow.length/Math.max(1,all.length)));
+  }
+  if(shallow.length!==all.length)throw Error('사전검사 일부 응답 누락 · 전체 검사 완료로 표시하지 않음');
+  const ranked=shallow.filter(x=>x.status==='OK'&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score||a.symbol.localeCompare(b.symbol));
+  const chosen=[],used=new Set(),add=x=>{if(!used.has(x.symbol)){chosen.push(x);used.add(x.symbol)}};
+  for(const [kind,cap] of [['PRE_WATCH',20],['IGNITION_CONFIRM',12],['RETEST_WATCH',8]])ranked.filter(x=>x.stage===kind).slice(0,cap).forEach(add);
+  for(const x of ranked)if(chosen.length<40)add(x);
+  const symbols=chosen.slice(0,40).map(x=>x.symbol);
+  $('selected').textContent=symbols.length;
+  if(!symbols.length){state('전체 4H 조회 완료 · 정밀검사 가능한 후보 없음',100);return}
+  let success=0,missingOI=0;for(const chunk of part(symbols,16)){const o=await get('oi',chunk,ctx);missingOI+=(o.items||[]).filter(x=>x.status!=='SUCCESS').length;success+=(o.items||[]).length}
+  if(success!==symbols.length)throw Error('OI 조회 응답 누락');
+  for(const chunk of part(symbols,2)){
+   const x=await get('deep',chunk,ctx);rows.push(...(x.items||[]));$('deep').textContent=rows.length;
+   state('3/3 · 정밀검사 '+rows.length+'/'+symbols.length+' · OI 미확인 '+missingOI+'(B형은 유지)',70+30*rows.length/symbols.length);
+   rows.sort((a,b)=>((a.dnaPreset?.stage==='PRE_WATCH'?0:a.dnaPreset?.stage==='RETEST_WATCH'?1:a.dnaPreset?.stage==='IGNITION_CONFIRM'?2:3)-(b.dnaPreset?.stage==='PRE_WATCH'?0:b.dnaPreset?.stage==='RETEST_WATCH'?1:b.dnaPreset?.stage==='IGNITION_CONFIRM'?2:3))||(b.dnaPreset?.score??-1)-(a.dnaPreset?.score??-1));render();
+  }
+  state('완료 · 전체 4H '+shallow.length+'개 검사 · 정밀 '+rows.length+'개 · 조회 실패/데이터 부족 '+shallow.filter(x=>x.status!=='OK').length+'개 · 점수는 수익 확률 아님',100);
+ }catch(e){state(e.name==='AbortError'?'중단됨 · 이전 결과는 보존되지 않음':'스캔 실패 · '+String(e.message||e),null)}
+ finally{ctrl=null;$('run').disabled=false;$('stop').disabled=true}
+};
+})();
+</script></body></html>
