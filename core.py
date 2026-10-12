@@ -19,6 +19,13 @@ class TradeWindow:
 def outcome(record,candles,now):
  # Only complete bars starting after the observation are eligible. Never fills past signals retroactively.
  future=[c for c in candles if c[0]/1000>=record['observedAt'] and c[0]/1000+record['seconds']<=now]
+ future.sort(key=lambda c:c[0])
+ expected=math.ceil(record['observedAt']/record['seconds'])*record['seconds']
+ continuous=[]
+ for c in future:
+  if abs(c[0]/1000-expected)>0.001:break
+  continuous.append(c);expected+=record['seconds']
+ future=continuous
  result={}
  for horizon in [1,4,12]:
   if len(future)<horizon:continue

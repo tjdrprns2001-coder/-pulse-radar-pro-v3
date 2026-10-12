@@ -35,8 +35,11 @@ def freqtrade(body):
   config={'max_open_trades':1,'stake_currency':'USDT','stake_amount':100,'tradable_balance_ratio':.99,'dry_run':True,'dry_run_wallet':1000,'trading_mode':'spot','timeframe':frame,'stoploss':-.02,'minimal_roi':{'0':.03},'fee':.001,'exchange':{'name':exchange,'key':'','secret':'','pair_whitelist':[symbol],'pair_blacklist':[]},'pairlists':[{'method':'StaticPairList'}],'entry_pricing':{'price_side':'other','use_order_book':False,'price_last_balance':0},'exit_pricing':{'price_side':'other','use_order_book':False,'price_last_balance':0},'dataformat_ohlcv':'json'}
   conf=root/'config.json';conf.write_text(json.dumps(config))
   cmd=[sys.executable,'-m','freqtrade','backtesting','--config',str(conf),'--strategy','AtlasBaseline','--strategy-path',str(Path(__file__).parent/'strategies'),'--userdir',str(root),'--datadir',str(root/'data'),'--data-format-ohlcv','json','--backtest-directory',str(root/'results'),'--cache','none','--export','trades']
-  run=subprocess.run(cmd,capture_output=True,text=True,timeout=65)
-  if run.returncode:raise RuntimeError(run.stderr[-500:])
+  # Run the genuine CLI entrypoint in this isolated process, avoiding a second heavyweight Python process.
+  from freqtrade.main import main as freqtrade_main
+  try:freqtrade_main(cmd[3:])
+  except SystemExit as e:
+   if e.code not in (None,0):raise RuntimeError('Freqtrade exited with code '+str(e.code))
   results=[]
   for path in (root/'results').glob('*.zip'):
    with zipfile.ZipFile(path) as z:
