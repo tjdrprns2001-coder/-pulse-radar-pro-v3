@@ -1,0 +1,6 @@
+fastapi==0.143.0
+uvicorn==0.54.0
+ccxt==4.5.85
+tvscreener==0.5.2
+tradingview-mcp-server==0.8.1
+freqtrade==2026.9
