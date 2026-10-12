@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const P=require('../ui/auto-chart/analysis/price-pattern-candidates.js'),Core=require('../ui/auto-chart/analysis/core.js');
+const t=1700000000000,step=3600000;
+function candle(i,mid=100){return{openTime:t+i*step,closeTime:t+(i+1)*step-1,open:mid,high:mid+1,low:mid-1,close:mid,volume:100,closed:true}}
+const bars=Array.from({length:76},(_,i)=>candle(i));
+const b=bars.map(x=>({...x}));
+for(const [i,mid] of [[42,95],[48,101],[54,109],[60,100],[66,109.3],[70,104]])b[i]={...b[i],open:mid,close:mid,high:mid+1,low:mid-1};
+const at=b.at(-1).closeTime;
+const result=P.detect(b,{asOf:at});
+assert.equal(result.status,'READY');assert.equal(result.source,'CLOSED_OHLC_ONLY');
+assert(result.candidates.some(x=>x.kind==='DOUBLE_TOP_CANDIDATE'),'top pattern should be detected from confirmed pivots');
+const first=result.candidates.find(x=>x.kind==='DOUBLE_TOP_CANDIDATE');
+assert(first.pivots.every(p=>p.knownAt<=at),'pivots must be confirmed with closed right candles');
+assert(first.invalidation>first.neckline);
+assert.equal(P.detect(b.concat([{...candle(76,1000),high:9999,low:1,closed:false}]),{asOf:at}).candidates.length,result.candidates.length);
+assert.equal(P.detect(b.slice(0,15),{asOf:at}).status,'INSUFFICIENT_HISTORY');
+const html=fs.readFileSync('auto-chart-lab.html','utf8'),card=fs.readFileSync('ui/auto-chart/ui/analysis-card.js','utf8');
+for(const k of ['cardPricePatterns','cardPricePatternEvidence','cardPricePatternInvalidation','analysis/price-pattern-candidates.js'])assert(html.includes(k));
+assert(card.includes("setText('cardPricePatterns'"));
+assert(Core.analyze.toString().includes('pricePatternCandidates'));
+console.log('price pattern candidates: closed pivots, future exclusion, UI, structural evidence PASS');
