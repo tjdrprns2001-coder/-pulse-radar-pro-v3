@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const {analyzeTrades,getFlow}=require('../lib/market-intel/aggressive-trade-flow.js');
+const {analyzeTrades,getFlow,observe}=require('../lib/market-intel/aggressive-trade-flow.js');
 const handler=require('../api/agg-trade-flow.js');
 const rows=Array.from({length:80},(_,i)=>({a:i,T:1700000000000+i*1000,p:String(100+i*.001),q:'2',m:i<65}));
 const flow=analyzeTrades(rows,{market:'futures',symbol:'BTCUSDT',now:1700000100000});
@@ -21,6 +21,19 @@ assert.equal(analyzeTrades(rows.slice().reverse(),{market:'futures',symbol:'BTCU
  let requested='';
  const live=await getFlow({symbol:'BTCUSDT',market:'futures',fetchImpl:async url=>{requested=url;return{ok:true,json:async()=>rows}}});
  assert.equal(live.available,true);assert(requested.startsWith('https://fapi.binance.com/fapi/v1/aggTrades?'));
+ const sampleDepth={bids:[['100','3'],['99','2']],asks:[['101','1'],['102','1']]};
+ const snap=observe('futures:UNITTESTUSDT',rows,sampleDepth,1700000100000);
+ assert.equal(snap.rolling.newTrades,80);
+ assert(snap.depth.available&&snap.depth.imbalance>0);
+ const again=observe('futures:UNITTESTUSDT',rows,sampleDepth,1700000102000);
+ assert.equal(again.rolling.newTrades,0,'repeated poll must not double-count CVD');
+ assert.equal(again.rolling.netDeltaNotional,snap.rolling.netDeltaNotional);
+ const newer=[{a:81,T:1700000102000,p:'101',q:'1',m:false}];
+ const more=observe('futures:UNITTESTUSDT',newer,null,1700000102000);
+ assert.equal(more.rolling.newTrades,1);
+ assert.equal(more.depth.available,false);
+ assert.equal(more.rolling.ephemeral,true,'not durable storage');
+
  const bad=await getFlow({symbol:'../PRIVATE',market:'futures',fetchImpl:async()=>{throw Error('must not be called')}});
  assert.equal(bad.ok,false);
  const fail=await getFlow({symbol:'BTCUSDT',market:'spot',fetchImpl:async()=>{throw Error('private network')}});
