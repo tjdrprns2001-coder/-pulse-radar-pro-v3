@@ -9,6 +9,7 @@ on:
       - 'api/index.js'
       - 'scripts/verify-auto-chart-lab.js'
       - 'scripts/verify-wyckoff-auto-chart.js'
+      - 'scripts/verify-price-pattern-candidates.js'
       - 'scripts/verify-agg-trade-flow.js'
       - 'api/agg-trade-flow.js'
       - 'lib/market-intel/aggressive-trade-flow.js'
@@ -52,6 +53,7 @@ jobs:
       - run: node -c ui/auto-chart/app.js
       - run: node -c ui/auto-chart/analysis/wyckoff-evidence.js
       - run: node scripts/verify-wyckoff-auto-chart.js
+      - run: node scripts/verify-price-pattern-candidates.js
       - run: node scripts/verify-agg-trade-flow.js
       - run: npm run test:auto-chart-lab
       - run: npm run test:auto-chart-transport
