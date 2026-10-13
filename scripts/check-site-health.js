@@ -34,10 +34,6 @@ async function probe(c){
  const reports=[];
  for(const c of checks)reports.push(await probe(c));
  const failures=reports.filter(x=>x.status!=='PASS');
- // Check only route schema; avoid high-cost universe scan in CI.
- const schema=await probe({name:'DNA scan API route',path:'/api/astra-scan?stage=invalid&method=dna',expected:'unknown stage'});
- // The invalid stage deliberately returns HTTP 400, so do not treat this as a site failure.
- reports.push({...schema,informational:true});
  console.log(JSON.stringify({checkedAt:new Date().toISOString(),base:BASE,reports},null,2));
  if(failures.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
