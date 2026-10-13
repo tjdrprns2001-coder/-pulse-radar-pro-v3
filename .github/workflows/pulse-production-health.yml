@@ -1,0 +1,22 @@
+name: PulseRadar production availability
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/check-site-health.js'
+      - '.github/workflows/pulse-production-health.yml'
+permissions:
+  contents: read
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-site-health.js
