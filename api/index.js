@@ -1,5 +1,6 @@
 const handlers = {
   chartbro: require('../handlers/chartbro'),
+  'launch-origin': require('../handlers/launch-origin'),
   'dante-cloud': require('../handlers/dante-cloud'),
   backtest: require('../handlers/backtest'),
   'bowl224-research': require('../handlers/bowl224-research'),
