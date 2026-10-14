@@ -1,0 +1,33 @@
+name: PulseRadar operational readiness
+on:
+  schedule:
+    - cron: '43 */6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/check-operational-health.js'
+      - 'scripts/verify-operational-health.js'
+      - '.github/workflows/pulse-operational-readiness.yml'
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/verify-operational-health.js
+  readiness:
+    if: github.event_name != 'pull_request'
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-operational-health.js
