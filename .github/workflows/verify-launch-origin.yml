@@ -1,0 +1,32 @@
+name: Verify Launch Origin Research
+on:
+  pull_request:
+    paths:
+      - 'lib/onchain/launch-origin.js'
+      - 'handlers/launch-origin.js'
+      - 'api/index.js'
+      - 'render-temp-server.js'
+      - 'scripts/verify-launch-origin.js'
+      - '.github/workflows/verify-launch-origin.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'lib/onchain/launch-origin.js'
+      - 'scripts/verify-launch-origin.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/onchain/launch-origin.js
+      - run: node --check handlers/launch-origin.js
+      - run: node --check render-temp-server.js
+      - run: node --check api/index.js
+      - run: npm run test:launch-origin

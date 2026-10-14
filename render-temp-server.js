@@ -32,7 +32,7 @@ const aliases={
 
 const indexRoutes=new Set([
   'backtest','calibration-freeze','calibration-health','detail','historical-structure-study','htf',
-  'independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
+  'launch-origin','independent-temporal','market','micro-features','pattern','pattern-validation','structure-study',
   'dante-cloud','dante-backtest','structure','temporal-features','trendline-study','signal-alerts','signal-backfill',
   'signal-calibration','signal-health','signal-performance','learning-ai','ignition-results','chartbro-research','chart-snapshots','derivatives-capability','chartbro'
 ]);

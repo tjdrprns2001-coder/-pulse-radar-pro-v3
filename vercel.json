@@ -67,6 +67,10 @@
       "destination": "/api/index?route=bowl224-research"
     },
     {
+      "source": "/api/launch-origin",
+      "destination": "/api/index?route=launch-origin"
+    },
+    {
       "source": "/api/backtest",
       "destination": "/api/index?route=backtest"
     },
