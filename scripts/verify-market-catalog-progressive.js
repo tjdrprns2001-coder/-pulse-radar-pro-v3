@@ -32,7 +32,7 @@ assert.ok(match[1].includes("if(!d?.ok||lastMarketSync||rows.length)return"),'ca
 assert.ok(match[1].includes("if(!Array.isArray(d.results)||!d.results.length)throw Error('유효한 시장 결과 없음')"),'empty full data cannot be silently successful');
 assert.ok(match[1].includes("selected.dataStatus==='catalog-only'"),'preview selection needs fresh full data');
 assert.ok(match[1].includes("catalogOnly&&!lastMarketSync"),'failed full market should label preview only');
-assert.ok(match[1].includes("hasNumericValue(r.quoteVol24)?'$'+fmt(r.quoteVol24,0):'-'"),'unknown USD volume must render N/A');
+assert.ok(match[1].includes("fmtUsd(r.quoteVol24)"),'unknown USD volume must render N/A');
 assert.ok(match[1].includes("setTimeout(loadCatalogPreview,500)"),'avoid immediate duplicate startup provider load');
 assert.ok(match[1].includes("lastMarketSync=Number.isFinite(sourceTime)?new Date(sourceTime):new Date()"),'rely on feed timestamp when present');
 console.log('PASS market catalog-first display, missing evidence safety and source freshness');
