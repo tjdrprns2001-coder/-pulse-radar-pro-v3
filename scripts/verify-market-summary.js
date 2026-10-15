@@ -50,5 +50,5 @@ const handler=fs.readFileSync(path.join(root,'handlers/market.js'),'utf8');
 const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.ok(handler.includes("req.query?.view==='summary'?summarizeMarket(response):response"),'full market consumers unaffected without opt-in');
 assert.ok(home.includes('/api/market?minVolume=500000&view=summary'),'dashboard opts in explicitly');
-assert.ok(home.includes("hasNumericValue(r.quoteVol24)"),'dashboard marks unknown volume rather than fake zero');
+assert.ok(home.includes("fmtUsd(r.quoteVol24)"),'dashboard marks unknown volume rather than fake zero');
 console.log('PASS opt-in lightweight market payload: default untouched, row contract, null-safe, significant fixture payload savings');
