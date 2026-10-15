@@ -35,7 +35,7 @@ function candidateCard(x){
   const cls=node('div','candidateClass',x.scanClass?.label||x.category||'관찰');
   const reason=node('div','candidateReason',x.reason||'추가 근거 대기');
   const ts=x.typeSafe||null;
-  const tsLine=ts?node('div','candidateMeta',`TypeSafe 준비도 ${Number.isFinite(Number(ts.readinessScore))?Number(ts.readinessScore).toFixed(2)+'/4':'—'} · 추격위험 ${Number.isFinite(Number(ts.chaseRisk))?(Number(ts.chaseRisk)*100).toFixed(0)+'%':'—'} · ${ts.shadowOnly===false?'ACTIVE':'SHADOW'}`):null;
+  const tsLine=ts?node('div','candidateMeta',`결정 모델(연구) 준비도 ${ts.readinessScore!=null&&Number.isFinite(Number(ts.readinessScore))?Number(ts.readinessScore).toFixed(2)+'/4':'—'} · 추격 판단 ${ts.chaseRisk!=null&&Number.isFinite(Number(ts.chaseRisk))?(Number(ts.chaseRisk)*100).toFixed(0)+'%':'—'} · ${ts.disposition||'SHADOW'} · 투자 확률 아님`):null;
   d.append(top,meta,cls,reason);if(tsLine)d.append(tsLine);return d;
 }
 function eventRow(x){
@@ -79,9 +79,9 @@ function renderResearch(r,t=null){
   el.append(line,bar,detail);
   }
   if(t){
-    const stateText=t.available?(t.status==='ok'?'연결됨':'대기/오류'):'비활성';
+    const stateText=t.available?(t.status==='ok'?'연결됨':t.status==='partial'?'일부 보류':t.status==='abstain'?'근거 부족':t.status==='cooldown'?'장애 보호 중':'대기/오류'):'비활성';
     const mode=t.market?.mode?` · 시장 ${t.market.mode}`:'';
-    el.append(node('div','researchDetail',`TypeSafe ${stateText} · ${t.shadowOnly===false?'ACTIVE':'SHADOW_ONLY'}${mode}`));
+    el.append(node('div','researchDetail',`${t.provider||'System One'} / ${t.model||'모델 미연결'} · ${stateText} · ${t.shadowOnly===false?'ACTIVE':'SHADOW_ONLY'}${mode} · 시장 상승확률이 아닌 분류 결과`));
   }
 }
 let preferredReviewSymbol=null,currentRoleDebate=null,roleDebateBusy=false,roleDebateError='';
@@ -187,7 +187,7 @@ function render(data){
   const sources=data.sources||[];$('sourceCount').textContent=fmtNum(sources.length);
   const src=$('sources');clear(src);if(!sources.length)src.append(node('div','empty','표시할 외부 출처가 없습니다.'));
   for(const x of sources){const a=node('a','source',x.title||x.url);a.rel='noopener noreferrer';a.target='_blank';a.href=x.url;src.append(a)}
-  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':t?.available?`로컬 분석 · Research AI + TypeSafe ${t.shadowOnly===false?'ACTIVE':'SHADOW'}`:'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
+  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':t?.available?`로컬 분석 · Research AI + ${t.provider||'System One'} ${t.shadowOnly===false?'ACTIVE':'SHADOW'}`:'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
 }
 async function fetchJson(url,options={},timeout=45000){
   const controller=new AbortController(),external=options.signal,relay=()=>controller.abort(),timer=setTimeout(()=>controller.abort(),timeout);
