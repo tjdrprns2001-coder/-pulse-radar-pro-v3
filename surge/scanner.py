@@ -89,9 +89,12 @@ class Binance:
                 raise BinanceError("API unavailable or blocked; requests stopped")
             try:
                 async with self.session.get(BASE_URL + path, params=params) as r:
-                    if r.status == 418:
+                    if r.status in (418, 451):
+                        # 418 is an IP ban; 451 is a location/legal restriction.
+                        # Stop this run rather than retrying a restricted endpoint.
                         self.blocked = True
-                        raise BinanceError("HTTP 418: IP banned")
+                        reason = "IP banned" if r.status == 418 else "restricted location"
+                        raise BinanceError(f"HTTP {r.status}: {reason}")
                     if r.status == 429:
                         if attempt == 3:
                             raise BinanceError("HTTP 429: retry limit reached")
