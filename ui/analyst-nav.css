@@ -1,0 +1,20 @@
+/* Namespaced navigation to avoid collisions with page-specific trading UI. */
+#pr-analyst-nav{position:fixed;bottom:calc(15px + env(safe-area-inset-bottom,0px));right:15px;z-index:2147483000;font:14px/1.4 system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;color:#f0f5ff}
+#pr-analyst-nav *{box-sizing:border-box}
+#pr-analyst-nav .pr-an-toggle{border:1px solid #5c86c2;border-radius:999px;background:#193455;color:#f0f5ff;font:inherit;font-weight:750;box-shadow:0 7px 28px #0008;cursor:pointer;padding:11px 16px}
+#pr-analyst-nav .pr-an-toggle:hover{background:#254c79}
+#pr-analyst-nav .pr-an-panel{position:absolute;bottom:calc(100% + 11px);right:0;width:min(355px,calc(100vw - 24px));max-height:min(680px,calc(100dvh - 96px));overflow:auto;background:#0c1827;color:#f0f5ff;border:1px solid #385274;border-radius:16px;padding:13px;box-shadow:0 18px 60px #000b}
+#pr-analyst-nav [hidden]{display:none!important}
+#pr-analyst-nav .pr-an-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
+#pr-analyst-nav .pr-an-head strong{font-size:14px}
+#pr-analyst-nav .pr-an-close{border:1px solid #334860;background:#1a2e45;border-radius:8px;color:#eff5ff;padding:6px 8px;cursor:pointer}
+#pr-analyst-nav .pr-an-search{display:block;min-width:0;width:100%;border:1px solid #334860;border-radius:9px;background:#091523;color:#f0f5ff;padding:10px 11px;font:inherit;outline-offset:2px}
+#pr-analyst-nav .pr-an-search::placeholder{color:#a2b5cc}
+#pr-analyst-nav .pr-an-group{padding:12px 6px 5px;font-size:11px;font-weight:800;letter-spacing:.03em;color:#85ade1}
+#pr-analyst-nav .pr-an-item{display:block;border-radius:8px;color:#edf4ff;text-decoration:none;padding:9px 10px;font-weight:600;white-space:normal}
+#pr-analyst-nav .pr-an-item:hover,#pr-analyst-nav .pr-an-item:focus-visible{background:#1d3755}
+#pr-analyst-nav .pr-an-item[aria-current="page"]{background:#214369;color:#d3e9ff}
+#pr-analyst-nav .pr-an-count{display:block;color:#a5b8d2;font-size:11px;padding:10px 6px 0}
+#pr-analyst-nav :focus-visible{outline:2px solid #7eb8ff;outline-offset:2px}
+@media(max-width:600px){#pr-analyst-nav{right:11px;bottom:calc(11px + env(safe-area-inset-bottom,0px))}#pr-analyst-nav .pr-an-panel{max-height:calc(100dvh - 91px)}#pr-analyst-nav .pr-an-toggle{padding:10px 14px}}
+@media(prefers-reduced-motion:reduce){#pr-analyst-nav *,#pr-analyst-nav *:before,#pr-analyst-nav *:after{transition:none!important}}

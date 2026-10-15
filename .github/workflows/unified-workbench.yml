@@ -12,6 +12,21 @@ on:
       - 'handlers/agg-trade-flow.js'
       - 'vercel.json'
       - '.github/workflows/unified-workbench.yml'
+      - 'ui/analyst-nav.js'
+      - 'ui/analyst-nav.css'
+      - 'scripts/verify-analyst-navigation.js'
+      - 'astra-scan.html'
+      - 'dna-scan.html'
+      - 'auto-chart-lab.html'
+      - 'research-ai.html'
+      - 'pulse-ai.html'
+      - 'coin-report.html'
+      - 'radar.html'
+      - 'launch-origin.html'
+      - 'dante-lab.html'
+      - 'historical-validation.html'
+      - 'ict-narrative-lab.html'
+      - 'surge-pattern-lab.html'
   push:
     branches: [main]
     paths:
@@ -19,6 +34,21 @@ on:
       - 'pulse-unified.html'
       - 'workbench.html'
       - 'scripts/verify-unified-workbench.js'
+      - 'ui/analyst-nav.js'
+      - 'ui/analyst-nav.css'
+      - 'scripts/verify-analyst-navigation.js'
+      - 'astra-scan.html'
+      - 'dna-scan.html'
+      - 'auto-chart-lab.html'
+      - 'research-ai.html'
+      - 'pulse-ai.html'
+      - 'coin-report.html'
+      - 'radar.html'
+      - 'launch-origin.html'
+      - 'dante-lab.html'
+      - 'historical-validation.html'
+      - 'ict-narrative-lab.html'
+      - 'surge-pattern-lab.html'
 
 permissions:
   contents: read
@@ -38,3 +68,4 @@ jobs:
           node scripts/verify-unified-workbench.js
           node scripts/verify-vercel-hobby-limit.js
           node scripts/verify-agg-flow-route.js
+          node scripts/verify-analyst-navigation.js
