@@ -1,0 +1,37 @@
+name: Analyst Navigation Mobile Browser
+on:
+  pull_request:
+    paths:
+      - 'ui/analyst-nav.js'
+      - 'ui/analyst-nav.css'
+      - 'scripts/verify-analyst-navigation.js'
+      - 'scripts/verify-analyst-nav-browser.cjs'
+      - 'astra-scan.html'
+      - '.github/workflows/analyst-nav-mobile.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/analyst-nav.js'
+      - 'ui/analyst-nav.css'
+      - 'scripts/verify-analyst-navigation.js'
+      - 'scripts/verify-analyst-nav-browser.cjs'
+      - 'astra-scan.html'
+permissions:
+  contents: read
+jobs:
+  mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Basic DOM navigation regression
+        run: node scripts/verify-analyst-navigation.js
+      - name: Install isolated Playwright runtime
+        run: npm install --prefix "$RUNNER_TEMP/analyst-playwright" --no-save --package-lock=false playwright@1.55.0
+      - name: Install Chromium dependencies
+        run: '"$RUNNER_TEMP/analyst-playwright/node_modules/.bin/playwright" install --with-deps chromium'
+      - name: Check responsive Chromium navigation
+        run: NODE_PATH="$RUNNER_TEMP/analyst-playwright/node_modules" node scripts/verify-analyst-nav-browser.cjs

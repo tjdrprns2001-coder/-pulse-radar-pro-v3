@@ -52,11 +52,16 @@ function fixture(pathname,query) {
  assert.ok(anchors.find(x=>!x.hidden).textContent.includes('DNA'));
  events.keydown({key:'Escape'});assert.equal(panel.hidden,true,'Escape closes menu');
  assert.equal(document.activeElement,toggle,'focus restored to launcher');
- return {anchors};
+ return {anchors,toggle,win};
 }
-let {anchors}=fixture('/dna-scan.html','?symbol=ETHUSDT');
+let {anchors,toggle,win}=fixture('/dna-scan.html','?symbol=ETHUSDT');
 assert.ok(anchors.some(x=>x.href==='/coin-report.html?symbol=ETHUSDT'), 'valid symbol forwarded');
 assert.ok(anchors.some(x=>x.href==='/dante-lab.html?method=ma-cloud-cycle&symbol=ETHUSDT'), 'existing query kept');
+win.location.search='?symbol=BTCUSDT';toggle.events.click();
+assert.ok(anchors.some(x=>x.href==='/coin-report.html?symbol=BTCUSDT'), 'menu reopening must forward the newest URL symbol');
+assert.ok(anchors.every(x=>!x.href.includes('symbol=ETHUSDT')), 'menu cannot forward stale symbol');
+win.location.search='?symbol=%3Cscript%3E';toggle.events.click();toggle.events.click();
+assert.ok(anchors.every(x=>!x.href.includes('symbol=')), 'unsafe symbol removed on live URL mutation');
 anchors=fixture('/radar.html','?symbol=%3Cimg%3E').anchors;
 assert.ok(anchors.every(x=>!x.href.includes('symbol=')),'invalid symbols are never forwarded');
 console.log('PASS analyst navigation: 12 pages, 14 targets, keyboard, search, mobile style, safe symbol context');
