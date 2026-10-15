@@ -1,0 +1,32 @@
+name: Unified Analyst Workbench Safety
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'workbench.html'
+      - 'scripts/verify-unified-workbench.js'
+      - '.github/workflows/unified-workbench.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'workbench.html'
+      - 'scripts/verify-unified-workbench.js'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static route, syntax and data-safety regression
+        run: |
+          node --check scripts/verify-unified-workbench.js
+          node scripts/verify-unified-workbench.js
