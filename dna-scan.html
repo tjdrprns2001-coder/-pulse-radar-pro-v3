@@ -20,11 +20,20 @@ let ctrl=null,rows=[];const part=(a,n)=>{const x=[];for(let i=0;i<a.length;i+=n)
 function state(msg,n=null){$('status').textContent=msg;if(n!=null)$('progress').style.width=Math.max(0,Math.min(100,n))+'%'}
 async function get(stage,symbols=[],extras={}){
  const q=new URLSearchParams({stage,method:'dna',...extras});if(symbols.length)q.set('symbols',symbols.join(','));
- const urls=['/api/astra-scan?'+q,'https://pulseradar-selector-runtime.onrender.com/api/astra-scan?'+q];
+ const url='/api/astra-scan?'+q;
  let failure;
- for(const url of (location.hostname==='pulseradar-selector-runtime.onrender.com'?urls.slice(0,1):urls)){
-  try{const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'});const json=await r.json();if(!r.ok)throw Error(json.error||'HTTP '+r.status);if(json.status!=='ok'||json.method!=='dna')throw Error('배포된 서버의 DNA v2 엔진 버전이 맞지 않습니다.');return json}
-  catch(e){if(e.name==='AbortError')throw e;failure=e}
+ // Do not silently fail over to an older, unrelated runtime mid-scan.
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
+   const json=await r.json().catch(()=>null);
+   if(!r.ok){const err=Error((json?.error||'HTTP '+r.status)+' · '+stage+' · '+(symbols.join(',')||'universe'));err.retryable=r.status===429||r.status>=500;throw err}
+   if(json?.status!=='ok'||json?.method!=='dna'){
+    const err=Error('DNA v2 응답 오류 ('+stage+'): 응답 method='+String(json?.method||'없음')+', status='+String(json?.status||'없음')+'. 데이터 출처 혼용 방지를 위해 중단.');
+    err.retryable=false;throw err
+   }
+   return json;
+  }catch(e){if(e.name==='AbortError')throw e;failure=e;if(e.retryable===false||attempt===3)break;await new Promise(resolve=>setTimeout(resolve,attempt*800))}
  }
  throw failure||Error('API 연결 실패');
 }
@@ -62,7 +71,7 @@ $('run').onclick=async()=>{if(ctrl)return;ctrl=new AbortController();$('run').di
    rows.sort((a,b)=>((a.dnaPreset?.stage==='PRE_WATCH'?0:a.dnaPreset?.stage==='RETEST_WATCH'?1:a.dnaPreset?.stage==='IGNITION_CONFIRM'?2:3)-(b.dnaPreset?.stage==='PRE_WATCH'?0:b.dnaPreset?.stage==='RETEST_WATCH'?1:b.dnaPreset?.stage==='IGNITION_CONFIRM'?2:3))||(b.dnaPreset?.score??-1)-(a.dnaPreset?.score??-1));render();
   }
   state('완료 · 전체 4H '+shallow.length+'개 검사 · 정밀 '+rows.length+'개 · 조회 실패/데이터 부족 '+shallow.filter(x=>x.status!=='OK').length+'개 · 점수는 수익 확률 아님',100);
- }catch(e){state(e.name==='AbortError'?'중단됨 · 이전 결과는 보존되지 않음':'스캔 실패 · '+String(e.message||e),null)}
+ }catch(e){state(e.name==='AbortError'?'중단됨 · 이미 조회된 정밀 결과는 화면에 보존됨':'스캔 중단 · 진행된 4H '+$('screened').textContent+'개 / 정밀 '+$('deep').textContent+'개 결과 보존 · '+String(e.message||e),null)}
  finally{ctrl=null;$('run').disabled=false;$('stop').disabled=true}
 };
 })();
