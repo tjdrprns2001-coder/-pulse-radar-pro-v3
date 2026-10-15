@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080f1a">
+<title>PulseRadar | 애널리스트 통합 관제</title>
+<style>
+:root{color-scheme:dark;--bg:#080f1a;--panel:#111c2b;--panel2:#0c1624;--line:#26384d;--text:#e8f0ff;--muted:#a9b8ce;--accent:#68a5ff;--mint:#43d5ad;--amber:#f9c56d}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 83% -10%,#123056 0%,transparent 45%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
+a{color:inherit;text-decoration:none}a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{width:min(1280px,100%);margin:auto;padding:18px 18px 42px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.logo{font-size:21px;font-weight:850;letter-spacing:-.03em}.logo small{font-size:12px;color:var(--muted);font-weight:600;display:block}.headlinks{display:flex;flex-wrap:wrap;gap:8px}.headlinks a,.primary{background:#18314d;border:1px solid #355679;border-radius:10px;padding:9px 13px;font-weight:650}.headlinks a:hover,.primary:hover{border-color:#70aeff;background:#21466f}
+.hero{padding:35px 0 24px;border-bottom:1px solid var(--line)}.eyebrow{font-size:12px;color:var(--mint);font-weight:750;letter-spacing:.07em}.hero h1{font-size:clamp(25px,4vw,42px);letter-spacing:-.04em;line-height:1.2;margin:9px 0}.hero p{color:var(--muted);max-width:800px;margin:12px 0}.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.legend span{font-size:12px;border:1px solid var(--line);background:#101e30;padding:7px 9px;border-radius:8px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:24px 0 15px}.toolbar input{flex:1;min-width:240px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:#0d1827;color:var(--text);font:inherit}.toolbar button{cursor:pointer;border:1px solid #34516e;background:#14263c;border-radius:10px;padding:10px 14px;color:var(--text)}
+section.group{margin:27px 0 31px}.sectionhead{display:flex;gap:10px;align-items:baseline;justify-content:space-between}.sectionhead h2{font-size:18px;letter-spacing:-.015em;margin:0 0 12px}.sectionhead p{margin:0;color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.tile{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:15px;padding:18px;background:linear-gradient(145deg,#13243a,#0c1726);min-height:163px;transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-2px);border-color:#5d89be}.tile h3{font-size:16px;margin:0}.tile p{color:var(--muted);margin:0;font-size:13px;flex:1}.tile .foot{font-size:11px;color:var(--mint);display:flex;justify-content:space-between;gap:8px}.tile.external .foot{color:var(--amber)}.tags{font-size:11px;color:var(--accent);font-weight:750}
+.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:16px;border:1px solid var(--line);background:#0b1727;border-radius:12px}.flow b{font-size:12px;padding:7px 9px;border:1px solid #284767;border-radius:8px}.flow span{color:var(--muted)}.note{border-left:3px solid var(--amber);background:#101e2e;padding:13px 15px;border-radius:0 10px 10px 0;color:var(--muted);font-size:13px}.hidden{display:none!important}footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:12px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:580px){.wrap{padding:12px 12px 26px}.grid{grid-template-columns:1fr}.tile{min-height:0}.toolbar input{min-width:0;width:100%;flex-basis:100%}.hero{padding:22px 0}.sectionhead{display:block}.headlinks{width:100%}.headlinks a{flex:1;text-align:center;font-size:13px}}
+</style></head><body>
+<main class="wrap">
+<header class="top"><a href="/" class="logo">PulseRadar <small>애널리스트 통합 워크벤치 · 연구/관제</small></a><nav class="headlinks" aria-label="빠른 이동"><a href="/">시장 홈</a><a href="/astra-scan.html">전체 스캔</a><a href="/coin-report.html">종합 분석</a></nav></header>
+<div class="hero"><div class="eyebrow">UNIFIED ANALYST WORKBENCH</div><h1>하나의 분석 흐름.<br>시장 탐색부터 성과 검증까지.</h1>
+<p>기존 분석 페이지와 코드는 보존하면서 기능을 분석 업무별로 묶었습니다. 아래의 내부 페이지는 저장소에서 파일 존재를 확인한 경로이며, 실제 운영 배포 및 데이터 최신성은 별도 검증이 필요합니다.</p>
+<div class="legend"><span>내부 모듈: 저장소 경로 확인</span><span>외부 링크: 별도 배포, 통합 진행 대상</span><span>점수는 검증된 상승 확률이 아님</span></div></div>
+<div class="toolbar"><input id="moduleSearch" aria-label="분석 모듈 검색" placeholder="기능 검색: OI, DNA, ICT, 검증, 지지저항…" autocomplete="off"><button id="clearSearch" type="button">검색 지우기</button><span id="searchCount" role="status" aria-live="polite"></span></div>
+<section class="group" aria-label="통합 분석 흐름"><div class="sectionhead"><h2>권장 분석 순서</h2></div><div class="flow"><b>시장 환경</b><span>→</span><b>전체 스캔</b><span>→</span><b>10개 시간봉 구조</b><span>→</span><b>OI·체결·유동성 확인</b><span>→</span><b>5분봉 진입 판정</b><span>→</span><b>전진 검증</b></div><p class="note">시간봉 확인 순서: 1W → 3D → 1D → 12H → 4H → 3H → 2H → 1H → 15m → 5m. 데이터 누락·미확정 봉·서로 다른 거래소를 혼용한 지표는 매수 근거로 취급하지 않습니다.</p></section>
+<section class="group" data-group="market"><div class="sectionhead"><h2>① 시장 탐색 및 조기 포착</h2><p>유니버스 → 후보 → 신호의 근거 확인</p></div><div class="grid">
+<a class="tile" href="/" data-keywords="시장 전체 홈 종목 현물 선물 마켓"><span class="tags">MARKET</span><h3>확장 시장 대시보드 ↗</h3><p>현물·선물 통합 유니버스와 실시간 후보 리스트, 검색 및 즐겨찾기.</p><div class="foot"><span>내부 모듈</span><span>시장 홈</span></div></a>
+<a class="tile" href="/astra-scan.html" data-keywords="전체스캔 Astra OI 미결제약정 거래량 10TF 프리셋"><span class="tags">SCANNER</span><h3>전체 스캐너 / Astra ↗</h3><p>멀티 시간봉 후보 검색과 선물 수급·단계 분류. 상태 및 누락 근거 확인.</p><div class="foot"><span>내부 모듈</span><span>후보 선별</span></div></a>
+<a class="tile" href="/dna-scan.html" data-keywords="DNA 급등전 역추적 샘플 저점 초기 포착"><span class="tags">DNA</span><h3>급등 전 DNA 탐색 ↗</h3><p>사전 징후·유사 패턴 후보를 연구용으로 검토하고 급등 추격을 분리.</p><div class="foot"><span>내부 모듈</span><span>연구 신호</span></div></a>
+<a class="tile" href="/radar.html" data-keywords="레이더 경보 유동성 flow 라이다"><span class="tags">RADAR</span><h3>시장 레이더 ↗</h3><p>실시간 신호·시장 흐름을 따로 확인해 유니버스와 후보를 교차검증.</p><div class="foot"><span>내부 모듈</span><span>시장 관측</span></div></a>
+</div></section>
+<section class="group" data-group="analysis"><div class="sectionhead"><h2>② 차트·구조·전문가 분석</h2><p>상위 시간봉부터 실행 시간봉까지</p></div><div class="grid">
+<a class="tile" href="/auto-chart-lab.html" data-keywords="오토차트 10TF 멀티 차트 SMC VPVR MACD SR BOS CHOCH"><span class="tags">CHART</span><h3>Auto Chart Lab ↗</h3><p>멀티TF 구조, 주요 지지·저항, 패턴 및 실행 시간봉 교차검증.</p><div class="foot"><span>내부 모듈</span><span>차트</span></div></a>
+<a class="tile" href="/coin-report.html" data-keywords="분석 애널리스트 리포트 펀딩 OI 거래량 종합"><span class="tags">REPORT</span><h3>종합 분석 리포트 ↗</h3><p>가격 구조·수급·시나리오·무효화 조건을 한 종목 단위로 정리.</p><div class="foot"><span>내부 모듈</span><span>근거 요약</span></div></a>
+<a class="tile" href="/ict-narrative-lab.html" data-keywords="ICT ChartBro FVG OB 스윕 유동성 BOS CHOCH"><span class="tags">STRUCTURE</span><h3>ICT / ChartBro 구조 ↗</h3><p>스윕·시장구조 전환·FVG·세션 기반 타점 가설 검토.</p><div class="foot"><span>내부 모듈</span><span>구조 분석</span></div></a>
+<a class="tile" href="/dante-lab.html?method=ma-cloud-cycle" data-keywords="주식단테 밥그릇 112 224 448 일목 구름대"><span class="tags">DANTE</span><h3>112·224·448 / 기간대칭 ↗</h3><p>장기 이평 회복, 눌림 지지, 밥그릇 구조 및 구름대 위치 검토.</p><div class="foot"><span>내부 모듈</span><span>추세 전환</span></div></a>
+<a class="tile" href="/surge-pattern-lab.html" data-keywords="급등 패턴 변동성 압축 echo 돌파"><span class="tags">PATTERN</span><h3>급등 패턴 랩 ↗</h3><p>급등 이전의 압축·돌파·거래량 특성과 실패 사례 비교.</p><div class="foot"><span>내부 모듈</span><span>패턴 연구</span></div></a>
+<a class="tile" href="/launch-origin.html" data-keywords="DEX 최초 거래 기록 유동성 온체인 상장 초기"><span class="tags">ORIGIN</span><h3>최초 거래·DEX 이력 ↗</h3><p>관측 가능한 초기 거래 이력과 풀·전송 증거를 출처와 함께 확인.</p><div class="foot"><span>내부 모듈</span><span>초기 이력</span></div></a>
+</div></section>
+<section class="group" data-group="research"><div class="sectionhead"><h2>③ AI 리서치·성과 검증</h2><p>예측 대신 검증 가능한 기록</p></div><div class="grid">
+<a class="tile" href="/research-ai.html" data-keywords="Research AI 학습 샘플 오탐 OOS champion challenger"><span class="tags">RESEARCH</span><h3>Research AI ↗</h3><p>실패 샘플과 DNA 버전을 분리하고 가설을 OOS로 검증.</p><div class="foot"><span>내부 모듈</span><span>연구</span></div></a>
+<a class="tile" href="/pulse-ai.html" data-keywords="AI 전문가 에이전트 토론 리서치"><span class="tags">AI</span><h3>Pulse AI 분석 보조 ↗</h3><p>분석 관점별 의견과 추가 검증 과제 정리. 원시 데이터보다 우선하지 않음.</p><div class="foot"><span>내부 모듈</span><span>분석 보조</span></div></a>
+<a class="tile" href="/historical-validation.html" data-keywords="백테스트 과거 검증 성과 OOS lookahead"><span class="tags">VALIDATION</span><h3>과거·전진 검증 ↗</h3><p>데이터 시점, 재현성, 샘플 외 성과와 실패 조건 확인.</p><div class="foot"><span>내부 모듈</span><span>검증</span></div></a>
+</div></section>
+<section class="group" data-group="legacy"><div class="sectionhead"><h2>④ 기존 별도 사이트</h2><p>중단 없이 유지, 코드 이관 확인 전까지 분리</p></div><div class="grid">
+<a class="tile external" href="https://forex-book-lab.onrender.com/" target="_blank" rel="noopener noreferrer" data-keywords="Forex Book Lab 포렉스 책 워크스페이스"><span class="tags">LEGACY / RENDER</span><h3>Forex Book Lab ↗</h3><p>별도 프로젝트. 페이지와 분석 규칙을 통합 저장소로 이관하기 전까지 보존합니다.</p><div class="foot"><span>외부 링크 · 현재 상태 미검증</span><span>새 탭</span></div></a>
+<a class="tile external" href="https://binance-sr-pro-tjdrprns10-8096.vercel.app/" target="_blank" rel="noopener noreferrer" data-keywords="Binance 지지 저항 SR 프로"><span class="tags">LEGACY / VERCEL</span><h3>Binance S/R Pro ↗</h3><p>별도 지지·저항 도구. 기존 링크를 유지하고 분석 엔진 통합 여부를 추적합니다.</p><div class="foot"><span>외부 링크 · 현재 상태 미검증</span><span>새 탭</span></div></a>
+<a class="tile external" href="https://binance-chart-lab-tjdrprns10-8096.vercel.app/" target="_blank" rel="noopener noreferrer" data-keywords="Binance Chart Lab 차트"><span class="tags">LEGACY / VERCEL</span><h3>Binance Chart Lab ↗</h3><p>기존 차트 실험 서비스. 통합 Auto Chart Lab과 기능 중복 여부 검토 대상.</p><div class="foot"><span>외부 링크 · 현재 상태 미검증</span><span>새 탭</span></div></a>
+</div></section>
+<footer>PulseRadar 통합 관제 · 투자 권유나 자동 주문 기능이 아닌 분석·연구 워크벤치입니다. 운영 상태와 최신성은 개별 서비스 및 API에서 재확인하세요.</footer>
+</main>
+<script>
+(function(){
+ const input=document.getElementById('moduleSearch'),count=document.getElementById('searchCount');
+ const tiles=Array.from(document.querySelectorAll('.tile'));
+ function apply(){
+   const term=input.value.trim().toLocaleLowerCase('ko-KR');let visible=0;
+   tiles.forEach(function(tile){const found=!term||(tile.textContent+' '+(tile.dataset.keywords||'')).toLocaleLowerCase('ko-KR').includes(term);tile.classList.toggle('hidden',!found);if(found)visible++;});
+   document.querySelectorAll('section[data-group]').forEach(function(group){group.classList.toggle('hidden',!group.querySelector('.tile:not(.hidden)'));});
+   count.textContent=visible+' / '+tiles.length+'개 모듈';
+ }
+ input.addEventListener('input',apply);
+ document.getElementById('clearSearch').addEventListener('click',function(){input.value='';apply();input.focus();});
+ apply();
+}());
+</script></body></html>
