@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 const home = read('index.html');
 const portal = read('workbench.html');
+const shell = read('pulse-unified.html');
 
 function checkInlineScripts(source, filename) {
   const re = /<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi;
@@ -19,6 +20,9 @@ function checkInlineScripts(source, filename) {
 
 checkInlineScripts(home, 'index.html');
 checkInlineScripts(portal, 'workbench.html');
+assert.ok((shell.match(/href="\/workbench\.html"/g) || []).length >= 2, 'landing shell must expose analyst workbench on sidebar and header');
+assert.ok(shell.includes('class="navBtn analystNavLink"'), 'landmark sidebar link should preserve visual system');
+assert.ok(shell.includes('class="analystQuickLink"'), 'workbench must remain visible in landing header');
 assert.ok(home.includes('href="/workbench.html"'), 'main navigation must expose workbench');
 assert.ok(home.includes('if(requestId!==detailRequestSeq)return;'), 'stale detail responses should not overwrite selection');
 assert.ok(home.includes('if(requestId===detailRequestSeq)'), 'stale failures must be ignored');
