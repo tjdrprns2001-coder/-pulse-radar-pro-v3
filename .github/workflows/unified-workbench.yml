@@ -6,6 +6,10 @@ on:
       - 'index.html'
       - 'workbench.html'
       - 'scripts/verify-unified-workbench.js'
+      - 'scripts/verify-agg-flow-route.js'
+      - 'api/index.js'
+      - 'handlers/agg-trade-flow.js'
+      - 'vercel.json'
       - '.github/workflows/unified-workbench.yml'
   push:
     branches: [main]
@@ -30,3 +34,5 @@ jobs:
         run: |
           node --check scripts/verify-unified-workbench.js
           node scripts/verify-unified-workbench.js
+          node scripts/verify-vercel-hobby-limit.js
+          node scripts/verify-agg-flow-route.js
