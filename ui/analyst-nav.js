@@ -26,8 +26,10 @@
     css.href = '/ui/analyst-nav.css?v=20261015';
     head.appendChild(css);
     var currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-    var symbol = (new URLSearchParams(window.location.search)).get('symbol');
-    symbol = symbol && /^[A-Za-z0-9]{2,24}$/.test(symbol) ? symbol.toUpperCase() : '';
+    function currentSymbol() {
+      var raw = (new URLSearchParams(window.location.search)).get('symbol');
+      return raw && /^[A-Za-z0-9]{2,24}$/.test(raw) ? raw.toUpperCase() : '';
+    }
     var root = document.createElement('div');
     root.id = 'pr-analyst-nav';
     var toggle = document.createElement('button');
@@ -65,7 +67,7 @@
     panel.append(bar, search, list, matches);
     root.append(panel, toggle);
     document.body.appendChild(root);
-    var entries = [], lastGroup = '';
+    var entries = [], lastGroup = '', links = [];
     modules.forEach(function (entry) {
       if (entry.group !== lastGroup) {
         var label = document.createElement('div');
@@ -79,6 +81,7 @@
       a.className = 'pr-an-item';
       a.textContent = entry.label;
       var url = new URL(entry.path, window.location.origin);
+      var symbol = currentSymbol();
       if (symbol && url.pathname !== '/') url.searchParams.set('symbol', symbol);
       a.href = url.pathname + url.search;
       if (url.pathname === currentPath) {
@@ -86,8 +89,19 @@
         a.textContent += ' · 현재';
       }
       list.appendChild(a);
+      links.push({ node: a, path: entry.path });
       entries.push({ group: false, node: a, name: (entry.label + ' ' + entry.keywords).toLocaleLowerCase() });
     });
+    // Some analysis pages change URL query state without a full reload.
+    // Refresh target hrefs when the drawer opens so cross-module handoffs use the current symbol.
+    function refreshLinks() {
+      var symbol = currentSymbol();
+      links.forEach(function (link) {
+        var url = new URL(link.path, window.location.origin);
+        if (symbol && url.pathname !== '/') url.searchParams.set('symbol', symbol);
+        link.node.href = url.pathname + url.search;
+      });
+    }
     function filter() {
       var term = search.value.trim().toLocaleLowerCase();
       var visibleCount = 0, groupCount = {};
@@ -112,6 +126,7 @@
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? 'PulseRadar 통합 분석 메뉴 닫기' : 'PulseRadar 통합 분석 메뉴 열기');
       if (open) {
+        refreshLinks();
         filter();
         search.focus();
       } else if (panel.contains(document.activeElement)) {
