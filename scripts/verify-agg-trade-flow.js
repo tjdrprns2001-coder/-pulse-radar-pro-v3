@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {analyzeTrades,getFlow,observe}=require('../lib/market-intel/aggressive-trade-flow.js');
-const handler=require('../api/agg-trade-flow.js');
+const handler=require('../handlers/agg-trade-flow.js');
 const rows=Array.from({length:80},(_,i)=>({a:i,T:1700000000000+i*1000,p:String(100+i*.001),q:'2',m:i<65}));
 const flow=analyzeTrades(rows,{market:'futures',symbol:'BTCUSDT',now:1700000100000});
 assert.equal(flow.available,true);
