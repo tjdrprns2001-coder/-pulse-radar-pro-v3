@@ -31,6 +31,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/agg-trade-flow",
+      "destination": "/api/index?route=agg-trade-flow"
+    },
+    {
       "source": "/api/v1",
       "destination": "https://pulseradar-pro-unified-0926.onrender.com/api/v1"
     },
