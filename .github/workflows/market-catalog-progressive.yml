@@ -1,0 +1,34 @@
+name: Market Catalog Progressive Safety
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'scripts/verify-market-catalog-progressive.js'
+      - 'scripts/verify-market-summary.js'
+      - 'lib/market-summary.js'
+      - 'handlers/market.js'
+      - '.github/workflows/market-catalog-progressive.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'scripts/verify-market-catalog-progressive.js'
+      - 'scripts/verify-market-summary.js'
+      - 'lib/market-summary.js'
+      - 'handlers/market.js'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check progressive catalog and missing-data safety
+        run: |
+          node scripts/verify-market-catalog-progressive.js
+          node scripts/verify-market-summary.js
+          node scripts/verify-unified-workbench.js

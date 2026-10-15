@@ -1,6 +1,7 @@
 const spot=require('../lib/spot-market.js');
 const futures=require('../lib/futures-data.js');
 const multi=require('../lib/multi-futures-data.js');
+const {summarizeMarket}=require('../lib/market-summary');
 const REQUIRED_FUTURES=['XPINUSDT'];
 
 function capture(){let code=200,body=null;return{res:{setHeader(){},status(c){code=c;return this},json(v){body=v;return this}},get:()=>({code,body})}}
@@ -78,7 +79,7 @@ module.exports=async function handler(req,res){
     const exchangeCount=Number(f?.exchangeCount)||1;
     const sourceContracts=Number(f?.sourceContracts)||futureRows.length;
     const duplicateContractsRemoved=Number(f?.duplicateContractsRemoved)||Math.max(0,sourceContracts-futuresUniqueCount);
-    return res.status(200).json({
+    const response={
       ok:true,version:'spot+multi-futures-v5-unified-universe',market:'spot+futures',updatedAt:new Date().toISOString(),total:rows.length,eligible:rows.filter(x=>x.pass).length,results:rows,
       spotCount:sr.length,futuresCount:futuresUniqueCount,futuresOnlyCount:fr.length,futuresExchangeCount:exchangeCount,futuresSources:f?.sources||{},
       coreFuturesCount:Number(f?.sources?.binance?.count)||futureRows.filter(x=>x.exchanges?.includes('binance')).length,
@@ -86,6 +87,7 @@ module.exports=async function handler(req,res){
       sourceContracts,duplicateContractsRemoved,externalOnlyCount:fr.filter(x=>x.deepSupported===false).length,
       futuresFeedOk:!!f?.ok,futuresFallback,futuresError:f?.ok?futuresError:(f?.error||futuresError||'futures feed unavailable'),
       note:'Binance 현물 + Binance/Bybit/OKX/Gate/Bitget/MEXC/KuCoin/Hyperliquid 무기한 선물. 기초자산 기준 중복 제거 후 한 코인당 한 행으로 표시'
-    });
+    };
+    return res.status(200).json(req.query?.view==='summary'?summarizeMarket(response):response);
   }catch(e){return res.status(502).json({ok:false,error:e?.message||'Data fetch failed'})}
 };
