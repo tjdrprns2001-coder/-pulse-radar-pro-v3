@@ -1,0 +1,34 @@
+name: Pulse Runtime Health
+on:
+  push:
+    paths:
+      - 'lib/pulse-ai/runtime-scan.js'
+      - 'lib/health/dependency-status.js'
+      - 'render-temp-server.js'
+      - 'scripts/verify-pulse-runtime-health.js'
+      - '.github/workflows/pulse-runtime-health.yml'
+  pull_request:
+    paths:
+      - 'lib/pulse-ai/runtime-scan.js'
+      - 'lib/health/dependency-status.js'
+      - 'render-temp-server.js'
+      - 'scripts/verify-pulse-runtime-health.js'
+      - '.github/workflows/pulse-runtime-health.yml'
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate scan freshness and diagnostics
+        run: node scripts/verify-pulse-runtime-health.js
+      - name: Existing Pulse AI regression suite
+        run: |
+          node scripts/verify-pulse-ai-core.js
+          node scripts/verify-pulse-ai-api.js
+      - name: Server syntax
+        run: node --check render-temp-server.js
