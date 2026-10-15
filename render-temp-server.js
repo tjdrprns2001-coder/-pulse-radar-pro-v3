@@ -10,6 +10,7 @@ const {createChartV1Service}=require('./lib/chart-v1/service.js');
 const {defaultChartRuntime}=require('./lib/chart-v1/runtime.js');
 const {WebSocketServer}=require('ws');
 const {browserLibraries,publicFile}=require('./lib/http-boundary.js');
+const {dependencyStatus}=require('./lib/health/dependency-status.js');
 
 const ROOT=__dirname;
 const publicLibraries=browserLibraries(ROOT);
@@ -190,6 +191,10 @@ const server=http.createServer(async(req,res)=>{
   try{
     const u=new URL(req.url,'http://localhost');
     if(u.pathname==='/health/live')return send(res,200,JSON.stringify({ok:true,status:'alive',release:RELEASE}),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    if(u.pathname==='/health/dependencies'){
+      const runtime=await chartRuntime.health().catch(()=>({storage_ready:false,reason:'storage_not_ready'}));
+      return send(res,200,JSON.stringify(dependencyStatus(runtime,RELEASE)),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    }
     if(u.pathname==='/health/ready'){
       const runtime=await chartRuntime.health();
       const ready=runtime.storage_ready===true;
