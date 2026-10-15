@@ -1,0 +1,37 @@
+name: decision-layer
+on:
+  push:
+    paths:
+      - 'lib/pulse-ai/decision-audit.js'
+      - 'lib/pulse-ai/typesafe-judgment.js'
+      - 'services/decision-model/**'
+      - 'scripts/verify-decision-layer.js'
+      - 'ui/pulse-ai.js'
+      - '.github/workflows/decision-layer.yml'
+  pull_request:
+    paths:
+      - 'lib/pulse-ai/decision-audit.js'
+      - 'lib/pulse-ai/typesafe-judgment.js'
+      - 'services/decision-model/**'
+      - 'scripts/verify-decision-layer.js'
+      - 'ui/pulse-ai.js'
+      - '.github/workflows/decision-layer.yml'
+jobs:
+  typed-decision:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Decision audit and provider contracts
+        run: node scripts/verify-decision-layer.js
+      - name: Existing Pulse AI contract checks
+        run: |
+          node scripts/verify-pulse-ai-core.js
+          node scripts/verify-pulse-ai-api.js
+          node scripts/verify-pulse-ai-ui.js
+      - name: Python bridge syntax (no model download)
+        run: python -m py_compile services/decision-model/laya-bridge.py
