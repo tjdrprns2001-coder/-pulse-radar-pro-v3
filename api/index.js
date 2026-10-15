@@ -1,4 +1,5 @@
 const handlers = {
+  'agg-trade-flow': require('../handlers/agg-trade-flow'),
   chartbro: require('../handlers/chartbro'),
   'launch-origin': require('../handlers/launch-origin'),
   'dante-cloud': require('../handlers/dante-cloud'),
