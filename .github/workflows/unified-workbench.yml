@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'pulse-unified.html'
       - 'workbench.html'
       - 'scripts/verify-unified-workbench.js'
       - 'scripts/verify-agg-flow-route.js'
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'pulse-unified.html'
       - 'workbench.html'
       - 'scripts/verify-unified-workbench.js'
 
