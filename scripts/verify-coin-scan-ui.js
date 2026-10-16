@@ -7,8 +7,8 @@ for(const s of ['AI','MEME','RWA','DeFi','L1','L2','Gaming','Infrastructure','�
 assert(js.includes('/api/coin-scan'),'API endpoint required');
 assert(js.includes('mode=summary'),'fast summary request required');
 assert(js.includes('mode=deep'),'deep enrichment request required');
-assert(js.includes('DEEP_CHUNK=8'),'bounded deep chunk required');
-assert(js.includes('FULL_VALIDATION_CHUNKS=2')&&js.includes('&validation='),'tiered expensive-validation path required');
+assert(js.includes('DEEP_CHUNK=4')&&js.includes('DEEP_WORKERS=3'),'bounded responsive deep chunks required');
+assert(js.includes('FULL_VALIDATION_CHUNKS=4')&&js.includes('&validation='),'tiered expensive-validation path required');
 assert(html.includes('id="scanElapsed"')&&html.includes('id="stageDeep"')&&html.includes('8TF 병렬'),'renewed scanner progress pipeline required');
 assert(js.includes('candidateSymbols'),'progressive candidate enrichment required');
 assert(html.includes('id="autoRefreshSelect"')&&html.includes('5분')&&html.includes('10분'),'manual/5m/10m refresh control required');
