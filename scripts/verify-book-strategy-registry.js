@@ -30,4 +30,21 @@ assert(x.riskPlan&&Number.isFinite(x.riskPlan.invalidation),'risk plan must incl
 assert(x.dataGaps.some(g=>g.id==='CVD'),'missing true CVD must be explicit');
 assert(x.dataGaps.some(g=>g.id==='GAP'),'24/7 gap inapplicability must be explicit');
 assert(!x.rankable.some(t=>t.id==='BOLLINGER'),'evidence-only Bollinger must not promote ranking');
+
+// Price/stop/targets must be sourced from the trigger timeframe, not a
+// different timeframe's price regime or Fibonacci levels.
+const separateFrames={...frames,'4h':frames['4h'].map(row=>row.map((value,i)=>i>=1&&i<=4?value*2:value))};
+const oneHourPlan=E.analyze({frames:separateFrames,entryTimeframe:'1h'});
+assert(oneHourPlan.riskPlan,'1H plan should exist when 1H candles are available');
+assert.equal(oneHourPlan.riskPlan.timeframe,'1h');
+assert.equal(oneHourPlan.riskPlan.entry,frames['1h'].at(-1)[4]);
+assert(oneHourPlan.riskPlan.targets.every(value=>value<200),'4H Fibonacci/price must not leak into 1H targets');
+assert.equal(oneHourPlan.riskPlanStatus,'OK');
+assert(Number.isFinite(oneHourPlan.riskPlan.signalAsOf),'risk provenance must be timestamped');
+const missingOneHour=E.analyze({frames:{'4h':frames['4h']},entryTimeframe:'1h'});
+assert.equal(missingOneHour.riskPlan,null,'a missing trigger timeframe must block a risk plan');
+assert.equal(missingOneHour.riskPlanStatus,'MISSING_TIMEFRAME_DATA');
+const missingCvd=E.analyze({frames,trueCvd:{value:null}});
+assert(missingCvd.dataGaps.some(g=>g.id==='CVD'),'null CVD must remain unavailable rather than zero/buyer-dominant');
+
 console.log('book strategy registry PASS');

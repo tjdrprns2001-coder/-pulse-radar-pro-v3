@@ -7,8 +7,8 @@ for(const s of ['AI','MEME','RWA','DeFi','L1','L2','Gaming','Infrastructure','�
 assert(js.includes('/api/coin-scan'),'API endpoint required');
 assert(js.includes('mode=summary'),'fast summary request required');
 assert(js.includes('mode=deep'),'deep enrichment request required');
-assert(js.includes('DEEP_CHUNK=8'),'bounded deep chunk required');
-assert(js.includes('FULL_VALIDATION_CHUNKS=2')&&js.includes('&validation='),'tiered expensive-validation path required');
+assert(js.includes('DEEP_CHUNK=4')&&js.includes('DEEP_WORKERS=3'),'bounded responsive deep chunks required');
+assert(js.includes('FULL_VALIDATION_CHUNKS=4')&&js.includes('&validation='),'tiered expensive-validation path required');
 assert(html.includes('id="scanElapsed"')&&html.includes('id="stageDeep"')&&html.includes('8TF 병렬'),'renewed scanner progress pipeline required');
 assert(js.includes('candidateSymbols'),'progressive candidate enrichment required');
 assert(html.includes('id="autoRefreshSelect"')&&html.includes('5분')&&html.includes('10분'),'manual/5m/10m refresh control required');
@@ -39,7 +39,7 @@ assert(html.includes('class="scanPipeline"')&&css.includes('.scanPipeline'),'spe
 assert(html.includes('전체 상태 분류')&&html.includes('상태 분류 ≠ 진입 신호'),'all-state UI separation required');
 assert(js.includes('fmtElapsed')&&js.includes('scanStartedAt'),'elapsed scan timing required');
 assert(js.includes('RESULT_STEP=72')&&js.includes('data-load-more')&&js.includes('initialResultLimit'),'bounded global progressive rendering required');
-assert(html.includes('/ui/coin-scan.js?v=20260928-integrity1')&&html.includes('/ui/coin-scan.css?v=20260927-sampling32'),'official v3 scanner UI must use current cache-bust');
+assert(html.includes('/ui/coin-scan.js?v=20261016-deep-progress1')&&html.includes('/ui/coin-scan.css?v=20260927-sampling32'),'official v3 scanner UI must use current cache-bust');
 assert(js.includes('preIgnitionScore')&&js.includes('점화전'),'pre-ignition readiness must be visible in scanner UI');
 for(const s of ['RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','preScanMarkup','strategyMarkup','fakeoutMarkup','entryQualityMarkup','bookManualMarkup','tryServerScanRun','mode=prescan'])assert(js.includes(s)||html.includes(s),`restored autoscan UI missing ${s}`);
 assert(html.includes('점화전 OOS')&&html.includes('oosLink'),'autoscan OOS dashboard link missing');
