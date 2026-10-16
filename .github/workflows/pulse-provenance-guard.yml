@@ -1,0 +1,47 @@
+name: Pulse Provenance Guard
+on:
+  pull_request:
+    paths:
+      - 'lib/pulse-ai/briefing-service.js'
+      - 'lib/pulse-ai/deterministic-analyst.js'
+      - 'ui/pulse-ai.js'
+      - 'scripts/verify-pulse-ai-provenance.js'
+      - 'scripts/check-production-release.js'
+      - 'scripts/verify-production-release.js'
+      - '.github/workflows/pulse-provenance-guard.yml'
+      - '.github/workflows/production-drift-watch.yml'
+  push:
+    paths:
+      - 'lib/pulse-ai/briefing-service.js'
+      - 'lib/pulse-ai/deterministic-analyst.js'
+      - 'ui/pulse-ai.js'
+      - 'scripts/verify-pulse-ai-provenance.js'
+      - 'scripts/check-production-release.js'
+      - 'scripts/verify-production-release.js'
+      - '.github/workflows/pulse-provenance-guard.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Per-symbol cache, timestamp provenance and partial data
+        run: node scripts/verify-pulse-ai-provenance.js
+      - name: Release drift monitor contract
+        run: node scripts/verify-production-release.js
+      - name: Existing Pulse core and performance regression suites
+        run: |
+          node scripts/verify-pulse-ai-brief-singleflight.js
+          node scripts/verify-pulse-ai-core.js
+          node scripts/verify-pulse-ai-api.js
+          node scripts/verify-pulse-ai-ui.js
+          node scripts/verify-pulse-runtime-health.js
+      - name: JavaScript syntax validation
+        run: |
+          node --check ui/pulse-ai.js
+          node --check lib/pulse-ai/briefing-service.js
+          node --check lib/pulse-ai/deterministic-analyst.js
