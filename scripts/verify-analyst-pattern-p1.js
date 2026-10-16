@@ -73,7 +73,11 @@ const hammer=minuteBar(95,{open:92.28,close:92.34,high:92.43,low:90.9,volume:100
 const forming=Live.detect([...hist,hammer],{symbol:'TESTUSDT',timeframe:'15m'}).filter(x=>x.type==='hammer');
 assert(forming.some(x=>x.state==='형성 중'),'closed hammer morphology alone remains unconfirmed');
 assert(!forming.some(x=>x.state==='확정'),'a hammer needs a later, closed confirmation bar');
+const fxForming=FX.detectCandlestickPatterns([...hist,hammer]).find(x=>x.id==='hammer'&&x.index===95);
+assert(fxForming&&fxForming.status==='READY','Forex Book hammer must wait for follow-through, too');
 const follow=minuteBar(96,{open:92.4,close:92.85,high:93,low:92.35,volume:170});
+const fxConfirmed=FX.detectCandlestickPatterns([...hist,hammer,follow]).find(x=>x.id==='hammer'&&x.index===95);
+assert(fxConfirmed&&fxConfirmed.status==='CONFIRMED','Forex Book must agree with realtime on confirmed hammer');
 const confirmed=Live.detect([...hist,hammer,follow],{symbol:'TESTUSDT',timeframe:'15m'}).find(x=>x.type==='hammer'&&x.state==='확정');
 assert(confirmed,'a follow-through close above the hammer high with sufficient volume confirms');
 assert.equal(confirmed.patternAt,hammer.closeTime);
@@ -81,6 +85,9 @@ assert.equal(confirmed.candleAt,follow.closeTime);
 assert.equal(confirmed.invalidation,hammer.low);
 assert(!Live.detect([...hist,hammer,{...follow,close:92.40}],{symbol:'TESTUSDT',timeframe:'15m'}).some(x=>x.type==='hammer'&&x.state==='확정'),
   'without a close above prior hammer high, never confirm');
+assert.equal(FX.detectCandlestickPatterns([...hist,hammer,{...follow,close:92.40}]).find(x=>x.id==='hammer'&&x.index===95)?.status,'READY');
+assert.equal(FX.detectCandlestickPatterns([...hist,hammer,{...follow,volume:1}]).find(x=>x.id==='hammer'&&x.index===95)?.status,'READY');
+assert.equal(FX.detectCandlestickPatterns([...hist,hammer,{...follow,close:90.5,low:90.2}]).find(x=>x.id==='hammer'&&x.index===95)?.status,'FAILED');
 assert(!Live.detect([...hist,hammer,{...follow,volume:1}],{symbol:'TESTUSDT',timeframe:'15m'}).some(x=>x.type==='hammer'&&x.state==='확정'),
   'unusually weak follow-through volume must not confirm');
 console.log('analyst pattern P1 PASS');
