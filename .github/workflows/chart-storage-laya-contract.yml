@@ -1,0 +1,43 @@
+name: Chart Storage and Laya Contract
+on:
+  push:
+    paths:
+      - 'lib/chart-v1/persistence.js'
+      - 'services/decision-model/**'
+      - 'scripts/verify-chart-storage-isolation.js'
+      - 'scripts/verify-laya-bridge-contract.py'
+      - 'docs/chartbro-laya-deployment.md'
+      - '.github/workflows/chart-storage-laya-contract.yml'
+  pull_request:
+    paths:
+      - 'lib/chart-v1/persistence.js'
+      - 'services/decision-model/**'
+      - 'scripts/verify-chart-storage-isolation.js'
+      - 'scripts/verify-laya-bridge-contract.py'
+      - 'docs/chartbro-laya-deployment.md'
+      - '.github/workflows/chart-storage-laya-contract.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Isolated DB schema and legacy behavior
+        run: node scripts/verify-chart-storage-isolation.js
+      - name: ChartBro runtime regressions
+        run: |
+          node scripts/verify-chart-v1.js
+          node scripts/verify-chart-v1-api.js
+      - name: Laya bridge authentication and protocol (fake weights; not real inference)
+        run: |
+          python -m py_compile services/decision-model/laya-bridge.py
+          python scripts/verify-laya-bridge-contract.py
+      - name: Decision normalization tests
+        run: node scripts/verify-decision-layer.js
