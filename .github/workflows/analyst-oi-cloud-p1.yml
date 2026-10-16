@@ -1,0 +1,42 @@
+name: Analyst OI integrity and Ichimoku cloud
+on:
+  pull_request:
+    paths:
+      - 'lib/coin-scan/oi-series-integrity.js'
+      - 'lib/coin-scan/oi-series-integrity.test.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'lib/coin-scan/cross-oi-provider.js'
+      - 'scripts/verify-cross-oi-v2.js'
+      - 'scripts/verify-coin-scan-provider.js'
+      - 'ui/forex-book/forex-book-engine.js'
+      - 'scripts/verify-ichimoku-causal-cloud.js'
+      - '.github/workflows/analyst-oi-cloud-p1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  analyst-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check lib/coin-scan/oi-series-integrity.js
+          node --check lib/coin-scan/binance-provider.js
+          node --check lib/coin-scan/cross-oi-provider.js
+          node --check ui/forex-book/forex-book-engine.js
+      - name: OI missing/stale/gap/fallback tests
+        run: |
+          node --test lib/coin-scan/oi-series-integrity.test.js
+          node scripts/verify-cross-oi-v2.js
+          node scripts/verify-coin-scan-provider.js
+      - name: Ichimoku cloud and existing book regressions
+        run: |
+          node scripts/verify-ichimoku-causal-cloud.js
+          node scripts/verify-forex-book.js
