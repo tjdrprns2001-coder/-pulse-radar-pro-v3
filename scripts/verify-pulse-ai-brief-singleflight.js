@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {createBriefingService}=require('../lib/pulse-ai/briefing-service.js');
+const {createRuntimeScanService}=require('../lib/pulse-ai/runtime-scan.js');
 
 const now=Date.now();
 function scan(){
@@ -84,8 +85,30 @@ async function testDifferentSymbols(){
   assert.equal(scans,2,'different symbols keep independent briefing contexts');
 }
 
+async function testRemoteCircuitCooldown(){
+  let clock=now,attempts=0,localScans=0;
+  const svc=createRuntimeScanService({
+    runtimeUrl:'https://down.example',
+    now:()=>clock,
+    degradedCooldownMs:120000,
+    fetchImpl:async()=>{attempts++;throw Error('temporary upstream outage')},
+    fallback:{run:async()=>{localScans++;return scan()}}
+  });
+  const first=await svc.run({mode:'summary'});
+  assert.equal(first.pulseAiScanSource,'local-fallback');
+  clock+=60000;
+  const second=await svc.run({mode:'summary'});
+  assert.equal(second.pulseAiScanSource,'local-fallback');
+  assert.equal(attempts,1,'remote must not be retried within the configured cooldown');
+  assert.equal(localScans,2,'local fallback remains available during cooldown');
+  clock+=61000;
+  await svc.run({mode:'summary'});
+  assert.equal(attempts,2,'remote must retry after cooldown to detect recovery');
+}
+
 (async()=>{
   await testSingleflight();
   await testDifferentSymbols();
+  await testRemoteCircuitCooldown();
   console.log('Pulse AI brief singleflight and web refresh cooldown PASS');
 })().catch(e=>{console.error(e);process.exitCode=1});
