@@ -22,7 +22,7 @@ let x=E.analyze({
     reentryEligible:true,
     activeTracks:[{key:'MA_RETEST',active:true}]
   },
-  bookManual:{riskPlan:{invalidation:baseEntry-1,targets:[baseEntry+2.2,baseEntry+3.5]}}
+  bookManual:{riskPlan:{timeframe:'4h',invalidation:baseEntry-1,targets:[baseEntry+2.2,baseEntry+3.5]}}
 });
 assert.equal(x.grade,'A','confirmed retest + bullish HTF + >=1.5R should be A grade');
 assert.equal(x.setup,'돌파 후 리테스트');
@@ -38,7 +38,7 @@ x=E.analyze({
     reentryEligible:false,
     activeTracks:[]
   },
-  bookManual:{riskPlan:{invalidation:baseEntry-1,targets:[baseEntry+2]}}
+  bookManual:{riskPlan:{timeframe:'4h',invalidation:baseEntry-1,targets:[baseEntry+2]}}
 });
 assert.equal(x.grade,'D','failed retest must force D grade');
 assert.equal(x.failedRetest,true);
@@ -52,10 +52,31 @@ x=E.analyze({
     reentryEligible:true,
     activeTracks:[{key:'MA_RETEST',active:true}]
   },
-  bookManual:{riskPlan:{invalidation:baseEntry-1,targets:[baseEntry+.6]}}
+  bookManual:{riskPlan:{timeframe:'4h',invalidation:baseEntry-1,targets:[baseEntry+.6]}}
 });
 assert.notEqual(x.grade,'A','late/poor-space entry must not remain A');
 assert(['C','D'].includes(x.grade),'late entry with <1R target space should be C/D');
 assert.equal(x.lateEntry,true);
 assert(x.warnings.some(v=>/늦은 추격/.test(v)));
+
+// The active 1H setup must not borrow a 4H entry or a differently tagged stop.
+const divergentFrames={'1d':candles(120,.12),'4h':candles(120,.43),'1h':candles(120,.07)};
+const oneHourEntry=divergentFrames['1h'].at(-1)[4];
+const oneHourResult=E.analyze({
+  frames:divergentFrames,
+  strategyCycle:{entryTiming:{tf:'1h',stage:'RETEST_SUPPORT_HOLD',level:oneHourEntry-.4},activeTracks:[]},
+  bookManual:{riskPlan:{timeframe:'4h',invalidation:1,targets:[999]}}
+});
+assert.equal(oneHourResult.entryTimeframe,'1h');
+assert.equal(oneHourResult.entry,oneHourEntry);
+assert.equal(oneHourResult.riskTimeframe,null,'foreign-TF risk must not be used');
+assert.notEqual(oneHourResult.invalidation,1);
+assert.notEqual(oneHourResult.target,999);
+const sourceMatched=E.analyze({
+  frames:divergentFrames,
+  strategyCycle:{entryTiming:{tf:'1h',stage:'RETEST_SUPPORT_HOLD',level:oneHourEntry-.4},activeTracks:[]},
+  bookManual:{riskPlan:{timeframe:'1h',invalidation:oneHourEntry-1,targets:[oneHourEntry+2]}}
+});
+assert.equal(sourceMatched.riskTimeframe,'1h');
+assert.equal(sourceMatched.invalidation,oneHourEntry-1);
 console.log('entry confirmation engine PASS');
