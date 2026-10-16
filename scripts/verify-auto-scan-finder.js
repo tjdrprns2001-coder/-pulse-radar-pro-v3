@@ -40,10 +40,10 @@ must(js.includes("SCAN_SESSION_KEY='pulse.coin-scan.session.v6'"),'scan session 
 must(js.includes('function symbolKey('),'autoscan symbol normalization missing');
 must(js.includes('expected.size&&!expected.has(key)'),'deep response symbol integrity guard missing');
 must(js.includes('mergeDeep(data,chunk)'),'deep response must be bound to the requested symbol chunk');
-must(js.includes('DEEP_CHUNK=4')&&js.includes('DEEP_WORKERS=3')&&js.includes('FULL_VALIDATION_CHUNKS=4')&&js.includes('Promise.all(Array.from({length:Math.min(workerCap'),'deep enrichment must use bounded host-aware 4-symbol chunk workers');
+must(js.includes('effectiveDeepChunk=RENDER_FREE_HOST?1:DEEP_CHUNK')&&js.includes('effectiveValidatedChunks=RENDER_FREE_HOST?8:FULL_VALIDATION_CHUNKS')&&js.includes('DEEP_CHUNK=4')&&js.includes('DEEP_WORKERS=3')&&js.includes('FULL_VALIDATION_CHUNKS=4')&&js.includes('Promise.all(Array.from({length:Math.min(workerCap'),'deep enrichment must use bounded host-aware 4-symbol chunk workers');
 must(js.includes('workerCap=/')&&js.includes('onrender')&&js.includes('?2:DEEP_WORKERS'),'Render Free must cap competing CPU-heavy deep requests');
 must(js.includes('DEEP_REQUEST_TIMEOUT_MS=55000')&&js.includes('controller.abort(\'TIMEOUT\')')&&js.includes('state.deepInFlight')&&js.includes('state.deepFailed'),'in-flight progress and finite chunk deadlines required');
-must(html.includes('4개×3 워커 · 응답 제한'),'mobile stage must describe real processing architecture');
+must(html.includes('Render 코인별 2병렬 · 타 환경 4개×3 워커'),'mobile stage must describe real processing architecture');
 must(js.includes('function tickScanClock()')&&js.includes('setInterval(tickScanClock,1000)')&&js.includes('첫 정밀 응답 대기')&&js.includes('state.deepStartedAt=Date.now()'),'progress time must continue ticking while first deep response is pending');
 must(js.includes("'&validation='+validation")||js.includes("'&validation='"),'deep enrichment must tier expensive setup validation');
 must(js.includes('return validated;')&&js.includes('If external validation was intentionally skipped'),'validated finder must remain strict when screening rows exist');
