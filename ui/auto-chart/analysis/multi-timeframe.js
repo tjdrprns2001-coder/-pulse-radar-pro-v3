@@ -1,6 +1,8 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartMultiTf=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){'use strict';
-const ORDER=['1w','1d','4h','1h','15m','5m'];
-const ROLE={ '1w':'환경','1d':'환경','4h':'셋업','1h':'셋업','15m':'실행','5m':'실행' };
+const ORDER=['1w','3d','1d','12h','4h','3h','2h','1h','15m','5m'];
+const LEGACY_ORDER=['1w','1d','4h','1h','15m','5m'];
+const ROLE={'1w':'환경','3d':'환경','1d':'환경','12h':'전환','4h':'전환','3h':'전환','2h':'점화준비','1h':'점화준비','15m':'실행','5m':'실행'};
+const LEGACY_ROLE={'1w':'환경','1d':'환경','4h':'셋업','1h':'셋업','15m':'실행','5m':'실행'};
 const finite=v=>v!=null&&v!==''&&Number.isFinite(Number(v));
 function bias(frame){
  if(!frame?.available)return'UNKNOWN';let score=0;
@@ -39,8 +41,14 @@ function execution(frame,side){
  return{status:score>=6?'READY':score>=4?'WATCH':'WAIT',score,evidence}
 }
 function synthesize(frames={}){
- const rows=ORDER.map(tf=>{const f=frames[tf];return{timeframe:tf,role:ROLE[tf],available:!!f?.available,bias:bias(f),structure:f?.structure?.key||'NO_DATA',setup:setupState(f),compression:f?.advanced?.compressionState||'N/A',rsi:f?.advanced?.rsi?.value??null,macdHist:f?.advanced?.macd?.histNow??null,rvol:f?.volume?.rvol20??null}});
- const env=rows.filter(x=>['1w','1d'].includes(x.timeframe)&&x.available),setup=rows.filter(x=>['4h','1h'].includes(x.timeframe)&&x.available),exec=rows.filter(x=>['15m','5m'].includes(x.timeframe)&&x.available);
+ const expanded=['3d','12h','3h','2h'].some(tf=>frames[tf]?.available);
+ const ordered=expanded?ORDER:LEGACY_ORDER;
+ const rows=ordered.map(tf=>{const f=frames[tf];return{timeframe:tf,role:(expanded?ROLE:LEGACY_ROLE)[tf],available:!!f?.available,bias:bias(f),structure:f?.structure?.key||'NO_DATA',setup:setupState(f),compression:f?.advanced?.compressionState||'N/A',rsi:f?.advanced?.rsi?.value??null,macdHist:f?.advanced?.macd?.histNow??null,rvol:f?.volume?.rvol20??null}});
+ const env=rows.filter(x=>(expanded?['1w','3d','1d']:['1w','1d']).includes(x.timeframe)&&x.available),
+       setup=rows.filter(x=>(expanded?['12h','4h','3h','2h','1h']:['4h','1h']).includes(x.timeframe)&&x.available),
+       prep=rows.filter(x=>['2h','1h'].includes(x.timeframe)&&x.available),
+       transition=rows.filter(x=>['12h','4h','3h'].includes(x.timeframe)&&x.available),
+       exec=rows.filter(x=>['15m','5m'].includes(x.timeframe)&&x.available);
  const envBull=env.filter(x=>x.bias==='BULL').length,envBear=env.filter(x=>x.bias==='BEAR').length;
  const regime=envBull===env.length&&env.length?'BULL':envBear===env.length&&env.length?'BEAR':'MIXED';
  const f15=frames['15m'],f5=frames['5m'],long15=execution(f15,'LONG'),long5=execution(f5,'LONG'),short15=execution(f15,'SHORT'),short5=execution(f5,'SHORT');
@@ -48,7 +56,7 @@ function synthesize(frames={}){
  const setupBull=setup.filter(x=>x.bias==='BULL'||/SELL_SIDE|RETEST/.test(x.setup)).length,setupBear=setup.filter(x=>x.bias==='BEAR'||/BUY_SIDE|RETEST/.test(x.setup)).length;
  const longState=regime==='BEAR'?'HTF_CONFLICT':longScore>=10&&setupBull?'READY':longScore>=7?'WATCH':'WAIT';
  const shortState=regime==='BULL'?'HTF_CONFLICT':shortScore>=10&&setupBear?'READY':shortScore>=7?'WATCH':'WAIT';
- return{order:ORDER,rows,regime,environment:{frames:env,bull:envBull,bear:envBear},setup:{frames:setup,bull:setupBull,bear:setupBear},execution:{frames:exec,long15,long5,short15,short5,longScore,shortScore,longState,shortState}}
+ return{order:ordered,rows,regime,coverage:{mode:expanded?'10TF':'LEGACY_6TF',observed:rows.filter(x=>x.available).length,required:ordered.length,missing:rows.filter(x=>!x.available).map(x=>x.timeframe)},environment:{frames:env,bull:envBull,bear:envBear},transition:{frames:transition},preparation:{frames:prep},setup:{frames:setup,bull:setupBull,bear:setupBear},execution:{frames:exec,long15,long5,short15,short5,longScore,shortScore,longState,shortState}}
 }
-return{ORDER,ROLE,bias,setupState,execution,synthesize};
+return{ORDER,LEGACY_ORDER,ROLE,bias,setupState,execution,synthesize};
 });

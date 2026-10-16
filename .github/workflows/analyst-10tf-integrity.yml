@@ -1,0 +1,43 @@
+name: Analyst 10TF closed-candle integrity
+on:
+  pull_request:
+    paths:
+      - 'lib/coin-scan/closed-three-hour.js'
+      - 'lib/coin-scan/closed-three-hour.test.js'
+      - 'lib/coin-scan/mtf-market-analyzer.js'
+      - 'lib/coin-scan/mtf-market-analyzer.test.js'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'lib/coin-scan/scan-service.js'
+      - 'ui/auto-chart/analysis/core.js'
+      - 'ui/auto-chart/analysis/multi-timeframe.js'
+      - '.github/workflows/analyst-10tf-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and code checks
+        run: |
+          node --check lib/coin-scan/closed-three-hour.js
+          node --check lib/coin-scan/mtf-market-analyzer.js
+          node --check lib/coin-scan/binance-provider.js
+          node --check lib/coin-scan/scan-service.js
+          node --check ui/auto-chart/analysis/core.js
+          node --check ui/auto-chart/analysis/multi-timeframe.js
+      - name: Complete 3H and 10TF contract
+        run: |
+          node --test lib/coin-scan/closed-three-hour.test.js lib/coin-scan/mtf-market-analyzer.test.js
+          node scripts/verify-chart-mtf.js
+      - name: Scanner upstream regression
+        run: |
+          node scripts/verify-coin-scan-provider.js
+          node scripts/verify-v3-scanner.js
