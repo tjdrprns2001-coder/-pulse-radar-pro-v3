@@ -5,7 +5,7 @@
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
 const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf,Reference,PatternEvidence,Bowl,Wyckoff,PricePatterns}=dep;
-const VERSION='AUTO_CHART_CORE_v2_0';
+const VERSION='AUTO_CHART_CORE_v2_1_10TF';
 function keyLevels(displayLevels,currentPrice){
   return{
     support:LevelState.nearest(displayLevels,'support',currentPrice),
@@ -31,7 +31,7 @@ function analyze(dataset,settings={}){
   const patternEvidence=PatternEvidence&&['1d','4h'].includes(timeframe)?PatternEvidence.frameEvidence(candles,asOf,{timeframe,options:{requireLongMa:timeframe==='1d'}}):null;
   return{available:true,version:VERSION,asOf:last.closeTime,timeframe:dataset.market.interval,market:dataset.market,currentPrice:last.close,atrNow,candles,swings,provisionalSwings,structure,levels:rawLevels,levelStates,localDisplayLevels,displayLevels:localDisplayLevels,htfLevels:[],range,setup,setupHistory:replay.history,indicators:{ma},advanced,volume,keyLevels:{...keys,invalidation:setup.invalidation||null},dataStatus:dataset.status,patternEvidence,patternSma,wyckoffEvidence,pricePatternCandidates};
 }
-function tfRank(tf){return({'1w':5,'1d':4,'4h':3,'1h':2,'15m':1,'5m':0})[String(tf||'').toLowerCase()]??0}
+function tfRank(tf){return({'1w':9,'3d':8,'1d':7,'12h':6,'4h':5,'3h':4,'2h':3,'1h':2,'15m':1,'5m':0})[String(tf||'').toLowerCase()]??-1}
 function htfCoreLevels(frame,basePrice){
   if(!frame?.available)return[];
   const xs=frame.localDisplayLevels||frame.displayLevels||[],support=LevelState.nearest(xs,'support',basePrice),resistance=LevelState.nearest(xs,'resistance',basePrice),out=[];
@@ -55,7 +55,12 @@ function attachHigherFrames(base,frames=[]){
     for(const z of[local,pureHtf])if(z&&!out.some(x=>x.id===z.id))out.push(z);
     return out;
   }
-  const majorMap={'1w':[],'1d':['1w'],'4h':['1d','1w'],'1h':['4h','1d'],'15m':['4h','1d'],'5m':['4h','1d']},majorTfs=majorMap[baseTf]||[];
+  const majorMap={
+    '1w':[],'3d':['1w'],'1d':['3d','1w'],
+    '12h':['1d','3d'],'4h':['12h','1d'],'3h':['4h','12h'],
+    '2h':['3h','4h'],'1h':['2h','4h'],
+    '15m':['1h','4h'],'5m':['15m','1h','4h']
+  },majorTfs=majorMap[baseTf]||[];
   function sparseMajor(role){
     const xs=validRole(role),local=xs.find(x=>x.hasLocal)||xs[0]||null;
     const major=xs.find(x=>x.scope==='htf'&&(x.timeframes||[]).some(tf=>majorTfs.includes(String(tf).toLowerCase())))||xs.find(x=>x.scope==='htf')||null,out=[];
