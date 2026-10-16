@@ -1,0 +1,33 @@
+name: Analyst pattern P1 regression
+on:
+  pull_request:
+    paths:
+      - 'ui/forex-book/forex-book-engine.js'
+      - 'ui/realtime-patterns/core.js'
+      - 'scripts/verify-analyst-pattern-p1.js'
+      - '.github/workflows/analyst-pattern-p1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  patterns:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check ui/forex-book/forex-book-engine.js
+          node --check ui/realtime-patterns/core.js
+          node --check scripts/verify-analyst-pattern-p1.js
+      - name: Bat, Flag and candlestick follow-through invariants
+        run: node scripts/verify-analyst-pattern-p1.js
+      - name: Forex Book existing integration
+        run: node scripts/verify-forex-book.js
+      - name: Realtime closed-candle regression
+        run: node --test tests/realtime-patterns.test.js

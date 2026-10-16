@@ -18,8 +18,23 @@ function swingLevels(c,n=120){const w=c.slice(-n),now=last(w)?.close;if(!w.lengt
 function fibLevels(c,n=120){const w=c.slice(-n);if(!w.length)return null;let hi=w[0],lo=w[0];w.forEach(x=>{if(x.high>hi.high)hi=x;if(x.low<lo.low)lo=x});const H=hi.high,L=lo.low,d=H-L,up=lo.index<hi.index;return{direction:up?'up':'down',high:H,low:L,levels:{'23.6':up?H-d*.236:L+d*.236,'38.2':up?H-d*.382:L+d*.382,'50':up?H-d*.5:L+d*.5,'61.8':up?H-d*.618:L+d*.618,'78.6':up?H-d*.786:L+d*.786}}}
 function pivot(c){const x=c.at(-2);if(!x)return null;const p=(x.high+x.low+x.close)/3;return{pivot:p,r1:2*p-x.low,s1:2*p-x.high,r2:p+(x.high-x.low),s2:p-(x.high-x.low)}}
 function before(c,i,n=6){return i<n?0:c[i-1].close>c[i-n].close?1:c[i-1].close<c[i-n].close?-1:0}
-function patternInstanceQuality(c,i,side,baseScore,status){const x=c[i],p=part(x),A=atr(c),av=A[i]||Math.max(Math.abs(x.close)*.01,1e-9),prev=c.slice(Math.max(0,i-20),i),avgVol=prev.length?avg(prev.map(z=>z.volume)):0,rv=avgVol>0?x.volume/avgVol:null,w=c.slice(Math.max(0,i-30),i+1),lo=Math.min(...w.map(z=>z.low)),hi=Math.max(...w.map(z=>z.high)),nearLow=(x.low-lo)/av<=.65,nearHigh=(hi-x.high)/av<=.65,loc=side==='상승'?(nearLow?1:.35):side==='하락'?(nearHigh?1:.35):.5,rangeQ=clamp((x.high-x.low)/Math.max(av,1e-9),.35,2)/2,volQ=rv==null?.45:clamp(rv/2,0,1),follow=c[i+1]?(side==='상승'?(c[i+1].close>x.close?1:0):side==='하락'?(c[i+1].close<x.close?1:0):.5):(status==='READY'?.35:.5),trend=before(c,i,6),context=side==='상승'?(trend<0?1:.45):side==='하락'?(trend>0?1:.45):.5;const raw=baseScore*.48+loc*14+rangeQ*9+volQ*10+follow*11+context*8;return{score:Math.round(clamp(raw,35,96)),baseScore,morphology:Math.round(rangeQ*100),location:Math.round(loc*100),volume:Math.round(volQ*100),confirmation:Math.round(follow*100),context:Math.round(context*100),rvol:rv}}
-function add(o,c,i,id,label,en,side,page,score,reasons,confirm=false){let status='CONFIRMED';if(confirm&&!c[i+1])status='READY';else if(confirm&&c[i+1])status=side==='상승'?(c[i+1].close>c[i].close?'CONFIRMED':'FAILED'):(c[i+1].close<c[i].close?'CONFIRMED':'FAILED');const q=patternInstanceQuality(c,i,side,score,status);o.push({id,label,english:en,side,index:i,time:c[i].time,sourcePage:page,score:q.score,baseScore:score,scoreType:'INSTANCE_QUALITY',scoreLabel:'인스턴스 품질',qualityComponents:q,status,reasons:[...reasons,'형태 '+q.morphology+' · 위치 '+q.location+' · 거래량 '+q.volume+' · 확인 '+q.confirmation],source:SOURCE,automation:'책의 형태 설명 + 현재 캔들 형태·위치·거래량·후속확인을 결합한 인스턴스 품질'})}
+function patternInstanceQuality(c,i,side,baseScore,status){const x=c[i],p=part(x),A=atr(c),av=A[i]||Math.max(Math.abs(x.close)*.01,1e-9),prev=c.slice(Math.max(0,i-20),i),avgVol=prev.length?avg(prev.map(z=>z.volume)):0,rv=avgVol>0?x.volume/avgVol:null,w=c.slice(Math.max(0,i-30),i+1),lo=Math.min(...w.map(z=>z.low)),hi=Math.max(...w.map(z=>z.high)),nearLow=(x.low-lo)/av<=.65,nearHigh=(hi-x.high)/av<=.65,loc=side==='상승'?(nearLow?1:.35):side==='하락'?(nearHigh?1:.35):.5,rangeQ=clamp((x.high-x.low)/Math.max(av,1e-9),.35,2)/2,volQ=rv==null?.45:clamp(rv/2,0,1),follow=status==='FAILED'?0:status==='READY'?.35:c[i+1]?(side==='상승'?(c[i+1].close>x.close?1:0):side==='하락'?(c[i+1].close<x.close?1:0):.5):.5,trend=before(c,i,6),context=side==='상승'?(trend<0?1:.45):side==='하락'?(trend>0?1:.45):.5;const raw=baseScore*.48+loc*14+rangeQ*9+volQ*10+follow*11+context*8;return{score:Math.round(clamp(raw,35,96)),baseScore,morphology:Math.round(rangeQ*100),location:Math.round(loc*100),volume:Math.round(volQ*100),confirmation:Math.round(follow*100),context:Math.round(context*100),rvol:rv}}
+function add(o,c,i,id,label,en,side,page,score,reasons,confirm=false){
+  let status='CONFIRMED';
+  const x=c[i],next=c[i+1],requiresBreak=['hammer','inverted-hammer','shooting-star','hanging-man'].includes(id);
+  if(confirm&&!next)status='READY';
+  else if(confirm&&next){
+    if(requiresBreak){
+      const preceding=c.slice(Math.max(0,i-20),i),baseVolume=preceding.length?avg(preceding.map(z=>z.volume)):0;
+      const enoughVolume=baseVolume>0&&next.volume>=baseVolume*.9;
+      const followed=side==='상승'?next.close>x.high:next.close<x.low;
+      const invalidated=side==='상승'?next.close<x.low:next.close>x.high;
+      status=followed&&enoughVolume?'CONFIRMED':invalidated?'FAILED':'READY';
+    }else status=side==='상승'?(next.close>x.close?'CONFIRMED':'FAILED'):(next.close<x.close?'CONFIRMED':'FAILED');
+  }
+  const q=patternInstanceQuality(c,i,side,score,status);
+  o.push({id,label,english:en,side,index:i,time:x.time,sourcePage:page,score:q.score,baseScore:score,scoreType:'INSTANCE_QUALITY',scoreLabel:'인스턴스 품질',qualityComponents:q,status,reasons:[...reasons,'형태 '+q.morphology+' · 위치 '+q.location+' · 거래량 '+q.volume+' · 확인 '+q.confirmation],source:SOURCE,automation:'책의 형태 설명 + 현재 캔들 형태·위치·거래량·후속확인을 결합한 인스턴스 품질'});
+}
 function detectCandlestickPatterns(input){const c=rows(input),o=[];if(c.length<2)return o;const A=atr(c);for(let i=Math.max(1,c.length-12);i<c.length;i++){const x=c[i],p=c[i-1],p2=c[i-2],p3=c[i-3],p4=c[i-4],a=part(x),b=part(p),d=p2?part(p2):null,t=before(c,i),tol=Math.max((A[i]||x.close*.01)*.18,x.close*.0015),eq=(m,n)=>Math.abs(m-n)<=tol,inside=(one,two)=>Math.max(one.open,one.close)<=Math.max(two.open,two.close)+tol&&Math.min(one.open,one.close)>=Math.min(two.open,two.close)-tol;
 if(a.bp<=.35&&a.l>=Math.max(a.b*2,a.r*.5)&&a.u<=a.r*.2&&t<0)add(o,c,i,'hammer','망치형','Hammer','상승',207,82,['하락 뒤 작은 몸통','긴 아래꼬리'],true);
 if(b.bear&&a.bull&&x.close>=b.mid&&x.close<p.open+tol&&t<0)add(o,c,i,'piercing','관통형','Piercing','상승',209,80,['이전 하락봉 몸통의 절반 이상 회복'],true);
@@ -91,11 +106,73 @@ function triple(top){const a=(top?pv.highs:pv.lows).slice(-6);if(a.length<3)retu
 function hs(inv){const a=(inv?pv.lows:pv.highs).slice(-5);if(a.length<3)return null;const [l,h,r]=a.slice(-3),head=inv?h.price<Math.min(l.price,r.price)-av*.6:h.price>Math.max(l.price,r.price)+av*.6;if(!head||Math.abs(l.price-r.price)>tol*1.7)return null;const n1=between(inv?pv.highs:pv.lows,l.i,h.i,inv?'high':'low'),n2=between(inv?pv.highs:pv.lows,h.i,r.i,inv?'high':'low');if(!n1||!n2)return null;const trigger=(n1.price+n2.price)/2,depth=Math.abs(trigger-h.price);return chartResult({id:inv?'inverse-head-shoulders':'head-shoulders',label:inv?'역헤드앤숄더':'헤드앤숄더',side:inv?'상승':'하락',sourcePage:inv?92:85,score:88,trigger,invalidation:h.price,target:inv?trigger+depth:trigger-depth,reasons:['좌우 어깨 높이 유사','가운데 머리 극값','책의 넥라인 돌파 확인'],points:[l,n1,h,n2,r]})}
 function wedge(falling){const hs=pv.highs.slice(-4),ls=pv.lows.slice(-4);if(hs.length<2||ls.length<2)return null;const h0=hs.at(-2),h1=hs.at(-1),l0=ls.at(-2),l1=ls.at(-1),contract=Math.abs(h1.price-l1.price)<Math.abs(h0.price-l0.price);if(!contract)return null;if(falling&&!(h1.price<h0.price&&l1.price<l0.price))return null;if(!falling&&!(h1.price>h0.price&&l1.price>l0.price))return null;const trigger=falling?h1.price:l1.price,inv=falling?l1.price:h1.price,h=Math.abs(h0.price-l0.price);return chartResult({id:falling?'falling-wedge':'rising-wedge',label:falling?'하락 쐐기':'상승 쐐기',side:falling?'상승':'하락',sourcePage:falling?82:87,score:78,trigger,invalidation:inv,target:falling?trigger+h:trigger-h,reasons:['고점·저점 추세선 수렴',falling?'양 추세선 하락':'양 추세선 상승','책은 추세선 이탈로 확인'],points:[h0,l0,h1,l1]})}
 function rect(bull){const w=c.slice(-36);if(w.length<30)return null;const box=w.slice(-28),hi=Math.max(...box.map(x=>x.high)),lo=Math.min(...box.map(x=>x.low)),width=hi-lo,range=width/Math.max(price,1e-9);if(range>.085||range<.008)return null;const th=box.filter(x=>Math.abs(x.high-hi)<=Math.max(av*.45,width*.09)).length,tl=box.filter(x=>Math.abs(x.low-lo)<=Math.max(av*.45,width*.09)).length;if(th<3||tl<3)return null;const closes=box.map(x=>x.close),firstAvg=avg(closes.slice(0,7)),lastAvg=avg(closes.slice(-7)),drift=Math.abs(lastAvg-firstAvg)/Math.max(Math.abs(firstAvg),1e-9);if(drift>range*.45)return null;const bodies=box.map(x=>Math.abs(x.close-x.open)),maxBody=Math.max(...bodies);if(maxBody>width*.48)return null;const pre=c.slice(Math.max(0,c.length-52),c.length-36);if(pre.length<10)return null;const preStart=avg(pre.slice(0,5).map(x=>x.close)),preEnd=avg(pre.slice(-5).map(x=>x.close)),impulse=(preEnd-preStart)/Math.max(Math.abs(preStart),1e-9);if(bull&&impulse<.025)return null;if(!bull&&impulse>-.025)return null;return chartResult({id:bull?'bullish-rectangle':'bearish-rectangle',label:bull?'상승 직사각형':'하락 직사각형',side:bull?'상승':'하락',sourcePage:bull?97:102,score:80,trigger:bull?hi:lo,invalidation:bull?lo:hi,target:bull?hi+width:lo-width,reasons:['최소 28봉 횡보','상·하단 각각 3회 이상 접촉','박스 내부 기울기 제한','선행 추세 확인 후 돌파 대기']})}
+function flag(bull){
+  // A true flag is a relatively shallow, channel-like pause AFTER a meaningful
+  // directional pole. A pennant and a sideways rectangle are separate setups.
+  if(c.length<64)return null;
+  const window=c.slice(-64),history=window.slice(0,32),pole=window.slice(32,44),pause=window.slice(44);
+  const poleStart=pole[0].open,poleEnd=pole.at(-1).close,polePct=(poleEnd/poleStart-1)*100;
+  if(!(poleStart>0)||!Number.isFinite(polePct)||(bull?polePct<5:polePct>-5))return null;
+  const olderExtreme=bull?Math.max(...history.map(x=>x.high)):Math.min(...history.map(x=>x.low));
+  const poleExtreme=bull?Math.max(...pole.map(x=>x.high)):Math.min(...pole.map(x=>x.low));
+  const poleHeight=Math.abs(poleExtreme-poleStart);
+  if(!(poleHeight>av*3))return null;
+  // The pole must break the older peak/trough; an internal bounce is not a flag.
+  if(bull?poleExtreme<=olderExtreme+av*.35:poleExtreme>=olderExtreme-av*.35)return null;
+  const pauseHigh=Math.max(...pause.map(x=>x.high)),pauseLow=Math.min(...pause.map(x=>x.low));
+  const depth=bull?poleExtreme-pauseLow:pauseHigh-poleExtreme,depthRatio=depth/poleHeight;
+  if(!(depthRatio>=.06&&depthRatio<=.55))return null;
+  // Pausing candles must not erase the pole or print a new external peak.
+  if(bull?(pauseHigh>poleExtreme+av*.4||pauseLow<=poleStart+poleHeight*.4):(pauseLow<poleExtreme-av*.4||pauseHigh>=poleStart-poleHeight*.4))return null;
+  const first=avg(pause.slice(0,8).map(x=>x.close)),lastAvg=avg(pause.slice(-8).map(x=>x.close));
+  const drift=(lastAvg/first-1)*100;
+  if(bull?(drift>-.15||drift<-(Math.abs(polePct)*.55)):(drift<.15||drift>Math.abs(polePct)*.55))return null;
+  const poleVol=avg(pole.map(x=>x.volume)),pauseVol=avg(pause.map(x=>x.volume));
+  if(!(poleVol>0&&pauseVol>0&&pauseVol<=poleVol*.90))return null;
+  const trigger=bull?Math.max(...pause.slice(-10).map(x=>x.high)):Math.min(...pause.slice(-10).map(x=>x.low));
+  const invalidation=bull?pauseLow:pauseHigh;
+  return chartResult({
+    id:bull?'bullish-flag':'bearish-flag',label:bull?'상승 불 플래그':'하락 베어 플래그',side:bull?'상승':'하락',
+    sourcePage:null,score:79,trigger,invalidation,target:bull?trigger+poleHeight:trigger-poleHeight,
+    reasons:['선행 추세가 이전 고점/저점을 돌파','깃대 뒤 20봉의 완만한 역방향 조정','조정 깊이 6~55% 깃대','조정 거래량 감소','후속 돌파/리테스트 확인 전까지 후보'],
+    meta:{previousExtreme:olderExtreme,poleExtreme,polePct,depthRatio,volumeRatio:pauseVol/poleVol,driftPct:drift}
+  });
+}
 function pennant(bull){const w=c.slice(-24),pre=c.slice(-36,-24);if(pre.length<8)return null;const impulse=(w[0].close-pre[0].close)/Math.max(Math.abs(pre[0].close),1e-9)*100;if(bull&&impulse<4)return null;if(!bull&&impulse>-4)return null;const a=w.slice(0,12),b=w.slice(12),r1=Math.max(...a.map(x=>x.high))-Math.min(...a.map(x=>x.low)),r2=Math.max(...b.map(x=>x.high))-Math.min(...b.map(x=>x.low));if(!(r2<r1*.8))return null;const hi=Math.max(...b.map(x=>x.high)),lo=Math.min(...b.map(x=>x.low)),move=Math.abs(w[0].close-pre[0].close);return chartResult({id:bull?'bullish-pennant':'bearish-pennant',label:bull?'상승 페넌트':'하락 페넌트',side:bull?'상승':'하락',sourcePage:bull?100:104,score:76,trigger:bull?hi:lo,invalidation:bull?lo:hi,target:bull?hi+move:lo-move,reasons:['선행 강한 '+(bull?'상승':'하락')+' 파동','최근 변동폭 수렴','책의 페넌트 돌파 구조']})}
 function rounding(bottom){const w=c.slice(-60);if(w.length<50)return null;const a=avg(w.slice(0,15).map(x=>x.close)),m=avg(w.slice(22,38).map(x=>x.close)),z=avg(w.slice(-15).map(x=>x.close));if(bottom?!(m<Math.min(a,z)*.97):!(m>Math.max(a,z)*1.03))return null;if(Math.abs(a-z)/Math.max(Math.abs(a),1e-9)>.09)return null;const trigger=bottom?Math.max(a,z):Math.min(a,z),inv=bottom?Math.min(...w.map(x=>x.low)):Math.max(...w.map(x=>x.high)),h=Math.abs(trigger-inv);return chartResult({id:bottom?'rounding-bottom':'rounding-top',label:bottom?'라운딩 바텀':'라운딩 탑',side:bottom?'상승':'하락',sourcePage:bottom?113:115,score:70,trigger,invalidation:inv,target:bottom?trigger+h:trigger-h,reasons:['완만한 '+(bottom?'U자 바닥':'역U자 천장'),'책의 기준선 돌파 확인']})}
 function cup(inverse){const w=c.slice(-72);if(w.length<60)return null;const cup=w.slice(0,54),handle=w.slice(54),l=avg(cup.slice(0,10).map(x=>x.close)),r=avg(cup.slice(-10).map(x=>x.close));if(Math.abs(l-r)/Math.max(Math.abs(l),1e-9)>.08)return null;const extreme=inverse?Math.max(...cup.map(x=>x.high)):Math.min(...cup.map(x=>x.low)),rim=(l+r)/2,depth=Math.abs(rim-extreme);if(depth<Math.abs(rim)*.04)return null;const hExt=inverse?Math.max(...handle.map(x=>x.high)):Math.min(...handle.map(x=>x.low));if(Math.abs(hExt-rim)>depth*.7)return null;return chartResult({id:inverse?'inverse-cup-handle':'cup-handle',label:inverse?'역 컵앤핸들':'컵앤핸들',side:inverse?'하락':'상승',sourcePage:inverse?119:117,score:78,trigger:rim,invalidation:hExt,target:inverse?rim-depth:rim+depth,reasons:['컵 좌우 림 유사','손잡이 조정 깊이 제한','책은 림/지지선 돌파로 확인']})}
-function bat(bull){const a=pv.all.slice(-14);let q=null;for(let s=a.length-5;s>=0;s--){const z=a.slice(s,s+5);if(z.length===5&&z.every((x,i)=>i===0||x.type!==z[i-1].type)){q=z;break}}if(!q)return null;const [X,A,B,C,D]=q;if(bull&&!(X.type==='L'&&A.type==='H'&&B.type==='L'&&C.type==='H'&&D.type==='L'))return null;if(!bull&&!(X.type==='H'&&A.type==='L'&&B.type==='H'&&C.type==='L'&&D.type==='H'))return null;const xa=Math.abs(A.price-X.price),ab=Math.abs(B.price-A.price),bc=Math.abs(C.price-B.price),cd=Math.abs(D.price-C.price),xd=Math.abs(D.price-X.price);if(!xa||!ab||!bc)return null;const rb=ab/xa,rc=bc/ab,rd=cd/bc,rxd=xd/xa;if(rb<.30||rb>.58||rc<.30||rc>.95||rd<1.4||rd>2.9||rxd<.78||rxd>.96)return null;return chartResult({id:bull?'bullish-bat':'bearish-bat',label:bull?'상승 배트':'하락 배트',side:bull?'상승':'하락',sourcePage:bull?121:123,score:76,trigger:C.price,invalidation:D.price,target:bull?C.price+Math.abs(C.price-D.price):C.price-Math.abs(C.price-D.price),reasons:['X-A-B-C-D 교대 스윙','책의 Fibonacci 비율대를 넓은 허용오차로 근사','D 부근 잠재 반전구역'],points:q})}
-add(dbl(true));add(dbl(false));add(hs(false));add(hs(true));add(wedge(true));add(wedge(false));add(rect(true));add(rect(false));add(pennant(true));add(pennant(false));add(triple(true));add(triple(false));add(rounding(true));add(rounding(false));add(cup(false));add(cup(true));add(bat(true));add(bat(false));
+function bat(bull){
+  const a=pv.all.slice(-14);let q=null;
+  for(let s=a.length-5;s>=0;s--){
+    const z=a.slice(s,s+5);
+    if(z.length===5&&z.every((x,i)=>i===0||x.type!==z[i-1].type)){q=z;break}
+  }
+  if(!q)return null;
+  const [X,A,B,C,D]=q;
+  const types=q.map(x=>x.type).join('');
+  if(types!==(bull?'LHLHL':'HLHLH'))return null;
+  // Geometry is directional, and each pivot must be confirmed and chronological.
+  const geometry=bull
+    ? X.price<B.price&&B.price<C.price&&C.price<A.price&&X.price<D.price&&D.price<B.price
+    : A.price<C.price&&C.price<B.price&&B.price<X.price&&B.price<D.price&&D.price<X.price;
+  if(!geometry||!q.every((x,i)=>i===0||x.i>q[i-1].i))return null;
+  const xa=Math.abs(A.price-X.price),ab=Math.abs(B.price-A.price),bc=Math.abs(C.price-B.price),cd=Math.abs(D.price-C.price);
+  if(!(xa>0&&ab>0&&bc>0))return null;
+  const abXa=ab/xa,bcAb=bc/ab,cdBc=cd/bc;
+  // A Bat's 88.6% XA retracement is measured from A to D,
+  // NOT from X to D. Measuring X->D reverses the reference leg.
+  const adXa=Math.abs(A.price-D.price)/xa,xdXa=Math.abs(D.price-X.price)/xa;
+  if(abXa<.35||abXa>.53||bcAb<.35||bcAb>.92||cdBc<1.55||cdBc>2.70||adXa<.855||adXa>.915)return null;
+  const idealD=bull?A.price-xa*.886:A.price+xa*.886;
+  return chartResult({
+    id:bull?'bullish-bat':'bearish-bat',label:bull?'상승 배트':'하락 배트',side:bull?'상승':'하락',
+    sourcePage:bull?121:123,score:78,trigger:C.price,invalidation:D.price,
+    target:bull?C.price+Math.abs(C.price-D.price):C.price-Math.abs(C.price-D.price),
+    reasons:['X-A-B-C-D 확정 교대 스윙','A→D가 XA의 88.6% 되돌림 구역','D 잠재 반전구역: 후속 가격 반응 확인 필요'],
+    ratios:{abXa,bcAb,cdBc,adXa,xdXa},prz:{idealD,tolerancePrice:xa*.029},points:q
+  });
+}
+add(dbl(true));add(dbl(false));add(hs(false));add(hs(true));add(wedge(true));add(wedge(false));add(rect(true));add(rect(false));add(flag(true));add(flag(false));add(pennant(true));add(pennant(false));add(triple(true));add(triple(false));add(rounding(true));add(rounding(false));add(cup(false));add(cup(true));add(bat(true));add(bat(false));
 return out.sort((a,b)=>b.score-a.score)}
 function calculatePips({entry,exit,pipSize=.0001,units=1}={}){const e=num(entry),x=num(exit),p=Math.abs(num(pipSize,.0001));if(!(finite(e)&&finite(x)&&p>0))return{available:false,error:'진입가·청산가·pip 크기를 확인하세요.'};const pips=(x-e)/p;return{available:true,pips,absolutePips:Math.abs(pips),priceChange:x-e,units:num(units,1),sourcePages:'28-30',note:'책의 pip 정의와 가격차 계산을 그대로 계산기로 구현.'}}
 function calculateSpreadCost({bid,ask,units=100000,pipSize=.0001}={}){const b=num(bid),a=num(ask),u=Math.max(0,num(units)),p=Math.abs(num(pipSize,.0001));if(!(a>=b&&b>0&&p>0))return{available:false,error:'bid/ask/pip 크기를 확인하세요.'};return{available:true,spread:a-b,spreadPips:(a-b)/p,quoteCost:(a-b)*u,sourcePages:'23-25'}}
