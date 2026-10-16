@@ -187,7 +187,7 @@ function render(data){
   const sources=data.sources||[];$('sourceCount').textContent=fmtNum(sources.length);
   const src=$('sources');clear(src);if(!sources.length)src.append(node('div','empty','표시할 외부 출처가 없습니다.'));
   for(const x of sources){const a=node('a','source',x.title||x.url);a.rel='noopener noreferrer';a.target='_blank';a.href=x.url;src.append(a)}
-  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?'AI 브리핑 + 로컬 검증':t?.available?`로컬 분석 · Research AI + ${t.provider||'System One'} ${t.shadowOnly===false?'ACTIVE':'SHADOW'}`:'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
+  lastLoadedAt=Date.now();$('answerStatus').textContent=data.aiGenerated?(data.narrativeReused?'AI 브리핑(이전 스캔) + 현재 시장 데이터':'AI 브리핑 + 로컬 검증'):t?.available?`로컬 분석 · Research AI + ${t.provider||'System One'} ${t.shadowOnly===false?'ACTIVE':'SHADOW'}`:'로컬 분석 모드 · 스캐너/Research AI 근거 사용';
 }
 async function fetchJson(url,options={},timeout=45000){
   const controller=new AbortController(),external=options.signal,relay=()=>controller.abort(),timer=setTimeout(()=>controller.abort(),timeout);
