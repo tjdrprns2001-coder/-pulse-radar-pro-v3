@@ -59,4 +59,16 @@ assert.equal(x.stage,'FAILED_RETEST_RESISTANCE');
 assert.equal(x.failed,true);
 assert(x.scoreDelta<0,'failed retest must reduce promotion score');
 
+
+const emptyScan=S.analyze({frames:{}});
+assert.equal(emptyScan.dataQuality.takerStatus,'MISSING');
+assert.equal(emptyScan.dataQuality.oiStatus,'MISSING');
+assert.equal(emptyScan.flowOk,false,'missing taker prints must never confirm long flow');
+assert.equal(emptyScan.reentryEligible,false);
+assert.equal(emptyScan.patternEligible,false);
+const withTaker=S.analyze({frames:{},takerRatio:1.1,oiChangePct:null});
+assert.equal(withTaker.flowOk,true);
+assert.equal(withTaker.dataQuality.oiStatus,'MISSING','null OI must not be coerced into flat/positive OI');
+const zeroTaker=S.analyze({frames:{},takerRatio:0,oiChangePct:null});
+assert.equal(zeroTaker.flowOk,false,'actual zero ratio is a confirmed lack of buy flow');
 console.log('post-breakout timing PASS');
