@@ -60,6 +60,19 @@ const {createPreIgnitionResolver}=require('../lib/coin-scan/preignition-resolver
   const hit=await resolver.resolve('ONLYFUTUSDT',1000,2000,{marketScope:'futures',futuresListed:true,spotListed:false});
   assert.equal(hit.status,'evaluated');assert.equal(hit.market,'futures');assert.deepEqual(calls,['futures']);
 
+  // A 6h/24h outcome is not observed if the first available bar arrives
+  // much later than the requested horizon, or has not opened yet.
+  const lateResolver=createPreIgnitionResolver({fetchKlines:async()=>[[1000+61000,'111']]});
+  const late=await lateResolver.resolve('GAPUSDT',1000,1000+62000,{marketScope:'futures',futuresListed:true,spotListed:false});
+  assert.equal(late.status,'unavailable','an hour-horizon cannot be settled using a distant late bar');
+  const futureResolver=createPreIgnitionResolver({fetchKlines:async()=>[[1050,'111']]});
+  const notYet=await futureResolver.resolve('GAPUSDT',1000,1040,{marketScope:'futures',futuresListed:true,spotListed:false});
+  assert.equal(notYet.status,'unavailable','future bar must not settle a historical outcome');
+  const timelyResolver=createPreIgnitionResolver({fetchKlines:async()=>[[1050,'111']]});
+  const timely=await timelyResolver.resolve('GAPUSDT',1000,1100,{marketScope:'futures',futuresListed:true,spotListed:false});
+  assert.equal(timely.status,'evaluated','nearby actually observed bar is valid');
+  assert.equal(timely.marketTs,1050);
+
   const scheduled=fs.readFileSync('netlify/functions/preignition-oos-scan.mjs','utf8');
   assert(scheduled.includes("schedule:'17 * * * *'"),'hourly OOS collector schedule missing');
   assert(scheduled.includes('TARGET_PER_BUCKET=4')&&scheduled.includes('MAX_DEEP=20'),'stratified OOS sample cap missing');

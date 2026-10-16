@@ -1,0 +1,45 @@
+name: Analyst audit P0 regression
+on:
+  pull_request:
+    paths:
+      - 'lib/coin-scan/book-manual-engine.js'
+      - 'lib/coin-scan/strategy-pattern-engine.js'
+      - 'lib/coin-scan/entry-confirmation-engine.js'
+      - 'lib/coin-scan/preignition-resolver.js'
+      - 'lib/coin-scan/sampling-v3-outcome-resolver.js'
+      - 'scripts/verify-book-strategy-registry.js'
+      - 'scripts/verify-entry-confirmation.js'
+      - 'scripts/verify-post-breakout-timing.js'
+      - 'scripts/verify-preignition-oos.js'
+      - 'scripts/verify-sampling-v3-outcome-resolver.js'
+      - '.github/workflows/analyst-audit-p0.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-p0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check lib/coin-scan/book-manual-engine.js
+          node --check lib/coin-scan/strategy-pattern-engine.js
+          node --check lib/coin-scan/entry-confirmation-engine.js
+          node --check lib/coin-scan/preignition-resolver.js
+          node --check lib/coin-scan/sampling-v3-outcome-resolver.js
+      - name: Closed-candle and same-timeframe risk contract
+        run: |
+          node scripts/verify-book-strategy-registry.js
+          node scripts/verify-entry-confirmation.js
+          node scripts/verify-post-breakout-timing.js
+      - name: OOS observation and null-source contract
+        run: |
+          node scripts/verify-preignition-oos.js
+          node scripts/verify-sampling-v3-outcome-resolver.js
