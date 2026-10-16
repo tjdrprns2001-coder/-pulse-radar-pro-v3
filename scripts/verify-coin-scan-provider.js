@@ -13,6 +13,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(cache.get('x'),123);
   now=1200;
   assert.equal(cache.get('x'),null);
+  now=Date.UTC(2026,9,16,9,0,0); // deterministic historical clock for real-timestamp OI fixtures
 
   const calls=[];
   let active=0,maxActive=0;const klineActive=new Map(),klineMax=new Map();
@@ -24,7 +25,7 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
     if(u.pathname.endsWith('/exchangeInfo'))return{ok:true,json:async()=>({symbols:[{symbol:'XLMUSDT',baseAsset:'XLM',quoteAsset:'USDT',status:'TRADING',isSpotTradingAllowed:true}]})};
     if(u.pathname.endsWith('/ticker/24hr'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastPrice:'1',quoteVolume:'1000',priceChangePercent:'2'}]};
     if(u.pathname.endsWith('/premiumIndex'))return{ok:true,json:async()=>[{symbol:'XLMUSDT',lastFundingRate:'0.0001'}]};
-    if(u.pathname.endsWith('/openInterestHist'))return{ok:true,json:async()=>Array.from({length:97},(_,i)=>({sumOpenInterest:String(i===96?103:100),timestamp:i}))};
+    if(u.pathname.endsWith('/openInterestHist')){const ms=u.searchParams.get('period')==='5m'?300000:900000,count=u.searchParams.get('period')==='5m'?13:97;return{ok:true,json:async()=>Array.from({length:count},(_,i)=>({sumOpenInterest:String(i===count-1?103:100),timestamp:now-(count-i)*ms}))};}
     if(u.pathname.endsWith('/takerlongshortRatio'))return{ok:true,json:async()=>Array.from({length:32},(_,i)=>({timestamp:i,buyVol:String(120+i),sellVol:'100',buySellRatio:String((120+i)/100)}))};
     if(u.pathname.endsWith('/aggTrades'))return{ok:true,json:async()=>Array.from({length:100},(_,i)=>({a:i,p:String(1+i*.001),q:'10',T:1000+i,m:i%2===0}))};
     if(u.pathname.endsWith('/klines')){
@@ -113,6 +114,9 @@ assert(DEFAULT_FUTURES_BASES.length>=3,'official futures host fallback list shou
   assert.equal(ctx.derivativesProfile.xoiProfile.leaderExchange,'bybit','cross-exchange OI should be preserved');
   assert.equal(ctx.derivativesProfile.xoiProfile.positiveBreadth,1);
   assert.equal(ctx.v2Profile.sourcePeriod,'15m','deduplicated OI source period must remain explicit');
+  assert.equal(ctx.v2Profile.oiDataStatus,'OBSERVED');
+  assert.equal(ctx.v2Profile.oiAgeMs,900000);
+  assert.equal(ctx.v2Profile.oiContiguousSamples,97);
   assert.equal(ctx.v2Profile.raw15mRows.length,97,'single upstream OI series must retain 15m raw coverage');
   assert.equal(ctx.v2Profile.rows.length,25,'v2 rows must remain on 1H cadence for V3 OI-path segment semantics');
   assert.equal(ctx.derivativesProfile.oiProfile.samples,32,'legacy OI profile must preserve its ~8H 15m sampling window');
