@@ -5,7 +5,7 @@
  const api=factory(deps);if(typeof module==='object'&&module.exports)module.exports=api;else root.PulseAutoChartCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(dep){'use strict';
 const {MathX,Swings,Levels,LevelState,Replay,Indicators,Volume,Advanced,MultiTf,Reference,PatternEvidence,Bowl,Wyckoff,PricePatterns}=dep;
-const VERSION='AUTO_CHART_CORE_v2_1_10TF';
+const VERSION='AUTO_CHART_CORE_v2_0';
 function keyLevels(displayLevels,currentPrice){
   return{
     support:LevelState.nearest(displayLevels,'support',currentPrice),
