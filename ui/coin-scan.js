@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id);const DEEP_CHUNK=4;const DEEP_WORKERS=3;const FULL_VALIDATION_CHUNKS=4;const DEEP_REQUEST_TIMEOUT_MS=55000;const CAN_BACKGROUND_SCAN=/\.netlify\.app$/i.test(location.hostname);const RESULT_STEP=72;const MEMORY_KEY='pulse.sample-dormancy.v2';const ACTIVE_RUN_KEY='pulse.coin-scan.active-run.v1';const SCAN_SESSION_KEY='pulse.coin-scan.session.v6';const SCAN_PERSIST_KEY='pulse.coin-scan.snapshot.v6';const SCAN_SESSION_MAX_AGE=30*60000;const SCAN_SESSION_FRESH_MS=70000;const AUTO_REFRESH_KEY='pulse.coin-scan.auto-refresh-minutes.v1';let activeController=null,lastSessionSavedAt=0,lastPersistAt=0,autoRefreshTimer=null;
+const $=id=>document.getElementById(id);const DEEP_CHUNK=4;const DEEP_WORKERS=3;const FULL_VALIDATION_CHUNKS=4;const RENDER_FREE_HOST=/\.onrender\.com$/i.test(location.hostname);const effectiveDeepChunk=RENDER_FREE_HOST?1:DEEP_CHUNK;const effectiveValidatedChunks=RENDER_FREE_HOST?8:FULL_VALIDATION_CHUNKS;const DEEP_REQUEST_TIMEOUT_MS=55000;const CAN_BACKGROUND_SCAN=/\.netlify\.app$/i.test(location.hostname);const RESULT_STEP=72;const MEMORY_KEY='pulse.sample-dormancy.v2';const ACTIVE_RUN_KEY='pulse.coin-scan.active-run.v1';const SCAN_SESSION_KEY='pulse.coin-scan.session.v6';const SCAN_PERSIST_KEY='pulse.coin-scan.snapshot.v6';const SCAN_SESSION_MAX_AGE=30*60000;const SCAN_SESSION_FRESH_MS=70000;const AUTO_REFRESH_KEY='pulse.coin-scan.auto-refresh-minutes.v1';let activeController=null,lastSessionSavedAt=0,lastPersistAt=0,autoRefreshTimer=null;
 const CLASS_ORDER=['PRE-SURGE','RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','ACCUMULATION-PRE','META-PRE','SECTOR-ROTATION','ANOMALY','POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'];
 const CLASS_LABELS={'PRE-SURGE':'🔥 급등 직전','RE-ENTRY':'🔁 재상승 준비','PATTERN-SETUP':'📐 패턴 셋업','FAKEOUT-RISK':'🚨 가짜 돌파·롱 회피','ACCUMULATION-PRE':'🟢 잠복 축적','META-PRE':'🟢 메타 선행','SECTOR-ROTATION':'🟣 섹터 순환매','ANOMALY':'🟠 이상징후','POST-SURGE':'🔵 급등 완료','DISTRIBUTION-RISK':'⚫ 분배 위험','PUMP-RISK':'🔴 펌프 위험','STALE':'⚪ 판단 보류'};
 const state={category:'전체',sector:'전체',query:'',items:[],meta:null,loading:false,prescanLoading:false,prescanMeta:null,deepLoading:false,deepDone:0,deepTotal:0,deepInFlight:0,deepFailed:0,error:null,deepError:null,refreshSeq:0,precision:false,finderEnabled:true,finderPreset:'validated',finderLimit:12,finderVolumeMin:0,screening:new Map(),autoRefreshMinutes:0,classLimits:{},resultLimit:0,activeRunId:null,scanStartedAt:0,scanCompletedAt:0};const CLASS_PAGE_SIZE=12;
@@ -73,7 +73,7 @@ function renderMeta(){
   markStage('stageSummary',state.loading?'active':m.scanCount?'done':'idle');
   markStage('stagePrescan',state.prescanLoading?'active':m.prescan?'done':'idle');
   markStage('stageDeep',state.deepLoading?'active':state.deepTotal>0&&state.deepDone>=state.deepTotal?'done':'idle');
-  markStage('stageValidate',state.deepLoading&&state.deepDone<Math.min(state.deepTotal,DEEP_CHUNK*FULL_VALIDATION_CHUNKS)?'active':state.deepDone>=Math.min(state.deepTotal||Infinity,DEEP_CHUNK*FULL_VALIDATION_CHUNKS)&&state.deepDone>0?'done':'idle');
+  markStage('stageValidate',state.deepLoading&&state.deepDone<Math.min(state.deepTotal,effectiveDeepChunk*effectiveValidatedChunks)?'active':state.deepDone>=Math.min(state.deepTotal||Infinity,effectiveDeepChunk*effectiveValidatedChunks)&&state.deepDone>0?'done':'idle');
   const rb=$('refreshBtn');if(rb){rb.disabled=running;rb.textContent=state.loading?'전체 1차 스캔 중…':state.prescanLoading?'1H·4H 프리스캔 중…':state.deepLoading?`8TF 정밀 ${state.deepDone}/${state.deepTotal} · ${state.deepInFlight}개 진행 중`:'전체 재스캔'}
   const sw=$('sourceWarning');if(sw){const notes=[];if(m.sourceWarning)notes.push(String(m.sourceWarning));if(m.staleFallback)notes.push('이전 정상 스냅샷을 지연 데이터로 표시 중');else if(m.partial)notes.push('일부 데이터 소스가 불완전한 부분 응답');sw.textContent=notes.join(' · ');sw.hidden=!notes.length}
   const samplingSamplesRecorded=Number(m.samplingSamplesRecorded)||0,sampleRunText=(samplingSamplesRecorded>0?' · 기존 샘플 '+samplingSamplesRecorded+'개':'')+(Number(m.autoSampleLearning?.capturedCount)>0?' · 🧬 이번 실행 신규 샘플 '+Number(m.autoSampleLearning.capturedCount)+'개':'')+(Number(m.autoSampleLearning?.negativeCapturedCount)>0?' · 🟥 실패샘플 '+Number(m.autoSampleLearning.negativeCapturedCount)+'개':'');
@@ -117,13 +117,13 @@ async function resumeServerRun(){const id=readActiveRunId();if(!id)return false;
 async function enrich(candidates,seq,signal,runId=''){
   state.deepTotal=candidates.length;state.deepDone=0;state.deepFailed=0;state.deepInFlight=0;state.deepStartedAt=Date.now();state.deepError=null;
   state.deepLoading=candidates.length>0;renderMeta();renderFinder();
-  const chunks=[];for(let i=0;i<candidates.length;i+=DEEP_CHUNK)chunks.push(candidates.slice(i,i+DEEP_CHUNK));
+  const chunks=[];for(let i=0;i<candidates.length;i+=effectiveDeepChunk)chunks.push(candidates.slice(i,i+effectiveDeepChunk));
   let next=0,completed=0,failed=0;
   async function worker(){
     while(true){
       if(seq!==state.refreshSeq||signal?.aborted)return;
       const idx=next++;if(idx>=chunks.length)return;
-      const chunk=chunks[idx],validation=idx<FULL_VALIDATION_CHUNKS?(state.precision?'full':'light'):'off';
+      const chunk=chunks[idx],validation=idx<effectiveValidatedChunks?(state.precision?'full':'light'):'off';
       const controller=new AbortController();
       // A slow 8TF chunk cannot leave the mobile UI at 0/40 indefinitely.
       const timeout=setTimeout(()=>controller.abort('TIMEOUT'),DEEP_REQUEST_TIMEOUT_MS);
@@ -131,7 +131,7 @@ async function enrich(candidates,seq,signal,runId=''){
       if(signal)signal.addEventListener('abort',abortParent,{once:true});
       state.deepInFlight+=chunk.length;renderMeta();
       try{
-        const u='/api/coin-scan?mode=deep&limit='+DEEP_CHUNK+'&precision='+(state.precision?'1':'0')+'&validation='+validation+'&symbols='+encodeURIComponent(chunk.join(','))+'&persist=0'+(runId?'&run='+encodeURIComponent(runId):'');
+        const u='/api/coin-scan?mode=deep&limit='+effectiveDeepChunk+'&precision='+(state.precision?'1':'0')+'&validation='+validation+'&symbols='+encodeURIComponent(chunk.join(','))+'&persist=0'+(runId?'&run='+encodeURIComponent(runId):'');
         const r=await fetch(u,{cache:'default',signal:controller.signal});
         if(!r.ok)throw new Error('HTTP '+r.status);
         const data=await r.json();
@@ -160,7 +160,7 @@ async function enrich(candidates,seq,signal,runId=''){
   }
   // Render Free has only 0.15 vCPU: use fewer concurrent CPU-heavy chunks
   // while leaving the 3-worker I/O-oriented path available on stronger hosts.
-  const workerCap=/\.onrender\.com$/i.test(location.hostname)?2:DEEP_WORKERS;
+  const workerCap=RENDER_FREE_HOST?2:DEEP_WORKERS;
   await Promise.all(Array.from({length:Math.min(workerCap,chunks.length||1)},worker));
   if(seq!==state.refreshSeq||signal?.aborted)return;
   state.items=sortItems(decorateDormancy(state.items));state.deepLoading=false;
