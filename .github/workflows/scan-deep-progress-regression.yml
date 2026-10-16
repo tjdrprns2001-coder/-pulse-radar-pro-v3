@@ -1,0 +1,35 @@
+name: Scan deep timeout and progress
+on:
+  pull_request:
+    paths:
+      - 'ui/coin-scan.js'
+      - 'coin-scan.html'
+      - 'lib/coin-scan/binance-provider.js'
+      - 'lib/coin-scan/binance-provider.timeout.test.js'
+      - 'scripts/verify-auto-scan-finder.js'
+      - '.github/workflows/scan-deep-progress-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  latency-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax validation
+        run: |
+          node --check ui/coin-scan.js
+          node --check lib/coin-scan/binance-provider.js
+          node --check lib/coin-scan/binance-provider.timeout.test.js
+      - name: Client progress, upstream abort, provider regression
+        run: |
+          node scripts/verify-auto-scan-finder.js
+          node --test lib/coin-scan/binance-provider.timeout.test.js
+          node scripts/verify-coin-scan-provider.js
+          node --test lib/coin-scan/binance-provider.fallback.test.js
