@@ -158,7 +158,10 @@ async function enrich(candidates,seq,signal,runId=''){
       }
     }
   }
-  await Promise.all(Array.from({length:Math.min(DEEP_WORKERS,chunks.length||1)},worker));
+  // Render Free has only 0.15 vCPU: use fewer concurrent CPU-heavy chunks
+  // while leaving the 3-worker I/O-oriented path available on stronger hosts.
+  const workerCap=/\.onrender\.com$/i.test(location.hostname)?2:DEEP_WORKERS;
+  await Promise.all(Array.from({length:Math.min(workerCap,chunks.length||1)},worker));
   if(seq!==state.refreshSeq||signal?.aborted)return;
   state.items=sortItems(decorateDormancy(state.items));state.deepLoading=false;
   state.scanCompletedAt=Date.now();saveScanSession(true);render();
