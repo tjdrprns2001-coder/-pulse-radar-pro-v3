@@ -8,6 +8,7 @@ on:
       - 'lib/coin-scan/cross-oi-provider.js'
       - 'scripts/verify-cross-oi-v2.js'
       - 'scripts/verify-coin-scan-provider.js'
+      - 'lib/coin-scan/binance-provider.fallback.test.js'
       - 'ui/forex-book/forex-book-engine.js'
       - 'scripts/verify-ichimoku-causal-cloud.js'
       - '.github/workflows/analyst-oi-cloud-p1.yml'
@@ -36,6 +37,7 @@ jobs:
           node --test lib/coin-scan/oi-series-integrity.test.js
           node scripts/verify-cross-oi-v2.js
           node scripts/verify-coin-scan-provider.js
+          node --test lib/coin-scan/binance-provider.fallback.test.js
       - name: Ichimoku cloud and existing book regressions
         run: |
           node scripts/verify-ichimoku-causal-cloud.js
