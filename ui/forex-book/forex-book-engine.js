@@ -94,7 +94,37 @@ function rect(bull){const w=c.slice(-36);if(w.length<30)return null;const box=w.
 function pennant(bull){const w=c.slice(-24),pre=c.slice(-36,-24);if(pre.length<8)return null;const impulse=(w[0].close-pre[0].close)/Math.max(Math.abs(pre[0].close),1e-9)*100;if(bull&&impulse<4)return null;if(!bull&&impulse>-4)return null;const a=w.slice(0,12),b=w.slice(12),r1=Math.max(...a.map(x=>x.high))-Math.min(...a.map(x=>x.low)),r2=Math.max(...b.map(x=>x.high))-Math.min(...b.map(x=>x.low));if(!(r2<r1*.8))return null;const hi=Math.max(...b.map(x=>x.high)),lo=Math.min(...b.map(x=>x.low)),move=Math.abs(w[0].close-pre[0].close);return chartResult({id:bull?'bullish-pennant':'bearish-pennant',label:bull?'상승 페넌트':'하락 페넌트',side:bull?'상승':'하락',sourcePage:bull?100:104,score:76,trigger:bull?hi:lo,invalidation:bull?lo:hi,target:bull?hi+move:lo-move,reasons:['선행 강한 '+(bull?'상승':'하락')+' 파동','최근 변동폭 수렴','책의 페넌트 돌파 구조']})}
 function rounding(bottom){const w=c.slice(-60);if(w.length<50)return null;const a=avg(w.slice(0,15).map(x=>x.close)),m=avg(w.slice(22,38).map(x=>x.close)),z=avg(w.slice(-15).map(x=>x.close));if(bottom?!(m<Math.min(a,z)*.97):!(m>Math.max(a,z)*1.03))return null;if(Math.abs(a-z)/Math.max(Math.abs(a),1e-9)>.09)return null;const trigger=bottom?Math.max(a,z):Math.min(a,z),inv=bottom?Math.min(...w.map(x=>x.low)):Math.max(...w.map(x=>x.high)),h=Math.abs(trigger-inv);return chartResult({id:bottom?'rounding-bottom':'rounding-top',label:bottom?'라운딩 바텀':'라운딩 탑',side:bottom?'상승':'하락',sourcePage:bottom?113:115,score:70,trigger,invalidation:inv,target:bottom?trigger+h:trigger-h,reasons:['완만한 '+(bottom?'U자 바닥':'역U자 천장'),'책의 기준선 돌파 확인']})}
 function cup(inverse){const w=c.slice(-72);if(w.length<60)return null;const cup=w.slice(0,54),handle=w.slice(54),l=avg(cup.slice(0,10).map(x=>x.close)),r=avg(cup.slice(-10).map(x=>x.close));if(Math.abs(l-r)/Math.max(Math.abs(l),1e-9)>.08)return null;const extreme=inverse?Math.max(...cup.map(x=>x.high)):Math.min(...cup.map(x=>x.low)),rim=(l+r)/2,depth=Math.abs(rim-extreme);if(depth<Math.abs(rim)*.04)return null;const hExt=inverse?Math.max(...handle.map(x=>x.high)):Math.min(...handle.map(x=>x.low));if(Math.abs(hExt-rim)>depth*.7)return null;return chartResult({id:inverse?'inverse-cup-handle':'cup-handle',label:inverse?'역 컵앤핸들':'컵앤핸들',side:inverse?'하락':'상승',sourcePage:inverse?119:117,score:78,trigger:rim,invalidation:hExt,target:inverse?rim-depth:rim+depth,reasons:['컵 좌우 림 유사','손잡이 조정 깊이 제한','책은 림/지지선 돌파로 확인']})}
-function bat(bull){const a=pv.all.slice(-14);let q=null;for(let s=a.length-5;s>=0;s--){const z=a.slice(s,s+5);if(z.length===5&&z.every((x,i)=>i===0||x.type!==z[i-1].type)){q=z;break}}if(!q)return null;const [X,A,B,C,D]=q;if(bull&&!(X.type==='L'&&A.type==='H'&&B.type==='L'&&C.type==='H'&&D.type==='L'))return null;if(!bull&&!(X.type==='H'&&A.type==='L'&&B.type==='H'&&C.type==='L'&&D.type==='H'))return null;const xa=Math.abs(A.price-X.price),ab=Math.abs(B.price-A.price),bc=Math.abs(C.price-B.price),cd=Math.abs(D.price-C.price),xd=Math.abs(D.price-X.price);if(!xa||!ab||!bc)return null;const rb=ab/xa,rc=bc/ab,rd=cd/bc,rxd=xd/xa;if(rb<.30||rb>.58||rc<.30||rc>.95||rd<1.4||rd>2.9||rxd<.78||rxd>.96)return null;return chartResult({id:bull?'bullish-bat':'bearish-bat',label:bull?'상승 배트':'하락 배트',side:bull?'상승':'하락',sourcePage:bull?121:123,score:76,trigger:C.price,invalidation:D.price,target:bull?C.price+Math.abs(C.price-D.price):C.price-Math.abs(C.price-D.price),reasons:['X-A-B-C-D 교대 스윙','책의 Fibonacci 비율대를 넓은 허용오차로 근사','D 부근 잠재 반전구역'],points:q})}
+function bat(bull){
+  const a=pv.all.slice(-14);let q=null;
+  for(let s=a.length-5;s>=0;s--){
+    const z=a.slice(s,s+5);
+    if(z.length===5&&z.every((x,i)=>i===0||x.type!==z[i-1].type)){q=z;break}
+  }
+  if(!q)return null;
+  const [X,A,B,C,D]=q;
+  const types=q.map(x=>x.type).join('');
+  if(types!==(bull?'LHLHL':'HLHLH'))return null;
+  // Geometry is directional, and each pivot must be confirmed and chronological.
+  const geometry=bull
+    ? X.price<B.price&&B.price<C.price&&C.price<A.price&&X.price<D.price&&D.price<B.price
+    : A.price<C.price&&C.price<B.price&&B.price<X.price&&B.price<D.price&&D.price<X.price;
+  if(!geometry||!q.every((x,i)=>i===0||x.i>q[i-1].i))return null;
+  const xa=Math.abs(A.price-X.price),ab=Math.abs(B.price-A.price),bc=Math.abs(C.price-B.price),cd=Math.abs(D.price-C.price);
+  if(!(xa>0&&ab>0&&bc>0))return null;
+  const abXa=ab/xa,bcAb=bc/ab,cdBc=cd/bc;
+  // A Bat's 88.6% XA retracement is measured from A to D,
+  // NOT from X to D. Measuring X->D reverses the reference leg.
+  const adXa=Math.abs(A.price-D.price)/xa,xdXa=Math.abs(D.price-X.price)/xa;
+  if(abXa<.35||abXa>.53||bcAb<.35||bcAb>.92||cdBc<1.55||cdBc>2.70||adXa<.855||adXa>.915)return null;
+  const idealD=bull?A.price-xa*.886:A.price+xa*.886;
+  return chartResult({
+    id:bull?'bullish-bat':'bearish-bat',label:bull?'상승 배트':'하락 배트',side:bull?'상승':'하락',
+    sourcePage:bull?121:123,score:78,trigger:C.price,invalidation:D.price,
+    target:bull?C.price+Math.abs(C.price-D.price):C.price-Math.abs(C.price-D.price),
+    reasons:['X-A-B-C-D 확정 교대 스윙','A→D가 XA의 88.6% 되돌림 구역','D 잠재 반전구역: 후속 가격 반응 확인 필요'],
+    ratios:{abXa,bcAb,cdBc,adXa,xdXa},prz:{idealD,tolerancePrice:xa*.029},points:q
+  });
+}
 add(dbl(true));add(dbl(false));add(hs(false));add(hs(true));add(wedge(true));add(wedge(false));add(rect(true));add(rect(false));add(pennant(true));add(pennant(false));add(triple(true));add(triple(false));add(rounding(true));add(rounding(false));add(cup(false));add(cup(true));add(bat(true));add(bat(false));
 return out.sort((a,b)=>b.score-a.score)}
 function calculatePips({entry,exit,pipSize=.0001,units=1}={}){const e=num(entry),x=num(exit),p=Math.abs(num(pipSize,.0001));if(!(finite(e)&&finite(x)&&p>0))return{available:false,error:'진입가·청산가·pip 크기를 확인하세요.'};const pips=(x-e)/p;return{available:true,pips,absolutePips:Math.abs(pips),priceChange:x-e,units:num(units,1),sourcePages:'28-30',note:'책의 pip 정의와 가격차 계산을 그대로 계산기로 구현.'}}
