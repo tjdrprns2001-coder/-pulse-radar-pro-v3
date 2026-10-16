@@ -1,0 +1,32 @@
+name: Pulse Briefing Latency Guard
+on:
+  pull_request:
+    paths:
+      - 'lib/pulse-ai/briefing-service.js'
+      - 'lib/pulse-ai/runtime-scan.js'
+      - 'scripts/verify-pulse-ai-brief-singleflight.js'
+      - '.github/workflows/pulse-briefing-latency.yml'
+  push:
+    paths:
+      - 'lib/pulse-ai/briefing-service.js'
+      - 'lib/pulse-ai/runtime-scan.js'
+      - 'scripts/verify-pulse-ai-brief-singleflight.js'
+      - '.github/workflows/pulse-briefing-latency.yml'
+permissions:
+  contents: read
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Briefing singleflight and upstream cooldown
+        run: node scripts/verify-pulse-ai-brief-singleflight.js
+      - name: Pulse AI core and API regressions
+        run: |
+          node scripts/verify-pulse-ai-core.js
+          node scripts/verify-pulse-ai-api.js
+      - name: Previous scanner and health regressions
+        run: node scripts/verify-pulse-runtime-health.js
