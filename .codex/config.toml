@@ -1,0 +1,6 @@
+# Project-scoped REA MCP. Codex loads this only for trusted projects.
+# Node.js 22.19+, 24.11+, or 26+ and npm are required.
+[mcp_servers.rea]
+command = "npx"
+args = ["-y", "rea-agents@6.5.0", "mcp"]
+startup_timeout_sec = 30
