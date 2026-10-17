@@ -160,7 +160,6 @@ async function enrich(candidates,seq,signal,runId=''){
           const reason=controller.signal.aborted?'응답 시간초과 (55초)':String(e?.message||e);
           state.deepError='정밀 '+chunk.join(', ')+' · '+reason;
         }
-      }
       }finally{
         clearTimeout(timeout);
         if(signal)signal.removeEventListener('abort',abortParent);
