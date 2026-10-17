@@ -1,18 +1,40 @@
-# REA developer setup
+# REA development-agent integration
 
-REA is an optional, developer-host MCP tool. It does not run in PulseRadar production.
+REA is an **opt-in** MCP reverse-engineering assistant for authorized application artifacts, not a deployed PulseRadar scanner or trading engine.
 
-Requirements: supported Node.js (22.19+, 24.11+, or 26+) and npm. On the machine hosting Codex or another supported coding agent:
+## Repository-backed MCP registrations
+
+These files pin the **same executable** (`npx -y rea-agents@6.5.0 mcp`):
+
+| Development agent | Project file | Requirements |
+| --- | --- | --- |
+| Codex CLI / IDE | `.codex/config.toml` | Trust this repository so Codex loads its project config |
+| Cursor | `.cursor/mcp.json` | Open this folder as a project and approve MCP tool usage |
+| Claude Code | `.mcp.json` | Open this folder and approve project MCP server when asked |
+
+They **do not** install software on a phone, GitHub, Render, Vercel, Netlify, or any personal workstation. The agent host needs Node.js 22.19+, 24.11+, or 26+, npm, network access for first-time package download, and REA permission approval. Restart the client after its configuration changes.
+
+For a different supported coding agent, install on its own device with reviewed interactive setup:
 
 ```bash
 npx rea-agents@6.5.0 setup
 npx -y rea-agents@6.5.0 doctor --json
 ```
 
-Review and explicitly approve proposed changes to agent configuration, and restart the agent afterwards. The repository alone cannot install an MCP server in a separate workstation.
+Never run `setup` unattended or in CI. Do not add any API keys to the repo.
 
-For PulseRadar source files, prefer existing regression tests and code inspection. REA may supplement investigation of authorized JavaScript application bundles. Keep production secrets outside analysis artifacts and logs. Use a separate pull request for code fixes; do not auto-merge or deploy from diagnostic results.
+## What CI proves
 
-A manual GitHub Actions diagnostic is proposed separately. It only checks CLI readiness in an ephemeral runner, not agent registration on your workstation.
+`.github/workflows/rea-host-diagnostic.yml` runs on manual dispatch and on PRs changing the REA configuration/test files. It checks:
 
-Relevant checks include `npm run test:coin-scan-core` and `npm run test:pulse-ai-core`.
+1. Config files' pinned version and command.
+2. Actual MCP stdio `initialize` and `tools/list` handshake via `scripts/verify-rea-mcp.mjs`.
+3. CLI version/help and capabilities, plus a **non-blocking** `doctor --json` report.
+
+CI proves tool availability on an ephemeral Linux GitHub runner. It **does not** prove the tool has been approved or is working in a local Codex/Cursor/Claude instance. `doctor` may report unavailable optional native providers on CI.
+
+## PulseRadar workflow
+
+Use REA for authorized app or JS-bundle reverse engineering, followed by a source-level PulseRadar implementation review. For ordinary PulseRadar source debugging, begin with `npm ci --ignore-scripts`, targeted `npm run test:*` and `node --check` before relying on reverse engineering evidence. Preserve missing-data semantics, market-data timestamps, closed-candle contracts, and non-trading scope. Record exact versions and test results. Never merge or deploy purely on agent recommendation.
+
+Upstream reference: https://github.com/morluto/rea/blob/main/docs/installation.md
