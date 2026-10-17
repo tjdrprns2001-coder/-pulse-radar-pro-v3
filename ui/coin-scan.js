@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);const DEEP_CHUNK=4;const DEEP_WORKERS=3;const FULL_VALIDATION_CHUNKS=4;const RENDER_FREE_HOST=/\.onrender\.com$/i.test(location.hostname);const effectiveDeepChunk=RENDER_FREE_HOST?1:DEEP_CHUNK;const effectiveValidatedChunks=RENDER_FREE_HOST?8:FULL_VALIDATION_CHUNKS;const DEEP_REQUEST_TIMEOUT_MS=55000;const CAN_BACKGROUND_SCAN=/\.netlify\.app$/i.test(location.hostname);const RESULT_STEP=72;const MEMORY_KEY='pulse.sample-dormancy.v2';const ACTIVE_RUN_KEY='pulse.coin-scan.active-run.v1';const SCAN_SESSION_KEY='pulse.coin-scan.session.v6';const SCAN_PERSIST_KEY='pulse.coin-scan.snapshot.v6';const SCAN_SESSION_MAX_AGE=30*60000;const SCAN_SESSION_FRESH_MS=70000;const AUTO_REFRESH_KEY='pulse.coin-scan.auto-refresh-minutes.v1';let activeController=null,lastSessionSavedAt=0,lastPersistAt=0,autoRefreshTimer=null;
 const CLASS_ORDER=['PRE-SURGE','RE-ENTRY','PATTERN-SETUP','FAKEOUT-RISK','ACCUMULATION-PRE','META-PRE','SECTOR-ROTATION','ANOMALY','POST-SURGE','DISTRIBUTION-RISK','PUMP-RISK','STALE'];
 const CLASS_LABELS={'PRE-SURGE':'🔥 급등 직전','RE-ENTRY':'🔁 재상승 준비','PATTERN-SETUP':'📐 패턴 셋업','FAKEOUT-RISK':'🚨 가짜 돌파·롱 회피','ACCUMULATION-PRE':'🟢 잠복 축적','META-PRE':'🟢 메타 선행','SECTOR-ROTATION':'🟣 섹터 순환매','ANOMALY':'🟠 이상징후','POST-SURGE':'🔵 급등 완료','DISTRIBUTION-RISK':'⚫ 분배 위험','PUMP-RISK':'🔴 펌프 위험','STALE':'⚪ 판단 보류'};
-const state={category:'전체',sector:'전체',query:'',items:[],meta:null,loading:false,prescanLoading:false,prescanMeta:null,deepLoading:false,deepDone:0,deepTotal:0,deepInFlight:0,deepFailed:0,error:null,deepError:null,refreshSeq:0,precision:false,finderEnabled:true,finderPreset:'validated',finderLimit:12,finderVolumeMin:0,screening:new Map(),autoRefreshMinutes:0,classLimits:{},resultLimit:0,activeRunId:null,scanStartedAt:0,scanCompletedAt:0};const CLASS_PAGE_SIZE=12;
+const state={category:'전체',sector:'전체',query:'',items:[],meta:null,loading:false,prescanLoading:false,prescanMeta:null,deepLoading:false,deepDone:0,deepTotal:0,deepInFlight:0,deepFailed:0,deepSucceeded:0,deepRetried:0,error:null,deepError:null,refreshSeq:0,precision:false,finderEnabled:true,finderPreset:'validated',finderLimit:12,finderVolumeMin:0,screening:new Map(),autoRefreshMinutes:0,classLimits:{},resultLimit:0,activeRunId:null,scanStartedAt:0,scanCompletedAt:0};const CLASS_PAGE_SIZE=12;
 function initialResultLimit(){return matchMedia?.('(max-width:650px)')?.matches?36:72}
 function resetResultLimit(){state.resultLimit=initialResultLimit()}
 function readMemory(){try{const x=JSON.parse(localStorage.getItem(MEMORY_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch{return{}}}
@@ -15,7 +15,7 @@ function compactScreening(s){if(!s||typeof s!=='object')return s;return{symbol:s
 function scanSnapshot(){const m=state.meta||{};return{savedAt:Date.now(),items:state.items.map(compactItem),meta:{updatedAt:m.updatedAt,scanCount:m.scanCount,deepScanCount:m.deepScanCount,dataHealth:m.dataHealth,marketBreadth:m.marketBreadth,sourceWarning:m.sourceWarning,partial:m.partial,staleFallback:m.staleFallback,marketSource:m.marketSource,derivativesSource:m.derivativesSource,universeMeta:m.universeMeta,candidateSelection:m.candidateSelection,prescan:m.prescan,samplingResearch:m.samplingResearch,samplingSamplesRecorded:m.samplingSamplesRecorded,autoSampleLearning:m.autoSampleLearning||null,scanRunId:m.scanRunId},deepDone:state.deepDone,deepTotal:state.deepTotal,precision:state.precision,finderEnabled:state.finderEnabled,finderPreset:state.finderPreset,finderLimit:state.finderLimit,finderVolumeMin:state.finderVolumeMin,screening:[...state.screening.entries()].map(([k,v])=>[k,compactScreening(v)])}}
 function saveScanSession(force=false){const now=Date.now();if(!force&&now-lastPersistAt<5000)return;try{const snap=scanSnapshot(),raw=JSON.stringify(snap);lastSessionSavedAt=Number(snap.savedAt)||now;lastPersistAt=now;try{sessionStorage.setItem(SCAN_SESSION_KEY,raw)}catch{}try{localStorage.setItem(SCAN_PERSIST_KEY,raw)}catch{}}catch{}}
 function readStoredSnapshot(){for(const [store,key] of [[sessionStorage,SCAN_SESSION_KEY],[localStorage,SCAN_PERSIST_KEY]]){try{const x=JSON.parse(store.getItem(key)||'null');if(x&&Array.isArray(x.items)&&Number.isFinite(Number(x.savedAt))&&Date.now()-Number(x.savedAt)<=SCAN_SESSION_MAX_AGE)return x}catch{}}return null}
-function restoreScanSession(){try{const x=readStoredSnapshot();if(!x)return false;state.items=sortItems(decorateDormancy(x.items));state.meta=x.meta||null;state.deepDone=Number(x.deepDone)||0;state.deepTotal=Number(x.deepTotal)||0;state.deepInFlight=0;state.deepFailed=0;state.precision=Boolean(x.precision);state.finderEnabled=x.finderEnabled!==false;state.finderPreset=String(x.finderPreset||'validated');state.finderLimit=Math.max(4,Math.min(40,Number(x.finderLimit)||12));state.finderVolumeMin=Math.max(0,Number(x.finderVolumeMin)||0);state.screening=new Map(Array.isArray(x.screening)?x.screening:[]);state.loading=false;state.deepLoading=false;state.error=null;state.deepError=null;lastSessionSavedAt=Number(x.savedAt);lastPersistAt=Date.now();return true}catch{return false}}
+function restoreScanSession(){try{const x=readStoredSnapshot();if(!x)return false;state.items=sortItems(decorateDormancy(x.items));state.meta=x.meta||null;state.deepDone=Number(x.deepDone)||0;state.deepTotal=Number(x.deepTotal)||0;state.deepInFlight=0;state.deepFailed=Number(x.deepFailed)||0;state.deepSucceeded=Math.max(0,state.deepDone-state.deepFailed);state.deepRetried=0;state.precision=Boolean(x.precision);state.finderEnabled=x.finderEnabled!==false;state.finderPreset=String(x.finderPreset||'validated');state.finderLimit=Math.max(4,Math.min(40,Number(x.finderLimit)||12));state.finderVolumeMin=Math.max(0,Number(x.finderVolumeMin)||0);state.screening=new Map(Array.isArray(x.screening)?x.screening:[]);state.loading=false;state.deepLoading=false;state.error=null;state.deepError=null;lastSessionSavedAt=Number(x.savedAt);lastPersistAt=Date.now();return true}catch{return false}}
 function sessionFresh(){return lastSessionSavedAt>0&&Date.now()-lastSessionSavedAt<SCAN_SESSION_FRESH_MS}
 function readAutoRefreshMinutes(){try{const n=Number(localStorage.getItem(AUTO_REFRESH_KEY)||0);return [0,5,10].includes(n)?n:0}catch{return 0}}
 function autoRefreshLabel(){return state.autoRefreshMinutes>0?`자동 ${state.autoRefreshMinutes}분 갱신`:'수동 갱신'}
@@ -74,10 +74,10 @@ function renderMeta(){
   markStage('stagePrescan',state.prescanLoading?'active':m.prescan?'done':'idle');
   markStage('stageDeep',state.deepLoading?'active':state.deepTotal>0&&state.deepDone>=state.deepTotal?'done':'idle');
   markStage('stageValidate',state.deepLoading&&state.deepDone<Math.min(state.deepTotal,effectiveDeepChunk*effectiveValidatedChunks)?'active':state.deepDone>=Math.min(state.deepTotal||Infinity,effectiveDeepChunk*effectiveValidatedChunks)&&state.deepDone>0?'done':'idle');
-  const rb=$('refreshBtn');if(rb){rb.disabled=running;rb.textContent=state.loading?'전체 1차 스캔 중…':state.prescanLoading?'1H·4H 프리스캔 중…':state.deepLoading?`8TF 정밀 ${state.deepDone}/${state.deepTotal} · ${state.deepInFlight}개 진행 중`:'전체 재스캔'}
+  const rb=$('refreshBtn');if(rb){rb.disabled=running;rb.textContent=state.loading?'전체 1차 스캔 중…':state.prescanLoading?'1H·4H 프리스캔 중…':state.deepLoading?`정밀 성공 ${state.deepSucceeded}/${state.deepTotal} · 실패 ${state.deepFailed} · 진행 ${state.deepInFlight}`:'전체 재스캔'}
   const sw=$('sourceWarning');if(sw){const notes=[];if(m.sourceWarning)notes.push(String(m.sourceWarning));if(m.staleFallback)notes.push('이전 정상 스냅샷을 지연 데이터로 표시 중');else if(m.partial)notes.push('일부 데이터 소스가 불완전한 부분 응답');sw.textContent=notes.join(' · ');sw.hidden=!notes.length}
   const samplingSamplesRecorded=Number(m.samplingSamplesRecorded)||0,sampleRunText=(samplingSamplesRecorded>0?' · 기존 샘플 '+samplingSamplesRecorded+'개':'')+(Number(m.autoSampleLearning?.capturedCount)>0?' · 🧬 이번 실행 신규 샘플 '+Number(m.autoSampleLearning.capturedCount)+'개':'')+(Number(m.autoSampleLearning?.negativeCapturedCount)>0?' · 🟥 실패샘플 '+Number(m.autoSampleLearning.negativeCapturedCount)+'개':'');
-  $('status').textContent=(state.loading?'1차 전체 스캔 중…':state.prescanLoading?'전체 선물에서 1H·4H 프리스캔 중…':state.error?`데이터 갱신 실패 · 이전 결과 유지 · ${state.error}`:state.deepLoading?`프리스캔 완료 · 8TF 정밀 ${state.deepDone}/${state.deepTotal} · 처리 중 ${state.deepInFlight}개${state.deepFailed?' · 실패 '+state.deepFailed+'개':''} · 상위 후보 검증 우선`:state.deepError?`정밀 분석 일부 실패 · ${state.deepError}`:`코어 ${m.scanCount||0}개 · 현재 ${filtered().length}개 표시 · ${autoRefreshLabel()}`)+sampleRunText;
+  $('status').textContent=(state.loading?'1차 전체 스캔 중…':state.prescanLoading?'전체 선물에서 1H·4H 프리스캔 중…':state.error?`데이터 갱신 실패 · 이전 결과 유지 · ${state.error}`:state.deepLoading?`프리스캔 완료 · 성공 ${state.deepSucceeded}/${state.deepTotal} · 처리 중 ${state.deepInFlight}개 · 실패 ${state.deepFailed}개${state.deepRetried?' · 재시도 '+state.deepRetried+'회':''}`:state.deepError?`정밀 분석 일부 실패 · ${state.deepError}`:`코어 ${m.scanCount||0}개 · 현재 ${filtered().length}개 표시 · ${autoRefreshLabel()}`)+sampleRunText;
   const breadth=$('marketBreadth');if(breadth)breadth.textContent=Number.isFinite(Number(b.median))?`시장 breadth · 상승 ${b.up||0} / 하락 ${b.down||0} · 중앙값 ${Number(b.median)>=0?'+':''}${fmtNum(b.median,2)}% · +5% ${b.gt5||0}개 · -5% ${b.lt5||0}개`:'시장 breadth 계산 중…';
 }
 function reportUrl(symbol){return `/coin-report.html?symbol=${encodeURIComponent(symbol||'')}&shell=1`}
@@ -109,16 +109,16 @@ function mergeDeep(data,expectedSymbols=[]){const expected=new Set((expectedSymb
 function readActiveRunId(){try{return String(localStorage.getItem(ACTIVE_RUN_KEY)||'').trim()}catch{return''}}
 function writeActiveRunId(id){state.activeRunId=id||null;try{if(id)localStorage.setItem(ACTIVE_RUN_KEY,String(id));else localStorage.removeItem(ACTIVE_RUN_KEY)}catch{}}
 function applyRunScreening(s){state.screening=new Map();for(const bucket of ['candidates','watchlist','eventRisk','conflicted','riskFiltered','insufficientData','rejected'])for(const row of Array.isArray(s?.[bucket])?s[bucket]:[])if(row?.symbol)state.screening.set(row.symbol,row)}
-function applyServerRun(run){if(!run||typeof run!=='object')return;state.scanStartedAt=Number(run.createdAt)||state.scanStartedAt||Date.now();if(run.completedAt||run.failedAt)state.scanCompletedAt=Number(run.completedAt||run.failedAt)||Date.now();state.activeRunId=run.id||state.activeRunId;state.meta={...(state.meta||{}),...(run.meta||{}),scanRunId:run.id||state.activeRunId,samplingSamplesRecorded:Number(run.samplingSamplesRecorded??run.meta?.samplingSamplesRecorded??state.meta?.samplingSamplesRecorded)||0};if(Array.isArray(run.items)&&run.items.length)state.items=sortItems(decorateDormancy(run.items));state.deepDone=Number(run.deepDone)||0;state.deepTotal=Number(run.deepTotal)||0;state.deepInFlight=0;state.deepFailed=Number(run.deepFailed)||0;state.prescanMeta=run.meta?.prescan||state.prescanMeta;state.loading=['QUEUED'].includes(String(run.status))||['queued','summary'].includes(String(run.stage));state.prescanLoading=String(run.stage)==='prescan'&&String(run.status)==='RUNNING';state.deepLoading=String(run.stage)==='deep'&&String(run.status)==='RUNNING';state.error=String(run.status)==='FAILED'?String(run.error||'서버 스캔 실패'):null;state.deepError=run.prescanError||null;applyRunScreening(run.autoScreening||{});saveScanSession();render()}
+function applyServerRun(run){if(!run||typeof run!=='object')return;state.scanStartedAt=Number(run.createdAt)||state.scanStartedAt||Date.now();if(run.completedAt||run.failedAt)state.scanCompletedAt=Number(run.completedAt||run.failedAt)||Date.now();state.activeRunId=run.id||state.activeRunId;state.meta={...(state.meta||{}),...(run.meta||{}),scanRunId:run.id||state.activeRunId,samplingSamplesRecorded:Number(run.samplingSamplesRecorded??run.meta?.samplingSamplesRecorded??state.meta?.samplingSamplesRecorded)||0};if(Array.isArray(run.items)&&run.items.length)state.items=sortItems(decorateDormancy(run.items));state.deepDone=Number(run.deepDone)||0;state.deepTotal=Number(run.deepTotal)||0;state.deepInFlight=0;state.deepFailed=Number(run.deepFailed)||0;state.deepSucceeded=Math.max(0,state.deepDone-state.deepFailed);state.deepRetried=0;state.prescanMeta=run.meta?.prescan||state.prescanMeta;state.loading=['QUEUED'].includes(String(run.status))||['queued','summary'].includes(String(run.stage));state.prescanLoading=String(run.stage)==='prescan'&&String(run.status)==='RUNNING';state.deepLoading=String(run.stage)==='deep'&&String(run.status)==='RUNNING';state.error=String(run.status)==='FAILED'?String(run.error||'서버 스캔 실패'):null;state.deepError=run.prescanError||null;applyRunScreening(run.autoScreening||{});saveScanSession();render()}
 function delay(ms,signal){return new Promise((resolve,reject)=>{const t=setTimeout(resolve,ms);if(signal)signal.addEventListener('abort',()=>{clearTimeout(t);reject(Object.assign(new Error('aborted'),{name:'AbortError'}))},{once:true})})}
 async function pollServerRun(id,seq,signal){let lastDone=-1,lastStage='';while(seq===state.refreshSeq&&!signal?.aborted){const r=await fetch('/api/coin-scan?mode=scan-run&action=status&id='+encodeURIComponent(id),{cache:'no-store',signal});if(!r.ok)throw new Error('scan-run status HTTP '+r.status);const body=await r.json();const run=body?.run;if(!run)throw new Error(body?.error||'scan-run status missing');if(Number(run.deepDone)!==lastDone||String(run.stage)!==lastStage||['DONE','FAILED'].includes(String(run.status))){lastDone=Number(run.deepDone)||0;lastStage=String(run.stage||'');applyServerRun(run)}if(run.status==='DONE'){writeActiveRunId('');state.loading=false;state.prescanLoading=false;state.deepLoading=false;state.scanCompletedAt=Number(run.completedAt)||Date.now();saveScanSession(true);render();return true}if(run.status==='FAILED'){writeActiveRunId('');state.loading=false;state.prescanLoading=false;state.deepLoading=false;state.scanCompletedAt=Number(run.failedAt)||Date.now();state.error=String(run.error||'서버 스캔 실패');saveScanSession(true);render();return true}await delay(1400,signal)}return true}
 async function tryServerScanRun(force=false){if(!CAN_BACKGROUND_SCAN)return false;const controller=new AbortController();if(activeController){try{activeController.abort()}catch{}}activeController=controller;const seq=++state.refreshSeq;const fallback=()=>{writeActiveRunId('');state.loading=false;state.prescanLoading=false;state.deepLoading=false;state.error=null;if(activeController===controller)activeController=null;return false};state.loading=true;state.prescanLoading=false;state.deepLoading=false;state.error=null;state.deepError=null;state.scanStartedAt=Date.now();state.scanCompletedAt=0;renderMeta();try{const start=await fetch('/api/coin-scan?mode=scan-run&action=start&precision='+(state.precision?'1':'0'),{method:'POST',cache:'no-store',signal:controller.signal});if(!start.ok)return fallback();const body=await start.json();const id=String(body?.run?.id||'');if(!id)return fallback();writeActiveRunId(id);state.meta={...(state.meta||{}),scanRunId:id};const bg=await fetch('/.netlify/functions/coin-scan-run-background',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({runId:id,precision:state.precision}),cache:'no-store',signal:controller.signal});if(!(bg.ok||bg.status===202))return fallback();await pollServerRun(id,seq,controller.signal);if(activeController===controller)activeController=null;armAutoRefresh();return true}catch(e){if(e?.name==='AbortError')return true;return fallback()}}
 async function resumeServerRun(){const id=readActiveRunId();if(!id)return false;const controller=new AbortController();if(activeController){try{activeController.abort()}catch{}}activeController=controller;const seq=++state.refreshSeq;writeActiveRunId(id);try{await pollServerRun(id,seq,controller.signal);if(activeController===controller)activeController=null;return true}catch(e){if(e?.name!=='AbortError'){writeActiveRunId('');if(activeController===controller)activeController=null}return false}}
 async function enrich(candidates,seq,signal,runId=''){
-  state.deepTotal=candidates.length;state.deepDone=0;state.deepFailed=0;state.deepInFlight=0;state.deepStartedAt=Date.now();state.deepError=null;
+  state.deepTotal=candidates.length;state.deepDone=0;state.deepFailed=0;state.deepSucceeded=0;state.deepRetried=0;state.deepInFlight=0;state.deepStartedAt=Date.now();state.deepError=null;
   state.deepLoading=candidates.length>0;renderMeta();renderFinder();
   const chunks=[];for(let i=0;i<candidates.length;i+=effectiveDeepChunk)chunks.push(candidates.slice(i,i+effectiveDeepChunk));
-  let next=0,completed=0,failed=0;
+  let next=0,completed=0,failed=0,succeeded=0;
   async function worker(){
     while(true){
       if(seq!==state.refreshSeq||signal?.aborted)return;
@@ -130,29 +130,43 @@ async function enrich(candidates,seq,signal,runId=''){
       const abortParent=()=>controller.abort('PARENT_ABORT');
       if(signal)signal.addEventListener('abort',abortParent,{once:true});
       state.deepInFlight+=chunk.length;renderMeta();
+      let chunkFailures=chunk.length;
       try{
         const u='/api/coin-scan?mode=deep&limit='+effectiveDeepChunk+'&precision='+(state.precision?'1':'0')+'&validation='+validation+'&symbols='+encodeURIComponent(chunk.join(','))+'&persist=0'+(runId?'&run='+encodeURIComponent(runId):'');
-        const r=await fetch(u,{cache:'default',signal:controller.signal});
-        if(!r.ok)throw new Error('HTTP '+r.status);
-        const data=await r.json();
-        if(!data||data.status!=='ok'||!Array.isArray(data.items))throw new Error(data?.error||'정밀 응답 형식 오류');
-        mergeDeep(data,chunk);
-        // A partial response must not be mistaken for fully analyzed symbols.
-        const received=new Set(data.items.map(x=>symbolKey(x?.symbol)).filter(Boolean));
-        const missing=chunk.filter(x=>!received.has(symbolKey(x)));
-        if(missing.length){failed+=missing.length;state.deepError='정밀 응답 누락 '+missing.join(', ')}
+        for(let attempt=0;attempt<2;attempt++){
+          try{
+            const r=await fetch(u,{cache:'no-store',signal:controller.signal});
+            if(!r.ok)throw new Error('HTTP '+r.status);
+            const data=await r.json();
+            if(!data||data.status!=='ok'||!Array.isArray(data.items))throw new Error(data?.error||'정밀 응답 형식 오류');
+            const received=new Set(data.items.filter(x=>x?.dataState==='live'&&x?.dataHealth?.quality!=='FAILED').map(x=>symbolKey(x.symbol)).filter(Boolean));
+            chunkFailures=chunk.filter(x=>!received.has(symbolKey(x))).length;
+            mergeDeep(data,chunk);
+            if(chunkFailures)state.deepError='정밀 데이터 미확인 '+chunk.filter(x=>!received.has(symbolKey(x))).join(', ');
+            break;
+          }catch(e){
+            const message=String(e?.message||e);
+            const transient=/HTTP (429|500|502|503|504)|fetch failed|network|timeout|abort/i.test(message);
+            if(attempt===0&&transient&&!controller.signal.aborted&&!signal?.aborted){
+              state.deepRetried++;renderMeta();
+              continue;
+            }
+            throw e;
+          }
+        }
       }catch(e){
         if(!signal?.aborted){
-          failed+=chunk.length;
+          chunkFailures=chunk.length;
           const reason=controller.signal.aborted?'응답 시간초과 (55초)':String(e?.message||e);
           state.deepError='정밀 '+chunk.join(', ')+' · '+reason;
         }
+      }
       }finally{
         clearTimeout(timeout);
         if(signal)signal.removeEventListener('abort',abortParent);
         if(seq===state.refreshSeq&&!signal?.aborted){
           state.deepInFlight=Math.max(0,state.deepInFlight-chunk.length);
-          completed+=chunk.length;state.deepDone=Math.min(state.deepTotal,completed);state.deepFailed=failed;
+          completed+=chunk.length;failed+=chunkFailures;succeeded+=chunk.length-chunkFailures;state.deepDone=Math.min(state.deepTotal,completed);state.deepFailed=failed;state.deepSucceeded=succeeded;
           saveScanSession();renderMeta();renderFinder();
         }
       }
