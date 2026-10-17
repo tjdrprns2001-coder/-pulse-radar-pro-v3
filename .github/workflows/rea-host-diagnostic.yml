@@ -1,6 +1,10 @@
-name: REA Host Diagnostic (manual)
+name: REA CLI Diagnostic
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/REA_INTEGRATION.md'
+      - '.github/workflows/rea-host-diagnostic.yml'
 
 permissions:
   contents: read
@@ -23,8 +27,12 @@ jobs:
           node --version
           npm --version
       - name: Verify pinned REA CLI
-        run: npx --yes rea-agents@6.5.0 --help
-      - name: Check REA host capabilities
+        run: |
+          npx --yes rea-agents@6.5.0 --version
+          npx --yes rea-agents@6.5.0 --help
+      - name: Inspect REA host capabilities
+        run: npx --yes rea-agents@6.5.0 capabilities
+      - name: Read-only diagnostic (external native engines are optional)
         shell: bash
         run: |
           set +e
@@ -34,5 +42,5 @@ jobs:
           sed -n '1,120p' "$RUNNER_TEMP/rea-doctor.json"
           echo "REA doctor exit status: $diagnostic_status" >> "$GITHUB_STEP_SUMMARY"
           if [ "$diagnostic_status" -ne 0 ]; then
-            echo "::warning::REA doctor reported limited readiness. Inspect diagnostics. Native tools may be optional."
+            echo "::warning::REA doctor reported limited readiness. Native tools may be optional."
           fi
