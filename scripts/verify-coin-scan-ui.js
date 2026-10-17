@@ -12,7 +12,7 @@ assert(js.includes('FULL_VALIDATION_CHUNKS=4')&&js.includes('&validation='),'tie
 assert(html.includes('id="scanElapsed"')&&html.includes('id="stageDeep"')&&html.includes('8TF 병렬'),'renewed scanner progress pipeline required');
 assert(js.includes('candidateSymbols'),'progressive candidate enrichment required');
 assert(html.includes('id="autoRefreshSelect"')&&html.includes('5분')&&html.includes('10분'),'manual/5m/10m refresh control required');
-for(const s of ['AbortController','state.deepLoading','sessionStorage','SCAN_SESSION_FRESH_MS','visibilitychange','cache:\'default\''])assert(js.includes(s),`scan lifecycle protection missing ${s}`);
+for(const s of ['AbortController','state.deepLoading','sessionStorage','SCAN_SESSION_FRESH_MS','visibilitychange','cache:\'no-store\''])assert(js.includes(s),`scan lifecycle protection missing ${s}`);
 assert(js.includes('snapshot-hub.html')&&js.includes("view:'snapshotcenter'")&&js.includes("mode='board'"),'V5 snapshot center deep link required');
 assert(js.includes('eventSnapshotId'),'scanner snapshot links must use server-captured event IDs');
 assert(/escapeHtml|textContent/.test(js),'safe text rendering required');
