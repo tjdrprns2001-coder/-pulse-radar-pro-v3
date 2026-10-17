@@ -1,0 +1,38 @@
+name: REA Host Diagnostic (manual)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source without persistent credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up supported Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Print runtime versions
+        run: |
+          node --version
+          npm --version
+      - name: Verify pinned REA CLI
+        run: npx --yes rea-agents@6.5.0 --help
+      - name: Check REA host capabilities
+        shell: bash
+        run: |
+          set +e
+          npx --yes rea-agents@6.5.0 doctor --json > "$RUNNER_TEMP/rea-doctor.json" 2>&1
+          diagnostic_status=$?
+          set -e
+          sed -n '1,120p' "$RUNNER_TEMP/rea-doctor.json"
+          echo "REA doctor exit status: $diagnostic_status" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$diagnostic_status" -ne 0 ]; then
+            echo "::warning::REA doctor reported limited readiness. Inspect diagnostics. Native tools may be optional."
+          fi
