@@ -60,6 +60,7 @@ must(js.includes('(Number(b.preIgnitionScore)||0)-(Number(a.preIgnitionScore)||0
 must(js.includes('mode=prescan')&&js.includes('tryServerScanRun')&&js.includes('coin-scan-run-background'),'latest prescan/server-run pipeline missing');
 must(js.includes("'RE-ENTRY'")&&js.includes("'PATTERN-SETUP'")&&js.includes("'FAKEOUT-RISK'"),'restored rediscovery classes missing');
 must(css.includes('.finderResults')&&css.includes('.strategyTrack')&&css.includes('.fakeoutBox')&&css.includes('.entryQuality'),'latest scanner responsive/strategy styling missing');
+must(js.includes('state.deepSucceeded=succeeded')&&js.includes('state.deepRetried++')&&js.includes("cache:'no-store'"),'success, failure and retry must be tracked independently');
 console.log('auto-scan-finder verification passed');
 
 const selector=fs.readFileSync('config/selector_r0_3.yaml','utf8');
