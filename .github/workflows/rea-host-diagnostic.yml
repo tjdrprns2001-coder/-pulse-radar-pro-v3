@@ -9,6 +9,7 @@ on:
       - '.cursor/mcp.json'
       - '.mcp.json'
       - 'scripts/verify-rea-mcp.mjs'
+      - 'scripts/verify-rea-static-analysis.mjs'
       - '.github/workflows/rea-host-diagnostic.yml'
 
 permissions:
@@ -39,6 +40,8 @@ jobs:
         run: npx --yes rea-agents@6.5.0 capabilities
       - name: Verify project settings and MCP handshake
         run: node scripts/verify-rea-mcp.mjs
+      - name: Run real static JavaScript reconstruction on owned sources
+        run: node scripts/verify-rea-static-analysis.mjs
       - name: Read-only doctor report (native engines optional)
         shell: bash
         run: |
