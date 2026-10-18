@@ -141,7 +141,7 @@
       add('hammer','망치형 반전','long','확정',73,prev.high,'망치형 이후 확정봉 고점 돌파 · 후속 거래량 확인',{invalidation:prev.low,patternAt:prev.closeTime});
     if(priorStarUp&&candleShape(prev,'star')&&k.close<prev.low&&rvol!=null&&rvol>=1.0)
       add('shooting_star','유성형 반전','short','확정',73,prev.low,'유성형 이후 확정봉 저점 이탈 · 후속 거래량 확인',{invalidation:prev.high,patternAt:prev.closeTime});
-    const pb=Math.abs(prev.close-prev.open);
+    const body=Math.abs(k.close-k.open),pb=Math.abs(prev.close-prev.open);
     if(k.close>k.open&&prev.close<prev.open&&k.open<=prev.close&&k.close>=prev.open&&body>pb*1.05)
       add('engulf_up','상승 장악형','long','확정',67,prev.high,'양봉이 직전 음봉 몸통 장악',{invalidation:k.low});
     if(k.close<k.open&&prev.close>prev.open&&k.open>=prev.close&&k.close<=prev.open&&body>pb*1.05)
