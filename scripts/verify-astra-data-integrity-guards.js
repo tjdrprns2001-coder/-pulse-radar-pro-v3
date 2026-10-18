@@ -7,4 +7,8 @@ assert.equal(scanner.confirmed([row(now+1000)],now).length,0,'live candle must n
 assert.equal(scanner.confirmed([row(now-1)],now).length,1,'closed candle must remain usable');
 assert.equal(scanner.oiFromProfile({rows:[{sumOpenInterest:'10',timestamp:now,_fallbackSource:'BYBIT_LINEAR'}],fallbackSource:'BYBIT_LINEAR'}).oiSource,'BYBIT_LINEAR');
 assert.equal(scanner.oiFromProfile({rows:[{sumOpenInterest:'10',timestamp:now}]}).oiSource,'Binance futures/data/openInterestHist');
+assert.deepEqual(scanner.ASTRA_TIMEFRAMES,['1w','3d','1d','12h','4h','3h','2h','1h','15m','5m']);
+const fallbackUniverse={_fallbackSource:'BYBIT_LINEAR',symbols:[{symbol:'BTCUSDT',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'USDT',symbolType:'crypto'},{symbol:'SOXLUSDT',status:'TRADING',contractType:'PERPETUAL',quoteAsset:'USDT',symbolType:'STOCK'}]};
+const fallbackTickers=[{symbol:'BTCUSDT',lastPrice:'100',priceChangePercent:'1'},{symbol:'SOXLUSDT',lastPrice:'20',priceChangePercent:'1'}];
+assert.deepEqual(scanner.buildUniverse(fallbackUniverse,fallbackTickers).map(x=>x.symbol),['BTCUSDT']);
 console.log('Astra closed candle and OI provenance guards passed');
