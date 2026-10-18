@@ -143,6 +143,39 @@ class ScannerTests(unittest.TestCase):
         self.assertFalse(result["known"])
         self.assertFalse(result["a"])
 
+    def test_sparse_duplicate_or_future_oi_never_creates_a_signal(self):
+        step, end = s.TF_MS["5m"], 48 * s.TF_MS["5m"]
+        base = [{"timestamp": (i+1)*step,
+                 "sumOpenInterest": str(100 + i),
+                 "sumOpenInterestValue": "99999999"} for i in range(48)]
+
+        class Fake:
+            def __init__(self, rows):
+                self.rows = rows
+            async def get(self, *args, **kwargs):
+                return self.rows
+
+        for label, rows in (
+            ("missing middle 5m OI sample", [x for x in base if x["timestamp"] != end-30*step]),
+            ("duplicate OI timestamp", base + [dict(base[-3])]),
+            ("insufficient observation window", base[-30:]),
+        ):
+            with self.subTest(label=label):
+                result = asyncio.run(s.oi_features(Fake(rows), "TESTUSDT", end, self.cfg))
+                self.assertFalse(result["known"])
+                self.assertFalse(result["a"])
+                self.assertFalse(result["a_pre"])
+                self.assertFalse(result["c_rebuild"])
+                self.assertIsNotNone(result["error"])
+
+        # Exclude future samples; the complete historical 3h path remains valid.
+        future = base + [{"timestamp": end + step,
+                          "sumOpenInterest": "1000000",
+                          "sumOpenInterestValue": "99999999"}]
+        good = asyncio.run(s.oi_features(Fake(future), "TESTUSDT", end, self.cfg))
+        self.assertTrue(good["known"])
+        self.assertEqual(good["timestamp"], end)
+
     def test_oi_uses_contract_quantity_not_dollar_value(self):
         step, end = s.TF_MS["5m"], 48 * s.TF_MS["5m"]
         class Fake:
