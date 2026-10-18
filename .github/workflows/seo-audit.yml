@@ -1,0 +1,27 @@
+name: SEO Audit Validation
+on:
+  pull_request:
+    paths:
+      - 'scripts/seo-audit.js'
+      - 'scripts/verify-seo-audit.js'
+      - '.github/workflows/seo-audit.yml'
+  workflow_dispatch:
+jobs:
+  seo-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify SEO audit contract
+        run: node scripts/verify-seo-audit.js
+      - name: Generate baseline report
+        run: node scripts/seo-audit.js > seo-audit-report.json
+      - name: Upload baseline report
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-audit-report
+          path: seo-audit-report.json

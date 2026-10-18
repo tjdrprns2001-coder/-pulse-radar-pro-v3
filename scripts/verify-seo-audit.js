@@ -1,0 +1,18 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const audit = path.resolve(__dirname, 'seo-audit.js');
+const run = (args=[]) => spawnSync(process.execPath, [audit, ...args], {encoding:'utf8'});
+const basic = run();
+assert.equal(basic.status, 0, basic.stderr);
+const data = JSON.parse(basic.stdout);
+assert.ok(Number.isInteger(data.scannedFiles));
+assert.equal(data.checks.length, 8);
+assert.equal(new Set(data.checks.map(x=>x.name)).size, 8);
+assert.ok(data.checks.every(x=>typeof x.pass === 'boolean'));
+const strict = run(['--strict']);
+assert.equal(strict.status, data.checks.some(x=>!x.pass) ? 1 : 0);
+console.log('SEO audit smoke test passed');
