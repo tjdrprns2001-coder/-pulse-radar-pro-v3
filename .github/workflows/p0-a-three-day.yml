@@ -1,0 +1,25 @@
+name: P0-A Three-Day Provider Verification
+on:
+  pull_request:
+    paths:
+      - 'lib/coin-scan/binance-provider.js'
+      - 'lib/coin-scan/three-day-aggregation.js'
+      - 'scripts/verify-three-day-aggregation.js'
+      - 'scripts/mock-bybit-3d-pagination.js'
+      - '.github/workflows/p0-a-three-day.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check lib/coin-scan/binance-provider.js
+      - run: node --check lib/coin-scan/three-day-aggregation.js
+      - run: node scripts/verify-three-day-aggregation.js
+      - run: node scripts/mock-bybit-3d-pagination.js
+      - run: npm run test:coin-scan-provider
+      - run: npm run test:coin-scan-core
