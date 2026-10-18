@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /.netlify/
+Disallow: /admin/
+Disallow: /internal/
+Allow: /
