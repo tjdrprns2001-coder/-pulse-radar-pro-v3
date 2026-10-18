@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {synthesizeThreeHour,HOUR_MS}=require('../lib/coin-scan/closed-three-hour.js');
+const base=Date.UTC(2026,9,18,0,0,0);
+const bars=Array.from({length:6},(_,i)=>[base+i*HOUR_MS,'10','12','9','11','100',base+(i+1)*HOUR_MS-1,'1000',10,'60','600']);
+const full=synthesizeThreeHour(bars,{asOf:base+6*HOUR_MS});
+assert.equal(full.rows.length,2);
+assert.equal(full.rows[0][5],300);
+assert.equal(full.rows[0][6],base+3*HOUR_MS-1);
+const incomplete=synthesizeThreeHour(bars.slice(0,5),{asOf:base+6*HOUR_MS});
+assert.equal(incomplete.rows.length,1);
+const gap=synthesizeThreeHour([bars[0],bars[2]],{asOf:base+3*HOUR_MS});
+assert.equal(gap.rows.length,0);
+console.log('Astra 3h closed-bar aggregation passed');
