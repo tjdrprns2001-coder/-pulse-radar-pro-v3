@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict');
+const scanner=require('../lib/coin-scan/astra-auto-scanner.js');
+const now=Date.now(),row=(end)=>[now-60000,'1','2','0.5','1.5','100',end,'150',1,'60','90'];
+assert.equal(scanner.confirmed([row(null)],now).length,0,'unknown close time must not count as closed');
+assert.equal(scanner.confirmed([row(now+1000)],now).length,0,'live candle must not count as closed');
+assert.equal(scanner.confirmed([row(now-1)],now).length,1,'closed candle must remain usable');
+assert.equal(scanner.oiFromProfile({rows:[{sumOpenInterest:'10',timestamp:now,_fallbackSource:'BYBIT_LINEAR'}],fallbackSource:'BYBIT_LINEAR'}).oiSource,'BYBIT_LINEAR');
+assert.equal(scanner.oiFromProfile({rows:[{sumOpenInterest:'10',timestamp:now}]}).oiSource,'Binance futures/data/openInterestHist');
+console.log('Astra closed candle and OI provenance guards passed');
