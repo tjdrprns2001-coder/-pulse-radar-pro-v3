@@ -62,3 +62,25 @@ test('The live HTML includes the engine before the app script',()=>{
   assert.ok(html.indexOf('/ui/realtime-patterns/core.js')<html.indexOf('/ui/realtime-patterns/app.js'));
   for(const id of['watchlist','chart','currentPatterns','eventFeed','start','stop'])assert.match(html,new RegExp('id="'+id+'"'));
 });
+test('Engulfing signals use the just-closed candle body without crashing',()=>{
+  const prefix=history(94);
+  const bearish=row(94,{open:101,close:100,high:101.5,low:99.7});
+  const bullish=row(95,{open:99.7,close:101.4,high:101.8,low:99.2});
+  const up=Core.detect([...prefix,bearish,bullish],{symbol:'BTCUSDT',timeframe:'15m'});
+  const engulfUp=up.find(x=>x.type==='engulf_up');
+  assert.ok(engulfUp,'Bullish engulfing must be detected');
+  assert.equal(engulfUp.state,'확정');
+  assert.equal(engulfUp.candleAt,bullish.closeTime);
+  assert.equal(engulfUp.invalidation,bullish.low);
+
+  const priorBull=row(94,{open:100,close:101,high:101.4,low:99.6});
+  const bearEngulf=row(95,{open:101.2,close:99.4,high:101.6,low:99.2});
+  const down=Core.detect([...prefix,priorBull,bearEngulf],{symbol:'ETHUSDT',timeframe:'15m'});
+  const engulfDown=down.find(x=>x.type==='engulf_down');
+  assert.ok(engulfDown,'Bearish engulfing must be detected');
+  assert.equal(engulfDown.state,'확정');
+  assert.equal(engulfDown.invalidation,bearEngulf.high);
+
+  const weak=row(95,{open:100,close:100.6,high:100.9,low:99.7});
+  assert.ok(!Core.detect([...prefix,bearish,weak]).some(x=>x.type==='engulf_up'&&x.state==='확정'));
+});
