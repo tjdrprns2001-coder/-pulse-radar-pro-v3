@@ -1,0 +1,12 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname,'..');
+const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const robots = fs.readFileSync(path.join(root,'robots.txt'),'utf8');
+for (const fragment of ['<html lang="ko">','<title>PulseRadar','name="description"','name="robots"','property="og:title"','property="og:description"','name="twitter:card"']) assert.ok(html.includes(fragment),fragment);
+assert.equal((html.match(/<title>/g)||[]).length,1);
+assert.ok(robots.includes('Disallow: /api/'));
+assert.ok(robots.includes('Disallow: /.netlify/'));
+console.log('Public SEO metadata smoke test passed');
