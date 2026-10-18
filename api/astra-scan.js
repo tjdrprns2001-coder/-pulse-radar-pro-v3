@@ -4,7 +4,7 @@ const {createAstraAutoScanner,CONFIG,MANUS_CONFIG,PERPLEXITY_CONFIG,GROK_CONFIG,
 const ChartBroOos=require('../lib/coin-scan/chartbro-oos-service.js');
 let singleton=null;
 function defaultScanner(){if(!singleton)singleton=createAstraAutoScanner({provider:createBinanceProvider({disableFuturesFallback:false,concurrency:2,intervalConcurrency:1,futuresMinIntervalMs:Number(process.env.ASTRA_FUTURES_MIN_INTERVAL_MS||275)})});return singleton}
-function symbolsOf(q={}){return [...new Set(String(q.symbols||'').split(',').map(x=>x.trim().toUpperCase()).filter(x=>/^[A-Z0-9]{2,30}$/.test(x)))].slice(0,200)}
+function symbolsOf(q={}){const raw=String(q.symbols||'').split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);if(raw.some(x=>!/^[A-Z0-9]{2,30}$/.test(x))||new Set(raw).size>200){const e=new Error('invalid symbols or more than 200 unique symbols');e.statusCode=400;throw e}return [...new Set(raw)]}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function clamp(v,a=0,b=100){return Math.max(a,Math.min(b,Number(v)||0))}
 async function canonicalChartbroStats(){
