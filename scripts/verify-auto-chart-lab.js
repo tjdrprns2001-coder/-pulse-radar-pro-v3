@@ -33,6 +33,25 @@ assert.equal(ds.schemaVersion,'AUTO_CHART_MARKET_v1');
 assert(ds.candles.every(x=>Number.isFinite(x.openTime)&&Number.isFinite(x.closeTime)&&x.closed===true),'normalized closed candle contract');
 assert.equal(ds.status.gaps.length,0,'fixture has no gaps');
 
+ 
+// Closed-candle guard: future/partial bars must never enter historical structure or replay.
+const causalStart=1700100000000,causalHour=3600000;
+const causalBar=(i,extra={})=>({time:causalStart+i*causalHour,open:100,high:102,low:99,close:101,volume:100,...extra});
+const causalRaw={snapshotTime:causalStart+2*causalHour,lastClosedCloseTime:causalStart+2*causalHour-1,
+ candles:[causalBar(0),causalBar(1),causalBar(2),causalBar(3,{partial:true})]};
+const causalClosed=Normalize.normalizeCandles(causalRaw,'1h');
+assert.equal(causalClosed.length,2,'active bar without partial:true must be excluded by close time');
+assert.deepStrictEqual(causalClosed.map(x=>x.sourceIndex),[0,1],'original source indices must be preserved');
+assert.equal(Normalize.normalizeCandles({...causalRaw,snapshotTime:causalStart+causalHour-1,lastClosedCloseTime:causalStart+4*causalHour-1},'1h').length,1,'replay snapshot cutoff must prevent future leakage');
+assert.equal(Normalize.normalizeCandles({...causalRaw,snapshotTime:causalStart+4*causalHour},'1h').length,2,'last-confirmed cutoff must prevent future leakage');
+assert.equal(Normalize.normalizeCandles({candles:[causalBar(0,{partial:true})]},'1h').length,0,'explicit partial candle must be rejected');
+assert.equal(Normalize.normalizeCandles({candles:[causalBar(0,{closed:false})]},'1h').length,0,'explicit unclosed candle must be rejected');
+assert.equal(Normalize.normalizeCandles({candles:[causalBar(0)]},'unsupported').length,0,'unknown timeframe cannot infer safe close time');
+assert.equal(Normalize.normalizeCandles({candles:[causalBar(0,{closeTime:causalStart-1})]},'1h').length,0,'close time before opening must be rejected');
+assert.equal(Normalize.tfMs('2h'),2*causalHour,'native 2H interval duration');
+assert.equal(Normalize.tfMs('3h'),3*causalHour,'synthetic 3H interval duration');
+
+
 const swings=Swings.extract(ds);
 assert(!swings.some(x=>x.id==='FUTURE'),'future-confirmed pivot must not leak');
 assert(swings.every(x=>x.knownAt>x.occurredAt),'confirmed swing must store later knownAt');

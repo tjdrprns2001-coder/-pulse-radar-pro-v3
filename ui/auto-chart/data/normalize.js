@@ -2,7 +2,7 @@
 const SCHEMA='AUTO_CHART_MARKET_v1';
 const missing=v=>v==null||(typeof v==='string'&&v.trim()==='');
 const finite=v=>!missing(v)&&Number.isFinite(Number(v));
-const tfMs=tf=>({ '5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000 })[String(tf||'').toLowerCase()]||null;
+const tfMs=tf=>({ '5m':300000,'15m':900000,'1h':3600000,'2h':7200000,'3h':10800000,'4h':14400000,'12h':43200000,'1d':86400000,'3d':259200000,'1w':604800000 })[String(tf||'').toLowerCase()]||null;
 function num(v){return finite(v)?Number(v):null}
 function gaps(candles,interval){
   const step=tfMs(interval);if(!step||candles.length<2)return[];
@@ -10,11 +10,16 @@ function gaps(candles,interval){
   return out;
 }
 function normalizeCandles(raw,interval){
-  const step=tfMs(interval),rows=Array.isArray(raw?.candles)?raw.candles:[],lastClose=num(raw?.lastClosedCloseTime);
-  return rows.filter(x=>x&&finite(x.time??x.openTime)&&finite(x.open)&&finite(x.high)&&finite(x.low)&&finite(x.close)).map((x,i)=>{
-    const openTime=Number(x.openTime??x.time),closeTime=num(x.closeTime)??(step?openTime+step-1:(i===rows.length-1?lastClose:null));
-    return{openTime,closeTime,open:Number(x.open),high:Number(x.high),low:Number(x.low),close:Number(x.close),volume:num(x.volume),quoteVolume:num(x.quoteVolume),takerBuyQuote:num(x.takerBuyQuote),closed:x.partial!==true,sourceIndex:i};
-  }).filter(x=>x.closed);
+  const step=tfMs(interval),rows=Array.isArray(raw?.candles)?raw.candles:[],snapshotTime=num(raw?.snapshotTime),lastClosed=num(raw?.lastClosedCloseTime);
+  // A source may omit partial=true on its active bar. Require the bar to have ended
+  // by the snapshot, by the source's last-confirmed cutoff, and by local observation.
+  const cutoff=Math.min(Date.now(),snapshotTime??Infinity,lastClosed??Infinity);
+  return rows.map((x,i)=>{
+    if(!x||x.partial===true||x.closed===false||!finite(x.openTime??x.time)||!finite(x.open)||!finite(x.high)||!finite(x.low)||!finite(x.close))return null;
+    const openTime=Number(x.openTime??x.time),closeTime=num(x.closeTime)??(step?openTime+step-1:null);
+    if(closeTime==null||closeTime<openTime||closeTime>cutoff)return null;
+    return{openTime,closeTime,open:Number(x.open),high:Number(x.high),low:Number(x.low),close:Number(x.close),volume:num(x.volume),quoteVolume:num(x.quoteVolume),takerBuyQuote:num(x.takerBuyQuote),closed:true,sourceIndex:i};
+  }).filter(Boolean);
 }
 function normalizeStructure(raw,{exchange='binance',market='spot',symbol,interval,meta=null}={}){
   const candles=normalizeCandles(raw,interval),last=candles.at(-1);
