@@ -10,7 +10,30 @@ test('cancel/resume checkpoints preserve results without duplicates',async()=>{c
 test('all provider failures produce FAILED rather than zero-candidate success',async()=>{const f=fixture();try{const p=provider();p.bars=async()=>{throw new Error('HTTP 429')};const s=new Service({provider:p,journal:f.journal}),j=await s.createJob({symbols:['BTCUSDT'],tf:'5m'});await s.stepJob(j.id);await s.stepJob(j.id);assert.equal(s.getJob(j.id).state,'FAILED');assert.equal(s.getJob(j.id).success,0);assert.equal(s.getJob(j.id).failures,1);}finally{f.cleanup();}});
 test('AMD honors range known_at and preserves failure',()=>{const range={lower:99,upper:101,known_at:100,id:'r'},bars=[{close_time:50,low:98,high:102,close:100},{close_time:200,low:98,high:101,close:100},{close_time:300,low:100,high:106,close:105}],events=[{type:'MSS',side:'long',known_at:300,id:'e'}];const x=T.pathModel(range,bars,events);assert.equal(x.events[0].known_at,200);assert.equal(x.state,'EXPANSION_CONFIRMED');});
 test('matrix returns explicit partial data within its aggregate deadline',async()=>{const f=fixture();try{const p=provider();p.bars=async()=>new Promise(()=>{});const s=new Service({provider:p,journal:f.journal}),start=Date.now(),m=await s.matrix({symbol:'BTCUSDT',deadline_ms:30});assert.ok(Date.now()-start<300);assert.equal(m.partial,true);assert.ok(Object.keys(m.errors).length);}finally{f.cleanup();}});
-test('request deadline includes queue waiting without starting abandoned fetch',async()=>{const {Provider}=require('../../lib/chartbro/provider');let count=0;const p=new Provider({pace_ms:0,fetchImpl:async(_,o)=>{count++;await new Promise((resolve,reject)=>{o.signal.addEventListener('abort',()=>reject(Object.assign(new Error('aborted'),{name:'AbortError'})));});}}),one=p.request('spot','/first',{deadline:40}).catch(()=>null),start=Date.now();await assert.rejects(p.request('spot','/second',{deadline:10}),/deadline/);assert.ok(Date.now()-start<100);await one;assert.equal(count,1);});
+test('request deadline includes queue waiting without starting abandoned fetch',async()=>{
+ const {Provider}=require('../../lib/chartbro/provider');
+ let count=0,firstStarted;
+ const entered=new Promise(resolve=>{firstStarted=resolve});
+ const controller=new AbortController();
+ const p=new Provider({pace_ms:0,fetchImpl:async(_,o)=>{
+  count++;
+  firstStarted();
+  return new Promise((_,reject)=>{
+   if(o.signal.aborted)return reject(Object.assign(new Error('aborted'),{name:'AbortError'}));
+   o.signal.addEventListener('abort',()=>reject(Object.assign(new Error('aborted'),{name:'AbortError'})),{once:true});
+  });
+ }});
+ const one=p.request('spot','/first',{deadline:2000,signal:controller.signal}).catch(()=>null);
+ try{
+  // Guarantee that the first fetch owns the queue before timing the second request.
+  await entered;
+  await assert.rejects(p.request('spot','/second',{deadline:20}),/queue deadline/);
+  assert.equal(count,1,'the queued request must not start an abandoned fetch');
+ }finally{
+  controller.abort();
+  await one;
+ }
+});
 test('default full scan checkpoints independent timeframes before reporting a symbol',async()=>{const f=fixture();try{const s=new Service({provider:provider(),journal:f.journal,now:()=>Date.UTC(2026,0,2)}),j=await s.createJob({symbols:['BTCUSDT']});assert.deepEqual(j.timeframes,['1w','1d','12h','4h','1h','15m','5m']);await s.stepJob(j.id);assert.equal(s.getJob(j.id).processed,0);for(let i=0;i<8;i++)await s.stepJob(j.id);assert.equal(s.getJob(j.id).processed,1);assert.equal(s.results(j.id)[0].frames.length,7);}finally{f.cleanup();}});
 test('candidate cohort preserves observed and invalidated setups rather than only successes',async()=>{const f=fixture();try{const s=new Service({provider:provider(),journal:f.journal});s.saveCandidates({analysis_id:'a',instrument:{symbol:'BTCUSDT'},engine_version:'v',dataset_version:'d',config_hash:'c',decision_at:100,setups:[{id:'s',episode_id:'e',known_at:10,state:'INVALIDATED',side:'long',range_id:'r',sweep_event_id:'sw',invalidation_level:95}],events:[]});assert.equal(f.journal.all('candidates').length,1);assert.equal(f.journal.all('candidate_observations')[0].state,'INVALIDATED');}finally{f.cleanup();}});
 test('failed disk append never leaves a falsely durable in-memory record',()=>{const f=fixture();try{f.journal.file=path.join(f.dir,'nonexistent','events');assert.throws(()=>f.journal.put('x','bad',{v:1}),/ENOENT/);assert.equal(f.journal.get('x','bad'),null);}finally{f.cleanup();}});
