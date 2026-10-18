@@ -360,13 +360,23 @@ async def oi_features(api, symbol, asof, cfg):
             raise ValueError("No OI data")
         df["timestamp"] = pd.to_numeric(df.timestamp)
         df["oi"] = pd.to_numeric(df.sumOpenInterest)
-        df = (df.loc[df.timestamp <= asof].sort_values("timestamp")
-              .drop_duplicates("timestamp"))
+        df = df.loc[df.timestamp <= asof].sort_values("timestamp")
         if df.empty or not np.isfinite(df.oi).all() or (df.oi <= 0).any():
             raise ValueError("Invalid OI")
+        if df.timestamp.duplicated().any():
+            raise ValueError("Duplicate OI timestamps")
         stamp = int(df.timestamp.iloc[-1])
         if asof - stamp > 2 * TF_MS["5m"]:
             raise ValueError("Stale OI")
+        # OI momentum is meaningful only with an uninterrupted 5m path. A
+        # single missing sample can otherwise manufacture apparent rebuilding.
+        step = TF_MS["5m"]
+        window = df.loc[df.timestamp >= stamp - 3 * TF_MS["1h"]]
+        expected_count = 3 * TF_MS["1h"] // step + 1
+        if (len(window) != expected_count
+                or int(window.timestamp.iloc[0]) != stamp - 3 * TF_MS["1h"]
+                or not (window.timestamp.diff().dropna() == step).all()):
+            raise ValueError("Missing OI observations in 3h window")
 
         def at(target):
             subset = df.loc[df.timestamp <= target]
