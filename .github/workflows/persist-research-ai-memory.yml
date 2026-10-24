@@ -24,9 +24,15 @@ jobs:
           fetch-depth: 0
 
       - name: Resolve confirmed-candle outcomes
+        env:
+          LEARNING_WRITE_TOKEN: ${{ secrets.LEARNING_WRITE_TOKEN }}
         run: |
           set -euo pipefail
-          curl --retry 2 --retry-delay 5 --max-time 180 -fsSL             -X POST             "https://pulseradar-pro-unified-0926.onrender.com/api/learning-ai?action=resolve&limit=12"             -o /tmp/research-ai-resolve.json
+          if [ -z "${LEARNING_WRITE_TOKEN:-}" ]; then
+            echo "::error::LEARNING_WRITE_TOKEN must be configured before protected resolve"
+            exit 1
+          fi
+          curl -H "x-learning-token: ${LEARNING_WRITE_TOKEN}" --retry 2 --retry-delay 5 --max-time 180 -fsSL             -X POST             "https://pulseradar-pro-unified-0926.onrender.com/api/learning-ai?action=resolve&limit=12"             -o /tmp/research-ai-resolve.json
           node <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('/tmp/research-ai-resolve.json','utf8'));
