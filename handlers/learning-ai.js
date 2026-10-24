@@ -14,9 +14,15 @@ function parseBody(req){
 module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, max-age=0');
   try{
+    const action=String(req?.query?.action||'status').toLowerCase();
+    // Resolve changes research outcomes. Authenticate before hydrating or fetching data.
+    if(action==='resolve'&&String(req?.method||'GET').toUpperCase()==='POST'){
+      const token=String(process.env.LEARNING_WRITE_TOKEN||'');
+      const supplied=String(req?.headers?.['x-learning-token']||'');
+      if(!token||supplied!==token)return res.status(403).json({status:'error',error:'protected action'});
+    }
     const ai=defaultResearchAI();
     await ai.hydrateRemote(false);
-    const action=String(req?.query?.action||'status').toLowerCase();
     if(action==='status'){
       return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',statusData:ai.status()});
     }
