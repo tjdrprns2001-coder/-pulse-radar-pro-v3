@@ -35,6 +35,10 @@ assert(runtime.includes("minQuoteVolume:route.searchParams.has('minQuoteVolume')
 assert(api.includes('GROK_CONFIG')&&api.includes('GEMINI_CONFIG'),'Grok/Gemini API config missing');
 assert(api.includes('CLAUDE_CONFIG'),'Claude API config missing');
 const astraCore=fs.readFileSync('lib/coin-scan/astra-auto-scanner.js','utf8');
+const astraFrames=astraCore.match(/ASTRA_TIMEFRAMES=Object\.freeze\(\[([^\]]+)\]\)/);
+assert(astraFrames,'Astra core timeframe declaration missing');
+const displayedFrames=[...astraFrames[1].matchAll(/'([^']+)'/g)].map(x=>x[1].replace(/[whd]/g,c=>c.toUpperCase())).join('·');
+assert(js.includes(displayedFrames+' 확정봉 정밀검사'),'Astra UI timeframe description differs from scanner core');
 assert(astraCore.includes("require('./common-preignition-stage.js')")&&astraCore.includes('commonPreignition'),'common stage engine wiring missing');
 assert(js.includes('pulseradar-selector-runtime.onrender.com/api/astra-scan'),'Render Astra API fallback missing');
 assert(runtime.includes("route.pathname==='/api/astra-scan'")&&runtime.includes("route.pathname==='/astra-scan'"),'Render scanner routes missing');
