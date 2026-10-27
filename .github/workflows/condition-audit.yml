@@ -7,8 +7,8 @@ on:
     paths: ['ui/condition-audit.js', 'ui/astra-scan.js', 'ui/astra-scan.css', 'astra-scan.html', 'ui/auto-chart/**', 'auto-chart-lab.html', 'tests/condition-audit*', 'scripts/verify-condition-audit-browser.cjs', '.github/workflows/condition-audit.yml']
 jobs:
   browser:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -81,11 +81,13 @@ on:
       - "scripts/verify-long-entry-details.py"
       - "scripts/verify-astra-auto-scan.js"
       - "scripts/verify-coin-scan-provider.js"
+      - ".github/workflows/astra-long-entry.yml"
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Playwright 1.55.0 cannot install Chromium on ubuntu26.04; keep runner compatible until dependency upgrade.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
