@@ -54,6 +54,7 @@ function call(method,token){
 
     r=await call('GET','unit-test-only-token');
     assert.equal(r.status,405,'resolve must require POST');
+    assert.equal(hydrated,0,'GET must not hydrate research state');
     assert.equal(fetches,0,'GET must not fetch exchange data');
 
     r=await call('POST','unit-test-only-token');
