@@ -16,7 +16,8 @@ module.exports=async function handler(req,res){
   try{
     const action=String(req?.query?.action||'status').toLowerCase();
     // Resolve changes research outcomes. Authenticate before hydrating or fetching data.
-    if(action==='resolve'&&String(req?.method||'GET').toUpperCase()==='POST'){
+    if(action==='resolve'){
+      if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
       const token=String(process.env.LEARNING_WRITE_TOKEN||'');
       const supplied=String(req?.headers?.['x-learning-token']||'');
       if(!token||supplied!==token)return res.status(403).json({status:'error',error:'protected action'});
@@ -52,7 +53,6 @@ module.exports=async function handler(req,res){
       return res.status(200).json({status:'ok',mode:'learning-ai',action,authority:'unified-runtime',review});
     }
     if(action==='resolve'){
-      if(String(req?.method||'GET').toUpperCase()!=='POST')return res.status(405).json({status:'error',error:'POST required'});
       const state=ai.exportState(),now=Date.now(),max=Math.max(1,Math.min(20,Number(req?.query?.limit)||12));
       const pending=(state.observations||[]).filter(o=>o?.symbol&&(!o.outcomeV2||o.outcomeV2.confirmed!==true)&&now-Number(o.asOf||0)<=96*3600000);
       const symbols=[...new Set(pending.sort((a,b)=>Number(a.asOf||0)-Number(b.asOf||0)).map(o=>o.symbol))].slice(0,max);
