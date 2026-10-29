@@ -378,15 +378,15 @@
         "id": "tiny-mlp-v2",
         "type": "tiny_mlp_18x12x6x1",
         "state": "SHADOW",
-        "createdAt": 1793301036144,
-        "updatedAt": 1793301036144,
+        "createdAt": 1793316022358,
+        "updatedAt": 1793316022358,
         "metrics": {},
         "metadata": {
           "shadowOnly": true
         },
         "history": [
           {
-            "at": 1793301036144,
+            "at": 1793316022358,
             "state": "SHADOW",
             "reason": "created"
           }
@@ -394,7 +394,7 @@
       }
     ],
     "activeModelId": null,
-    "updatedAt": 1793301036144
+    "updatedAt": 1793316022359
   },
   "training": {
     "labels": 0,
@@ -459,7 +459,7 @@
     "researchNotes": [
       {
         "id": "RN-1X253F3",
-        "at": 1793301221853,
+        "at": 1793316023853,
         "type": "DATASET",
         "title": "학습 표본 점검",
         "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -1464,7 +1464,7 @@
       "notes": [
         {
           "id": "RN-1X253F3",
-          "at": 1793301221853,
+          "at": 1793316023853,
           "type": "DATASET",
           "title": "학습 표본 점검",
           "body": "동일 모집단 확정 라벨 0개 · 성공 0개 · 실패 0개. Locked OOS는 가설 생성 입력에서 제외한다.",
@@ -1522,7 +1522,7 @@
     "hypothesisGeneratorAccess": false
   },
   "referenceSampleCount": 0,
-  "exportedAt": 1793301221853,
+  "exportedAt": 1793316023854,
   "featureNames": [
     "scannerScore",
     "change24h",
